@@ -1,0 +1,28 @@
+[project]
+name = "activation"
+requires-python = ">=3.14"
+version = "0.1.0"
+dependencies = [
+    "torch",
+    "transformers",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-timeout",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["activation/tests"]
+markers = [
+    "manual: test needing user intervention or external setup; requires --manual",
+    "slow: longer-running test; requires --slow",
+    "gpu: test requiring a GPU; requires --gpu",
+    "ddp: test requiring multiple GPU; requires --ddp",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
