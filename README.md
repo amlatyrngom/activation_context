@@ -20,6 +20,16 @@ newgrp docker
 docker run hello-world
 ```
 
+Installing `node` and `npm`.
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+nvm alias default 'lts/*'
+node --version
+npm --version
+```
+
 Cloning from GitHub.
 ```bash
 (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
@@ -45,3 +55,4 @@ gh auth status
 # Cloning
 git clone https://github.com/amlatyrngom/activation_context.git
 ```
+

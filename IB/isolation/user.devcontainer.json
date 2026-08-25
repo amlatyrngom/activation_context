@@ -1,0 +1,29 @@
+{
+  "name": "User Workspace",
+  "build": {
+    "dockerfile": "../../IB/isolation/agent.Dockerfile",
+    "context": "../../IB/isolation"
+  },
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "containerEnv": {
+    "TRESSOIR_AGENT_TARGETS": "claude,codex,pi",
+    "XDG_CACHE_HOME": "/home/node/.cache",
+    "XDG_CONFIG_HOME": "/home/node/.config",
+    "XDG_DATA_HOME": "/home/node/.local/share",
+    "XDG_STATE_HOME": "/home/node/.local/state"
+  },
+  "postCreateCommand": [
+    "bash",
+    "IB/isolation/agent-setup.sh",
+    "--user"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": ["anthropic.claude-code", "openai.chatgpt"],
+      "settings": {
+        "window.title": "${localWorkspaceFolderBasename} [Dev Container: User Workspace]"
+      }
+    }
+  }
+}
