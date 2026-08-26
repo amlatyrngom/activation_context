@@ -80,6 +80,9 @@ Lifecycle labels are `TBD`, `Planning`, `Implementing`, `Review`, and `Completed
 - A `TBD` milestone has only its concise overview.
 - `Planning` or later includes `#### Planned Changes`.
 - Put a backticked path or symbol directly before every planned snippet.
+- Use the artifact skill's **Moderate** diff level by default: include meaningful per-file hunks
+  sufficient to understand the plan and mark every omission explicitly. Use Low only for a genuine
+  overview and Detailed / Exact only when the exact patch is necessary for the decision.
 - When changing a public interface or lifecycle, show its types, creator, owner, consumers, and
   end-to-end data flow. Skip that ceremony for internal edits without interface consequences.
 
@@ -100,7 +103,7 @@ At `Review` or `Completed`, lead each milestone with:
 
 - **What landed** — actual behavior and files.
 - **Drifts, challenges, and unplanned steps** — honest differences from the forward plan.
-- **Focused actual diffs** — the most useful named excerpts.
+- **Focused actual diffs** — Moderate, per-file excerpts by default; make omissions explicit.
 - **Validation** — commands and important observed results.
 
 Keep the original planned changes below as reference and update `IB/STATE.md` at milestone

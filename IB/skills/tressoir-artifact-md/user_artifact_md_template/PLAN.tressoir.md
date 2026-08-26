@@ -58,10 +58,17 @@ Describe what changes and where, then explain rationale, boundaries, and importa
 
 `path/to/file · symbol()`
 
-```diff
-@@ path/to/file — symbol() @@
-- before
-+ after
+```diff-typescript
+@@ -18,3 +18,4 @@ function createResult(input: Input) {
+-  return build(input)
++  const result = build(input)
++  return validate(result)
+ }
+⋯ unchanged lines omitted ⋯
+@@ -42,3 +43,4 @@ function validate(result: Result) {
+   assertShape(result)
++  assertOwnership(result)
+ }
 ```
 
 </details>

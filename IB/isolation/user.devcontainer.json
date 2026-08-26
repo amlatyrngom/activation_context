@@ -22,7 +22,8 @@
     "vscode": {
       "extensions": ["anthropic.claude-code", "openai.chatgpt"],
       "settings": {
-        "window.title": "${localWorkspaceFolderBasename} [Dev Container: User Workspace]"
+        "window.title": "${localWorkspaceFolderBasename} [Dev Container: User Workspace]",
+        "terminal.integrated.sendKeybindingsToShell": false
       }
     }
   }

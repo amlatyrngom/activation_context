@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/devcontainers/javascript-node:24-bookworm
 USER root
 
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends ca-certificates curl \
+    && apt-get install --yes --no-install-recommends ca-certificates curl tmux \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv and its managed CPython independently of the development user's

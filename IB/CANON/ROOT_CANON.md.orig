@@ -4,12 +4,7 @@ A small index and cross-cutting memory for this project.
 
 ## Cross-cutting decisions and invariants
 
-- **Convention — Preserve the mental model in incremental code fixes.** Start from the user's
-  current code and make the smallest coherent behavioral change. Do not mix a bug fix with
-  reformatting, renaming, defensive checks, or structural rewrites unless those edits are required
-  for correctness. If a broader change is necessary, identify the concrete fault first and keep the
-  behavioral delta easy to isolate. `activation/harness/hf_utils.py::adapt_message_format` is the
-  reference example: preserve its existing shape when a focused correction is sufficient.
+- Add only durable knowledge that should influence future work.
 
 ## Subsystem index
 

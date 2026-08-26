@@ -24,6 +24,22 @@ Add the concise recap here.
 
 Explain the relevant evidence and tradeoffs in simple, visible prose.
 
+### Current code slice
+
+Show the complete delta for this coarse slice relative to the result of the preceding accepted
+slice, not the cumulative uncommitted Git diff. Omit this section when no code is being proposed.
+
+`path/to/file · symbol()`
+
+```diff-typescript
+@@ -24,3 +24,5 @@ function applyChoice(choice: Choice) {
+-  return save(choice)
++  const saved = save(choice)
++  notify(saved)
++  return saved
+ }
+```
+
 <article class="decision" data-tressoir-decision data-decision-state="unresolved"
   aria-labelledby="session-proceed-question">
   <header class="decision-header">

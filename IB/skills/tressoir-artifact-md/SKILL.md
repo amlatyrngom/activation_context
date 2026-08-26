@@ -124,6 +124,33 @@ decorative badge.
 - Use raw HTML/SVG only when it materially clarifies structure.
 - Keep simple, concise language and modest heading depth. Do not turn ordinary rows into disclosures.
 
+## Diff views and defaults
+
+Present multi-file changes as one natural, GitHub-like linear file list. Each file is open by
+default, independently collapsible, and headed by a relative path that opens the target in VS Code.
+Keep files separated by open seams rather than nested cards. Use restrained addition/deletion
+backgrounds, a very soft hunk prelude, and a soft full-row hover/focus wash to show the collapse
+target without swallowing the file link. Combine ordinary language syntax highlighting with diff
+line highlighting. Contain wide hunks locally and keep line text selectable.
+
+Choose one detail level for the artifact; do not add a level switcher unless comparison itself is
+the task:
+
+- **Low:** an overview of intent, affected areas, and notable risk; no claim of line completeness.
+- **Moderate:** the default for plans, research, and ordinary reviews. Show enough meaningful hunks
+  to understand the change in every file, with explicit elisions where lines are omitted.
+- **Detailed / Exact:** the complete available delta with exact line mapping. Identify generated,
+  binary, unavailable, or deliberately truncated content rather than implying completeness.
+
+Narration belongs outside the widget only when the author genuinely has something useful to say.
+Do not emit canned summaries, mode labels, or phrases such as “complete available patch.”
+
+For an INTERACTIVE artifact that proposes code in successive coarse slices, default to
+**Detailed / Exact** and make each slice non-cumulative. Slice 1 is relative to the accepted
+starting point; Slice N shows only the delta on top of the result of Slice N−1, even while all work
+remains uncommitted in Git. Fold minor edits into the nearest coherent slice, let a file recur only
+with its new delta, and regenerate affected later slices whenever an earlier slice changes.
+
 The automatic floating **Feedback Form** is enabled unless `feedback: disabled` is present. It uses
 highlighted Markdown, persists silently, and stays non-modal so the page remains readable and
 scrollable while the reader writes.

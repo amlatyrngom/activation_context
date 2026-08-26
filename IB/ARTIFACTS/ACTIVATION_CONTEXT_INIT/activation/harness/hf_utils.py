@@ -1,0 +1,215 @@
+"""
+HF-facing code for model configuration parsing, message formatting, etc.
+Stores overly detailed/specific logic to keep the rest of code cleaner.
+"""
+from collections import Counter
+import torch
+import torch.nn.functional as F
+from .model_config import (
+    LayerType,
+    ModelDescription,
+    LayerDescription,
+    ModelConfig,
+    EmbeddingReadoutType,
+)
+from transformers import (
+    AutoConfig,
+    PreTrainedTokenizerBase,
+    PreTrainedConfig,
+)
+
+
+
+TARGET_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+SOURCE_DEVICE = "cpu"
+_FULL_ATTENTION_NAMES = frozenset({"attention", "full_attention", "global_attention"})
+_WINDOW_ATTENTION_NAMES = frozenset(
+    {"local_attention", "sliding_attention", "window_attention"}
+)
+_LINEAR_ATTENTION_NAMES = frozenset(
+    {"gated_delta_net", "linear_attention", "mamba", "recurrent", "ssm"}
+)
+
+
+def canonical_layer_type(raw_type: object) -> LayerType:
+    normalized = str(raw_type).casefold()
+    if normalized in _FULL_ATTENTION_NAMES:
+        return LayerType.FULL_ATTENTION
+    if normalized in _WINDOW_ATTENTION_NAMES:
+        return LayerType.WINDOW_ATTENTION
+    if normalized in _LINEAR_ATTENTION_NAMES:
+        return LayerType.LINEAR_ATTENTION
+    raise ValueError(f"Unsupported model layer type: {raw_type!r}")
+
+
+def canonical_eot_token(tokenizer: PreTrainedTokenizerBase) -> str | None:
+    candidates = list(getattr(tokenizer, "additional_special_tokens", None) or ())
+    eos_token = getattr(tokenizer, "eos_token", None)
+    if eos_token:
+        candidates.append(eos_token)
+    for token in candidates:
+        normalized = token.casefold()
+        if "eot" in normalized or "im_end" in normalized or "end_of_turn" in normalized:
+            return token
+    return None
+
+
+def canonical_eos_token(hf_config: PreTrainedConfig, tokenizer: PreTrainedTokenizerBase) -> str | None:
+    """Resolve the model config's EOS ID to its tokenizer representation."""
+    text_config = hf_config.get_text_config()
+    raw_token_ids = getattr(
+        text_config,
+        "eos_token_id",
+        getattr(hf_config, "eos_token_id", None),
+    )
+    token_ids = (
+        [raw_token_ids]
+        if isinstance(raw_token_ids, int)
+        else list(raw_token_ids or ())
+    )
+    for token_id in token_ids:
+        token = tokenizer.convert_ids_to_tokens(token_id)
+        if token is not None:
+            return token
+    return tokenizer.eos_token
+
+
+def canonical_embedding_readout_type(model_id: str) -> EmbeddingReadoutType|None:
+    normalized_id = model_id.lower()
+    if "embed" not in normalized_id:
+        return None
+    if "qwen" in normalized_id:
+        return EmbeddingReadoutType.EOS_TOKEN
+    raise ValueError(f"Unknown embedding model: {model_id}")
+
+
+def model_description_from_hf(
+    model_id: str,
+    dtype: torch.dtype,
+    tokenizer: PreTrainedTokenizerBase,
+) -> 'ModelDescription':
+    hf_config = AutoConfig.from_pretrained(model_id)
+    text_config = hf_config.get_text_config()
+    is_multimodal = text_config is not hf_config
+    num_layers = int(text_config.num_hidden_layers)
+    raw_layer_types = getattr(text_config, "layer_types", None)
+
+    if raw_layer_types is None:
+        raw_layer_types = ["full_attention"] * num_layers
+
+    if len(raw_layer_types) != num_layers:
+        raise ValueError(
+            f"Config reports {num_layers} layers but supplies "
+            f"{len(raw_layer_types)} layer types"
+        )
+
+    window_size = getattr(text_config, "sliding_window", None)
+    layers = []
+
+    for index, raw_type in enumerate(raw_layer_types):
+        layer_type = canonical_layer_type(raw_type)
+        layers.append(
+            LayerDescription(
+                layer_type=layer_type,
+                layer_idx=index,
+                window_attention_size=(
+                    window_size
+                    if layer_type is LayerType.WINDOW_ATTENTION
+                    else None
+                ),
+            )
+        )
+
+    embedding_readout_type = canonical_embedding_readout_type(model_id)
+    eos_token = canonical_eos_token(hf_config, tokenizer)
+    if embedding_readout_type is EmbeddingReadoutType.EOS_TOKEN:
+        eos_token = tokenizer.convert_ids_to_tokens(
+            tokenizer("", add_special_tokens=True)["input_ids"][-1]
+        )
+    return ModelDescription(
+        d_model=text_config.hidden_size,
+        is_multimodal=is_multimodal,
+        dtype=dtype,
+        layer_descriptions=layers,
+        eos_token=eos_token,
+        eot_token=canonical_eot_token(tokenizer),
+        is_embedding_model=embedding_readout_type is not None,
+        embedding_readout_type=embedding_readout_type,
+    )
+
+
+def adapt_message_format(model_config: ModelConfig, messages: list[dict]):
+    """
+    Adapt the message.
+    Assumes the input is strongly typed e.g., {type: "text", text: ...}.
+    @AI: If this class needs tokenizer/similar objects, pass them in, do not recreate them here.
+    @AI: Keep the shape of this code without aiming for total completeness; just make sure it's correct.
+    """
+    if model_config.model_description.is_multimodal:
+        return messages
+    for msg in messages:
+        if "content" in msg:
+            if isinstance(msg["content"], str):
+                continue
+            if isinstance(msg["content"], list):
+                assert len(msg["content"]) == 1
+                if msg["content"][0]["type"] == "text":
+                    msg["content"] = msg["content"][0]["text"]
+                else:
+                    raise RuntimeError("Non-multimodal model only supports direct content, texts.")
+
+
+
+def readout_embedding(
+    last_hidden_state: torch.Tensor,
+    attention_mask: torch.Tensor,
+    readout_type: EmbeddingReadoutType,
+) -> torch.Tensor:
+    """Readout the embedding from the last hidden state of a model."""
+    print(f"Last hidden state shape: {last_hidden_state.shape}")
+    if readout_type in [EmbeddingReadoutType.EOS_TOKEN, EmbeddingReadoutType.EOT_TOKEN]:
+        # Left padded (or no padding) if right-most point is always active.
+        # So directly readout.
+        left_padded = bool(attention_mask[:, -1].all())
+        if left_padded:
+            pooled = last_hidden_state[:, -1]
+        else:
+            # Right-padded: select the last active index (equivalent to sum of 1s up to that point).
+            padding_end_indices = attention_mask.sum(dim=1) - 1
+            print(f"Padding end indices shape: {padding_end_indices.shape}")
+            batch_indices = torch.arange(
+                padding_end_indices.shape[0], device=last_hidden_state.device
+            )
+            pooled = last_hidden_state[batch_indices, padding_end_indices]
+    else:
+        # Avg: just average all active positions.
+        mask = attention_mask.unsqueeze(-1).to(last_hidden_state.dtype)
+        pooled = (last_hidden_state * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1)
+    return F.normalize(pooled, p=2, dim=1)
+
+
+def pretty_format_model_description(model_config: ModelConfig) -> str:
+    """Return a compact human-readable description of a loaded model."""
+
+    description = model_config.model_description
+    if description is None:
+        return f"{model_config.model_name}: not loaded"
+
+    counts = Counter(layer.layer_type.value for layer in description.layer_descriptions)
+    layer_summary = ", ".join(
+        f"{count} {layer_type}" for layer_type, count in sorted(counts.items())
+    )
+    lines = [
+        f"model_name: {model_config.model_name}",
+        f"model_id: {model_config.model_id}",
+        f"d_model: {description.d_model}",
+        f"dtype: {description.dtype}",
+        f"layers: {len(description.layer_descriptions)} ({layer_summary})",
+        f"multimodal: {description.is_multimodal}",
+        f"embedding_model: {description.is_embedding_model}",
+        f"eos_token: {description.eos_token}",
+        f"eot_token: {description.eot_token}",
+    ]
+    if description.embedding_readout_type is not None:
+        lines.append(f"embedding_readout: {description.embedding_readout_type.value}")
+    return "\n".join(lines)

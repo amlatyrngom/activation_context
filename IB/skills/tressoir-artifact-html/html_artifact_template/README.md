@@ -74,6 +74,16 @@ Markdown, Bash, Python, Rust, SQL, and Diff. For language-aware diffs use:
 
 Unknown languages remain readable without highlighting.
 
+For a multi-file change, present one clean linear file list. Each file is open by default,
+independently collapsible, and linked by its relative path to the VS Code target. Keep open seams
+between files, use a soft collapse-target hover/focus wash, weaken the hunk prelude, combine
+language and diff highlighting, and contain overflow within each diff.
+
+Use Low for an overview, Moderate for meaningful per-file hunks with explicit elisions, and
+Detailed / Exact for the complete available delta. Moderate is the default for plans and ordinary
+reviews. Interactive code suggestions default to Detailed / Exact non-cumulative slices: each
+coarse slice is a delta on top of the preceding slice even when Git remains uncommitted.
+
 ## Reader settings and browser fallback
 
 The root uses `font-size: var(--tressoir-base-font-size, 16px)`. In Tressoir, the

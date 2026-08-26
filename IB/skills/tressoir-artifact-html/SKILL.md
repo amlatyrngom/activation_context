@@ -102,6 +102,27 @@ Response text alone never resolves it. Preserve the `rows="2"` and
 Persistence is silent; do not add saved/restored status text. Do not use the decision indicator as
 a decorative status badge elsewhere.
 
+## Diff views and defaults
+
+Use the standard diff-view presentation for both `.tressoir.html` and `.tressoir.md`: one clean,
+linear list of files, open by default but independently collapsible, with each relative file path
+opening its target inside VS Code. Separate files with open seams rather than nested cards. Combine
+language syntax highlighting with addition/deletion highlighting. Keep the hunk prelude nearly
+seamless with the code, and use a soft full-row hover/focus wash to reveal the collapse target
+without interfering with the file link or selectable diff text. Contain horizontal overflow inside
+the individual diff.
+
+Use **Low** for an intent-and-risk overview, **Moderate** for meaningful per-file hunks with
+explicit elisions, and **Detailed / Exact** for the complete available delta with exact line
+mapping. Moderate is the default for plans and ordinary review; identify generated, binary,
+unavailable, or truncated content explicitly. Do not add a level switcher or canned narration when
+the artifact has one known purpose.
+
+INTERACTIVE code suggestions default to Detailed / Exact sequential slices. Slice 1 is relative to
+the accepted starting point; each later coarse slice contains only the new delta on top of the
+previous slice, regardless of whether Git is still uncommitted. Fold minor edits into a coherent
+slice and regenerate affected later slices if an earlier slice changes.
+
 ## Human-facing quality
 
 Even though the format is unconstrained:

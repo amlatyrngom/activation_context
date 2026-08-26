@@ -25,6 +25,17 @@ A dedicated Agent Container has read-only `/source`, disposable `/workspace`, an
 Inspect the project's `.devcontainer/`, Docker files, manifests, toolchain, root guidance, Git
 state, and IB before editing. Adapt working project configuration instead of replacing it.
 
+The installer-owned reference bases are:
+
+- `IB/skills/tressoir-isolation/templates/user.devcontainer.template.json`;
+- `IB/skills/tressoir-isolation/templates/agent.devcontainer.template.json`;
+- `IB/skills/tressoir-isolation/templates/agent-setup.template.sh`; and
+- `IB/skills/tressoir-isolation/templates/README.template.md`.
+
+Treat those files as read-only upstream references. Adapt the corresponding create-once working
+files under `IB/isolation/`; those belong to the project and setup never overwrites them, including
+under `--override`.
+
 Start from `IB/isolation/user.devcontainer.json` or `agent.devcontainer.json`. Prefer relative
 symlinks at `.devcontainer/user/devcontainer.json` and
 `.devcontainer/agent/devcontainer.json` so VS Code's recognized configuration stays synchronized
@@ -32,6 +43,13 @@ with IB. Edit the canonical IB file through that link. Copy only when the filesy
 cannot use symlinks, and then call out the manual synchronization boundary. Preserve any occupied
 Dev Container path rather than replacing it. Tailor the image, features, extensions, ports,
 environment, and project lifecycle commands to the project.
+
+After a Tressoir override refreshes the reference templates, compare each reference with its
+adapted counterpart and port only changes relevant to the current project. Preserve the adapted
+image, feature choices, mounts, ports, lifecycle commands, selected harnesses, extensions, and
+local comments unless the user asks to change them. Never replace the adapted tree wholesale and
+never edit the references to represent project-specific choices; doing either destroys the useful
+upstream-versus-local comparison.
 
 - **Pure Host:** add nothing unless the user requests container setup.
 - **Pure Dev Container:** keep the project on a read-write host bind. Volumes are appropriate for
