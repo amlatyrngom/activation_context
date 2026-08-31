@@ -1,54 +1,34 @@
-import threading
 import typing as t
 import torch
+from torch import nn
+import gc
+from copy import deepcopy
 
 from transformers import (
     AutoModel,
     AutoModelForCausalLM,
     AutoModelForMultimodalLM,
-    AutoProcessor,
-    AutoTokenizer,
-    PreTrainedModel,
-    PreTrainedTokenizerBase,
-    ProcessorMixin,
 )
+import vllm
 
 from .runtime_config import HarnessRuntimeConfig
 from .model_config import ModelConfig
 from .hf_utils import (
     model_description_and_tokenizer_from_hf,
-    adapt_message_format,
-    readout_embedding,
-    SOURCE_DEVICE,
 )
 
+from .loaded_model import (
+    LoadedModel,
+)
 
-
-class LoadedBaseModel:
-    """
-    All loaded base models.
-    """
-    def __init__(
-        self,
-        model_config: ModelConfig,
-        model: PreTrainedModel,
-        processor: ProcessorMixin|PreTrainedTokenizerBase,
-        tokenizer: PreTrainedTokenizerBase,
-    ):
-        self.model_config = model_config
-        self.model = model
-        self.processor = processor
-        self.tokenizer = tokenizer
 
 class HarnessRuntime:
     """
     Centralized object that stores all harness information.
     """
-    def __init__(self, harness_runtime_config: HarnessRuntimeConfig):
-        self.harness_lock = threading.Lock()
-        self.harness_runtime_config = harness_runtime_config
-        self._hf_models: dict[str, LoadedBaseModel] = dict() # Maps from id.
-        self.loaded_models: dict[str, LoadedBaseModel] = dict() # Maps from name.
+    def __init__(self, harness_config: HarnessRuntimeConfig):
+        self.harness_config = harness_config
+        self.loaded_models: dict[str, LoadedModel] = dict() # Maps from name.
         self._load_models()
         pass
 
@@ -56,15 +36,14 @@ class HarnessRuntime:
     def _load_models(self):
         """
         Load all the models.
-        Each base model is only loaded once.
         """
-        for model_config in self.harness_runtime_config.model_configs.values():
-            if model_config.model_id not in self._hf_models:
-                self._hf_models[model_config.model_id] = self._load_model(model_config)
-            self.loaded_models[model_config.model_name] = self._hf_models[model_config.model_name]
-            # for 
+        for model_config in self.harness_config.model_configs.values():
+            # NOTE: repeated ids result in different loaded models. This is intentional for now.
+            self.loaded_models[model_config.model_name] = self._load_model(model_config)
+        
 
-    def _load_model(self, model_config: ModelConfig) -> LoadedBaseModel:
+    def _load_model(self, model_config: ModelConfig) -> LoadedModel:
+        """Load a specific model."""
         model_config.model_description, tokenizer, processor = model_description_and_tokenizer_from_hf(
             model_id=model_config.model_id,
             dtype=model_config.dtype,
@@ -75,74 +54,11 @@ class HarnessRuntime:
             model_loader = AutoModelForMultimodalLM
         else:
             model_loader = AutoModelForCausalLM
-        model = model_loader.from_pretrained(model_config.model_id, dtype=model_config.dtype)
-        model.eval()
-        return LoadedBaseModel(
+        return LoadedModel(
+            harness=self,
             model_config=model_config,
-            model=model,
+            model=None, # Not loaded here by default.
+            model_loader=model_loader,
             processor=processor,
             tokenizer=tokenizer,
         )
-
-
-
-    def simple_chat(self, model_name: str, user_msg: str) -> str:
-        """Simple way to test the chat."""
-        loaded_model = self.loaded_models[model_name]
-        messages = [
-            {
-                "role": "user", "content": [{
-                    "type": "text", "text": user_msg,
-                }]
-            }
-        ]
-        adapt_message_format(loaded_model.model_config, messages)
-        
-        inputs = loaded_model.processor.apply_chat_template(
-            messages,
-            add_generation_prompt=True,
-            tokenize=True,
-            return_dict=True,
-            enable_thinking=False,
-            return_tensors="pt",
-        ).to(loaded_model.model.device)
-        print(f"Input IDs Shape: {inputs["input_ids"].shape}")
-        prompt_length = inputs["input_ids"].shape[-1]
-        with torch.inference_mode():
-            output_ids = loaded_model.model.generate(
-                **inputs,
-                max_new_tokens=64,
-                do_sample=False,
-            )
-        generated_ids = output_ids[0, prompt_length:]
-        print(f"Generated IDs shape: {generated_ids.shape}")
-        return loaded_model.processor.decode(
-            generated_ids,
-            skip_special_tokens=True,
-        )  
-
-
-    def simple_embed(self, model_name: str, text: str) -> torch.Tensor:
-        """Simply way to test embeddings"""
-        loaded_model = self.loaded_models[model_name]
-        assert loaded_model.model_config.model_description.is_embedding_model
-        inputs = loaded_model.tokenizer(
-            text,
-            truncation=True,
-            return_tensors="pt",
-        ).to(loaded_model.model.device)
-        with torch.inference_mode():
-            outputs = loaded_model.model(**inputs)
-            embedding = readout_embedding(
-                last_hidden_state=outputs.last_hidden_state,
-                attention_mask=inputs["attention_mask"],
-                readout_type=loaded_model.model_config.model_description.embedding_readout_type,
-            )[0]
-        return embedding.detach().to(device=SOURCE_DEVICE)
-
-
-        
-
-
-
-

@@ -8,7 +8,11 @@ dependencies = [
     "transformers",
     "pillow",
     "python-dotenv",
+    "vllm",
 ]
+
+[project.scripts]
+sky = "activation.cloud.sky:main"
 
 [dependency-groups]
 dev = [

@@ -43,7 +43,8 @@ def test_basic_model_loading():
         assert model_config.model_description is not None, "Model description should be populated."
         assert model_config.model_description.d_model == expected_d_model
         assert len(model_config.model_description.layer_descriptions) == expected_num_layers
-        response = harness.simple_chat(model_config.model_name, "Say: 'Hello, World'")
+        loaded_model = harness.loaded_models[model_config.model_name]
+        response = loaded_model.simple_chat(model_config.model_name, "Say: 'Hello, World'")
         assert 'hello' in response.lower()
         print(f"Generated Response: {response}")
 
@@ -78,8 +79,9 @@ def test_basic_embedding_models():
         elif expected_readout_type == EmbeddingReadoutType.EOT_TOKEN:
             assert description.eot_token == expected_readout_type
         # Live tests.
-        embedding1 = harness.simple_embed(model_id, text1)
-        embedding2 = harness.simple_embed(model_id, text2)
+        loaded_model = harnes.loaded_models[model_id]
+        embedding1 = loaded_model.simple_vector_embed(text1)
+        embedding2 = loaded_model.simple_vector_embed(text2)
         # Expected shape, normalization, and closeness.
         assert embedding1.shape == (expected_d_model,)
         assert embedding2.shape == (expected_d_model,)

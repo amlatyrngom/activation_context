@@ -26,6 +26,8 @@ from transformers import (
 
 TARGET_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SOURCE_DEVICE = "cpu"
+FREE_DEVICE = "disk"
+
 _FULL_ATTENTION_NAMES = frozenset({"attention", "full_attention", "global_attention"})
 _WINDOW_ATTENTION_NAMES = frozenset(
     {"local_attention", "sliding_attention", "window_attention"}
@@ -105,6 +107,7 @@ def model_description_and_tokenizer_from_hf(
     if is_multimodal:
         processor = AutoProcessor.from_pretrained(model_id)
         assert isinstance(processor, ProcessorMixin)
+        tokenizer = processor.tokenizer
     else:
         processor = AutoTokenizer.from_pretrained(model_id)
         tokenizer = processor
@@ -163,8 +166,6 @@ def adapt_message_format(model_config: ModelConfig, messages: list[dict]):
     """
     Adapt the message.
     Assumes the input is strongly typed e.g., {type: "text", text: ...}.
-    @AI: If this class needs tokenizer/similar objects, pass them in, do not recreate them here.
-    @AI: Keep the shape of this code without aiming for total completeness; just make sure it's correct.
     """
     if model_config.model_description.is_multimodal:
         return messages

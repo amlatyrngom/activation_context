@@ -56,3 +56,9 @@ gh auth status
 git clone https://github.com/amlatyrngom/activation_context.git
 ```
 
+
+# SkyPilot GPU nodes
+Make sure you populate `~/.aws/credentials` or a custom `AWS_PROFILE`.
+```bash
+uv run sky help
+```

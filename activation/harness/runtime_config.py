@@ -11,6 +11,10 @@ class HarnessRuntimeConfig:
     # Map from model_name --> model config.
     model_configs: dict[str, ModelConfig] = field(default_factory=dict)
 
+    # Model configs
+    max_lora_rank = 128
+    max_loras = 4
+
 
 # Load the right env vars
 load_dotenv()
