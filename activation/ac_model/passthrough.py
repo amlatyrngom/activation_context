@@ -1,6 +1,7 @@
 """
 A passthrough AC Model.
-Returns.
+An AC Model has two components:
+- A Lora
 """
 
 

@@ -1,0 +1,209 @@
+.answer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-3);
+  margin-block: var(--space-3);
+}
+
+.answer {
+  padding: var(--space-3);
+  border-left: 0.22rem solid var(--accent);
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+}
+
+.answer h3,
+.answer p {
+  margin: 0;
+}
+
+.answer p {
+  margin-top: var(--space-1);
+  color: var(--muted);
+}
+
+.verdict {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--positive) 52%, var(--line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--positive) 9%, transparent);
+}
+
+.verdict strong {
+  color: var(--positive);
+}
+
+.evidence-tag {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.08rem 0.42rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.evidence-tag.live {
+  border-color: color-mix(in srgb, var(--positive) 58%, var(--line));
+  color: var(--positive);
+}
+
+.evidence-tag.source {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  color: var(--accent);
+}
+
+.evidence-tag.limit {
+  border-color: color-mix(in srgb, var(--warning) 58%, var(--line));
+  color: var(--warning);
+}
+
+.table th:first-child,
+.table td:first-child {
+  min-width: 10rem;
+}
+
+.table td {
+  vertical-align: top;
+}
+
+.status-good {
+  color: var(--positive);
+  font-weight: 750;
+}
+
+.status-caution {
+  color: var(--warning);
+  font-weight: 750;
+}
+
+.pipeline {
+  width: 100%;
+  min-width: 46rem;
+  height: auto;
+  margin-block: var(--space-3);
+}
+
+.pipeline .box {
+  fill: color-mix(in srgb, var(--surface) 78%, transparent);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.pipeline .box-accent {
+  fill: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  stroke: var(--accent);
+}
+
+.pipeline .box-positive {
+  fill: color-mix(in srgb, var(--positive) 9%, var(--surface));
+  stroke: var(--positive);
+}
+
+.pipeline .arrow {
+  stroke: var(--muted);
+  stroke-width: 1.6;
+  fill: none;
+}
+
+.pipeline text {
+  fill: var(--ink);
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+.pipeline .small {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.alignment {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.alignment-row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.alignment-label {
+  padding-top: 0.28rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.token-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.token-span {
+  padding: 0.22rem 0.48rem;
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  font: 0.76rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.token-span.control {
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+  color: var(--accent);
+}
+
+.token-span.embed {
+  border-color: color-mix(in srgb, var(--positive) 62%, var(--line));
+  background: color-mix(in srgb, var(--positive) 10%, transparent);
+  color: var(--positive);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.metric {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.metric strong,
+.metric small {
+  display: block;
+}
+
+.metric strong {
+  font-size: 1.2rem;
+}
+
+.metric small {
+  color: var(--muted);
+}
+
+.callout {
+  margin-block: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 0.2rem solid var(--warning);
+  color: var(--muted);
+}
+
+.source-list li {
+  margin-block: var(--space-1);
+}
+
+@media (max-width: 38rem) {
+  .alignment-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

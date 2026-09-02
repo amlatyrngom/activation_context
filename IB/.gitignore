@@ -4,6 +4,13 @@ TMP/
 # Local caches generated from declared remote resources
 vendor/
 
+# Per-artifact copies of the version-controlled linear runtime template
+# (canonical originals stay tracked under skills/)
+tressoir-linear.css
+tressoir-linear.js
+!skills/**/tressoir-linear.css
+!skills/**/tressoir-linear.js
+
 # Local secrets and operating-system metadata
 .env
 .DS_Store

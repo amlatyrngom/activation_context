@@ -9,6 +9,8 @@ dependencies = [
     "pillow",
     "python-dotenv",
     "vllm",
+    "datasets",
+    "faiss-cpu",
 ]
 
 [project.scripts]

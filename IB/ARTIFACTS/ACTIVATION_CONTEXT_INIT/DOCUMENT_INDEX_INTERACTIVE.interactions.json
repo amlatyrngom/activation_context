@@ -1,0 +1,3 @@
+{
+  "DOCUMENT_INDEX_INTERACTIVE-free_form_feedback": "Two new additions for next round:\n- Use max size as a forced chunking size, not truncation. Keep same overlap as regular chunks, just larger sizes.\n- Use faiss. Still no caching.\n\nOther changes:\n- I've removed the gpu tag.\n\nThe test is passing, but still also review my previous changes for incorrectness."
+}

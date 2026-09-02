@@ -8,33 +8,57 @@
 - Fresh-build isolation, tool versions, tmux detach/reattach and result retention, mouse/history settings, and VS Code terminal keybindings were validated.
 - Full-access agent CLI behavior was confirmed for the active initialization workflow without adding a persistent global full-access default.
 
-## Active work — Activation Context harness and rollout engine
+## Active work — Document index and public dataset loaders
 
 ### Review surfaces
 
-- Current source-shaped handoff: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/activation/harness/{loaded_model.py,runtime.py}`.
-- Current interactive review: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/INTERACTIVE.tressoir.md`.
+- Current interactive review: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/DOCUMENT_INDEX_ROUND_4_INTERACTIVE.tressoir.md`.
+- Staged source-shaped handoff: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/activation/{dataset,tests,harness}` (dataset module, five loaders, public dataset test, runtime config).
+- Earlier rounds (applied): `DOCUMENT_INDEX_INTERACTIVE`, `DOCUMENT_INDEX_ROUND_2_INTERACTIVE`, `DOCUMENT_INDEX_ROUND_3_INTERACTIVE` `.tressoir.md`.
+
+### Status
+
+- Rounds 1–4 are fully applied in user source, including the user's progress-print UX pass and the three review fixes from the final chat round (print typo, latency-stat consistency, size formatting). The staged handoff mirrors the applied source.
+- Durable policies were promoted to `IB/CANON/ROOT_CANON.md` ("Dataset loading and indexing decisions"); the SciFact-distractor question remains open in the round-4 doc.
+- The user is prototyping the next major steps and will return with direction. Likely next rounds: retrieval-quality metrics (recall@k, where `excluded_doc_ids` does real work) and GPU runs.
+
+### Round 4 — unskewed loaders, truncator, exclusions
+
+- Skew fixes agreed in chat: examples are first-class (`take_to_budget` with the user's `filter_fn`; `cost_fn` documented as the budget tracker for fan-out cases), `max_doc_chars` removed everywhere, and the user's `safe_truncate_embedding_chunk` head+tail truncator wired through `doc_embedding_input_limit_chars` on both build and query paths (512 on CPU test, None on GPU).
+- `LabeledRetrievalQAExample.excluded_doc_ids` (user renamed from chunk-level) is populated by BRIGHT from native `excluded_ids` and respected in `query_many_frozen` via per-query sets with a flat +10 over-fetch.
+- BRIGHT: `max_examples: int|None` (None = all labeled examples), corpus = gold passages only; distractor sampling removed at user request. SciFact still carries seeded distractors — open decision in the round-4 doc.
+- Review of the user's partial application found and fixed: truncate calls missing the limit argument (build crash), exclusion filtering testing the wrong variable (never filtered), `_build_excluded_sets` None/empty handling and returning raw lists, and the unused `chunk_ids` cache.
+- Validation: basic test passed post-fixes; BRIGHT loads at n=20 and n=None; full CPU public run of the final code reported in chat.
+
+### Round 3 — implemented and validated
+
+- Reviewed and corrected the applied round-2 source: atomic chunk slice width, restored empty-corpus/empty-query guards, MS-MARCO dedup crash, duplicate `labeled_retrieval_examples` field, `TARGET_DEVICE` GPU check, two import mistakes, and `DatasetStats.to_json`.
+- Loaders for BRIGHT (per-domain), NQ (sentence-transformers pairs), MS-MARCO (user's, fixed), SciFact (BeIR + qrels), SciQ — all follow the MS-MARCO shape; documents load `atomic=True`; examples are dropped whenever a gold document is absent so labels always resolve.
+- `max_doc_chars` load filter in every loader (test uses 8192) plus CPU example budget 20 / GPU 1000; chosen after a 100-example uncapped run showed long-sequence batches dominating CPU time.
+- `query_many_frozen` embeds in length-sorted batches and restores order; `_build_index` restores the embedding model's starting placement; `DatasetStats` fills at load, build, and query time.
+- Validation: `test_basic_dataset_loading` passed (37s); `test_public_dataset_loading` passed on CPU (29m24s) with sensible printed retrieval (golds rank first nearly everywhere) and populated stats.
+- `IB/.gitignore` now ignores per-artifact `tressoir-linear.css/js` copies (skill template copies stay tracked); superseded harness handoff snapshots were removed from the artifact folder.
+
+### Open decisions (widgets in the round-3 doc)
+
+- CPU budget: keep 8192 chars/20 examples (~30 min) or lower the char cap to ~2000–3000 (~5–8 min).
+- Embedding-model residency across `build_document_indexes` (currently restore-per-index, which reloads weights each build).
+
+### Next meaningful step
+
+User reviews `DOCUMENT_INDEX_ROUND_3_INTERACTIVE.tressoir.md`, resolves the two decisions, and applies the staged `activation/dataset` + `activation/tests` handoff.
+
+## Completed work — Activation Context harness engine
+
+- The two-file harness handoff (`loaded_model.py`, `runtime.py`) was applied and has since evolved in user source (e.g. `simple_vector_embed_many` with padding); the staged copies were removed as superseded.
+- Historical review: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/INTERACTIVE.tressoir.md`.
 - Deferred LoRA explainer: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/LORA_EXPLAINER/LORA_EXPLAINER.tressoir.html`.
 
-### Accepted direction
+### Accepted architecture (still current)
 
-- The latest user source remains the baseline: the engine/Hugging Face placement logic is merged into one `LoadedModel`, with harness-level LoRA limits and local sampling defaults preserved.
-- Concurrency is deliberately undecided; no locking behavior is proposed.
-- Harness startup loads metadata/tokenizer/processor while Transformers weights remain at the disk sentinel.
-- Each `LoadedModel` owns the optional full Transformers model, independent primary embedding-module copy, and optional vLLM engine with separate placement state.
-- `HarnessRuntime` remains the name-based registry and exposes thin `simple_chat` / `simple_embed` delegates; generation and embedding behavior stay in `LoadedModel`.
-- Freeing vLLM invokes the pinned internal engine-core shutdown before reference release, GC, and CUDA allocator cleanup. There is no intermediate sleep state; process isolation remains the strongest hard-cleanup boundary.
-- LoRA routing remains unsupported.
-
-### Current narrow handoff and validation
-
-- `loaded_model.py` supplies `model_id`/`dtype` when reloading, makes embedding-copy freeing stop instead of falling through into recreation, checks the embedding device for CUDA cleanup, restores a temporarily loaded full model in `finally`, records the engine free state, and accepts the test's unused `lora_name=None` keyword.
-- `runtime.py` adds only the two thin name-based delegates expected by the unchanged basic harness tests.
-- No tests, concurrency behavior, LoRA routing, sampling settings, or source formatting were changed.
-- Local preflight: both staged files parse; all three test functions collect; a fake-model lifecycle fixture passes.
-- L40S release run: `activation/tests/test_basic_engine.py` plus `activation/tests/test_basic_harness.py` completed with `3 passed in 350.92s`.
-- The disposable `ac-loaded-model-tests` cluster was torn down; final SkyPilot state reported no clusters, jobs, or services.
-- Next step: apply the exact two-file handoff shown in `INTERACTIVE.tressoir.md`.
+- One `LoadedModel` owns the optional full Transformers model, independent primary embedding-module copy, and optional vLLM engine with separate placement state; harness startup loads metadata/tokenizer/processor while weights stay at the disk sentinel.
+- `HarnessRuntime` remains the name-based registry with thin `simple_*` delegates; behavior lives in `LoadedModel`. Concurrency deliberately undecided; LoRA routing unsupported; vLLM freeing uses the pinned engine-core shutdown, with process isolation as the strongest cleanup boundary.
+- Validation history: local preflight plus L40S release run (`3 passed in 350.92s`); the disposable cluster was torn down with clean final SkyPilot state.
 
 ## Completed work — SkyPilot GPU workflow
 

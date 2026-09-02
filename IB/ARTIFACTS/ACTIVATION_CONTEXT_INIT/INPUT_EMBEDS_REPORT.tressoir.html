@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cumulative live report on typed chat, target input embeddings, side-model activations, and family-specific vLLM contracts">
+  <title>Typed chat, target embeddings, and side-model activations</title>
+  <link rel="stylesheet" href="./vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="./vendor/prism/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="./vendor/codemirror/codemirror.css">
+  <link rel="stylesheet" href="./tressoir-linear.css">
+  <link rel="stylesheet" href="./input-embeds-report.css">
+</head>
+<body>
+  <main class="tressoir-document">
+    <header class="document-header">
+      <p class="eyebrow">Research report · complete</p>
+      <h1>Typed chat, target embeddings, and side-model activations</h1>
+      <p class="lede">For the pinned stack, simple typed text can go straight to <code>LLM.chat()</code>. vLLM 0.28 can also splice <code>d_model</code>-shaped rows into a chat prompt—but direct side-model activations are only meaningful after they have been aligned to the target model’s learned input space and any architecture-specific input path.</p>
+      <ul class="meta" aria-label="Report metadata">
+        <li>Completed 30 Aug 2026</li>
+        <li>vLLM 0.28.0 · Transformers 5.15.1</li>
+        <li>Live anchors: Qwen 3.5 0.8B, Gemma 3 1B, Gemma 4 E2B</li>
+        <li>NVIDIA L40S · all experiment clusters torn down</li>
+      </ul>
+    </header>
+
+    <section class="section" aria-labelledby="answers">
+      <h2 id="answers">Direct answers</h2>
+      <div class="verdict">
+        <strong>Typed text is safe; arbitrary side activations are not automatically target-space inputs.</strong>
+        vLLM normalized string and one-part typed-text messages correctly for every tested representative. It also accepted same-shaped side rows, but a controlled 1024-wide side/target pair generated different output because the learned coordinate spaces were different.
+      </div>
+
+      <div class="answer-grid">
+        <article class="answer">
+          <h3>Will vLLM throw?</h3>
+          <p>Not for the tested one-part <code>{"type":"text"}</code> shape. Qwen 3.5, Gemma 3, and Gemma 4 were live-equal; Qwen 3 and Nemotron were normalized correctly in the metadata/template probe.</p>
+        </article>
+        <article class="answer">
+          <h3>Can one user span be embeddings?</h3>
+          <p>Yes. Enable <code>prompt_embeds</code> and send a <code>prompt_embeds</code> content part. Exact target rows reproduced ordinary generation for both Qwen 3.5 and Gemma 3.</p>
+        </article>
+        <article class="answer">
+          <h3>Are side activations always safe?</h3>
+          <p>No. This conclusion already assumes the rows have the target <code>d_model</code>. The remaining contract is learned basis, scale, distribution, and—for Gemma 4 E2B—a second token-conditioned per-layer embedding path.</p>
+        </article>
+        <article class="answer">
+          <h3>Where does the work happen?</h3>
+          <p>Tokenization is CPU work. Ordinary token embedding lookup occurs on the model’s GPU. External prompt embeddings are validated and serialized on CPU, then transferred to the worker GPU for prefill.</p>
+        </article>
+      </div>
+
+      <p><span class="evidence-tag live">Live</span> Qwen 3.5 and Gemma 3 direct string, typed text, full-prompt target rows, and hybrid target user rows generated the same greedy <code>Hello, World!</code> token sequence. The real project Gemma 3 engine smoke also returned <code>Hello, World!</code>.</p>
+    </section>
+
+    <section class="section" aria-labelledby="message-matrix">
+      <h2 id="message-matrix">Which models expect strings?</h2>
+      <p>The useful question is not only what the raw Transformers template expects. It is what representation reaches that template after vLLM’s parser. vLLM inspects the Jinja abstract syntax tree: templates that iterate content parts are classified <code>openai</code>; the others are classified <code>string</code>. It then wraps or collapses text parts accordingly. <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/renderers/hf.py">Pinned vLLM renderer source</a>.</p>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Family / representative</th>
+            <th>Raw template behavior</th>
+            <th>vLLM 0.28 <code>auto</code></th>
+            <th>Verdict for typed text</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://huggingface.co/Qwen/Qwen3.5-0.8B">Qwen 3.5 · 0.8B</a></td>
+            <td>Multimodal processor; string and typed text rendered identical tokens locally.</td>
+            <td><code>openai</code>; string is wrapped as a text part.</td>
+            <td><span class="status-good">Pass through</span>. Live prompt IDs and output IDs were identical.</td>
+          </tr>
+          <tr>
+            <td><a href="https://huggingface.co/Qwen/Qwen3-1.7B">Qwen 3 · 1.7B</a></td>
+            <td>String template. Direct Transformers typed user content was silently omitted; typed system content raised <code>TypeError</code>.</td>
+            <td><code>string</code>; typed parts collapsed to the exact direct strings.</td>
+            <td><span class="status-good">Pass through to vLLM</span>. Do not bypass its normalization.</td>
+          </tr>
+          <tr>
+            <td><a href="https://huggingface.co/google/gemma-3-1b-it">Gemma 3 · 1B IT</a></td>
+            <td>Official text template; direct string and typed text rendered the same 22 prompt positions in the live authenticated run.</td>
+            <td><code>openai</code>; both message shapes produced identical prompt and output token IDs.</td>
+            <td><span class="status-good">Pass through</span>. The project engine also completed a live chat call.</td>
+          </tr>
+          <tr>
+            <td><a href="https://huggingface.co/google/gemma-4-E2B-it">Gemma 4 · E2B IT</a></td>
+            <td>Multimodal processor; both shapes accepted. Direct system rendering differed by one space/token.</td>
+            <td><code>openai</code>; both inputs normalized to the same typed conversation.</td>
+            <td><span class="status-good">Pass through</span>. vLLM supplies the canonical part form.</td>
+          </tr>
+          <tr>
+            <td><a href="https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16">Nemotron 3 Nano · 4B</a></td>
+            <td>String template. Direct typed user content rendered a Python list representation; typed system content raised <code>TypeError</code>.</td>
+            <td><code>string</code>; typed parts collapsed to the exact direct strings.</td>
+            <td><span class="status-good">Pass through to vLLM</span>. Raw template use is unsafe.</td>
+          </tr>
+          <tr>
+            <td>Qwen 3 Embedding models</td>
+            <td>Pooling/embedding models, not chat-generation templates.</td>
+            <td>Not a chat target.</td>
+            <td>Do not substitute their pooled vectors for causal-LM token rows.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout"><span class="evidence-tag limit">Boundary</span> “Accepted by Jinja” is not the same as “correct.” Qwen 3 and Nemotron demonstrated silent corruption for a user-only typed message before they demonstrated an exception. The safe boundary is vLLM’s chat renderer, not raw <code>processor.apply_chat_template()</code> with an arbitrary shape.</div>
+    </section>
+
+    <section class="section" aria-labelledby="pipeline">
+      <h2 id="pipeline">How the hybrid path works</h2>
+      <p><span class="evidence-tag source">Pinned source</span> vLLM 0.28 defines an <code>EmbedsPrompt</code> for full prompts and a native <code>prompt_embeds</code> chat content part for interleaved spans. The latter is parsed into a reserved sentinel, expanded to one placeholder position per embedding row, and accompanied by a per-position mask. <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/inputs/llm.py">Prompt types</a>, <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/entrypoints/chat_utils.py">chat parser</a>, <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/renderers/hf.py">hybrid renderer</a>.</p>
+
+      <svg class="pipeline" viewBox="0 0 900 210" role="img" aria-labelledby="pipeline-title pipeline-description">
+        <title id="pipeline-title">Hybrid chat prompt pipeline</title>
+        <desc id="pipeline-description">Typed chat messages are normalized for the template. Text parts are tokenized and prompt embedding parts become sentinels. The renderer aligns token IDs and embedding rows before GPU prefill and generation.</desc>
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <rect class="box" x="10" y="55" width="145" height="88" rx="8"></rect>
+        <text x="82" y="78" text-anchor="middle">Messages</text>
+        <text class="small" x="82" y="99" text-anchor="middle">text content</text>
+        <text class="small" x="82" y="116" text-anchor="middle">+ prompt_embeds part</text>
+
+        <path class="arrow" d="M155 99 H195" marker-end="url(#arrowhead)"></path>
+        <rect class="box-accent" x="200" y="55" width="150" height="88" rx="8"></rect>
+        <text x="275" y="78" text-anchor="middle">vLLM normalization</text>
+        <text class="small" x="275" y="99" text-anchor="middle">openai or string</text>
+        <text class="small" x="275" y="116" text-anchor="middle">template-owned controls</text>
+
+        <path class="arrow" d="M350 99 H390" marker-end="url(#arrowhead)"></path>
+        <rect class="box" x="395" y="25" width="160" height="66" rx="8"></rect>
+        <text x="475" y="49" text-anchor="middle">Ordinary text</text>
+        <text class="small" x="475" y="69" text-anchor="middle">token IDs → GPU lookup</text>
+        <rect class="box-positive" x="395" y="111" width="160" height="66" rx="8"></rect>
+        <text x="475" y="135" text-anchor="middle">Embedded span</text>
+        <text class="small" x="475" y="155" text-anchor="middle">sentinel → N supplied rows</text>
+
+        <path class="arrow" d="M555 58 C605 58, 600 88, 640 96" marker-end="url(#arrowhead)"></path>
+        <path class="arrow" d="M555 144 C605 144, 600 114, 640 106" marker-end="url(#arrowhead)"></path>
+        <rect class="box-accent" x="645" y="55" width="120" height="88" rx="8"></rect>
+        <text x="705" y="80" text-anchor="middle">Aligned sequence</text>
+        <text class="small" x="705" y="101" text-anchor="middle">token IDs + rows</text>
+        <text class="small" x="705" y="118" text-anchor="middle">position mask</text>
+
+        <path class="arrow" d="M765 99 H805" marker-end="url(#arrowhead)"></path>
+        <rect class="box-positive" x="810" y="55" width="80" height="88" rx="8"></rect>
+        <text x="850" y="84" text-anchor="middle">GPU</text>
+        <text class="small" x="850" y="105" text-anchor="middle">prefill</text>
+        <text class="small" x="850" y="122" text-anchor="middle">generate</text>
+      </svg>
+
+      <p>The “equivalent text” is therefore only operational:</p>
+      <ul>
+        <li><code>&lt;prompt_embeds&gt;</code> marks the splice point during template rendering. Users cannot inject that reserved literal as normal text when the feature is enabled.</li>
+        <li>The renderer expands one sentinel into <em>N</em> placeholder token IDs, where <em>N</em> is the tensor’s first dimension.</li>
+        <li><code>prompt_is_token_ids</code> selects a normal embedding lookup for ordinary positions and the supplied row for embedded positions.</li>
+        <li>Full <code>EmbedsPrompt</code> inputs may also carry meaningful <code>prompt_token_ids</code>. That matters for an architecture such as Gemma 4 E2B, whose forward path derives additional per-layer inputs from token identity.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="worked-example">
+      <h2 id="worked-example">The exact “Hello, World!” experiment</h2>
+      <p>The chat template produced 29 prompt positions. The seven user-content tokens were:</p>
+      <pre class="code-block"><code class="language-json">[44240, 25, 359, 9419, 11, 4196, 30351]</code></pre>
+      <p>The target Qwen 3.5 input embedding layer converted them to a <code>[7, 1024]</code> <code>bfloat16</code> tensor. vLLM kept all 22 surrounding positions as ordinary template/token positions and replaced only positions 13–19.</p>
+
+      <div class="alignment" aria-label="Prompt position alignment">
+        <div class="alignment-row">
+          <div class="alignment-label">Text path</div>
+          <div class="token-track">
+            <span class="token-span control">system + controls · 0–9</span>
+            <span class="token-span control">user header · 10–12</span>
+            <span class="token-span">7 content token IDs · 13–19</span>
+            <span class="token-span control">turn end · 20–21</span>
+            <span class="token-span control">assistant prefix · 22–28</span>
+          </div>
+        </div>
+        <div class="alignment-row">
+          <div class="alignment-label">Hybrid path</div>
+          <div class="token-track">
+            <span class="token-span control">system + controls · 0–9</span>
+            <span class="token-span control">user header · 10–12</span>
+            <span class="token-span embed">7 supplied rows · 13–19</span>
+            <span class="token-span control">turn end · 20–21</span>
+            <span class="token-span control">assistant prefix · 22–28</span>
+          </div>
+        </div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr><th>Input path</th><th>Prompt positions</th><th>Greedy output</th><th>Generated IDs equal?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Direct string chat</td><td>29 real token IDs</td><td><code>Hello, World!</code></td><td>Baseline</td></tr>
+          <tr><td>Typed-text chat</td><td>Same 29 IDs</td><td><code>Hello, World!</code></td><td><span class="status-good">Yes</span></td></tr>
+          <tr><td>Full prompt embeddings</td><td>29 supplied rows; output bookkeeping reported zero IDs</td><td><code>Hello, World!</code></td><td><span class="status-good">Yes</span></td></tr>
+          <tr><td>Hybrid user span</td><td>22 real IDs + 7 placeholder/masked rows</td><td><code>Hello, World!</code></td><td><span class="status-good">Yes</span></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Minimal hybrid call shape</h3>
+      <pre class="code-block"><code class="language-python">import base64
+import io
+import torch
+from vllm import LLM, SamplingParams
+
+def encode_rows(rows: torch.Tensor) -> str:
+    buffer = io.BytesIO()
+    torch.save(rows.detach().cpu(), buffer)
+    return base64.b64encode(buffer.getvalue()).decode("ascii")
+
+# Use the target causal model's own input embedding layer.
+ids = tokenizer(
+    "Say: 'Hello, World!'",
+    add_special_tokens=False,
+    return_tensors="pt",
+).input_ids.to(embedding_layer.weight.device)
+with torch.inference_mode():
+    rows = embedding_layer(ids).squeeze(0).to(torch.bfloat16)
+
+llm = LLM(
+    model="Qwen/Qwen3.5-0.8B",
+    enable_prompt_embeds=True,
+)
+messages = [
+    {"role": "system", "content": "Answer exactly as asked."},
+    {
+        "role": "user",
+        "content": [
+            {"type": "prompt_embeds", "data": encode_rows(rows)},
+        ],
+    },
+]
+result = llm.chat(
+    messages,
+    SamplingParams(temperature=0, max_tokens=32),
+)</code></pre>
+
+      <div class="callout"><strong>Special-token rule:</strong> for a hybrid span, tokenize only the content with <code>add_special_tokens=False</code>; let <code>LLM.chat()</code> own system/user/assistant controls. For a full-prompt embedding tensor, prefer <code>apply_chat_template(tokenize=True, add_generation_prompt=True)</code>. If you render text first and tokenize later, disable new special-token insertion. <a href="https://huggingface.co/docs/transformers/chat_templating">Transformers chat-template guidance</a>.</div>
+    </section>
+
+    <section class="section" aria-labelledby="gemma-helper">
+      <h2 id="gemma-helper">Gemma 3 and an independently owned embedding module</h2>
+      <p>The authenticated Gemma 3 1B run closed the earlier gate. String and typed content produced identical 22-position prompts and identical greedy output IDs. Exact target rows reproduced ordinary generation for both the full prompt and the seven-row user span.</p>
+
+      <div class="metric-grid" aria-label="Gemma 3 live embedding results">
+        <div class="metric"><strong>262,144 × 1,152</strong><small>primary input table</small></div>
+        <div class="metric"><strong>0.56 GiB</strong><small>BF16 residency</small></div>
+        <div class="metric"><strong>×34</strong><small>model-defined input scaling</small></div>
+        <div class="metric"><strong>0.0</strong><small>max row delta: copied module vs vLLM</small></div>
+      </div>
+
+      <p>Gemma 3 does not feed the raw table lookup into the transformer: its <code>Gemma3TextScaledWordEmbedding</code> applies the model's input scale. Copying <code>get_input_embeddings()</code> preserves that behavior; copying only the weight and performing a raw lookup does not. In the same-shape negative control, unscaled rows were accepted by vLLM but changed the generated sequence.</p>
+
+      <pre class="code-block"><code class="language-python">from copy import deepcopy
+
+def copy_input_embedding_layer(model, device=SOURCE_DEVICE):
+    # Copy the module so model-defined lookup behavior is preserved and the
+    # result does not keep tied storage from the full model alive.
+    embedding_layer = deepcopy(model.get_input_embeddings())
+    embedding_layer.requires_grad_(False)
+    return embedding_layer.eval().to(device)
+
+def extract_input_embedding_layer(self, device=SOURCE_DEVICE):
+    starting_device = self.current_device
+    if starting_device == FREE_DEVICE:
+        self.to_device(SOURCE_DEVICE)
+    try:
+        return copy_input_embedding_layer(self.model, device)
+    finally:
+        if starting_device == FREE_DEVICE:
+            self.to_device(FREE_DEVICE)</code></pre>
+
+      <p><span class="evidence-tag live">Live</span> The copied module was frozen on CPU, produced rows exactly equal to vLLM's scaled rows, and remained usable after the full Transformers model returned to the free sentinel. A model that begins already loaded is left on its starting device. The helper intentionally does not choose a permanent CPU/GPU pinning policy.</p>
+    </section>
+
+    <section class="section" aria-labelledby="cost">
+      <h2 id="cost">Compute and placement</h2>
+      <p>Embedding lookup is a row gather, not another transformer forward pass. For ordinary text, vLLM already performs this lookup inside the GPU model. Converting text to embeddings outside vLLM adds serialization and transfer without changing the model’s computation, so it is worthwhile only when the rows are already modified or produced by another component.</p>
+
+      <div class="metric-grid" aria-label="Measured short-span metrics">
+        <div class="metric"><strong>0.034 ms</strong><small>CPU tokenization · 7-token text</small></div>
+        <div class="metric"><strong>0.012 ms</strong><small>resident GPU embedding lookup · 7 rows</small></div>
+        <div class="metric"><strong>0.007 ms</strong><small>pinned host → GPU · 7 × 1024 BF16</small></div>
+        <div class="metric"><strong>14.0 KiB</strong><small>external payload · 7 × 1024 BF16</small></div>
+        <div class="metric"><strong>1.53 ms</strong><small>diagnostic worker round trip · 36 rows total</small></div>
+        <div class="metric"><strong>≈0.17 s</strong><small>full or hybrid request · 32-token cap</small></div>
+      </div>
+
+      <table class="table">
+        <thead><tr><th>Rows</th><th>BF16 payload</th><th>GPU lookup</th><th>Pinned host → GPU</th></tr></thead>
+        <tbody>
+          <tr><td>7</td><td>14,336 bytes</td><td>0.0116 ms</td><td>0.0065 ms</td></tr>
+          <tr><td>32</td><td>65,536 bytes</td><td>0.0176 ms</td><td>0.0066 ms</td></tr>
+          <tr><td>512</td><td>1,048,576 bytes</td><td>0.0186 ms</td><td>0.0798 ms</td></tr>
+        </tbody>
+      </table>
+      <p><span class="evidence-tag live">Measured</span> These are bounded microbenchmarks on one L40S, one Qwen 3.5 0.8B process, eager mode, after warmup. They describe mechanism and scale, not production throughput. The final cached engine initialization took 46.96 seconds; it is excluded from request latency.</p>
+
+      <h3>How large is the primary embedding module?</h3>
+      <p>The percentage falls as the transformer grows, but the absolute table does not disappear. Counts below come from official config fields and exact safetensors checkpoint parameter totals at the revisions recorded in the adjacent JSON. Tied input/output weights are counted once.</p>
+      <table class="table">
+        <thead><tr><th>Model</th><th>Primary table</th><th>BF16</th><th>Checkpoint parameters</th></tr></thead>
+        <tbody>
+          <tr><td>Qwen 3.5 0.8B</td><td>248,320 × 1,024</td><td>0.47 GiB</td><td>29.11%</td></tr>
+          <tr><td>Qwen 3 1.7B</td><td>151,936 × 2,048</td><td>0.58 GiB</td><td>15.32%</td></tr>
+          <tr><td>Gemma 3 1B</td><td>262,144 × 1,152</td><td>0.56 GiB</td><td>30.20%</td></tr>
+          <tr><td><strong>Qwen 3 8B</strong></td><td>151,936 × 4,096</td><td><strong>1.16 GiB</strong></td><td><strong>7.60%</strong></td></tr>
+          <tr><td><strong>Qwen 3 14B</strong></td><td>151,936 × 5,120</td><td><strong>1.45 GiB</strong></td><td><strong>5.27%</strong></td></tr>
+          <tr><td><strong>Qwen 3 32B</strong></td><td>151,936 × 5,120</td><td><strong>1.45 GiB</strong></td><td><strong>2.37%</strong></td></tr>
+          <tr><td><strong>Qwen 3.5 9B</strong></td><td>248,320 × 4,096</td><td><strong>1.89 GiB</strong></td><td><strong>10.54%</strong></td></tr>
+          <tr><td><strong>Qwen 3.5 27B</strong></td><td>248,320 × 5,120</td><td><strong>2.37 GiB</strong></td><td><strong>4.58%</strong></td></tr>
+          <tr><td><strong>Gemma 4 12B</strong></td><td>262,144 × 3,840</td><td><strong>1.88 GiB</strong></td><td><strong>8.42%</strong></td></tr>
+          <tr><td><strong>Gemma 4 26B-A4B</strong></td><td>262,144 × 2,816</td><td><strong>1.38 GiB</strong></td><td><strong>2.86%</strong></td></tr>
+          <tr><td><strong>Gemma 4 31B</strong></td><td>262,144 × 5,376</td><td><strong>2.62 GiB</strong></td><td><strong>4.51%</strong></td></tr>
+          <tr><td>Gemma 4 E2B main</td><td>262,144 × 1,536</td><td>0.75 GiB</td><td>7.86%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout"><strong>Gemma 4 E2B exception:</strong> its primary table is only part of the token-input state. The checkpoint also contains a 35-layer, 256-wide per-layer embedding table: 2.35 billion parameters, or 4.38 GiB in BF16. Main plus per-layer token embeddings account for 53.71% of that checkpoint. The audited Gemma 4 12B, 26B-A4B, and 31B configs do not declare this PLE table.</div>
+
+      <p><strong>Pinning conclusion.</strong> For the requested 8B–32B fixtures, the main table is 1.16–2.62 GiB and 2.37–10.54% of the checkpoint. Keeping it resident is reasonable on a 48–80 GiB GPU when it is a hot-path component and that headroom is intentional. On a 24 GiB deployment—or whenever KV cache/model placement is tight—CPU residency or on-demand placement is a real tradeoff. Do not infer the decision from percentage alone.</p>
+
+      <h3>CPU versus GPU choices</h3>
+      <ul>
+        <li><strong>Normal text:</strong> CPU tokenization, then vLLM’s resident GPU embedding layer. This is the cheapest path.</li>
+        <li><strong>External adapter rows:</strong> compute wherever the adapter lives, but expect vLLM 0.28 to move/keep the incoming tensor on CPU for process serialization and then transfer it to the GPU worker.</li>
+        <li><strong>Text converted outside vLLM:</strong> a separate Transformers model duplicates weights; a CPU embedding table avoids a second GPU model but still consumes substantial host RAM. Neither is needed when the text could remain token IDs.</li>
+        <li><strong>Resident extraction:</strong> the experiment used <code>LLM.apply_model()</code> only to prove exact equivalence without loading duplicate weights. vLLM itself documents that API as control-plane oriented, so it is not the recommended production data path.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="contract">
+      <h2 id="contract">Final side-activation verdict</h2>
+      <div class="verdict"><strong>Direct side-model activations are not always safe, even when they already have the target <code>d_model</code>.</strong> vLLM is a tensor carrier, not a learned-representation validator. A side model must be trained or projected into the target's actual input space, then validated against that target family and architecture version.</div>
+      <table class="table">
+        <thead><tr><th>Input</th><th>Observed result</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Qwen 3.5 exact target rows<br><code>[7, 1024]</code></td><td>Accepted; exact output match</td><td>Positive control: rows occupy the target input space.</td></tr>
+          <tr><td>Qwen 3 Embedding side activations<br><code>[7, 1024]</code></td><td>Accepted; generated a different response</td><td>Same positions and same <code>d_model</code>, different learned coordinate space.</td></tr>
+          <tr><td><code>[7, 1024]</code> FP32</td><td>Accepted; cast to BF16; exact output match</td><td>Floating source dtypes are normalized to model dtype.</td></tr>
+          <tr><td><code>[7, 1023]</code></td><td>Rejected with hidden-width mismatch</td><td>Width must equal the model hidden size.</td></tr>
+          <tr><td><code>[1024]</code></td><td>Rejected as one-dimensional</td><td>Required rank is 2; rank 3 is only accepted when batch size 1 can be squeezed.</td></tr>
+          <tr><td>Integer tensor</td><td>Rejected</td><td>Only floating-point rows can be safely cast.</td></tr>
+          <tr><td>Mean-pooled <code>[1, 1024]</code></td><td>Accepted, but generated a different generic response</td><td>Shape validation cannot establish semantic equivalence.</td></tr>
+        </tbody>
+      </table>
+
+      <p>The controlled side transfer holds the structural questions constant: both target and side tensors had seven rows and width 1024, and all target token IDs were valid for the side model. Their mean row cosine was 0.0083; target-row norm was 1.85 while side-row norm was 263.13. vLLM accepted the side rows and generated <code>I'm ready to help! How can I assist you today?</code> instead of the exact-target <code>Hello, World!</code>. A trained projector may learn the required map; direct transfer does not supply one.</p>
+
+      <h3>Family contract</h3>
+      <table class="table">
+        <thead><tr><th>Target family</th><th>What exact target rows require</th><th>Direct side activations</th></tr></thead>
+        <tbody>
+          <tr><td>Qwen 3</td><td>Rows in that target model's primary input-embedding space.</td><td>Not generally equivalent; train and validate a projector.</td></tr>
+          <tr><td>Qwen 3.5</td><td>Rows in that target model's primary input-embedding space. Exact live rows reproduced ordinary generation.</td><td>Not generally equivalent; the same-width live control failed equivalence.</td></tr>
+          <tr><td>Gemma 3</td><td>Use the model's scaled input module, not an unscaled weight lookup.</td><td>Must target the scaled Gemma input space.</td></tr>
+          <tr><td>Gemma 4 12B / 26B-A4B / 31B</td><td>Audited configs expose the primary table without E2B-style PLE parameters; preserve the model-defined input scaling and target space.</td><td>Not generally equivalent; validate per checkpoint/version.</td></tr>
+          <tr><td>Gemma 4 E2B</td><td>Main <code>d_model</code> rows plus the token-conditioned per-layer embedding path when text equivalence is claimed.</td><td>For genuinely non-text rows, define and train an explicit PLE/sentinel policy or extend the carrier; main rows alone are not the full contract.</td></tr>
+        </tbody>
+      </table>
+
+      <p>A Gemma 4 E2B smoke with main rows alone happened to emit the same five output tokens for this short prompt, but the internal path was not equivalent: hybrid sentinel positions select a fallback token for PLE. A full <code>EmbedsPrompt</code> with meaningful companion target token IDs preserved the token-conditioned path and matched the text baseline. One matching output is therefore not evidence that E2B's PLE can be ignored.</p>
+
+      <p><span class="evidence-tag source">Pinned source</span> vLLM requires <code>enable_prompt_embeds=True</code>, validates rank/width/floating dtype, and forces tensors to CPU for inter-process serialization. The feature is explicitly trust-gated because malformed embeddings can crash an engine. <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/renderers/embed_utils.py">Deserializer validation</a>, <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/renderers/base.py">renderer device handling</a>.</p>
+    </section>
+
+    <section class="section" aria-labelledby="recommendation">
+      <h2 id="recommendation">Recommended next implementation slice</h2>
+      <ol>
+        <li><strong>Let vLLM own ordinary message normalization.</strong> Pass string and typed text into <code>LLM.chat(..., chat_template_content_format="auto")</code>. The authenticated Gemma 3 run removes the former gate-based fallback concern.</li>
+        <li><strong>Widen the engine message contract.</strong> Admit a trusted <code>prompt_embeds</code> content part; do not run it through the current text-only assertion in <code>adapt_message_format()</code>.</li>
+        <li><strong>Enable the feature only on engines that need it.</strong> Set <code>enable_prompt_embeds=True</code> at <code>LLM</code> construction and treat callers as trusted.</li>
+        <li><strong>Keep special-token ownership singular.</strong> Full-prompt rows come from a tokenized chat template; hybrid rows come from content-only tokenization with special tokens disabled.</li>
+        <li><strong>Use the staged primary-module helper as a building block.</strong> Decide CPU/GPU pinning at the caller after considering the measured 1.16–2.62 GiB large-model range.</li>
+        <li><strong>Train the side-to-target interface.</strong> Treat a projector/adapter and its family-specific validation as part of the model, not as optional transport glue. Give Gemma 4 E2B an explicit PLE policy.</li>
+      </ol>
+
+      <p>The current <code>is_multimodal</code>-based adaptation happens to align with several ordinary-text templates, but it is the wrong capability boundary. vLLM’s template detector is more precise, and the current non-multimodal assertion would reject a valid <code>prompt_embeds</code> content part before vLLM can parse it.</p>
+    </section>
+
+    <section class="section" aria-labelledby="operational-notes">
+      <h2 id="operational-notes">Operational notes</h2>
+      <ul>
+        <li>Prefix caching includes a SHA-256 hash of each block’s prompt-embedding bytes, so cache identity follows the actual supplied rows. <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/vllm/v1/core/kv_cache_utils.py">Pinned cache-key source</a>.</li>
+        <li>Upstream vLLM 0.28 tests cover multiple and adjacent embedded spans, both string and OpenAI content templates, output streaming, and greedy text/embedding equality. <a href="https://github.com/vllm-project/vllm/blob/v0.28.0/tests/entrypoints/openai/chat_completion/test_chat_completion_with_prompt_embeds.py">Official end-to-end tests</a>.</li>
+        <li>Output streaming is supported. vLLM’s separate resumable <em>streaming-input</em> API rejects <code>prompt_embeds</code> chunks.</li>
+        <li>Qwen 3.5 happened to produce identical user IDs with <code>add_special_tokens=True</code> and <code>False</code>; that is tokenizer-specific and is not a reason to relax the cross-model rule.</li>
+        <li>The staged Sky wrapper sends an existing project `.env` through <code>sky exec --secret-file</code> while `.skyignore` keeps the file out of the exact rsync mirror. The live job observed the variable and confirmed the mirrored file was absent; no value was printed.</li>
+        <li>Remote wrapper commands set <code>VLLM_WORKER_MULTIPROC_METHOD=spawn</code>. Without it, the real Gemma 3 engine smoke hit CUDA's “cannot re-initialize after fork” guard; with it, the same project path completed normally.</li>
+        <li>The implementation is staged, not written into the user's read-only source: one updated Sky wrapper and one embedding helper/lifecycle method. The experiment-specific <code>ac-embed-next</code> cluster was deleted after retrieval; final Sky status showed no clusters, jobs, or services.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="evidence">
+      <h2 id="evidence">Evidence and reproducibility</h2>
+      <p>The report separates live generation from metadata/template probes and source reasoning. The complete local results are available alongside this artifact.</p>
+      <ul class="source-list">
+        <li><a href="./input-embeds-live-probe.json" data-tressoir-open-file>Open the live structured result</a> — versions, normalized conversations, token IDs, outputs, controls, and timings.</li>
+        <li><a href="./input-embeds-message-matrix.json" data-tressoir-open-file>Open the original Transformers template matrix</a> — the first-round representatives and historical Gemma 3 gate result.</li>
+        <li><a href="./input-embeds-gemma3-live.json" data-tressoir-open-file>Open the Gemma 3 live result</a> — message equality, exact/hybrid rows, same-shape controls, and copied-module validation.</li>
+        <li><a href="./input-embeds-gemma3-engine-smoke.json" data-tressoir-open-file>Open the Gemma 3 project-engine smoke</a> — completions response and free-model state.</li>
+        <li><a href="./input-embeds-side-space-live.json" data-tressoir-open-file>Open the same-shaped side-model result</a> — target versus side norms, cosine, acceptance, and generated outputs.</li>
+        <li><a href="./input-embeds-gemma4-live.json" data-tressoir-open-file>Open the Gemma 4 E2B result</a> — live PLE shapes, main-row probes, and companion-token-ID result.</li>
+        <li><a href="./input-embedding-sizes.json" data-tressoir-open-file>Open the exact size evidence</a> — config revisions, table shapes, safetensors totals, BF16 bytes, and percentages.</li>
+        <li><a href="./INPUT_EMBEDS_RESEARCH_PLAN.tressoir.md" data-tressoir-open-file>Open the approved research plan</a>.</li>
+        <li><a href="./INPUT_EMBEDS_NEXT_ROUND_PLAN.tressoir.md" data-tressoir-open-file>Open the completed follow-up plan</a>.</li>
+      </ul>
+
+      <details class="card" data-tressoir-markdown>
+        <summary>
+          <span class="card-title">Method and limitations</span>
+          <span class="card-oneliner">Versions, run boundaries, and evidence gaps</span>
+          <span class="card-badge">Optional</span>
+        </summary>
+        <div class="card-body">
+          <button class="card-gutter" type="button" data-card-collapse aria-label="Collapse method and limitations" title="Collapse section"></button>
+          <div class="card-content">
+            <h3>Run shape</h3>
+            <p>The first cloud run classified templates and loaded Qwen 3.5 0.8B for generation/performance checks. The follow-up reused one disposable L40S node sequentially for authenticated Gemma 3 1B, the Qwen 3 Embedding 0.6B → Qwen 3.5 0.8B controlled transfer, Gemma 4 E2B, and the real project engine smoke. Sampling controls were greedy for equality checks.</p>
+            <h3>Instrumentation retry</h3>
+            <p>The first engine run completed direct chat, then stopped because <code>apply_model()</code> would not serialize the self-authored measurement callback. The successful rerun set <code>VLLM_ALLOW_INSECURE_SERIALIZATION=1</code> solely for that trusted diagnostic callback. The flag is not required for <code>prompt_embeds</code>, chat normalization, or the proposed product path.</p>
+            <h3>Version boundary</h3>
+            <p>Findings are pinned to vLLM 0.28.0, Transformers 5.15.1, and the exact model revisions recorded in the evidence. Gemma 4's public family is not one uniform input architecture: E2B has the measured PLE path, while the audited 12B/26B/31B configs do not. New variants or revisions should be re-audited before the paper claims equivalence.</p>
+            <h3>Primary references</h3>
+            <ul>
+              <li><a href="https://huggingface.co/docs/transformers/chat_content_patterns">Transformers chat content patterns</a></li>
+              <li><a href="https://huggingface.co/docs/transformers/chat_templating_writing">Transformers template authoring and multimodal content</a></li>
+              <li><a href="https://github.com/vllm-project/vllm/tree/v0.28.0">vLLM 0.28.0 source tree</a></li>
+            </ul>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="./vendor/katex/katex.min.js"></script>
+  <script defer src="./vendor/katex/auto-render.min.js"></script>
+  <script defer data-manual src="./vendor/prism/components/prism-core.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-markup.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-css.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-clike.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-javascript.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-typescript.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-jsx.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-tsx.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-json.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-yaml.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-markdown.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-bash.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-python.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-rust.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-sql.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-diff.min.js"></script>
+  <script defer src="./vendor/prism/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="./vendor/codemirror/codemirror.js"></script>
+  <script defer src="./vendor/codemirror/mode/xml.js"></script>
+  <script defer src="./vendor/codemirror/mode/meta.js"></script>
+  <script defer src="./vendor/codemirror/mode/markdown.js"></script>
+  <script defer src="./tressoir-linear.js"></script>
+</body>
+</html>

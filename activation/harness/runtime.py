@@ -16,6 +16,7 @@ from .model_config import ModelConfig
 from .hf_utils import (
     model_description_and_tokenizer_from_hf,
 )
+from ..dataset import DatasetManager
 
 from .loaded_model import (
     LoadedModel,
@@ -30,6 +31,7 @@ class HarnessRuntime:
         self.harness_config = harness_config
         self.loaded_models: dict[str, LoadedModel] = dict() # Maps from name.
         self._load_models()
+        self.dataset_manager = DatasetManager(self)
         pass
 
 

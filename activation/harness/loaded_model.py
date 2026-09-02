@@ -219,12 +219,13 @@ class LoadedModel:
         )
 
 
-    def simple_vector_embed(self, text: str) -> torch.Tensor:
-        """Simply function to test embeddings"""
+    def simple_vector_embed_many(self, texts: list[str]) -> torch.Tensor:
+        """Returns one normalized embedding per text"""
         self.model_to_device(TARGET_DEVICE)
         assert self.model_config.model_description.is_embedding_model
         inputs = self.tokenizer(
-            text,
+            texts,
+            padding=True,
             truncation=True,
             return_tensors="pt",
         ).to(self.model.device)
@@ -234,5 +235,9 @@ class LoadedModel:
                 last_hidden_state=outputs.last_hidden_state,
                 attention_mask=inputs["attention_mask"],
                 readout_type=self.model_config.model_description.embedding_readout_type,
-            )[0]
+            )
         return embedding.detach().to(device=SOURCE_DEVICE)
+
+    def simple_vector_embed(self, text: str) -> torch.Tensor:
+        """Simple function to test embeddings."""
+        return self.simple_vector_embed_many([text])[0]
