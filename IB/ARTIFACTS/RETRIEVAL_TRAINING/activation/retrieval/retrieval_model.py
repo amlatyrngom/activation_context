@@ -60,6 +60,7 @@ class RetrievalModel(nn.Module):
         # Token counters the trainer reads for its throughput stats.
         self.real_tokens_embedded = 0
         self.padded_tokens_embedded = 0
+        self.forwards_embedded = 0
         self.view_scale: float | None = None                                              # set on first embed_batch
 
     @property
@@ -141,8 +142,9 @@ class RetrievalModel(nn.Module):
         readout = readout.float()
         if self.head is not None:
             readout = self.head(readout)
-        self.real_tokens_embedded += int(attention_mask.sum().item())
+        self.real_tokens_embedded += sum(len(row) for row in token_rows) + batch_size * num_views   # = mask sum, no GPU sync
         self.padded_tokens_embedded += batch_size * length
+        self.forwards_embedded += 1
         return F.normalize(readout, p=2, dim=-1)
 
     def trainable_parameter_groups(self) -> dict[str, list[nn.Parameter]]:

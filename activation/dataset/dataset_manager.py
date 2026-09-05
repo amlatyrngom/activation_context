@@ -1,5 +1,6 @@
+import random
 import typing as t
-from .dataset import LoadedDataset, LabeledRetrievalQAExample
+from .dataset import LoadedDataset, LabeledRetrievalQAExample, DataOrigin, DataSplit
 from .dataset_index import DatasetIndex
 from .dataset_utils import initialize_dataset_stats
 from .dataset_study import DatasetStudyGenerator
@@ -76,8 +77,9 @@ class DatasetManager:
         synthetic_only: bool = False,
         oracle_labeled_only: bool = True,
         val_ratio: float = 0.1,
-        max_reporting_size: int = 0.01,
+        max_reporting_size: int = 50,
         force_partition: bool = True, # Most datasets only have training. This forces a val set.
+        seed: int = 0,
     ) -> tuple[list[LabeledRetrievalQAExample], list[LabeledRetrievalQAExample], list[LabeledRetrievalQAExample]]:
         """
         Select training data. Returns tuples with the following:
@@ -85,5 +87,53 @@ class DatasetManager:
         - validation: small amount of data for validation (~10% in general).
         - reporting: trivial amount of data (subset of the validation set). Used for plotting.
         There is a general min of 10 for training and validation, and 1 for reporting regardless of the fractions.
+
+        num_samples examples are selected before the split; validation is carved from them by
+        val_ratio unless force_partition is False and the dataset carries native validation-split
+        examples. Oracle-labeled examples are used as they are. Without the oracle, an example
+        inherits chunk labels from its document-level labels: one chunk per positive document and,
+        where the dataset carries native hard negatives, one chunk per hard-negative document.
+        Examples without a positive chunk are dropped and counted in the dataset stats.
         """
-        pass
+        loaded_dataset = self.loaded_datasets[dataset_id]
+        stats = loaded_dataset.stats
+        candidates = [
+            example
+            for example in loaded_dataset.labeled_retrieval_examples.values()
+            if (not synthetic_only or example.origin == DataOrigin.SYNTHETIC)
+            and (not oracle_labeled_only or example.oracle_labeled)
+        ]
+        study_generator = self._get_or_create_study_generator(dataset_id)
+        selected: list[LabeledRetrievalQAExample] = []
+        for example in candidates:
+            if not example.oracle_labeled and not example.positive_chunk_ids:
+                study_generator._inherit_labels(example, pool=[])
+            if example.positive_chunk_ids:
+                selected.append(example)
+            else:
+                stats.training_select_num_dropped_no_positive += 1
+        rng = random.Random(seed)
+        native_validation = [example for example in selected if example.split == DataSplit.VAL]
+        if not force_partition and native_validation:
+            training_pool = [example for example in selected if example.split != DataSplit.VAL]
+            rng.shuffle(training_pool)
+            rng.shuffle(native_validation)
+            training_data = training_pool[:num_samples]
+            validation_data = native_validation[:max(10, round(num_samples * val_ratio))]
+        else:
+            rng.shuffle(selected)
+            chosen = selected[:num_samples]
+            num_validation = max(10, round(len(chosen) * val_ratio))
+            validation_data = chosen[:num_validation]
+            training_data = chosen[num_validation:]
+        assert len(training_data) >= 10, (
+            f"{dataset_id} - Only {len(training_data)} training examples after the split; need at least 10 "
+            f"({len(selected)} selectable, {stats.training_select_num_dropped_no_positive} dropped without a positive chunk)."
+        )
+        assert len(validation_data) >= 10, f"{dataset_id} - Only {len(validation_data)} validation examples; need at least 10."
+        reporting_data = validation_data[:max(1, min(max_reporting_size, len(validation_data)))]
+        print(
+            f"{dataset_id} - Selected {len(training_data)} training / {len(validation_data)} validation / "
+            f"{len(reporting_data)} reporting examples."
+        )
+        return training_data, validation_data, reporting_data

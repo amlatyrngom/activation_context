@@ -69,6 +69,7 @@ class LoadedModel:
         model_config.model_description, tokenizer, processor = model_description_and_tokenizer_from_hf(
             model_id=model_config.model_id,
             dtype=model_config.dtype,
+            trust_remote_code=model_config.trust_remote_code,
         )
         if model_config.model_description.is_embedding_model:
             model_loader = AutoModel
@@ -95,6 +96,9 @@ class LoadedModel:
         device_change_start_time = time.time()
         harness_stats = self.harness.harness_stats
         if device == FREE_DEVICE and self.current_model_device != FREE_DEVICE:
+            assert not self.harness.module_manager.has_loras(self.model_config.model_name), (
+                "Free the adapters first (module_manager.free_lora): freeing the base would drop LoRA weights."
+            )
             # Complete free.
             self.model = None
             # GC and cuda frees.
@@ -117,6 +121,7 @@ class LoadedModel:
             # Reload from disk.
             self.model = self.model_loader.from_pretrained(
                 self.model_config.model_id, dtype=self.model_config.dtype,
+                trust_remote_code=self.model_config.trust_remote_code,
             )
             self.model.eval()
         # Finalize.
@@ -200,6 +205,7 @@ class LoadedModel:
             if self.model_config.engine_kwargs is None:
                 self.model_config.engine_kwargs = VLLMWrapper.recommended_engine_kwargs(self.model_config.model_id)
             engine_kwargs.update(self.model_config.engine_kwargs)
+            engine_kwargs.setdefault("trust_remote_code", self.model_config.trust_remote_code)
             self.model_config.engine_kwargs = engine_kwargs
             self.vllm_model = VLLMWrapper(**engine_kwargs)
             self.current_engine_device = device
@@ -324,6 +330,33 @@ class LoadedModel:
             skip_special_tokens=True,
         )
 
+
+    def decoder_forward(
+        self,
+        inputs_embeds: torch.Tensor,
+        attention_mask: torch.Tensor,
+        position_ids: torch.Tensor|None = None,
+        lora_name: str|None = None,
+    ) -> torch.Tensor:
+        """
+        Last hidden state [B, S, d_model] of the causal decoder without the language-model head.
+        With a LoRA name the module manager activates that adapter for this pass (PEFT injects the
+        adapters into the base's own linear layers, so self.model is the LoRA'd module tree; the
+        wrapper only routes and manages adapters); with None any injected adapters are disabled.
+        Gradients flow; the caller sets train/eval.
+        """
+        assert self.model is not None, f"{self.model_config.model_name} - Model is not loaded."
+        model = self.model
+        decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
+        with self.harness.module_manager.lora_context(self.model_config.model_name, lora_name):
+            outputs = decoder(
+                inputs_embeds=inputs_embeds,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                use_cache=False,
+                return_dict=True,
+            )
+        return outputs.last_hidden_state
 
     def simple_vector_embed_many(self, texts: list[str]) -> torch.Tensor:
         """Returns one normalized embedding per text"""

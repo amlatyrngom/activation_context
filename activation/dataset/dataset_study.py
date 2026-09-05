@@ -24,7 +24,7 @@ from .dataset import (
     LoadedDataset,
     DatasetDocumentChunk,
 )
-from .dataset_utils import safe_truncate_embedding_chunk
+from .dataset_utils import safe_truncate_embedding_chunk, shuffle_fill_truncate
 from ..harness.vllm_wrapper import RECOMMENDED_BATCH_SIZE
 
 if t.TYPE_CHECKING:
@@ -150,9 +150,9 @@ class DatasetStudyGenerator:
 
 
     def _sample_study_chunks(self, num_samples: int) -> list[DatasetDocumentChunk]:
-        chunk_ids = self.dataset_index.chunk_ids
         rng = random.Random(self.study_seed) # Reproducible study sets.
-        return [self.dataset_index.chunks[rng.choice(chunk_ids)] for _ in range(num_samples)]
+        chunk_ids = shuffle_fill_truncate(list(self.dataset_index.chunk_ids), num_samples, rng)  # every chunk before any repeat
+        return [self.dataset_index.chunks[chunk_id] for chunk_id in chunk_ids]
 
     def _make_engine_chat_kwargs(self, json_schema: dict) -> dict:
         chat_kwargs = dict(self.chat_kwargs or {})

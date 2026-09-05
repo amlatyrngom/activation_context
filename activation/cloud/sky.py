@@ -17,6 +17,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+import time
 import sys
 import tempfile
 
@@ -613,6 +614,59 @@ def download(
     return _run_rsync(*args).returncode
 
 
+def watch(
+    name: str,
+    remote_path: str,
+    local_path: str,
+    *,
+    interval_seconds: float = 15.0,
+    until_file: str | None = None,
+    max_minutes: float | None = None,
+) -> int:
+    """
+    Keep a local copy of a remote artifact folder fresh while a run writes it: an incremental
+    rsync every interval (changed files replaced, nothing deleted locally), until Ctrl-C, until
+    until_file appears in the local copy (e.g. the stats file a run writes last), or until
+    max_minutes elapse. A `.tressoir.html` in the folder morphs in the editor as it changes.
+    """
+    record, _, _ = _managed_record(name)
+    _start_if_stopped(record)
+    source = _remote_artifact_path(remote_path)
+    destination = _local_download_path(local_path)
+    if not source.endswith("/"):
+        raise ValueError("watch needs a remote folder (end the remote path with '/')")
+    destination.mkdir(parents=True, exist_ok=True)
+    rsync_args = ["-az", "--itemize-changes", "--protect-args", "--no-owner", "--no-group", "--chmod=D755,F644",
+                  f"{record['name']}:{source}", str(destination)]
+    started = time.time()
+    rounds = 0
+    print(f"Watching {record['name']}:{source} -> {destination} every {interval_seconds:g}s "
+          f"(stop: Ctrl-C{', ' + until_file + ' appears' if until_file else ''}"
+          f"{f', {max_minutes:g} min' if max_minutes else ''}).", flush=True)
+    try:
+        while True:
+            rounds += 1
+            result = subprocess.run(["rsync", *rsync_args], text=True, capture_output=True)
+            changed = [line for line in result.stdout.splitlines() if line[:1] in ("<", ">", "c")]
+            stamp = time.strftime("%H:%M:%S")
+            if result.returncode != 0:
+                detail = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else ""
+                print(f"[{stamp}] rsync exit {result.returncode}: {detail}", flush=True)
+            elif changed:
+                names = ", ".join(line.split()[-1] for line in changed[:6]) + (" ..." if len(changed) > 6 else "")
+                print(f"[{stamp}] {len(changed)} file(s) updated: {names}", flush=True)
+            if until_file and (destination / until_file).exists():
+                print(f"[{stamp}] {until_file} arrived; done after {rounds} rounds.", flush=True)
+                return 0
+            if max_minutes is not None and time.time() - started > max_minutes * 60:
+                print(f"[{stamp}] {max_minutes:g} minutes elapsed; stopping after {rounds} rounds.", flush=True)
+                return 0
+            time.sleep(interval_seconds)
+    except KeyboardInterrupt:
+        print(f"Stopped after {rounds} rounds.", flush=True)
+        return 0
+
+
 def exec_cmd(name: str, cmd: str | list[str]) -> int:
     command = [cmd] if isinstance(cmd, str) else cmd.copy()
     if command[:1] == ["--"]:
@@ -726,6 +780,20 @@ def _build_parser() -> argparse.ArgumentParser:
         help="replace existing local files (default: keep them)",
     )
 
+    watch_parser = commands.add_parser(
+        "watch",
+        help="keep syncing a remote artifact folder to a local IB/TMP path while a run writes it",
+    )
+    watch_parser.add_argument("name", help="cluster name")
+    watch_parser.add_argument(
+        "remote_path",
+        help="folder under ~/activation_artifacts, ending with / (quote paths beginning with ~)",
+    )
+    watch_parser.add_argument("local_path", help="local destination folder (inside the project: under IB/TMP)")
+    watch_parser.add_argument("--interval", type=float, default=15.0, help="seconds between syncs (default 15)")
+    watch_parser.add_argument("--until-file", default=None, help="stop once this file name exists in the local copy")
+    watch_parser.add_argument("--max-minutes", type=float, default=None, help="stop after this many minutes")
+
     teardown_parser = commands.add_parser(
         "teardown",
         help="permanently delete a node and its disk",
@@ -772,6 +840,15 @@ def main() -> int:
                 args.local_path,
                 dry_run=args.dry_run,
                 overwrite=args.overwrite,
+            )
+        if args.action == "watch":
+            return watch(
+                args.name,
+                args.remote_path,
+                args.local_path,
+                interval_seconds=args.interval,
+                until_file=args.until_file,
+                max_minutes=args.max_minutes,
             )
         if args.action == "teardown":
             return teardown(args.name)

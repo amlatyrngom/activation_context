@@ -10,6 +10,10 @@ from .hf_utils import (
 )
 from .runtime_config import HarnessRuntimeConfig
 from .runtime import HarnessRuntime
+from .module_manager import (
+    ModuleManager,
+    LoraConfig,
+)
 from .vllm_wrapper import (
     RECOMMENDED_BATCH_SIZE,
 )

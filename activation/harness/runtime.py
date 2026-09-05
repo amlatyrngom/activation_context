@@ -21,6 +21,7 @@ from .hf_utils import (
 from .loaded_model import (
     LoadedModel,
 )
+from .module_manager import ModuleManager
 
 
 class HarnessRuntime:
@@ -34,7 +35,7 @@ class HarnessRuntime:
         self.loaded_models: dict[str, LoadedModel] = dict() # Maps from name.
         self._load_models()
         self.dataset_manager = DatasetManager(self)
-        pass
+        self.module_manager = ModuleManager(self)
 
 
     def _load_models(self):
@@ -53,6 +54,7 @@ class HarnessRuntime:
         model_config.model_description, tokenizer, processor = model_description_and_tokenizer_from_hf(
             model_id=model_config.model_id,
             dtype=model_config.dtype,
+            trust_remote_code=model_config.trust_remote_code,
         )
         if model_config.model_description.is_embedding_model:
             model_loader = AutoModel

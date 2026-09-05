@@ -1,6 +1,6 @@
 # Batching-level training throughput
 
-Retrieval training does about 7 examples per second on one RTX PRO 6000, so a 100k-example epoch takes close to four hours. This plan proposes two optimizations that live in `activation/retrieval/retrieval_batching.py` and only change how work is grouped and sized, never what the loss sees. The target is a 100k-example epoch in under an hour. Candidate-pool size per example is a generation-time decision and is out of scope. Version 3 after two rounds of independent review (round 1: 18 findings, round 2: 6; every genuine finding folded in, the rest recorded below).
+Retrieval training does about 7 examples per second on one RTX PRO 6000, so a 100k-example epoch takes close to four hours. This plan proposes two optimizations that live in `activation/retrieval/retrieval_batching.py` and only change how work is grouped and sized, never what the loss sees. The target is a 100k-example epoch in under an hour. Candidate-pool size per example is a generation-time decision and is out of scope. Version 4: implemented and measured. M1 and M2 are in Review with their completion reports; the micro-benchmarks replace the planned A/B runs, per your instruction. One unplanned correctness fix landed in the AC model (found by the invariant check).
 
 ## Executive Summary
 
@@ -33,13 +33,30 @@ The one-hour target at batch 32 is 1.15 s per step. At M1's padding (≈41k padd
 | M1 token-budget forwards | groups are cut by a padded-token budget (8k tokens), so a 32-query step is 1 query forward plus ≈5 candidate forwards instead of 15; one per-forward GPU sync removed; forwards per step counted | `retrieval_batching.py`; two lines in `embed_batch`; the forwards count threaded through the step shape, the stats summary and one report column; the helper check script | step time ÷ 2–3 if the compute rate rises as expected |
 | M2 data-measured sizing and real-batch probe | batch size from the heaviest batch the data can actually produce; the probe runs that real batch; the sizing text prints the batch for both checkpointing settings | `retrieval_batching.py`, three trainer lines | with checkpointing off (a per-run flag, unchanged default): 1.33× fewer FLOPs at batch ≈51 |
 
-Estimates for a 100k-example epoch, all conditional on the compute-rate measurement in M1:
+Measured (micro-benchmark, RTX PRO 6000, real MS-MARCO batches, 8 timed steps per arm; `IB/TMP/BATCHING/microbench/`):
 
-| configuration | examples/s | 100k-example epoch |
-| --- | --- | --- |
-| today | 7.3 | 3.8 h |
-| M1 (checkpointing on, batch 32) | ≈18–24 | 1.2–1.5 h |
-| M1 + M2 with checkpointing off (batch ≈51) | ≈25–32 | 50–65 min |
+| candidates/example | checkpointing | batch | grouping | step s | forwards | padding | real tok/s | TFLOP/s | peak GB |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ~8 | on | 32 | baseline | 4.12 | 15.1 | 25.6 % | 7.0k | 39 | 7.5 |
+| ~8 | on | 32 | budget 8k | 2.23 | 6.0 | 30.7 % | 12.9k | 78 | 7.4 |
+| ~8 | off | 16 | baseline | 1.54 | 11.2 | 22.9 % | 9.6k | 39 | 56 |
+| ~8 | off | 16 | budget 8k | 0.87 | 4.0 | 33.3 % | 17.0k | 80 | 64 |
+| 2 | on | 32 | baseline | 2.68 | 11.1 | 17.6 % | 2.9k | 15 | 3.5 |
+| 2 | on | 32 | budget 8k | 0.85 | 3.0 | 35.2 % | 9.1k | 59 | 4.3 |
+| 2 | off | 32 | baseline | 1.45 | 11.1 | 17.6 % | 5.3k | 20 | 29 |
+| 2 | off | 32 | budget 8k | 0.53 | 3.0 | 35.2 % | 14.7k | 71 | 36 |
+
+Budgets 4k and 16k were also run: 8k is best or within noise in every arm (the full table is in the results file). What it means for a 100k-example epoch:
+
+| candidates/example | setting | examples/s | 100k-example epoch |
+| --- | --- | --- | --- |
+| ~8 | before | 7.8 | 3.6 h |
+| ~8 | budget 8k, checkpointing on, batch 32 | 14.3 | 1.9 h |
+| ~8 | budget 8k, checkpointing off, batch 16–18 | 18.5 | 1.5 h |
+| 2 | budget 8k, checkpointing on, batch 32 | 38 | 44 min |
+| 2 | budget 8k, checkpointing off, batch 32–70 | 61 | 27 min |
+
+The compute rate rose from 16 % to about 30 % of peak, not the 45 % the hour needed at ~8 candidates. So the hour is met at 2 candidates per example and missed at ~8; the remaining gap is kernel-level (the LoRA adds about twenty small kernels per layer), which is outside the batching file.
 
 ### Dropped after measurement: length-bucketed epochs
 
@@ -56,47 +73,39 @@ Shuffling within length buckets was measured on real batches before it was propo
 | reporting cadence | 10 % of run 3 only because the epoch was 30 steps; negligible at 3,000 steps per epoch |
 | torch.compile, attention kernels, multi-GPU | harness levers with wider blast radius; revisit once the step is compute-bound |
 
-## Requested Decisions
+## Accepted Decisions
 
-<article class="decision" data-tressoir-decision data-decision-state="unresolved"
-  aria-labelledby="batching-scope">
-  <header class="decision-header">
-    <div>
-      <h3 class="decision-title" id="batching-scope">Approve M1 and M2?</h3>
-      <p class="decision-context">M1 is the batching file plus two lines in the model's embed step (a removed GPU sync and a forwards counter), the forwards count threaded into the step shape, the stats summary and one report column, and the helper check script. M2 is the batching file plus three trainer lines and one canon line. Checkpointing stays a plain flag with its current default; the batch cap stays at 128. The M1 compute-rate pre-check runs first and is reported before M2 is built.</p>
-    </div>
-    <span class="decision-state" data-decision-indicator role="status" aria-live="polite">Unresolved</span>
-  </header>
-  <fieldset class="decision-options">
-    <legend class="visually-hidden">Decision answers</legend>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="batching.v2.approve">
-      <span><strong>Approve M1 + M2 (recommended)</strong><small>Pre-check, M1 with its A/B, then M2 with its sizing run, on a Sky node.</small></span>
-    </label>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="batching.v2.m1_only">
-      <span><strong>M1 only for now</strong><small>Decide M2 after the pre-check and the A/B numbers.</small></span>
-    </label>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="batching.v2.revise">
-      <span><strong>Revise first</strong><small>Name the card and the change below.</small></span>
-    </label>
-  </fieldset>
-  <div class="field decision-feedback">
-    <label for="batching-v2-response">Free Response</label>
-    <textarea id="batching-v2-response" rows="2" data-tressoir-input="batching.v2.feedback"
-      data-tressoir-autogrow="2:6" placeholder="Add anything the choices miss…"></textarea>
-  </div>
-</article>
+- **Approve M1 + M2** (chat, 2026-09-05): "Go for it." Validation by micro-benchmarks in private code (`IB/TMP/BATCHING/`), not long runs; the one axis to vary is candidates per example (about 2 versus about 10).
 
 ## Milestones
 
 <details class="card" data-tressoir-markdown>
   <summary>
     <span class="card-title">M1 — Token-budget forwards</span>
-    <span class="card-oneliner">Cut the length-sorted texts by a padded-token budget: about 6 forwards per step instead of 15, same loss, proven by a CPU check.</span>
-    <span class="card-badge">Planning</span>
+    <span class="card-oneliner">Cut the length-sorted texts by a padded-token budget: 6 forwards per step instead of 15, same loss, proven exactly in fp32.</span>
+    <span class="card-badge">Review</span>
   </summary>
+
+#### What landed
+
+- `retrieval_batching.py`: `estimated_tokens`, `token_budget_groups`, `embedded_text_length` (input limit and query instruction applied), `embed_in_length_groups(…, budget_tokens=None)` with `FORWARD_TOKEN_BUDGET = 8192` on a GPU and 512 on CPU; `length_groups` removed.
+- `retrieval_model.py`: the real-token count is taken from the CPU-side token rows plus the view rows (identical to the old mask sum, no GPU sync per forward); `forwards_embedded` counter.
+- Trainer, stats and reporter: the step shape carries the forwards count; `summarize()` reports `forwards_per_step`; the throughput table has a "forwards/step" column.
+- `IB/TMP/RETRIEVAL_SLICE1/private_helpers_check.py`: `token_budget_groups` cases replace the `length_groups` cases.
+
+#### Drifts, challenges, and unplanned steps
+
+- **Unplanned correctness fix in `retrieval_ac.py`.** The exact fp32 invariant check failed at first: embeddings differed by up to 0.07 between groupings, and a stage-by-stage diagnosis (`IB/TMP/BATCHING/padding_diag2.py`) showed the base decoder invariant to 1e-7 while the AC model's rows moved by 0.36. The byte pooling marked a window valid when any of its bytes was real, so a short text in a batch padded to a longer length gained one extra partial window at its tail (8 windows instead of 7) that it never has alone, and every layer above saw it. Window validity is now a per-text rule (the windows the text gets alone). This bug predates M1: the old tolerance grouping also mixed lengths inside a group, so slice-1 runs trained an AC model whose rows depended on batch composition. After the fix the full embedding is invariant to 1e-6.
+- The planned eval-mode GPU check was inconclusive (bf16 differences up to 0.07 between paddings), so the invariant is proven with an fp32 CPU script on the node (`invariant_cpu.py`) instead.
+- Micro-benchmarks replaced the A/B epochs, per your instruction; the compute-rate pre-check became a column of the same table.
+
+#### Validation
+
+- Private helper checks pass locally (`ALL PRIVATE CHECKS PASSED`).
+- End-to-end test on the node: `1 passed in 32.78s` before the AC fix and `1 passed in 23.06s` after; 2 forwards per step; real-batch probe passed at the configured batch.
+- Exact invariance (fp32, CPU, node): grouped embeddings at budgets 1 / 64 / 256 / 512 / all (49 / 49 / 9 / 4 / 1 forwards) within 3.6e-6 of a single forward; the contrastive loss at budgets 1 / 256 / all is 9.64928 / 9.64929 / 9.64928 (spread 1.2e-5).
+- Micro-benchmark: the table in the summary; 8k is the best budget in every arm.
+
 
 #### Planning Overview
 
@@ -186,8 +195,26 @@ Validation, in order:
   <summary>
     <span class="card-title">M2 — Data-measured sizing and real-batch probe</span>
     <span class="card-oneliner">Size the batch from the heaviest batch the data can actually produce, and probe with that batch instead of a synthetic one.</span>
-    <span class="card-badge">Planning</span>
+    <span class="card-badge">Review</span>
   </summary>
+
+#### What landed
+
+- `retrieval_batching.py`: `example_token_counts`, `largest_fitting_batch`, `BatchSizing(batch_size, explanation, probe_examples)`, `configured_batch_sizing`, `recommended_batch_size` (both checkpointing settings printed; `harness` argument gone), `probe_batch_size` on the real heaviest batch with a distinct-candidate warning; `observed_shape` removed.
+- Trainer: three lines (sizing call, probe call, sizing string). Config unchanged.
+- Canon: the method-A line now reads "sizing from the heaviest real batch … probed with that real batch; forwards are cut by a padded-token budget".
+
+#### Drifts, challenges, and unplanned steps
+
+- **The per-token memory formula needed a LoRA term.** Measured without checkpointing: 3.0 MB per token, where the plan's arithmetic said 1.0 MB. The LoRA keeps, per projection, its fp32 input and the dropout output; with that term the formula gives 3.04 MB and the checkpointed figure 0.19 MB, both matching the measurements. The first micro-benchmark run hit out-of-memory on the no-checkpoint arm at batch 32 with ~8 candidates (116 GB needed), which is what exposed it.
+- The sizing is within 3 % at ~8 candidates (probe peak 79.4 GB against 79.4 GB predicted) but 10 % low at 2 candidates (peak 92.2 GB of 95 against 81.2 GB predicted: short sequences carry more per-sequence overhead). The probe, not the arithmetic, is what guarantees the fit, and the 10 % headroom absorbed the difference; the explanation prints both numbers so a run can see the margin.
+
+#### Validation
+
+- Sizing on the 990-example set (node): with checkpointing the cap of 128 for both candidate counts (probe 2.8 s / 10.5 s, peak 8.9 / 24.4 GB); without checkpointing batch 70 at 2 candidates (probe peak 92.2 GB) and 18 at ~8 (79.4 GB); every probe passed on the first attempt.
+- Helper check: descending cumulative sums, cap, empty and no-fit cases, and 1,000 random batches never heavier than the top-B total.
+- End-to-end test: configured batch 2, probed with the heaviest two examples, passed.
+
 
 #### Planning Overview
 

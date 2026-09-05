@@ -107,3 +107,35 @@ Length bucketing was version 1's M3; the measured gain (2–5 points) does not j
 Round 2 (`IB/TMP/BATCHING/review_2.md`): verdict incorrect-or-missing on version 2, six findings, all genuine and applied in version 3 (view positions in the CPU-side count; CPU sizing path; memory criterion; compute gate at M1's tokens; consistent M1 footprint; explicit AC per-token figure). The reviewer agreed with both reviewer-overkill classifications.
 
 Round 1 (`IB/TMP/BATCHING/review_1.md`, independent reviewer): verdict incorrect-or-missing, 18 findings. Reclassification and disposition are in the projection's Review record table; summary: 14 genuine (all applied), 2 moot (M3 dropped, automatic checkpointing dropped), 1 reviewer-overkill at the unchanged cap (collision loop; recorded as the condition for raising the cap), 1 split (per-forward sync applied; query merging deferred with the corrected reason).
+
+## Completion record (version 4, implemented)
+
+Approved in chat ("Go for it") with two instructions: validation by micro-benchmarks in private code, not long runs; vary candidates per example (about 2 versus about 10).
+
+### What landed
+
+- `activation/retrieval/retrieval_batching.py`: `FORWARD_TOKEN_BUDGET = 8192`, `CPU_FORWARD_TOKEN_BUDGET = 512`, `estimated_tokens`, `token_budget_groups`, `embedded_text_length`, `embed_in_length_groups(…, budget_tokens=None)`, `example_token_counts`, `largest_fitting_batch`, `_per_token_layer_internals(d_model, d_ff, with_lora)`, `BatchSizing`, `configured_batch_sizing`, `recommended_batch_size(retrieval_model, …) -> BatchSizing`, `probe_batch_size(step_fn, retrieval_model, probe_examples, dataset_index)`. Removed: `length_groups`, `observed_shape`, the `harness` arguments, the unused import.
+- `activation/retrieval/retrieval_model.py`: CPU-side real-token count including the view rows; `forwards_embedded`.
+- `activation/retrieval/retrieval_trainer.py`: sizing and probe calls; the step shape's fifth element. `retrieval_training_config.py`: shape type, `forwards_per_step` in `summarize()`. `retrieval_reporter.py`: "forwards/step" column.
+- `activation/retrieval/retrieval_ac.py` (unplanned, correctness): per-text window validity in `WindowedBytePooling.forward`.
+- `IB/CANON/ROOT_CANON.md`: method-A line amended. `IB/TMP/RETRIEVAL_SLICE1/private_helpers_check.py`: new grouping and sizing cases; `make_round_doc.py`: card texts.
+
+### Private validation code (`IB/TMP/BATCHING/`)
+
+`baseline_retrieval_batching.py` (the file before M1), `microbench.py` (timed arms, sizing rows, live report → `microbench/`), `invariant_cpu.py` (fp32 CPU exactness of embeddings and loss across budgets), `padding_diag.py` / `padding_diag2.py` (which stage depends on padding), logs `sky_*.log`.
+
+### Measurements (node `ac-batching`, RTX PRO 6000; 8 timed steps after 2 warm-up)
+
+matmul parameters 521M (base layers + LoRA r128). Full table in `microbench/microbench_results.json`; the summary table is in the projection. Key rows: ~8 candidates, checkpointing on, batch 32: baseline 4.12 s / 15.1 forwards / 39 TFLOP/s → budget 8k 2.23 s / 6 forwards / 78 TFLOP/s. ~8 candidates, checkpointing off, batch 16: 1.54 s → 0.87 s (17.0k real tokens/s, 80 TFLOP/s). 2 candidates, batch 32: checkpointing on 2.68 s → 0.85 s; off 1.45 s → 0.53 s (14.7k real tokens/s). Budgets: 4k and 16k lose to 8k or tie in every arm (16k pads 35–44 %).
+
+Sizing (990 examples): per token 0.19 MB with checkpointing, 3.04 MB without. ~8 candidates: with 128 (cap; probe 10.5 s, peak 24.4 GB), without 18 (probe peak 79.4 GB, predicted 79.4 GB). 2 candidates: with 128 (peak 8.9 GB), without 70 (peak 92.2 GB, predicted 81.2 GB: short sequences carry more per-sequence overhead; the probe passed inside the 10 % headroom). Every probe passed on attempt 1.
+
+Invariance (fp32, CPU, node): before the AC fix, grouped embeddings differed by up to 0.07 (budget 1 versus all-in-one); the diagnosis put the base decoder at 4.5e-7 and the AC rows at 0.36, and the stage trace showed the pooled window count differing (7 alone versus 8 batched). After the fix: AC rows 1.3e-6 to 2.4e-6, full embedding 7.2e-7, grouped embeddings at budgets 1 / 64 / 256 / 512 / all within 3.6e-6 of one forward; contrastive loss at budgets 1 / 256 / all = 9.649283 / 9.649287 / 9.649276 (`INVARIANT HOLDS`).
+
+End-to-end test (node): `1 passed in 32.78s` (before the AC fix), `1 passed in 23.06s` (after); 2 forwards per step; probe passed at 2.
+
+### Conclusions
+
+- Default budget 8k. The step is no longer launch-bound in the sense of forward count, but the compute rate tops out near 30 % of peak; the LoRA's per-layer small kernels are the next cost and are a harness-level lever.
+- 100k-example epoch: ~1.5 h at ~8 candidates per example (no checkpointing, batch 16–18) or ~1.9 h with checkpointing at batch 32; ~27 min at 2 candidates without checkpointing, ~44 min with. The hour target holds for the 2-candidate shape.
+- The AC padding bug affected every slice-1 run; the next training run is the first with batch-independent AC rows.

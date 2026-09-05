@@ -29,15 +29,15 @@ import torch.nn.functional as F
 
 from ..dataset.dataset import LabeledRetrievalQAExample
 from .retrieval_batching import (
-    RetrievalBatch,
     DatasetIndexes,
-    make_batches,
+    RetrievalBatch,
+    configured_batch_sizing,
+    embed_in_length_groups,
     fixed_batches,
     flatten_candidates,
-    embed_in_length_groups,
-    observed_shape,
-    recommended_batch_size,
+    make_batches,
     probe_batch_size,
+    recommended_batch_size,
 )
 from .retrieval_model import RetrievalModel
 from .retrieval_reporter import METRIC_NAMES, RetrievalReporter
@@ -196,16 +196,16 @@ class RetrievalTrainer:
         assert groups, "Nothing to train: no LoRA, AC model or head."
         all_parameters = [parameter for params in groups.values() for parameter in params]
 
-        # Batch size: config or the sizing heuristic, then the worst-case probe.
+        # Batch size: config or the sizing from the heaviest real batch, then the probe on that batch.
         retrieval_model.set_training_mode(True, config.gradient_checkpointing)
         if config.batch_size is None:
-            batch_size, batch_sizing = recommended_batch_size(
-                self.harness, retrieval_model, training_data, dataset_index,
+            sizing = recommended_batch_size(
+                retrieval_model, training_data, dataset_index,
                 config.gradient_checkpointing, config.memory_headroom_fraction, device,
             )
         else:
-            batch_size, batch_sizing = config.batch_size, f"batch_size = {config.batch_size} (from the config)"
-        longest_text, max_candidates = observed_shape(training_data, dataset_index, retrieval_model)
+            sizing = configured_batch_sizing(config.batch_size, training_data, dataset_index, retrieval_model)
+        batch_sizing = sizing.explanation
 
         def probe_step(batch: RetrievalBatch) -> None:
             try:
@@ -214,9 +214,7 @@ class RetrievalTrainer:
             finally:
                 for parameter in all_parameters:
                     parameter.grad = None
-        batch_size, probe_attempts = probe_batch_size(
-            probe_step, self.harness, retrieval_model, batch_size, longest_text, max_candidates,
-        )
+        batch_size, probe_attempts = probe_batch_size(probe_step, retrieval_model, sizing.probe_examples, dataset_index)
         if probe_attempts:
             batch_sizing += f"\nprobe passed at {batch_size} on attempt {probe_attempts}"
         stats.batch_size, stats.probe_attempts, stats.batch_sizing = batch_size, probe_attempts, batch_sizing
@@ -260,11 +258,12 @@ class RetrievalTrainer:
         for epoch in range(1, config.epochs + 1):
             rng = random.Random(config.seed + epoch)
             epoch_start = time.time()
-            epoch_shapes: list[tuple[int, int, int, int]] = []
+            epoch_shapes: list[tuple[int, int, int, int, int]] = []
             epoch_steps = 0
             for batch in make_batches(training_data, dataset_index, batch_size, rng):
                 step_start = time.time()
                 real_before, padded_before = retrieval_model.real_tokens_embedded, retrieval_model.padded_tokens_embedded
+                forwards_before = retrieval_model.forwards_embedded
                 loss = self.contrastive_loss(retrieval_model, batch, config.temperature)
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(all_parameters, config.max_grad_norm)
@@ -281,6 +280,7 @@ class RetrievalTrainer:
                     len(batch.examples), distinct_candidates,
                     retrieval_model.real_tokens_embedded - real_before,
                     retrieval_model.padded_tokens_embedded - padded_before,
+                    retrieval_model.forwards_embedded - forwards_before,
                 )
                 stats.step_losses.append((step, loss_value))
                 stats.step_learning_rates.append((step, learning_rates))

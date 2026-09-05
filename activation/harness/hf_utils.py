@@ -3,6 +3,7 @@ HF-facing code for model configuration parsing, message formatting, etc.
 Stores overly detailed/specific logic to keep the rest of code cleaner.
 """
 from collections import Counter
+import typing as t
 import torch
 import torch.nn.functional as F
 from .model_config import (
@@ -22,6 +23,9 @@ from transformers import (
     ProcessorMixin,
 )
 
+if t.TYPE_CHECKING:
+    import peft
+    from .module_manager import LoraConfig
 
 
 TARGET_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -103,18 +107,19 @@ def canonical_embedding_readout_type(model_id: str) -> EmbeddingReadoutType|None
 def model_description_and_tokenizer_from_hf(
     model_id: str,
     dtype: torch.dtype,
+    trust_remote_code: bool = False,
 ) -> tuple['ModelDescription', PreTrainedTokenizerBase, PreTrainedTokenizerBase|ProcessorMixin]:
     # Get basic configs.
-    hf_config = AutoConfig.from_pretrained(model_id)
+    hf_config = AutoConfig.from_pretrained(model_id, trust_remote_code=trust_remote_code)
     text_config = hf_config.get_text_config()
     # Load tokenizer and processor based on modality.
     is_multimodal = text_config is not hf_config
     if is_multimodal:
-        processor = AutoProcessor.from_pretrained(model_id)
+        processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=trust_remote_code)
         assert isinstance(processor, ProcessorMixin)
         tokenizer = processor.tokenizer
     else:
-        processor = AutoTokenizer.from_pretrained(model_id)
+        processor = AutoTokenizer.from_pretrained(model_id, trust_remote_code=trust_remote_code)
         tokenizer = processor
 
     # Compute layer descriptions.
@@ -156,6 +161,7 @@ def model_description_and_tokenizer_from_hf(
     # Finalize.
     description = ModelDescription(
         d_model=text_config.hidden_size,
+        d_ff=getattr(text_config, "intermediate_size", None) or 4 * text_config.hidden_size,
         is_multimodal=is_multimodal,
         dtype=dtype,
         layer_descriptions=layers,
@@ -211,6 +217,19 @@ def readout_embedding(
     return F.normalize(pooled, p=2, dim=1)
 
 
+def make_peft_lora_config(lora_config: "LoraConfig") -> "peft.LoraConfig":
+    """PEFT config for the given targets; bias untouched; task type causal LM."""
+    import peft
+    return peft.LoraConfig(
+        r=lora_config.rank,
+        lora_alpha=lora_config.alpha,
+        lora_dropout=lora_config.dropout,
+        target_modules=list(lora_config.target_modules),
+        bias="none",
+        task_type="CAUSAL_LM",
+    )
+
+
 def pretty_format_model_description(model_config: ModelConfig) -> str:
     """Return a compact human-readable description of a loaded model."""
 
@@ -226,6 +245,7 @@ def pretty_format_model_description(model_config: ModelConfig) -> str:
         f"model_name: {model_config.model_name}",
         f"model_id: {model_config.model_id}",
         f"d_model: {description.d_model}",
+        f"d_ff: {description.d_ff}",
         f"dtype: {description.dtype}",
         f"layers: {len(description.layer_descriptions)} ({layer_summary})",
         f"multimodal: {description.is_multimodal}",

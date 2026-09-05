@@ -777,7 +777,7 @@ index e69de29..e6e2e70 100644
 <details class="card" data-tressoir-markdown open>
   <summary>
     <span class="card-title">activation/retrieval/retrieval_ac.py</span>
-    <span class="card-oneliner">`StandardRetrievalACModel`: bytes → windowed pooling → bidirectional layers → V view rows in `d_model`.</span>
+    <span class="card-oneliner">`StandardRetrievalACModel`: bytes → windowed pooling (per-text window validity, so rows do not depend on batch padding) → bidirectional layers → V view rows in `d_model`.</span>
     <span class="card-badge">Diff</span>
   </summary>
 
@@ -785,10 +785,10 @@ Exact delta vs `/source/activation/retrieval/retrieval_ac.py`:
 
 ````diff-python
 diff --git asource/activation/retrieval/retrieval_ac.py bworkspace/activation/retrieval/retrieval_ac.py
-index f386c5a..35fb325 100644
+index f386c5a..4abf8d4 100644
 --- asource/activation/retrieval/retrieval_ac.py
 +++ bworkspace/activation/retrieval/retrieval_ac.py
-@@ -1,44 +1,178 @@
+@@ -1,44 +1,188 @@
  """
 -Contains a ac model for the retrieval.
 -An AC model places new latent input in the model. If the model also has lora enabled, this new latent input can live in a subspace with new properties.
@@ -874,9 +874,19 @@ index f386c5a..35fb325 100644
 +        num_windows = windows.shape[1]
 +        flat = windows.reshape(batch_size * num_windows, BYTE_WINDOW, d)
 +        flat_masks = window_masks.reshape(batch_size * num_windows, BYTE_WINDOW)
-+        window_valid = flat_masks.any(dim=1)                                           # [B*W]
++        # A text's windows must not depend on how far the batch pads it: exactly the windows it gets
++        # alone (its length padded up to the stride), so a short text next to a long one does not
++        # gain an extra partial window at its tail. "Any valid byte" would add that window.
++        lengths = mask.sum(dim=1)                                                      # [B] real bytes
++        num_valid = torch.where(
++            lengths > BYTE_WINDOW,
++            (lengths - BYTE_WINDOW + BYTE_STRIDE - 1) // BYTE_STRIDE + 1,
++            torch.ones_like(lengths),
++        )
++        window_index = torch.arange(num_windows, device=x.device)
++        window_valid = (window_index[None, :] < num_valid[:, None]).reshape(-1)        # [B*W]
 +        key_padding = ~flat_masks
-+        key_padding[~window_valid] = False  # Fully padded windows attend to themselves harmlessly and are masked downstream.
++        key_padding[~window_valid] = False  # Invalid windows attend to themselves harmlessly and are masked downstream.
 +        normed = self.norm(flat)
 +        attended, _ = self.attention(normed, normed, normed, key_padding_mask=key_padding, need_weights=False)
 +        flat = flat + attended
@@ -1011,10 +1021,10 @@ Exact delta vs `/source/activation/retrieval/retrieval_model.py`:
 
 ````diff-python
 diff --git asource/activation/retrieval/retrieval_model.py bworkspace/activation/retrieval/retrieval_model.py
-index 9fa3bda..784463d 100644
+index 9fa3bda..824d1fa 100644
 --- asource/activation/retrieval/retrieval_model.py
 +++ bworkspace/activation/retrieval/retrieval_model.py
-@@ -1,22 +1,167 @@
+@@ -1,22 +1,169 @@
 +"""
 +Retrieval model: a frozen base LLM with an optional LoRA and an optional activation-context (AC)
 +model, plus a projection head, embedding queries and documents through the same path.
@@ -1087,6 +1097,7 @@ index 9fa3bda..784463d 100644
 +        # Token counters the trainer reads for its throughput stats.
 +        self.real_tokens_embedded = 0
 +        self.padded_tokens_embedded = 0
++        self.forwards_embedded = 0
 +        self.view_scale: float | None = None                                              # set on first embed_batch
 +
 +    @property
@@ -1170,8 +1181,9 @@ index 9fa3bda..784463d 100644
 +        readout = readout.float()
 +        if self.head is not None:
 +            readout = self.head(readout)
-+        self.real_tokens_embedded += int(attention_mask.sum().item())
++        self.real_tokens_embedded += sum(len(row) for row in token_rows) + batch_size * num_views   # = mask sum, no GPU sync
 +        self.padded_tokens_embedded += batch_size * length
++        self.forwards_embedded += 1
 +        return F.normalize(readout, p=2, dim=-1)
  
 +    def trainable_parameter_groups(self) -> dict[str, list[nn.Parameter]]:
@@ -1203,7 +1215,7 @@ index 9fa3bda..784463d 100644
 <details class="card" data-tressoir-markdown open>
   <summary>
     <span class="card-title">activation/retrieval/retrieval_batching.py</span>
-    <span class="card-oneliner">`RetrievalBatch`, epoch and fixed batches, candidate dedup, length-grouped forwards, GPU sizing, the probe.</span>
+    <span class="card-oneliner">`RetrievalBatch`, epoch and fixed batches, candidate dedup, forwards cut by a padded-token budget, sizing from the heaviest real batch, the real-batch probe.</span>
     <span class="card-badge">New file</span>
   </summary>
 
@@ -1212,15 +1224,16 @@ Exact delta vs `/source/activation/retrieval/retrieval_batching.py`:
 ````diff-python
 diff --git aworkspace/activation/retrieval/retrieval_batching.py bworkspace/activation/retrieval/retrieval_batching.py
 new file mode 100644
-index 0000000..04b7f1a
+index 0000000..cdf11d1
 --- /dev/null
 +++ bworkspace/activation/retrieval/retrieval_batching.py
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,332 @@
 +"""
 +Batches, mechanical batching optimizations, GPU batch sizing and the out-of-memory probe.
 +
-+Everything here reorders or deduplicates work without changing what the loss sees: length-grouped
-+forwards, candidate deduplication, data-measured sizing and seeded validation groups.
++Everything here reorders or deduplicates work without changing what the loss sees: forwards cut by
++a padded-token budget, candidate deduplication, sizing from the heaviest real batch the data can
++produce, a probe on that real batch, and seeded validation groups.
 +"""
 +import gc
 +import math
@@ -1231,11 +1244,9 @@ index 0000000..04b7f1a
 +import torch
 +
 +from ..dataset.dataset import DatasetDocumentChunk, LabeledRetrievalQAExample
-+from ..dataset.dataset_utils import safe_truncate_embedding_chunk
 +
 +if t.TYPE_CHECKING:
 +    from ..dataset import DatasetIndex
-+    from ..harness import HarnessRuntime
 +    from .retrieval_model import RetrievalModel
 +
 +
@@ -1244,6 +1255,8 @@ index 0000000..04b7f1a
 +CONTEXT_BYTES = 1 * GB                  # CUDA context and workspace.
 +BYTES_PER_TRAINABLE_PARAM = 16          # fp32 weight + grad + two Adam states.
 +CPU_BATCH_SIZE = 8
++FORWARD_TOKEN_BUDGET = 8192             # padded tokens per forward on a GPU: a launches-versus-padding knob, not memory
++CPU_FORWARD_TOKEN_BUDGET = 512
 +
 +
 +@dataclass
@@ -1323,33 +1336,51 @@ index 0000000..04b7f1a
 +    return chunks, per_example
 +
 +
-+def length_groups(lengths: list[int], tolerance: float, min_group: int) -> list[list[int]]:
++def estimated_tokens(text_length: int, num_views: int) -> int:
++    """Padded-length estimate shared by grouping and sizing: characters / 4, plus EOS and the view rows."""
++    return text_length // CHARS_PER_TOKEN + 1 + num_views
++
++
++def token_budget_groups(lengths: list[int], budget_tokens: int, num_views: int) -> list[list[int]]:
 +    """
-+    Indices sorted by length and cut into consecutive runs whose lengths lie within tolerance of the
-+    run's shortest member; a run only closes once it holds min_group texts.
++    Indices sorted by length and cut into consecutive runs whose padded size (count x longest
++    member) stays within budget_tokens. A single text over the budget forms its own run: the next
++    text is at least as long, so it can never join. Sorting keeps padding low inside a run; the
++    budget bounds the number of forwards (15 tolerance-cut forwards per 32-query step were
++    launch-bound at 16 % of the GPU's compute peak).
 +    """
 +    order = sorted(range(len(lengths)), key=lambda index: lengths[index])
 +    groups: list[list[int]] = []
 +    for index in order:
-+        if groups and (len(groups[-1]) < min_group or lengths[index] <= lengths[groups[-1][0]] * (1 + tolerance)):
++        longest = estimated_tokens(lengths[index], num_views)                          # ascending: the newest is the longest
++        if groups and (len(groups[-1]) + 1) * longest <= budget_tokens:
 +            groups[-1].append(index)
 +        else:
 +            groups.append([index])
 +    return groups
 +
 +
++def embedded_text_length(retrieval_model: "RetrievalModel", text: str, is_query: bool) -> int:
++    """Characters embed_batch will actually see: cut to the input limit, plus the query instruction."""
++    prefix = len(retrieval_model.query_instruction) if is_query else 0
++    return min(len(text), retrieval_model.input_limit_chars) + prefix
++
++
 +def embed_in_length_groups(
 +    retrieval_model: "RetrievalModel",
 +    texts: list[str],
 +    is_query: bool,
-+    tolerance: float = 0.15,
-+    min_group: int = 8,
++    budget_tokens: int | None = None,
 +) -> torch.Tensor:
 +    """
-+    embed_batch over length-sorted groups whose lengths lie within tolerance of each other,
-+    concatenated back in the original order. Same graph, same loss, less padding.
++    embed_batch over length-sorted groups cut by a padded-token budget, concatenated back in the
++    original order. Same graph, same loss; only the number and shape of the forwards change.
 +    """
-+    groups = length_groups([len(text) for text in texts], tolerance, min_group)
++    if budget_tokens is None:
++        budget_tokens = FORWARD_TOKEN_BUDGET if retrieval_model.device.type == "cuda" else CPU_FORWARD_TOKEN_BUDGET
++    num_views = retrieval_model.num_vectors if retrieval_model.ac_model is not None else 0
++    lengths = [embedded_text_length(retrieval_model, text, is_query) for text in texts]
++    groups = token_budget_groups(lengths, budget_tokens, num_views)
 +    embedded = [retrieval_model.embed_batch([texts[index] for index in group], is_query) for group in groups]
 +    order = torch.tensor([index for group in groups for index in group], device=embedded[0].device)
 +    restored = torch.empty_like(torch.cat(embedded))
@@ -1357,35 +1388,75 @@ index 0000000..04b7f1a
 +    return restored
 +
 +
-+def observed_shape(
++def example_token_counts(
 +    training_data: list[LabeledRetrievalQAExample],
 +    dataset_index: DatasetIndexes,
 +    retrieval_model: "RetrievalModel",
-+) -> tuple[str, int]:
-+    """The longest text (query with its instruction, or candidate chunk) and the largest candidate count."""
-+    limit = retrieval_model.input_limit_chars
-+    longest, max_candidates = "", 1
++) -> list[int]:
++    """Per example: estimated padded tokens of its query plus all its candidates, as embed_batch will see them."""
++    num_views = retrieval_model.num_vectors if retrieval_model.ac_model is not None else 0
++    counts = []
 +    for example in training_data:
-+        query = retrieval_model.query_instruction + safe_truncate_embedding_chunk(example.query, limit)
-+        if len(query) > len(longest):
-+            longest = query
++        total = estimated_tokens(embedded_text_length(retrieval_model, example.query, True), num_views)
 +        chunks, _ = _example_candidates(example, dataset_index)
-+        max_candidates = max(max_candidates, len(chunks))
-+        for chunk in chunks:
-+            text = safe_truncate_embedding_chunk(chunk.chunk_text, limit)
-+            if len(text) > len(longest):
-+                longest = text
-+    return longest, max_candidates
++        total += sum(estimated_tokens(embedded_text_length(retrieval_model, chunk.chunk_text, False), num_views) for chunk in chunks)
++        counts.append(total)
++    return counts
 +
 +
-+def _per_token_layer_internals(d_model: int, d_ff: int) -> int:
++def largest_fitting_batch(counts_desc: list[int], usable_bytes: int, per_token_bytes: int, cap: int) -> int:
++    """
++    Largest B with per_token_bytes x sum(top-B counts) <= usable_bytes, at most cap; 0 when even
++    the heaviest example does not fit. With counts sorted descending this is the heaviest batch of
++    B examples the data can produce, so no shuffle of the epoch exceeds it (dedup only lightens).
++    """
++    total = 0
++    for size, count in enumerate(counts_desc, start=1):
++        total += count
++        if total * per_token_bytes > usable_bytes:
++            return size - 1
++        if size >= cap:
++            return cap
++    return len(counts_desc)
++
++
++def _per_token_layer_internals(d_model: int, d_ff: int, with_lora: bool) -> int:
 +    # Saved tensors per token per layer in bf16: about six d-sized (norms, q, k, v, attention out,
-+    # residual) and four d_ff-sized (gate, up, activation, down input).
-+    return (6 * d_model + 4 * d_ff) * 2
++    # residual) and four d_ff-sized (gate, up, activation, down input). A LoRA on the seven
++    # projections keeps, per projection, its fp32 input and the dropout output (4 B each) on top:
++    # six inputs of d_model and one of d_ff. Measured on Qwen3-0.6B + LoRA r128 (RTX PRO 6000):
++    # 3.0 MB per token without checkpointing, which this formula gives; without the LoRA term it
++    # said 1.0 MB.
++    internals = (6 * d_model + 4 * d_ff) * 2
++    if with_lora:
++        internals += (6 * d_model + d_ff) * 8
++    return internals
++
++
++@dataclass
++class BatchSizing:
++    batch_size: int
++    explanation: str                                    # the arithmetic as printed and stored in the stats
++    probe_examples: list[LabeledRetrievalQAExample]     # the batch_size heaviest examples: the probe batch
++
++
++def _heaviest(training_data: list[LabeledRetrievalQAExample], counts: list[int], size: int) -> list[LabeledRetrievalQAExample]:
++    order = sorted(range(len(counts)), key=lambda index: -counts[index])
++    return [training_data[index] for index in order[:size]]
++
++
++def configured_batch_sizing(
++    batch_size: int,
++    training_data: list[LabeledRetrievalQAExample],
++    dataset_index: DatasetIndexes,
++    retrieval_model: "RetrievalModel",
++) -> BatchSizing:
++    """A batch size from the config, still probed with the heaviest real batch of that size."""
++    counts = example_token_counts(training_data, dataset_index, retrieval_model)
++    return BatchSizing(batch_size, f"batch_size = {batch_size} (from the config)", _heaviest(training_data, counts, batch_size))
 +
 +
 +def recommended_batch_size(
-+    harness: "HarnessRuntime",
 +    retrieval_model: "RetrievalModel",
 +    training_data: list[LabeledRetrievalQAExample],
 +    dataset_index: DatasetIndexes,
@@ -1393,14 +1464,16 @@ index 0000000..04b7f1a
 +    headroom_fraction: float,
 +    device: torch.device,
 +    cap: int = 128,
-+) -> tuple[int, str]:
++) -> BatchSizing:
 +    """
-+    Examples per step for this GPU from the observed longest text and largest candidate count;
-+    returns the size and the arithmetic as printed and stored in the stats.
++    Examples per step for this GPU: the largest batch whose heaviest possible members (per-example
++    token totals, descending) fit the usable memory at the configured checkpointing setting. The
++    explanation prints the batch for both settings.
 +    """
-+    longest, max_candidates = observed_shape(training_data, dataset_index, retrieval_model)
++    counts = example_token_counts(training_data, dataset_index, retrieval_model)
 +    if device.type != "cuda":
-+        return CPU_BATCH_SIZE, f"{device.type}: no memory sizing; batch_size = {CPU_BATCH_SIZE}"
++        return BatchSizing(CPU_BATCH_SIZE, f"{device.type}: no memory sizing; batch_size = {CPU_BATCH_SIZE}",
++                           _heaviest(training_data, counts, CPU_BATCH_SIZE))
 +    loaded_model = retrieval_model.loaded_model
 +    description = loaded_model.model_config.model_description
 +    properties = torch.cuda.get_device_properties(device)
@@ -1414,27 +1487,26 @@ index 0000000..04b7f1a
 +    trainable_bytes = trainable * BYTES_PER_TRAINABLE_PARAM
 +    usable = total - headroom - CONTEXT_BYTES - base_weights - embedding_copy - trainable_bytes
 +
-+    num_views = retrieval_model.num_vectors if retrieval_model.ac_model is not None else 0
-+    tokens = len(longest) // CHARS_PER_TOKEN + 1 + num_views
 +    num_layers = len(description.layer_descriptions)
-+    internals = _per_token_layer_internals(description.d_model, description.d_ff)
-+    per_token = (num_layers * description.d_model * 2 + internals) if gradient_checkpointing else num_layers * internals
-+    ac_bytes = 0
-+    if retrieval_model.ac_model is not None:
++    internals = _per_token_layer_internals(description.d_model, description.d_ff, with_lora=bool(retrieval_model.lora_name))
++    per_token_on = num_layers * description.d_model * 2 + internals                  # layer inputs kept + one layer recomputed
++    per_token_off = num_layers * internals
++    if retrieval_model.ac_model is not None:                                          # one pooled window per token, plus the byte stage
 +        ac = retrieval_model.ac_model
-+        ac_internals = _per_token_layer_internals(ac.d_ac_model, 4 * ac.d_ac_model)
-+        ac_per_position = (ac.num_ac_layers * ac.d_ac_model * 2 + ac_internals) if gradient_checkpointing else ac.num_ac_layers * ac_internals
-+        byte_count = len(longest.encode("utf-8"))
-+        ac_bytes = ac_per_position * (byte_count // 4 + 1) + byte_count * ac.d_ac_model * 2 * 6
-+    per_sequence = per_token * tokens + ac_bytes
-+    sequences = 1 + max_candidates
-+    per_example = per_sequence * sequences
-+    recommended = int(usable // per_example) if usable > 0 else 0
-+    if recommended < 1:
++        ac_internals = _per_token_layer_internals(ac.d_ac_model, 4 * ac.d_ac_model, with_lora=False)
++        byte_stage = CHARS_PER_TOKEN * ac.d_ac_model * 2 * 6
++        per_token_on += ac.num_ac_layers * ac.d_ac_model * 2 + ac_internals + byte_stage
++        per_token_off += ac.num_ac_layers * ac_internals + byte_stage
++    counts_desc = sorted(counts, reverse=True)
++    batch_on = largest_fitting_batch(counts_desc, usable, per_token_on, cap)
++    batch_off = largest_fitting_batch(counts_desc, usable, per_token_off, cap)
++    batch_size = batch_on if gradient_checkpointing else batch_off
++    if batch_size < 1:
 +        raise RuntimeError(
-+            f"GPU {properties.name} cannot fit one example: usable {usable / GB:.1f} GB, per example {per_example / GB:.2f} GB."
++            f"GPU {properties.name} cannot fit the heaviest example: usable {usable / GB:.1f} GB, "
++            f"{counts_desc[0]:,} est. tokens x {(per_token_on if gradient_checkpointing else per_token_off) / 2**20:.2f} MB."
 +        )
-+    batch_size = min(recommended, cap)
++    heaviest_total = sum(counts_desc[:batch_size])
 +    explanation = "\n".join([
 +        f"GPU {properties.name}: {total / GB:.1f} GB total, {headroom / GB:.1f} GB headroom, {CONTEXT_BYTES / GB:.1f} GB context",
 +        f"base {loaded_model.model_config.model_id} {str(description.dtype).replace('torch.', '')}: "
@@ -1442,47 +1514,37 @@ index 0000000..04b7f1a
 +        f"trainable {trainable / 1e6:.1f}M params ({', '.join(f'{name} {count / 1e6:.1f}M' for name, count in group_counts.items())})"
 +        f" x {BYTES_PER_TRAINABLE_PARAM} B = {trainable_bytes / GB:.1f} GB",
 +        f"usable for activations: {usable / GB:.1f} GB",
-+        f"observed longest text {len(longest):,} chars (~{tokens - num_views} tokens + {num_views} view rows); max {max_candidates} candidates per example",
-+        f"per token {per_token / 2**20:.2f} MB {'with' if gradient_checkpointing else 'without'} checkpointing"
-+        f" -> {per_example / GB:.2f} GB per example ({sequences} sequences)",
-+        f"recommended batch_size = min({recommended}, cap {cap}) = {batch_size}",
++        f"{len(counts):,} examples: {sum(counts) / len(counts):,.0f} est. tokens on average, {counts_desc[0]:,} heaviest",
++        f"per token {per_token_on / 2**20:.2f} MB with checkpointing, {per_token_off / 2**20:.2f} MB without",
++        f"batch with checkpointing {batch_on}, without {batch_off} (cap {cap}); using {'with' if gradient_checkpointing else 'without'}",
++        f"batch_size = {batch_size}: heaviest {batch_size} examples total {heaviest_total:,} est. tokens"
++        f" = {heaviest_total * (per_token_on if gradient_checkpointing else per_token_off) / GB:.1f} GB",
 +    ])
-+    return batch_size, explanation
++    return BatchSizing(batch_size, explanation, _heaviest(training_data, counts, batch_size))
 +
 +
 +def probe_batch_size(
 +    step_fn: t.Callable[[RetrievalBatch], None],
-+    harness: "HarnessRuntime",
 +    retrieval_model: "RetrievalModel",
-+    batch_size: int,
-+    longest_text: str,
-+    max_candidates: int,
++    probe_examples: list[LabeledRetrievalQAExample],
++    dataset_index: DatasetIndexes,
 +    attempts: int = 3,
 +) -> tuple[int, int]:
 +    """
-+    One synthetic forward/backward at batch_size with every sequence at the observed longest;
-+    halve on out-of-memory. Returns (size that passed, attempts used). Skipped on CPU.
++    One real forward/backward on the heaviest examples (their real queries and candidates, through
++    the real grouping, AC model and dedup); halve the batch on out-of-memory. Returns (size that
++    passed, attempts used). Skipped on CPU.
 +    """
++    batch_size = len(probe_examples)
 +    if retrieval_model.device.type != "cuda":
 +        return batch_size, 0
 +    for attempt in range(1, attempts + 1):
-+        examples, candidates, num_positives = [], [], []
-+        for example_index in range(batch_size):
-+            chunks = [
-+                DatasetDocumentChunk(
-+                    chunk_id=f"probe:{example_index}:{chunk_index}:0", doc_id=f"probe:{example_index}:{chunk_index}",
-+                    dataset_id="probe", chunk_text=longest_text, chunk_start=0,
-+                )
-+                for chunk_index in range(max_candidates)
-+            ]
-+            examples.append(LabeledRetrievalQAExample(
-+                example_id=f"probe:{example_index}", dataset_id="probe", query=longest_text,
-+                positive_doc_ids=[chunks[0].doc_id], positive_chunk_ids=[chunks[0].chunk_id],
-+                hard_negative_chunk_ids=[chunk.chunk_id for chunk in chunks[1:]],
-+            ))
-+            candidates.append(chunks)
-+            num_positives.append(1)
-+        batch = RetrievalBatch(examples=examples, candidates=candidates, num_positives=num_positives)
++        batch = _batch_from(probe_examples[:batch_size], dataset_index)
++        distinct = len(flatten_candidates(batch)[0])
++        listed = sum(len(candidates) for candidates in batch.candidates)
++        if distinct < 0.9 * listed:
++            print(f"Batch probe: the heaviest {batch_size} examples share candidates ({distinct} distinct of {listed}); "
++                  "the probe batch is lighter than the sizing bound.")
 +        failed = False
 +        try:
 +            step_fn(batch)
@@ -1514,10 +1576,10 @@ Exact delta vs `/source/activation/retrieval/retrieval_training_config.py`:
 ````diff-python
 diff --git aworkspace/activation/retrieval/retrieval_training_config.py bworkspace/activation/retrieval/retrieval_training_config.py
 new file mode 100644
-index 0000000..bf24921
+index 0000000..d5f89b4
 --- /dev/null
 +++ bworkspace/activation/retrieval/retrieval_training_config.py
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,101 @@
 +"""
 +Configuration and statistics of a retrieval training run.
 +
@@ -1559,7 +1621,7 @@ index 0000000..bf24921
 +    total_reporting_time: float = 0.0
 +    step_losses: list[tuple[int, float]] = field(default_factory=list)                  # (step, loss)
 +    step_learning_rates: list[tuple[int, dict[str, float]]] = field(default_factory=list)
-+    step_batch_shapes: list[tuple[int, int, int, int]] = field(default_factory=list)    # (examples, candidates, real tokens, padded tokens)
++    step_batch_shapes: list[tuple[int, int, int, int, int]] = field(default_factory=list)  # (examples, candidates, real tokens, padded tokens, forwards)
 +    step_times: list[float] = field(default_factory=list)
 +    reporting_losses: list[tuple[float, float]] = field(default_factory=list)           # (progress in epochs, loss)
 +    reporting_metrics: list[tuple[float, dict[str, float]]] = field(default_factory=list)  # (progress, {in-batch rank-1, mrr@10, ndcg@10})
@@ -1603,6 +1665,7 @@ index 0000000..bf24921
 +            "tokens_per_s": real_tokens / train_time if train_time else 0.0,
 +            "padded_tokens_per_s": padded_tokens / train_time if train_time else 0.0,
 +            "avg_padding_fraction": 1 - real_tokens / padded_tokens if padded_tokens else 0.0,
++            "forwards_per_step": average([shape[4] for shape in self.step_batch_shapes]),
 +            "seconds_per_10k_examples": 10_000 * train_time / examples if examples else 0.0,
 +            # Memory.
 +            "peak_memory_gb": self.peak_memory_bytes / 1024 ** 3,
@@ -1633,7 +1696,7 @@ Exact delta vs `/source/activation/retrieval/retrieval_trainer.py`:
 
 ````diff-python
 diff --git asource/activation/retrieval/retrieval_trainer.py bworkspace/activation/retrieval/retrieval_trainer.py
-index 3819ae6..13f68a7 100644
+index 3819ae6..f1e28cf 100644
 --- asource/activation/retrieval/retrieval_trainer.py
 +++ bworkspace/activation/retrieval/retrieval_trainer.py
 @@ -12,31 +12,312 @@ Slice 1 is complete when:
@@ -1661,15 +1724,15 @@ index 3819ae6..13f68a7 100644
 -    ... # Bog standard: We can't afford bad hyperparams.
 +from ..dataset.dataset import LabeledRetrievalQAExample
 +from .retrieval_batching import (
-+    RetrievalBatch,
 +    DatasetIndexes,
-+    make_batches,
++    RetrievalBatch,
++    configured_batch_sizing,
++    embed_in_length_groups,
 +    fixed_batches,
 +    flatten_candidates,
-+    embed_in_length_groups,
-+    observed_shape,
-+    recommended_batch_size,
++    make_batches,
 +    probe_batch_size,
++    recommended_batch_size,
 +)
 +from .retrieval_model import RetrievalModel
 +from .retrieval_reporter import METRIC_NAMES, RetrievalReporter
@@ -1839,16 +1902,16 @@ index 3819ae6..13f68a7 100644
 +        assert groups, "Nothing to train: no LoRA, AC model or head."
 +        all_parameters = [parameter for params in groups.values() for parameter in params]
 +
-+        # Batch size: config or the sizing heuristic, then the worst-case probe.
++        # Batch size: config or the sizing from the heaviest real batch, then the probe on that batch.
 +        retrieval_model.set_training_mode(True, config.gradient_checkpointing)
 +        if config.batch_size is None:
-+            batch_size, batch_sizing = recommended_batch_size(
-+                self.harness, retrieval_model, training_data, dataset_index,
++            sizing = recommended_batch_size(
++                retrieval_model, training_data, dataset_index,
 +                config.gradient_checkpointing, config.memory_headroom_fraction, device,
 +            )
 +        else:
-+            batch_size, batch_sizing = config.batch_size, f"batch_size = {config.batch_size} (from the config)"
-+        longest_text, max_candidates = observed_shape(training_data, dataset_index, retrieval_model)
++            sizing = configured_batch_sizing(config.batch_size, training_data, dataset_index, retrieval_model)
++        batch_sizing = sizing.explanation
 +
 +        def probe_step(batch: RetrievalBatch) -> None:
 +            try:
@@ -1857,9 +1920,7 @@ index 3819ae6..13f68a7 100644
 +            finally:
 +                for parameter in all_parameters:
 +                    parameter.grad = None
-+        batch_size, probe_attempts = probe_batch_size(
-+            probe_step, self.harness, retrieval_model, batch_size, longest_text, max_candidates,
-+        )
++        batch_size, probe_attempts = probe_batch_size(probe_step, retrieval_model, sizing.probe_examples, dataset_index)
 +        if probe_attempts:
 +            batch_sizing += f"\nprobe passed at {batch_size} on attempt {probe_attempts}"
 +        stats.batch_size, stats.probe_attempts, stats.batch_sizing = batch_size, probe_attempts, batch_sizing
@@ -1903,11 +1964,12 @@ index 3819ae6..13f68a7 100644
 +        for epoch in range(1, config.epochs + 1):
 +            rng = random.Random(config.seed + epoch)
 +            epoch_start = time.time()
-+            epoch_shapes: list[tuple[int, int, int, int]] = []
++            epoch_shapes: list[tuple[int, int, int, int, int]] = []
 +            epoch_steps = 0
 +            for batch in make_batches(training_data, dataset_index, batch_size, rng):
 +                step_start = time.time()
 +                real_before, padded_before = retrieval_model.real_tokens_embedded, retrieval_model.padded_tokens_embedded
++                forwards_before = retrieval_model.forwards_embedded
 +                loss = self.contrastive_loss(retrieval_model, batch, config.temperature)
 +                loss.backward()
 +                torch.nn.utils.clip_grad_norm_(all_parameters, config.max_grad_norm)
@@ -1924,6 +1986,7 @@ index 3819ae6..13f68a7 100644
 +                    len(batch.examples), distinct_candidates,
 +                    retrieval_model.real_tokens_embedded - real_before,
 +                    retrieval_model.padded_tokens_embedded - padded_before,
++                    retrieval_model.forwards_embedded - forwards_before,
 +                )
 +                stats.step_losses.append((step, loss_value))
 +                stats.step_learning_rates.append((step, learning_rates))
@@ -1979,10 +2042,10 @@ Exact delta vs `/source/activation/retrieval/retrieval_reporter.py`:
 
 ````diff-python
 diff --git asource/activation/retrieval/retrieval_reporter.py bworkspace/activation/retrieval/retrieval_reporter.py
-index 5f242ff..6042f72 100644
+index 5f242ff..91255b3 100644
 --- asource/activation/retrieval/retrieval_reporter.py
 +++ bworkspace/activation/retrieval/retrieval_reporter.py
-@@ -1,19 +1,165 @@
+@@ -1,19 +1,166 @@
  """
 -Helps report training progress in a continually updated html file.
 -So every 10% of the training data, compute the reporting loss and plot it.
@@ -2073,7 +2136,7 @@ index 5f242ff..6042f72 100644
 +        self.initialize_table(
 +            "epochs", "Throughput per epoch",
 +            "Padding fraction is the share of padded positions in the embedded sequences after length grouping.",
-+            ["epoch", "steps", "examples/s", "candidates/s", "tokens/s (real)", "padded tokens/s", "padding fraction", "step time", "peak memory", "time"],
++            ["epoch", "steps", "examples/s", "candidates/s", "tokens/s (real)", "padded tokens/s", "padding fraction", "forwards/step", "step time", "peak memory", "time"],
 +        )
 +        self.set_text("batch_sizing", "Batch sizing", batch_sizing)
 +        lora = None
@@ -2120,7 +2183,7 @@ index 5f242ff..6042f72 100644
 +        print(f"Epoch {epoch}/{self.epochs}: validation loss {loss:.4f}, {_format_metrics(metrics)}")
 +
 +    def report_epoch(
-+        self, label: str, steps: int, shapes: list[tuple[int, int, int, int]], epoch_time: float,
++        self, label: str, steps: int, shapes: list[tuple[int, int, int, int, int]], epoch_time: float,
 +        peak_memory_bytes: int | None, running: bool,
 +    ) -> None:
 +        """One throughput row; a running row is replaced by the next call for the same epoch."""
@@ -2135,6 +2198,7 @@ index 5f242ff..6042f72 100644
 +            "tokens/s (real)": format_rate(real / epoch_time) if epoch_time else "",
 +            "padded tokens/s": format_rate(padded / epoch_time) if epoch_time else "",
 +            "padding fraction": f"{1 - real / padded:.1%}" if padded else "",
++            "forwards/step": f"{sum(shape[4] for shape in shapes) / steps:.1f}" if steps else "",
 +            "step time": f"{epoch_time / steps:.2f} s" if steps else "",
 +            "peak memory": _format_memory(peak_memory_bytes),
 +            "time": format_seconds(epoch_time), "running": running,

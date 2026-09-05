@@ -2,6 +2,7 @@
 Utilities to load and split datasets.
 """
 
+import random
 import typing as t
 from .dataset import DataSplit, LoadedDataset, DatasetStats, DatasetDocumentChunk
 if t.TYPE_CHECKING:
@@ -93,3 +94,17 @@ def extra_corpus_budget(max_corpus_documents: int | None, num_wanted: int) -> in
     return max(0, max_corpus_documents - num_wanted)
 
 
+def shuffle_fill_truncate(items: list, num_samples: int, rng: random.Random) -> list:
+    """
+    Seeded selection without replacement that still honors a budget above the population: one
+    shuffled pass when num_samples <= len(items) (truncate), otherwise whole reshuffled passes
+    until the budget is covered, then truncate. Every item is seen before any item repeats.
+    """
+    if not items or num_samples <= 0:
+        return []
+    selected: list = []
+    while len(selected) < num_samples:
+        order = list(items)
+        rng.shuffle(order)
+        selected.extend(order)
+    return selected[:num_samples]

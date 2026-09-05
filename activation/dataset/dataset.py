@@ -162,6 +162,8 @@ class DatasetStats:
     study_num_label_inherited_positives: int = 0
     study_num_label_inherited_negatives: int = 0
     study_num_label_inherit_skipped: int = 0
+    # Training data selection.
+    training_select_num_dropped_no_positive: int = 0
 
     def summarize(self) -> dict:
         # Returns average statistics.
@@ -224,6 +226,7 @@ class DatasetStats:
             "study_num_label_inherited_positives": self.study_num_label_inherited_positives,
             "study_num_label_inherited_negatives": self.study_num_label_inherited_negatives,
             "study_num_label_inherit_skipped": self.study_num_label_inherit_skipped,
+            "training_select_num_dropped_no_positive": self.training_select_num_dropped_no_positive,
         }
 
 

@@ -84,7 +84,7 @@ class RetrievalReporter(HtmlReporter):
         self.initialize_table(
             "epochs", "Throughput per epoch",
             "Padding fraction is the share of padded positions in the embedded sequences after length grouping.",
-            ["epoch", "steps", "examples/s", "candidates/s", "tokens/s (real)", "padded tokens/s", "padding fraction", "step time", "peak memory", "time"],
+            ["epoch", "steps", "examples/s", "candidates/s", "tokens/s (real)", "padded tokens/s", "padding fraction", "forwards/step", "step time", "peak memory", "time"],
         )
         self.set_text("batch_sizing", "Batch sizing", batch_sizing)
         lora = None
@@ -131,7 +131,7 @@ class RetrievalReporter(HtmlReporter):
         print(f"Epoch {epoch}/{self.epochs}: validation loss {loss:.4f}, {_format_metrics(metrics)}")
 
     def report_epoch(
-        self, label: str, steps: int, shapes: list[tuple[int, int, int, int]], epoch_time: float,
+        self, label: str, steps: int, shapes: list[tuple[int, int, int, int, int]], epoch_time: float,
         peak_memory_bytes: int | None, running: bool,
     ) -> None:
         """One throughput row; a running row is replaced by the next call for the same epoch."""
@@ -146,6 +146,7 @@ class RetrievalReporter(HtmlReporter):
             "tokens/s (real)": format_rate(real / epoch_time) if epoch_time else "",
             "padded tokens/s": format_rate(padded / epoch_time) if epoch_time else "",
             "padding fraction": f"{1 - real / padded:.1%}" if padded else "",
+            "forwards/step": f"{sum(shape[4] for shape in shapes) / steps:.1f}" if steps else "",
             "step time": f"{epoch_time / steps:.2f} s" if steps else "",
             "peak memory": _format_memory(peak_memory_bytes),
             "time": format_seconds(epoch_time), "running": running,

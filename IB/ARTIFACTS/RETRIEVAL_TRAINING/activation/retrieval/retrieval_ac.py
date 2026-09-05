@@ -79,9 +79,19 @@ class WindowedBytePooling(nn.Module):
         num_windows = windows.shape[1]
         flat = windows.reshape(batch_size * num_windows, BYTE_WINDOW, d)
         flat_masks = window_masks.reshape(batch_size * num_windows, BYTE_WINDOW)
-        window_valid = flat_masks.any(dim=1)                                           # [B*W]
+        # A text's windows must not depend on how far the batch pads it: exactly the windows it gets
+        # alone (its length padded up to the stride), so a short text next to a long one does not
+        # gain an extra partial window at its tail. "Any valid byte" would add that window.
+        lengths = mask.sum(dim=1)                                                      # [B] real bytes
+        num_valid = torch.where(
+            lengths > BYTE_WINDOW,
+            (lengths - BYTE_WINDOW + BYTE_STRIDE - 1) // BYTE_STRIDE + 1,
+            torch.ones_like(lengths),
+        )
+        window_index = torch.arange(num_windows, device=x.device)
+        window_valid = (window_index[None, :] < num_valid[:, None]).reshape(-1)        # [B*W]
         key_padding = ~flat_masks
-        key_padding[~window_valid] = False  # Fully padded windows attend to themselves harmlessly and are masked downstream.
+        key_padding[~window_valid] = False  # Invalid windows attend to themselves harmlessly and are masked downstream.
         normed = self.norm(flat)
         attended, _ = self.attention(normed, normed, normed, key_padding_mask=key_padding, need_weights=False)
         flat = flat + attended

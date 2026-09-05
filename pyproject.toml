@@ -12,6 +12,7 @@ dependencies = [
     "datasets",
     "faiss-cpu",
     "bm25s",
+    "peft>=0.20.0",
 ]
 
 [project.scripts]

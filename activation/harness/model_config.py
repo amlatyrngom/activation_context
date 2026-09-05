@@ -48,6 +48,8 @@ class ModelDescription:
     last_layer_index is the index we need to tap to create adapters and such. Right before lm head I suppose.
     """
     d_model: int
+    d_ff: int
+    """Feed-forward width, for batch sizing."""
     is_multimodal: bool
     layer_descriptions: list[LayerDescription] = field(default_factory=list)
     dtype: torch.dtype = torch.bfloat16
@@ -73,6 +75,10 @@ class ModelConfig:
 
     engine_kwargs: dict[str, t.Any]|None = None
     """Additional arguments passed to the engine. Override default ones."""
+
+    trust_remote_code: bool = False
+    """Run the repository's custom modeling code (Hugging Face config, tokenizer, weights and the engine). Only for
+    publishers the project trusts; the Hugging Face loaders otherwise prompt on a terminal and fail headlessly."""
 
     def pretty_format_description(self) -> str:
         from .hf_utils import pretty_format_model_description
