@@ -11,6 +11,7 @@ from datasets import load_dataset
 from ..dataset_utils import (
     make_dataset_id,
     take_to_budget,
+    extra_corpus_budget,
     initialize_dataset_stats,
 )
 
@@ -44,13 +45,16 @@ class BrightDataset:
         harness: "HarnessRuntime",
         max_examples: int|None,
         domain: str = "biology",
+        max_corpus_documents: int|None = None,
     ) -> LoadedDataset:
         """
         Take up to max_examples labeled examples (all of them when None) and keep
-        every gold passage they reference.
+        every gold passage they reference. The corpus additionally holds up to
+        max(0, max_corpus_documents - golds) non-gold passages in corpus order;
+        None means the domain's whole reference corpus.
         """
         start_time = time.time()
-        dataset_id = make_dataset_id("bright", domain=domain, n=max_examples)
+        dataset_id = make_dataset_id("bright", domain=domain, n=max_examples, corpus=max_corpus_documents)
         print(f"{dataset_id} - Loading")
         selected = take_to_budget(
             load_dataset("xlangai/BRIGHT", "examples", split=domain),
@@ -61,15 +65,18 @@ class BrightDataset:
         for row in selected:
             wanted_doc_ids.update(_parse_id_list(row["gold_ids"]))
         documents: dict[str, DatasetDocument] = {}
+        extra_budget = extra_corpus_budget(max_corpus_documents, len(wanted_doc_ids))
         for row in load_dataset("xlangai/BRIGHT", "documents", split=domain):
             doc_id = str(row["id"])
             if doc_id not in wanted_doc_ids:
-                continue
+                if extra_budget is not None and extra_budget <= 0:
+                    continue
+                if extra_budget is not None:
+                    extra_budget -= 1
             documents[doc_id] = DatasetDocument(
                 doc_id=doc_id,
                 dataset_id=dataset_id,
                 text=str(row["content"]),
-                atomic=True, # BRIGHT passages are already retrieval units.
             )
         examples: dict[str, LabeledRetrievalQAExample] = {}
         for row in selected:

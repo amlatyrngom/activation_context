@@ -8,6 +8,7 @@ from datasets import load_dataset
 from ..dataset_utils import (
     make_dataset_id,
     take_to_budget,
+    extra_corpus_budget,
     normalize_split_name,
     initialize_dataset_stats,
 )
@@ -34,15 +35,16 @@ class MsMarcoDataset:
     def load(
         cls,
         harness: "HarnessRuntime",
-        max_examples: int,
+        max_examples: int|None,
         version: str = "v1.1",
         split: str = "train",
+        max_corpus_documents: int|None = None,
     ) -> LoadedDataset:
         """
         Load whole query records so passages never separate from their labels.
         """
         start_time = time.time()
-        dataset_id = make_dataset_id("ms_marco", version=version, split=split, n=max_examples)
+        dataset_id = make_dataset_id("ms_marco", version=version, split=split, n=max_examples, corpus=max_corpus_documents)
         print(f"{dataset_id} - Loading")
         rows = load_dataset(
             "microsoft/ms_marco",
@@ -50,8 +52,9 @@ class MsMarcoDataset:
             split=split,
             streaming=True,
         )
+        row_iter = enumerate(rows)
         selected = take_to_budget(
-            enumerate(rows),
+            row_iter,
             budget=max_examples,
         )
         documents: dict[str, DatasetDocument] = {}
@@ -71,7 +74,6 @@ class MsMarcoDataset:
                         doc_id=doc_id,
                         dataset_id=dataset_id,
                         text=text,
-                        atomic=True,
                     )
                     documents[doc_id] = doc
                     documents_dedup[text] = doc
@@ -100,6 +102,26 @@ class MsMarcoDataset:
                     hard_negative_doc_ids=negatives or None,
                 )
                 examples[example.example_id] = example
+        # Distractor pool: keep scanning rows past max_examples, passages only.
+        extra_budget = extra_corpus_budget(max_corpus_documents, len(documents))
+        if extra_budget is None or extra_budget > 0:
+            for ordinal, row in row_iter:
+                prefix = f"msmarco:{split}:{ordinal}"
+                for index, text in enumerate(row["passages"]["passage_text"]):
+                    text = str(text)
+                    if text in documents_dedup:
+                        continue
+                    doc = DatasetDocument(
+                        doc_id=f"{prefix}:{index}",
+                        dataset_id=dataset_id,
+                        text=text,
+                    )
+                    documents[doc.doc_id] = doc
+                    documents_dedup[text] = doc
+                    if extra_budget is not None:
+                        extra_budget -= 1
+                if extra_budget is not None and extra_budget <= 0:
+                    break
         loaded_dataset = LoadedDataset(
             dataset_id=dataset_id,
             documents=documents,

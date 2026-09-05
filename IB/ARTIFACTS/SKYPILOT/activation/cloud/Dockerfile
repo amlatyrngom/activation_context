@@ -26,7 +26,7 @@ RUN uv python install 3.14 \
     && uv sync --frozen --no-install-project \
     && uv cache clean
 
-ENV UV_NO_SYNC=1 \
+ENV UV_FROZEN=1 \
     PATH=/opt/activation/.venv/bin:/usr/local/bin:${PATH}
 
 RUN mkdir -p \

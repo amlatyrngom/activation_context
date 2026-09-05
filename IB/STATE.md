@@ -2,135 +2,44 @@
 
 ## Agent container
 
-- The dedicated Agent Container is configured through `IB/isolation/agent.devcontainer.json` and `.devcontainer/agent/devcontainer.json`.
-- `/source` is read-only user source, `/workspace` is disposable scratch, and `/workspace/IB` is the shared write-through boundary.
-- The image bakes Node 24/npm, uv, CPython 3.14, tmux, and the selected agent CLIs; startup syncs the project environment from committed `uv.lock`.
-- Fresh-build isolation, tool versions, tmux detach/reattach and result retention, mouse/history settings, and VS Code terminal keybindings were validated.
-- Full-access agent CLI behavior was confirmed for the active initialization workflow without adding a persistent global full-access default.
+- Dedicated Agent Container via `IB/isolation/agent.devcontainer.json` and `.devcontainer/agent/devcontainer.json`: `/source` read-only user source, `/workspace` disposable scratch, `/workspace/IB` shared write-through. Image bakes Node 24, uv, CPython 3.14, tmux, agent CLIs; startup syncs from `uv.lock`. No GPU in the container; 8 cores, 30 GB RAM.
+- The Sky wrapper's `uv tool run --python 3.13` needs a writable `UV_PYTHON_INSTALL_DIR` (`~/.local/share/uv/python` works).
 
-## Active work — Document index and public dataset loaders
+## Active work — Slice 1: activation-context retrieval training (implemented, diff cards pending user apply)
 
-### Review surfaces
+- Plan pair `IB/ARTIFACTS/RETRIEVAL_TRAINING/SLICE1_PLAN.md` + `SLICE1_PLAN.tressoir.md` (all cards Completed with implementation and review notes). Handoff: `SLICE1_ROUND.tressoir.md` (21 diff cards = exact deltas of workspace files vs `/source`; staged copies under `RETRIEVAL_TRAINING/activation/` and `SLICE1_pyproject.toml`; `uv.lock` change is `peft>=0.20.0` → peft 0.20.0 + accelerate 1.14.0). Generator `IB/TMP/RETRIEVAL_SLICE1/make_round_doc.py <header.md>`.
+- Landed (workspace): `harness/module_manager.py` (PEFT adapters named on one wrapped base, `LoraConfig` with sanitized `adapter_name`, `register_retrieval_ac`), `loaded_model.decoder_forward`, `retrieval/{retrieval_ac,retrieval_model,retrieval_batching,retrieval_trainer,retrieval_reporter}.py` + vendored `report_assets/`, `select_training_data`, the test and `bench/retrieval_training_bench.py`.
+- Review (M8) fixes folded: MaxSim is the mean over query views (sum over V=8 ran at effective τ 0.0025 and saturated), AC rows scaled to token-embedding RMS, no wd on 1-D params, probe cleanup after the except, seeded construction, validation rank-1, validation batches of the reporting size, bench default 2 epochs. Canon updated (LoRA + AC instead of full fine-tune, view-mean MaxSim, method A batching, Sky-only heavy runs).
+- Results on `ac-slice1` (RTX PRO 6000, torn down): test `1 passed in 35.61s`; 950/50/50 run at batch 32, 2 epochs: reporting loss 5.99 → 1.85 → 2.00, validation rank-1 0.34 → 0.38, 4.1 s/step, 7.0k real tok/s, peak 8.5 GB, 1288 s per 10k examples. Report `IB/TMP/RETRIEVAL_SLICE1/gpu_run/report.tressoir.html`; logs `sky_*.log`. Run 1 (4 epochs, pre-review) summary in `gpu_run/run1_summary.txt`; its report folder was lost to the exec mirror (bench now expands `~` itself).
+- Incidents: the local CPU run at the plan's shape peaked at 29.5 GB on the 30 GB host and was OOM-killed (user's VS Code disrupted) → heavy runs only on Sky nodes; the staging step removed the old IB-only `activation/training/` package (`losses.py` restored to `IB/TMP/RETRIEVAL_TRAINING/old_training_package/`).
+- User review round 2 (notes left as `@AI` comments in the staged tree) applied: LoRA ownership moved into `ModuleManager` (one PEFT wrapper per base, adapters by name, `decoder_forward(..., lora_name)` selects per pass via `lora_context`, `free_lora` with the checkpoint assert, base free refused while adapters are attached), `register_retrieval_ac` typed to `StandardRetrievalACModel`, AC dropout fixed at 0.1 in the layers (knob removed), in-batch MRR@10 / nDCG@10 next to rank-1, reporter split into `common/reporting.py` (`HtmlReporter`) + `RetrievalReporter` events (no reporting code in the trainer); after the html-skill update the page is self-contained (embedded data, pinned HTTPS assets: Tressoir linear v0.1.7, CodeMirror 5.65.16, Plotly 2.35.2), no assets copied beside it. Node `ac-slice1b` (torn down): test `1 passed in 37.10s` (LoRA lifecycle: per-pass adapter selection differs from the plain base, `free_lora` then base free; `sky_e2e_test_run6.log`); run 3 950 / 50 / 50, batch 32, 2 epochs, 60 steps: reporting loss 5.38 → 1.89 → 2.19; validation in-batch rank-1 0.34 → 0.42, MRR@10 0.55 → 0.59, nDCG@10 0.66 → 0.68; 4.0 s/step, 7.2k real tokens/s, peak 8.5 GB, 1258 s per 10k examples (`sky_acceptance_run5.log`, report `IB/TMP/RETRIEVAL_SLICE1/gpu_run3/`). An identical run one commit earlier (`sky_acceptance_run4.log`, before the pooling-attention dropout was removed and the metrics renamed) gave rank-1 0.24 → 0.28, so run-to-run spread at this size is ±0.1 in-batch rank-1 and the dropout-versus-no-dropout gap (run 2: 0.34 → 0.38) is within it. Cards regenerated.
+- Follow-ups landed: `retrieval/retrieval_training_config.py` (config + stats out of the trainer); `dataset_utils.shuffle_fill_truncate` replaces sampling with replacement in `_sample_study_chunks`; `ModelConfig.trust_remote_code` plumbed through the Hugging Face loaders and the engine (the Ling models prompt on a terminal otherwise); reports written mode 644. Live sync: `uv run sky watch <node> '~/activation_artifacts/<run>/' IB/TMP/<RUN>/ --until-file <sentinel>` rsyncs the remote folder every N seconds so the self-contained report morphs locally while the run writes (demo `bench/live_report_demo.py`, synced copy `IB/TMP/LIVE_REPORT_DEMO/`; documented in `IB/ARTIFACTS/SKYPILOT/README.md`).
+- CHEAP_SYNTHETIC bench (`bench/cheap_synthetic_bench.py`, node `ac-cheap` RTX PRO 6000, torn down; results `IB/TMP/CHEAP_SYNTHETIC/combined_results.json`, live pages `run/` and `run_ling2/`): study-prompt JSON QA on 2048 MS-MARCO chunks per configuration, thinking off, KV cache auto. Output tokens/s at max_num_seqs 128 / 256 / 512 and QA pairs per GPU-hour at 512: Qwen3.5-4B FP8 (RedHatAI) 2.95k / 3.92k / 4.01k, 204k pairs/h, ≤1 parse failure per 2048, ~71 output tokens; Qwen3.5-4B bf16 2.68k / 3.41k / 3.53k, 178k pairs/h; Ling-3.0-tiny fp8 2.49k / 3.66k / 4.53k, 173k pairs/h, 17–35 parse failures, ~95 tokens and vaguer questions; Ling-3.0-tiny int4 3.40k / 4.53k / 5.12k, 144k pairs/h, ≤3 failures but 128-token verbose answers. Recommendation: `RedHatAI/Qwen3.5-4B-FP8-dynamic` at max_num_seqs 256 (highest pairs/hour, tightest questions, one parse failure in 6144); Ling needs `trust_remote_code` and `enable_lora=False` (vLLM 0.28 has no LoRA for BailingMoeV3) and its MoE only pays off above 512 concurrent sequences. Engine load is 30–50 s once the compile cache is warm, 3–5 min cold.
+- Batching throughput plan (`IB/ARTIFACTS/RETRIEVAL_TRAINING/BATCHING_PLAN.md` + `.tressoir.md`, version 3 after two independent review rounds, awaiting approval): M1 token-budget forwards (8k padded tokens per forward instead of 15 tolerance groups per step; lengths estimated as `embed_batch` sees them; eval-mode allclose check proves same loss; per-forward GPU sync removed; forwards counter) and M2 data-measured sizing (heaviest real batch by per-example token totals, probed with that real batch; checkpointing stays a bool, cap stays 128). Evidence: run 3 sits at ≈16 % MFU with 15 forwards per step; the plan is an MFU bet (needs ≈42 %) with a pre-check first. Length bucketing measured and dropped (2–5 points of padding). Corpus counts: MS-MARCO v1.1 train 626,907 unique passages (= chunks at 4,096 chars), all splits 767,675; BRIGHT 1.35M chunks over 12 domains (aops and theoremqa_questions share a corpus), 1,384 queries.
+- Open: user applies the cards; user decides the batching plan; 50k-query run (τ 0.05 fallback if loss drifts up at improving rank-1; batch from the heuristic); slice 2 multi-vector index; slice 3 dataset studying.
 
-- Current interactive review: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/DOCUMENT_INDEX_ROUND_4_INTERACTIVE.tressoir.md`.
-- Staged source-shaped handoff: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/activation/{dataset,tests,harness}` (dataset module, five loaders, public dataset test, runtime config).
-- Earlier rounds (applied): `DOCUMENT_INDEX_INTERACTIVE`, `DOCUMENT_INDEX_ROUND_2_INTERACTIVE`, `DOCUMENT_INDEX_ROUND_3_INTERACTIVE` `.tressoir.md`.
+## Completed — BM25, study labeling, single-vector retrieval training (user-adapted)
 
-### Status
+- Plan pair `IB/ARTIFACTS/RETRIEVAL_TRAINING/PLAN.md` + `PLAN.tressoir.md`; handoff cards `BM25_STUDY_LABELS_ROUND.tressoir.md`, `STUDY_LABELING_ROUND.tressoir.md`. Decisions are canon ("Retrieval index and training decisions").
+- Landed in user source: `bm25s`-backed BM25 path, unified chunking, study labeling with per-document inheritance (`_inherit_labels`), `oracle_labeled`, label knobs (`dataset_study_label_top_k=10`, pool 32768 chars), stats, `MAX_JOBS=3` / `NVCC_THREADS=1` defaults in `runtime_config.py`. GPU-validated: study test `1 passed` (~700–780 s cold, engine load outside the stats), labels 56–65 pos / ~275 neg / 0 parse failures.
+- The M3 single-vector training package (IB-only, full fine-tune Qwen3-0.6B, form-A loss, `bm25_pseudo` negatives, epoch sampler) was superseded by slice 1 and removed from the staging folder; only its `losses.py` survives in `IB/TMP/RETRIEVAL_TRAINING/old_training_package/`.
 
-- Rounds 1–4 are fully applied in user source, including the user's progress-print UX pass and the three review fixes from the final chat round (print typo, latency-stat consistency, size formatting). The staged handoff mirrors the applied source.
-- Durable policies were promoted to `IB/CANON/ROOT_CANON.md` ("Dataset loading and indexing decisions"); the SciFact-distractor question remains open in the round-4 doc.
-- The user is prototyping the next major steps and will return with direction. Likely next rounds: retrieval-quality metrics (recall@k, where `excluded_doc_ids` does real work) and GPU runs.
+## Completed — Multi-GPU study engine (user-adapted)
 
-### Round 4 — unskewed loaders, truncator, exclusions
+- Plan pair `IB/ARTIFACTS/MULTI_GPU_ENGINE/PLAN.md` + `PLAN.tressoir.md`; handoff `MULTI_GPU_ENGINE_ROUND.tressoir.md` (rounds 1–3 applied by the user). Decisions are canon ("Engine replica decisions").
+- Landed: `harness/vllm_wrapper.py` (one sync `vllm.LLM` per visible GPU, `ENGINE_MAX_NUM_SEQS=128`, `RECOMMENDED_BATCH_SIZE`, `recommended_engine_kwargs` / `recommended_chat_kwargs`), `loaded_model.py` merge order defaults → recommendation → explicit, `engine_free_other_models`, `ensure_engine_loaded`; QA/label model knobs (`dataset_study_qa_model_name`, `dataset_study_label_model_name` required when labeling runs), batch knobs default to `RECOMMENDED_BATCH_SIZE`.
+- Final GPU runs on the adapted tree: 2× RTX PRO 6000 cold `1 passed in 1617.87s`, 1× warm `118.71s` (study 512 output tok/s, labels 28.4k prompt tok/s); residency `[QA, LABEL]` held. Logs `IB/TMP/MULTI_GPU/final_*.log`. Probe findings (vLLM DP refuses single-process use; MoE lockstep at half throughput; MTP taxes MoE prefill) are in the plan.
+- Open later: M4 session→replica pinning for rollout KV stickiness; MoE+MTP replica calibration.
 
-- Skew fixes agreed in chat: examples are first-class (`take_to_budget` with the user's `filter_fn`; `cost_fn` documented as the budget tracker for fan-out cases), `max_doc_chars` removed everywhere, and the user's `safe_truncate_embedding_chunk` head+tail truncator wired through `doc_embedding_input_limit_chars` on both build and query paths (512 on CPU test, None on GPU).
-- `LabeledRetrievalQAExample.excluded_doc_ids` (user renamed from chunk-level) is populated by BRIGHT from native `excluded_ids` and respected in `query_many_frozen` via per-query sets with a flat +10 over-fetch.
-- BRIGHT: `max_examples: int|None` (None = all labeled examples), corpus = gold passages only; distractor sampling removed at user request. SciFact still carries seeded distractors — open decision in the round-4 doc.
-- Review of the user's partial application found and fixed: truncate calls missing the limit argument (build crash), exclusion filtering testing the wrong variable (never filtered), `_build_excluded_sets` None/empty handling and returning raw lists, and the unused `chunk_ids` cache.
-- Validation: basic test passed post-fixes; BRIGHT loads at n=20 and n=None; full CPU public run of the final code reported in chat.
+## Completed — Document index, loaders, dataset study (user-adapted)
 
-### Round 3 — implemented and validated
+- Review surfaces under `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/` (`DOCUMENT_INDEX_ROUND_{1..4}_INTERACTIVE`, `DATASET_STUDY_ROUND`, `Q4_ENGINE_ROUND`); staged tree `ACTIVATION_CONTEXT_INIT/activation/`.
+- Loaders BRIGHT, NQ, MS-MARCO, SciFact, SciQ share one shape (`max_examples`, `max_corpus_documents`, `take_to_budget`, `doc_embedding_input_limit_chars`, per-query exclusions, chunk ids `doc:chunk_num`). Policies are canon ("Dataset loading and indexing decisions").
+- Engine knobs and quantization findings (FP4 ≈ +31 % over FP8, MTP ×1.7–2 decode, A3B MoEs dominate throughput, NVFP4 JIT needs bounded `MAX_JOBS`) are in the round docs; probes are IB-only.
+- Deferred by user: seeded sampling in tests only, eval-split migration, doc-level top-k in eval, CPU budget for the public loading test, embedding-model residency across index builds.
 
-- Reviewed and corrected the applied round-2 source: atomic chunk slice width, restored empty-corpus/empty-query guards, MS-MARCO dedup crash, duplicate `labeled_retrieval_examples` field, `TARGET_DEVICE` GPU check, two import mistakes, and `DatasetStats.to_json`.
-- Loaders for BRIGHT (per-domain), NQ (sentence-transformers pairs), MS-MARCO (user's, fixed), SciFact (BeIR + qrels), SciQ — all follow the MS-MARCO shape; documents load `atomic=True`; examples are dropped whenever a gold document is absent so labels always resolve.
-- `max_doc_chars` load filter in every loader (test uses 8192) plus CPU example budget 20 / GPU 1000; chosen after a 100-example uncapped run showed long-sequence batches dominating CPU time.
-- `query_many_frozen` embeds in length-sorted batches and restores order; `_build_index` restores the embedding model's starting placement; `DatasetStats` fills at load, build, and query time.
-- Validation: `test_basic_dataset_loading` passed (37s); `test_public_dataset_loading` passed on CPU (29m24s) with sensible printed retrieval (golds rank first nearly everywhere) and populated stats.
-- `IB/.gitignore` now ignores per-artifact `tressoir-linear.css/js` copies (skill template copies stay tracked); superseded harness handoff snapshots were removed from the artifact folder.
+## Completed — Harness engine, SkyPilot workflow, input-embedding research
 
-### Open decisions (widgets in the round-3 doc)
-
-- CPU budget: keep 8192 chars/20 examples (~30 min) or lower the char cap to ~2000–3000 (~5–8 min).
-- Embedding-model residency across `build_document_indexes` (currently restore-per-index, which reloads weights each build).
-
-### Next meaningful step
-
-User reviews `DOCUMENT_INDEX_ROUND_3_INTERACTIVE.tressoir.md`, resolves the two decisions, and applies the staged `activation/dataset` + `activation/tests` handoff.
-
-## Completed work — Activation Context harness engine
-
-- The two-file harness handoff (`loaded_model.py`, `runtime.py`) was applied and has since evolved in user source (e.g. `simple_vector_embed_many` with padding); the staged copies were removed as superseded.
-- Historical review: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/INTERACTIVE.tressoir.md`.
-- Deferred LoRA explainer: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/LORA_EXPLAINER/LORA_EXPLAINER.tressoir.html`.
-
-### Accepted architecture (still current)
-
-- One `LoadedModel` owns the optional full Transformers model, independent primary embedding-module copy, and optional vLLM engine with separate placement state; harness startup loads metadata/tokenizer/processor while weights stay at the disk sentinel.
-- `HarnessRuntime` remains the name-based registry with thin `simple_*` delegates; behavior lives in `LoadedModel`. Concurrency deliberately undecided; LoRA routing unsupported; vLLM freeing uses the pinned engine-core shutdown, with process isolation as the strongest cleanup boundary.
-- Validation history: local preflight plus L40S release run (`3 passed in 350.92s`); the disposable cluster was torn down with clean final SkyPilot state.
-
-## Completed work — SkyPilot GPU workflow
-
-### Current handoff
-
-- Source-shaped implementation: `IB/ARTIFACTS/SKYPILOT/{.skyignore,README.md,activation/cloud,activation/tests}`.
-- Detailed current review: `IB/ARTIFACTS/SKYPILOT/INTERACTIVE.tressoir.md`.
-- Completed plan pair: `SYNC_INSTALL_PLAN.md` and `SYNC_INSTALL_PLAN.tressoir.md`.
-- The handoff is clean: no `orig.py`, patch rejects, bytecode, or superseded source snapshots.
-
-### Accepted architecture
-
-- `~/sky_workdir` is an exact, disposable, local-owned mirror. `exec` resumes stopped clusters with `--retry-until-up`, uploads with deletion, then submits only after success.
-- `upload` means local source to remote. `download` means remote artifacts to local.
-- Hugging Face and FlashInfer caches live beneath `/root/.cache`; checkpoints and results live beneath `~/activation_artifacts`, all outside the mirror.
-- Downloads are confined to the artifact root, never delete local files, preserve existing files by default, and require in-project destinations to be under `IB/TMP`.
-- Runtime dependencies are baked from `uv.lock` into `/opt/activation/.venv` on a digest-pinned CUDA 13 development image. Changing code does not require an image rebuild.
-- Remote exec adds `PYTHONPATH=/root/sky_workdir` and shell-serializes argv with `shlex.join`.
-- An existing project-root `.env` is passed to trusted remote jobs through `sky exec --secret-file`; it remains excluded from the exact source mirror, image, caches, and artifacts.
-- Remote exec also sets `VLLM_WORKER_MULTIPROC_METHOD=spawn`, preventing CUDA re-initialization after a CUDA-aware parent has started the vLLM worker.
-- Private ECR is the image transport; `ACTIVATION_SKY_IMAGE` overrides the project default for another registry/account.
-- The existing `pyproject.toml` console entry already exposes `uv run sky`; no project configuration change was needed.
-
-### Validation
-
-- Earlier focused wrapper suite: `13 passed in 0.05s`, including `sky start --retry-until-up`; later live runs exercised corrected resume/capacity fallback behavior.
-- The latest combined wrapper/helper regression run reports `19 passed in 8.18s`.
-- Published ECR image: `814218043106.dkr.ecr.us-east-1.amazonaws.com/activation-context/sky:uv-de16520b51ef997e`.
-- Image digest: `sha256:2d5a7e6be7724eed9404b5a475cffbcbf5177ad9732c549e8b4f91186e797127`.
-- Live AWS runtime: `g6e.xlarge`, one L40S, driver 580.159.04, CUDA 13.0.
-- Live basic engine command passed: `1 passed in 307.94s`.
-- Live secret probe: the job environment received the variable while `/root/sky_workdir/.env` remained absent; no value was printed or retained.
-- Live Gemma 3 project-engine smoke passed with the wrapper's spawn-safe worker environment.
-- Exact upload deleted a remote-only workdir sentinel.
-- An external artifact sentinel survived upload and downloaded into `IB/TMP` with exact content.
-- Temporary GPU and image-builder clusters were torn down. Final SkyPilot state contains no clusters/jobs/services; final AWS `us-east-2` active-instance query returned `[]`.
-- Private ECR repository/image are intentionally retained for reuse.
-- Pause/resume persistence was not separately exercised; durable checkpoints must still be exported before teardown.
-
-### Next meaningful step
-
-Copy the updated staged `activation/cloud/sky.py` into the user source. The validated ECR image can be reused immediately while `uv.lock` is unchanged.
-
-## Completed research — Message schemas and vLLM input embeddings
-
-### Deliverables
-
-- Final report: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/INPUT_EMBEDS_REPORT.tressoir.html`.
-- Completed plan pair: `INPUT_EMBEDS_RESEARCH_PLAN.md` and `INPUT_EMBEDS_RESEARCH_PLAN.tressoir.md`.
-- Report-local evidence: `input-embeds-live-probe.json` and `input-embeds-message-matrix.json`.
-
-### Validated findings — cumulative
-
-- Pinned vLLM 0.28 detects Qwen 3.5 and Gemma 4 templates as `openai`, Qwen 3 and Nemotron 3 as `string`, and normalizes direct-string and typed-text inputs to equal conversations before template rendering.
-- Qwen 3.5 live generation produced identical prompt IDs and output IDs for direct-string and typed-text chat without project adaptation.
-- Native hybrid chat works through a `prompt_embeds` content part when `enable_prompt_embeds=True`; the exact seven-row Qwen 3.5 user span and the 29-row full prompt each matched ordinary greedy generation.
-- The reserved sentinel is positional alignment, not semantic equivalent text. Chat controls remain template-owned; user-span rows come from content tokenization without added special tokens.
-- A pooled single row passed shape validation but changed output, confirming that pooled semantic embeddings are not causal-LM token-row substitutes.
-- Authenticated Gemma 3 1B string/typed messages, exact full-prompt rows, exact hybrid user rows, and the project engine all passed live. Its input module applies model-defined scaling; the copied module reproduced vLLM rows exactly.
-- A live Qwen 3 Embedding 0.6B → Qwen 3.5 0.8B transfer held seven rows and `d_model=1024` constant. vLLM accepted direct side activations but generated different output; exact target rows reproduced the baseline. The mismatch is learned coordinate space.
-- Gemma 4 E2B consumes a token-conditioned per-layer embedding path in addition to main `d_model` rows. Full `EmbedsPrompt` companion target token IDs can preserve it for text-derived rows; genuinely non-text side rows need an explicit trained PLE/sentinel policy or a richer carrier.
-- For audited 8B–32B fixtures, primary BF16 tables occupy 1.16–2.62 GiB and 2.37–10.54% of checkpoint parameters. Pinning is plausible on large GPUs but remains a deliberate residency tradeoff.
-- The follow-up `ac-embed-next` cluster was torn down after artifact retrieval; final SkyPilot status reported no clusters, jobs, or services.
-
-### Proposed future engine work
-
-- Let vLLM own ordinary message normalization instead of using multimodality as the capability proxy.
-- Widen the future engine message contract for trusted `prompt_embeds` parts and enable the feature only on engines that need it.
-- Treat a side-to-target projector and per-family validation as part of the model contract; Gemma 4 E2B additionally needs an explicit PLE policy.
-
-### Completed follow-up — secrets, Gemma 3, and side-model embeddings
-
-- Completed plan pair: `IB/ARTIFACTS/ACTIVATION_CONTEXT_INIT/INPUT_EMBEDS_NEXT_ROUND_PLAN.md` and `INPUT_EMBEDS_NEXT_ROUND_PLAN.tressoir.md`.
-- Updated cumulative report: `INPUT_EMBEDS_REPORT.tressoir.html`; new report-local evidence covers Gemma 3, side-space transfer, Gemma 4 E2B, the project-engine smoke, and exact embedding sizes.
-- Apply callouts: copy the staged Sky `activation/cloud/sky.py`; separately review/adapt the staged `hf_utils.py` helper and `LoadedBaseModel` lifecycle method.
+- `LoadedModel` owns the optional Transformers model, an independent embedding-module copy, and the optional vLLM engine with separate placement state; `HarnessRuntime` is the name-based registry. Historical review: `ACTIVATION_CONTEXT_INIT/INTERACTIVE.tressoir.md`; LoRA explainer under `LORA_EXPLAINER/`.
+- SkyPilot: `IB/ARTIFACTS/SKYPILOT/` (README, `INTERACTIVE.tressoir.md`, `SYNC_INSTALL_PLAN` pair). Exact `~/sky_workdir` mirror, baked `uv.lock` env on a CUDA 13 image via private ECR, `.env` via `--secret-file`, teardown + fresh setup over restart waits. Published fallback image `sky:uv-de16520b51ef997e`. Policies are canon ("SkyPilot workflow decisions").
+- Input embeddings: `ACTIVATION_CONTEXT_INIT/INPUT_EMBEDS_REPORT.tressoir.html`; findings are canon ("Input-embedding decisions").

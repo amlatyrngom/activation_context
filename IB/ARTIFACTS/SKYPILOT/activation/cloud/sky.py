@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import socket
 import subprocess
 import sys
@@ -173,7 +174,6 @@ def _labels(gpu_type: str, gpu_count: int) -> dict[str, str]:
         f"{LABEL_PREFIX}-cloud": "aws",
         f"{LABEL_PREFIX}-gpu": gpu_type,
         f"{LABEL_PREFIX}-gpu-count": str(gpu_count),
-        f"{LABEL_PREFIX}-image": IMAGE_ID,
         f"{LABEL_PREFIX}-disk-gb": str(DISK_SIZE_GB),
         f"{LABEL_PREFIX}-autostop-minutes": str(AUTOSTOP_MINUTES),
         f"{LABEL_PREFIX}-spot": "false",
@@ -269,6 +269,61 @@ def _docker_registry_secrets() -> dict[str, str]:
     }
 
 
+def _image_published() -> bool:
+    """Whether IMAGE_ID already exists in its ECR repository."""
+    image = IMAGE_ID.removeprefix("docker:")
+    registry, repository_tag = image.split("/", 1)
+    match = ECR_REGISTRY.fullmatch(registry)
+    if match is None:
+        return False
+    repository, tag = repository_tag.rsplit(":", 1)
+    try:
+        _run_aws(
+            "ecr",
+            "describe-images",
+            "--region",
+            match.group("region"),
+            "--repository-name",
+            repository,
+            "--image-ids",
+            f"imageTag={tag}",
+            capture_stdout=True,
+        )
+    except subprocess.CalledProcessError:
+        return False
+    return True
+
+
+def _latest_published_image() -> str | None:
+    """The most recently pushed image in the ECR repository, if any."""
+    image = IMAGE_ID.removeprefix("docker:")
+    registry, repository_tag = image.split("/", 1)
+    match = ECR_REGISTRY.fullmatch(registry)
+    if match is None:
+        return None
+    repository, _tag = repository_tag.rsplit(":", 1)
+    try:
+        result = _run_aws(
+            "ecr",
+            "describe-images",
+            "--region",
+            match.group("region"),
+            "--repository-name",
+            repository,
+            "--query",
+            "reverse(sort_by(imageDetails,&imagePushedAt))[0].imageTags[0]",
+            "--output",
+            "text",
+            capture_stdout=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    tag = result.stdout.strip()
+    if not tag or tag == "None":
+        return None
+    return f"docker:{registry}/{repository}:{tag}"
+
+
 def build_image() -> int:
     image = IMAGE_ID.removeprefix("docker:")
     registry, repository_tag = image.split("/", 1)
@@ -351,6 +406,7 @@ def _task_yaml(
     gpu_type: str,
     gpu_count: int,
     *,
+    image_id: str = IMAGE_ID,
     docker_secrets: dict[str, str] | None = None,
 ) -> str:
     labels = "\n".join(
@@ -372,21 +428,22 @@ resources:
   accelerators: {GPU_TYPES[gpu_type]}:{gpu_count}
   use_spot: false
   disk_size: {DISK_SIZE_GB}
-  image_id: {IMAGE_ID}
+  image_id: {image_id}
   labels:
 {labels}
 {secrets_yaml}workdir: {workdir}
 setup: |
   test -x /usr/local/cuda/bin/nvcc
-  cmp /opt/activation/image-lock/uv.lock uv.lock || {{
-    echo "uv.lock differs from the baked SkyPilot image; rebuild it" >&2
-    exit 1
-  }}
   mkdir -p {REMOTE_ARTIFACTS} /root/.cache/huggingface /root/.cache/flashinfer
 """
 
 
-def setup(name: str, gpu_type: str, gpu_count: int = 1) -> int:
+def setup(
+    name: str,
+    gpu_type: str,
+    gpu_count: int = 1,
+    rebuild_image: bool = True,
+) -> int:
     gpu_type = gpu_type.lower()
     if gpu_type not in GPU_TYPES:
         choices = ", ".join(GPU_TYPES)
@@ -399,6 +456,22 @@ def setup(name: str, gpu_type: str, gpu_count: int = 1) -> int:
         _require_matching_config(record, gpu_type, gpu_count)
 
     _run_skypilot("check", "aws")
+    image_id = IMAGE_ID
+    if not _image_published():
+        if rebuild_image and shutil.which("docker") is not None:
+            build_image()
+        else:
+            # The image is only a warm cache: any published image works
+            # because `uv run` syncs the env to the uploaded lock on the node.
+            fallback = _latest_published_image()
+            if fallback is None:
+                raise RuntimeError(
+                    f"image {IMAGE_ID!r} is not published and no fallback "
+                    "image exists; run `uv run sky image` on a machine with "
+                    "docker"
+                )
+            print(f"Image {IMAGE_ID} not published; using {fallback}")
+            image_id = fallback
     docker_secrets = _docker_registry_secrets()
     with tempfile.NamedTemporaryFile(
         mode="w",
@@ -409,6 +482,7 @@ def setup(name: str, gpu_type: str, gpu_count: int = 1) -> int:
             _task_yaml(
                 gpu_type,
                 gpu_count,
+                image_id=image_id,
                 docker_secrets=docker_secrets,
             )
         )
@@ -554,6 +628,10 @@ def exec_cmd(name: str, cmd: str | list[str]) -> int:
         [
             "env",
             "VLLM_WORKER_MULTIPROC_METHOD=spawn",
+            # The baked env is a warm cache: sync it to the uploaded lock
+            # (old images set UV_NO_SYNC=1) without re-resolving on the node.
+            "UV_NO_SYNC=0",
+            "UV_FROZEN=1",
             f"PYTHONPATH={REMOTE_WORKDIR}",
             *command,
         ]
@@ -610,6 +688,11 @@ def _build_parser() -> argparse.ArgumentParser:
         type=_positive_int,
         default=1,
         help="number of GPUs (default: 1)",
+    )
+    setup_parser.add_argument(
+        "--no-image-rebuild",
+        action="store_true",
+        help="do not build/publish a missing lock-tagged image before launch",
     )
 
     exec_parser = commands.add_parser(
@@ -672,7 +755,12 @@ def main() -> int:
         if args.action == "image":
             return build_image()
         if args.action == "setup":
-            return setup(args.name, args.gpu, args.gpu_count)
+            return setup(
+                args.name,
+                args.gpu,
+                args.gpu_count,
+                rebuild_image=not args.no_image_rebuild,
+            )
         if args.action == "exec":
             return exec_cmd(args.name, args.command)
         if args.action == "upload":

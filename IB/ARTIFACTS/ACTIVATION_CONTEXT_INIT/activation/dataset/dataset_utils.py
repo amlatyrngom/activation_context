@@ -3,7 +3,9 @@ Utilities to load and split datasets.
 """
 
 import typing as t
-from .dataset import DataSplit, LoadedDataset, DatasetStats
+from .dataset import DataSplit, LoadedDataset, DatasetStats, DatasetDocumentChunk
+if t.TYPE_CHECKING:
+    from activation.harness import HarnessRuntime
 
 def make_dataset_id(base_name: str, **kwargs):
     parts: list[str] = [
@@ -53,9 +55,9 @@ def normalize_split_name(split: str) -> DataSplit:
     Map ordinary upstream split names to the typed experiment role.
     """
     normalized = split.strip().lower()
-    if normalized in {"dev", "train"}:
+    if normalized in {"train"}:
         return DataSplit.TRAIN
-    if normalized in {"validation", "val"}:
+    if normalized in {"validation", "val", "dev"}:
         return DataSplit.VAL
     if normalized == "test":
         return DataSplit.TEST
@@ -82,3 +84,12 @@ def safe_truncate_embedding_chunk(chunk: str, limit: int|None):
     else:
         half = limit // 2
         return chunk[:half] + chunk[-(limit - half):]
+
+
+def extra_corpus_budget(max_corpus_documents: int | None, num_wanted: int) -> int | None:
+    """None means unlimited; otherwise extra non-gold docs on top of the golds."""
+    if max_corpus_documents is None:
+        return None
+    return max(0, max_corpus_documents - num_wanted)
+
+

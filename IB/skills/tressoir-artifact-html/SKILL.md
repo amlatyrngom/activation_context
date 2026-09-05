@@ -1,15 +1,15 @@
 ---
 name: tressoir-artifact-html
-description: Author or revise a raw .tressoir.html artifact with custom HTML, CSS, JavaScript, contained interactions, local resources, and live morph behavior.
+description: Author or revise a raw .tressoir.html artifact with custom HTML, CSS, JavaScript, contained interactions, HTTPS or local resources, and live morph behavior.
 ---
 
 # Tressoir HTML Artifacts
 
 Use `.tressoir.html` when you know the exact interface you need and the structured `.tressoir.md` projection is not flexible enough.
 
-The Tressoir Artifacts VS Code extension renders the file directly in a webview. Your HTML, CSS, and JavaScript are the page. For a new artifact, start from the bundled `html_artifact_template/` unless the user requests a genuinely different composition. Copy the entire folder into the broad-task artifact directory and rename `ARTIFACT.tressoir.html`.
+The Tressoir Artifacts VS Code extension renders the file directly in a webview. Your HTML, CSS, and JavaScript are the page. For a new artifact, copy `html_artifact_template/ARTIFACT.tressoir.html` into the broad-task artifact directory and rename it unless the user requests a genuinely different composition. Copy `SIBLING.md` only when keeping the starter's example local link.
 
-Keep the starter's core CSS, JavaScript, tracked local vendor assets, single linear flow, and floating feedback dock intact. Replace its example content and add only narrow, token-based artifact CSS. This is an authoring default, not styling imposed by the extension on arbitrary HTML. The extension bundles the same source bytes for Markdown, so do not fork the standard component styles.
+Keep the starter's pinned HTTPS core CSS and JavaScript references, single linear flow, and floating feedback dock intact. Replace its example content and add only narrow, token-based artifact CSS, preferably inline when it is short and unique to the artifact. Do not copy a `vendor/` tree or duplicate the standard `tressoir-linear.css` and `tressoir-linear.js` into the artifact. This is an authoring default, not styling imposed by the extension on arbitrary HTML. The extension bundles the same runtime bytes internally for Markdown, so do not fork the standard component styles.
 
 Prefer `.tressoir.md` for plans, research, standard decisions, reveal rows, and focused review surfaces. Custom reports and explainers are common HTML uses. Keep plans and decision surfaces in `.tressoir.md`; Markdown accepts inline raw HTML and SVG, so a single table or diagram never requires moving a plan to another format.
 
@@ -69,16 +69,24 @@ A one-time script does not necessarily rerun after every morph.
 
 - Inline `<style>` works.
 - Relative stylesheets, scripts, images, and data files resolve from the artifact folder.
-- Remote stylesheets are permitted.
+- Direct HTTPS stylesheets and scripts are permitted. Insecure HTTP scripts remain blocked.
 - Inline scripts work because the extension applies its nonce.
 - Relative local scripts work.
-- Direct remote `<script src="https://…">` is blocked; vendor JavaScript into a sibling `vendor/` directory and reference it relatively.
 - `eval` and `new Function` are not allowed.
 - Theme variables such as `--nb-bg`, `--nb-surface`, `--nb-text`, and `--nb-accent` follow the editor theme.
 
-Keep third-party assets inspectable and record their provenance. Decide explicitly whether a project should commit or ignore `vendor/`.
+For the standard compact, network-backed artifact:
 
-The standard starter already vendors KaTeX, Prism, and CodeMirror for the feedback editor. Use its
+- reference dependencies with ordinary `<link href="https://…">` and `<script src="https://…">` tags so the same HTML works in a browser and the VS Code renderer;
+- pin every dependency to an explicit release or immutable commit; never use `latest`, a mutable branch such as `main`, or another moving URL;
+- prefer a CDN that serves JavaScript with the correct MIME type over a GitHub raw-file URL;
+- preserve dependency order and use `defer` where the local starter does;
+- include `integrity` and `crossorigin="anonymous"` when the publisher supplies a Subresource Integrity hash; and
+- keep important explanatory HTML present before scripts run. If a script cannot load, Tressoir shows a visible resource error, but static content should still be useful.
+
+Remote code executes with the same trusted-artifact authority as local authored code. Only reference publishers and exact versions the project trusts. If the user explicitly requires an offline artifact, vendor the required files as a deliberate project-specific adaptation, keep them inspectable, record their provenance, and decide whether the project should commit or ignore them.
+
+The standard starter references pinned KaTeX, Prism, CodeMirror, and Tressoir linear assets. Use its
 documented math, code, diff, single-decision, card, interaction, link, table/SVG, and floating feedback forms instead of
 adding another component system. Write in simple, concise language and keep ordinary information
 visible. Use a card only when one complete section is genuinely optional; do not turn individual
@@ -149,5 +157,5 @@ Open the artifact in the custom editor and exercise:
 3. external source edits and morph preservation;
 4. each interaction read/write;
 5. sibling opening and traversal rejection;
-6. local resources and offline behavior;
+6. local resources and, when promised by the artifact, offline behavior;
 7. any third-party library under the actual webview content security policy.

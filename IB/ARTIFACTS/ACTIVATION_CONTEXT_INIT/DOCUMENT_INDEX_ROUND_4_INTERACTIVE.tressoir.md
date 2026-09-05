@@ -21,7 +21,7 @@ Four findings, all corrected in the staged files (hunks in the exact delta below
 
 - **Gold-only corpora**: with distractors removed, the only "background" documents for one query are other examples' golds. At `n=20` biology that's a 104-doc corpus where every document answers *some* query — fine for plumbing sanity, but retrieval difficulty is not benchmark-like. `max_examples=None` restores the full labeled set (and its golds), though still not the domain's full 57k-document corpus.
 - **Real exclusions are rare**: all 103 biology examples carry `excluded_ids=['N/A']`, so the doc-level exclusion currently only fires in the synthetic test probe. The mechanism matters more once metrics rounds use domains/examples that do carry exclusions.
-- **SciFact still has the seeded-distractor logic** you removed from BRIGHT — see the decision below.
+- **SciFact now mirrors BRIGHT** (resolved in chat): the seeded-distractor block is gone, the corpus is exactly the selected claims' gold abstracts, and `max_examples: int | None` is uniform across all five loaders. Validated end-to-end: `n=20` → 15 docs / 20 examples, gold at rank #1, exclusion probe respected; `n=None` loads with full label integrity.
 
 ## Exact delta — staged files vs your source
 
@@ -156,36 +156,98 @@ Run `activation/tests/test_basic_dataset_loading.py` yourself after applying:
 uv run pytest activation/tests/test_basic_dataset_loading.py -s
 ```
 
-<article class="decision" data-tressoir-decision data-decision-state="unresolved"
-  aria-labelledby="round4-scifact-distractors">
-  <header class="decision-header">
-    <div>
-      <h3 class="decision-title" id="round4-scifact-distractors">Should SciFact mirror BRIGHT's distractor removal?</h3>
-      <p class="decision-context">SciFact still carries the seeded-sample distractor logic; BRIGHT no longer does. Claims have ~1 gold abstract each, so a golds-only SciFact corpus at n=20 would hold only ~15–20 abstracts.</p>
-    </div>
-    <span class="decision-state" data-decision-indicator role="status" aria-live="polite">Unresolved</span>
-  </header>
-  <fieldset class="decision-options">
-    <legend class="visually-hidden">Decision answers</legend>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="round4.scifact_distractors.mirror">
-      <span><strong>Mirror BRIGHT — golds only, max_examples: int | None</strong><small>One consistent policy across separated-corpus loaders; smallest code.</small></span>
-    </label>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="round4.scifact_distractors.keep">
-      <span><strong>Keep SciFact's seeded distractors</strong><small>Its 1-gold-per-claim shape makes golds-only corpora very small; distractors keep retrieval non-trivial.</small></span>
-    </label>
-    <label class="decision-option">
-      <input type="checkbox" data-tressoir-input="round4.scifact_distractors.defer">
-      <span><strong>Defer to the metrics round</strong><small>Decide when retrieval quality is actually measured.</small></span>
-    </label>
-  </fieldset>
-  <div class="field decision-feedback">
-    <label for="round4-scifact-response">Free Response</label>
-    <textarea id="round4-scifact-response" rows="2" data-tressoir-input="round4.scifact_distractors.feedback"
-      data-tressoir-autogrow="2:6" placeholder="A different corpus policy, a distractor count, anything else…"></textarea>
-  </div>
-</article>
+## Consistency pass — uniform `max_examples`, distractors fully gone
+
+Your follow-up sweep, as a non-cumulative slice on top of everything above (BRIGHT you've already applied — it needs nothing). `grep -rn "random|distractor|sampled" activation/dataset/` now returns nothing; all five loaders share the `max_examples: int | None` signature and the golds-only corpus policy.
+
+`activation/dataset/loaders/scifact.py`
+
+```diff-python
+@@
+ Uses BeIR/scifact (paper abstracts + claims) with BeIR/scifact-qrels labels.
+ """
+
+-import random
+ import time
+@@
+     def load(
+         cls,
+         harness: "HarnessRuntime",
+-        max_examples: int,
++        max_examples: int|None,
+         split: str = "train",
+     ) -> LoadedDataset:
+         """
+-        Take up to max_examples claims, keep every gold abstract they reference
+-        (overfetching documents rather than dropping claims), and add up to
+-        max_examples seed-sampled distractor abstracts.
++        Take up to max_examples claims (all of them when None) and keep every
++        gold abstract they reference.
+         """
+@@
+         wanted_doc_ids: set[str] = set()
+         for _query_id, gold_ids in selected:
+             wanted_doc_ids.update(gold_ids)
+-        corpus_rows = load_dataset("BeIR/scifact", "corpus", split="corpus")
+-        doc_ids = [str(doc_id) for doc_id in corpus_rows["_id"]]
+-        gold_positions = [p for p, doc_id in enumerate(doc_ids) if doc_id in wanted_doc_ids]
+-        candidate_positions = [p for p, doc_id in enumerate(doc_ids) if doc_id not in wanted_doc_ids]
+-        # Seeded uniform sample avoids any ordering bias in the corpus file.
+-        sampled_distractors = random.Random(0).sample(
+-            candidate_positions,
+-            min(max_examples, len(candidate_positions)),
+-        )
+         documents: dict[str, DatasetDocument] = {}
+-        for position in sorted(gold_positions + sampled_distractors):
+-            row = corpus_rows[position]
++        for row in load_dataset("BeIR/scifact", "corpus", split="corpus"):
+             doc_id = str(row["_id"])
++            if doc_id not in wanted_doc_ids:
++                continue
+             title = str(row["title"]).strip()
+```
+
+`activation/dataset/loaders/nq.py`
+
+```diff-python
+@@
+     def load(
+         cls,
+         harness: "HarnessRuntime",
+-        max_examples: int,
++        max_examples: int|None,
+         split: str = "train",
+     ) -> LoadedDataset:
+```
+
+`activation/dataset/loaders/sciq.py`
+
+```diff-python
+@@
+     def load(
+         cls,
+         harness: "HarnessRuntime",
+-        max_examples: int,
++        max_examples: int|None,
+         split: str = "train",
+     ) -> LoadedDataset:
+```
+
+`activation/dataset/loaders/msmarco.py`
+
+```diff-python
+@@
+     def load(
+         cls,
+         harness: "HarnessRuntime",
+-        max_examples: int,
++        max_examples: int|None,
+         version: str = "v1.1",
+         split: str = "train",
+     ) -> LoadedDataset:
+```
+
+SciFact revalidated after the change: `n=20` → 15 documents / 20 claims, gold at rank #1, exclusion probe respected; `n=None` loads every claim with full label integrity. Note the `min(max_examples, ...)` in the removed distractor sampler would have thrown `TypeError` under `max_examples=None` — removing the block resolves that, too.
 
 ## Deferred
 

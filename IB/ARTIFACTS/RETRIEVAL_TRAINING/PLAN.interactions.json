@@ -1,0 +1,10 @@
+{
+  "rt.pool.bm25_only": true,
+  "rt.pool.feedback": "Don't even implement the random knob. Drop it.",
+  "rt.model.qwen35_08b": false,
+  "rt.model.qwen3_06b": true,
+  "rt.model.feedback": "Qwen 3 0.6B, only because it has public tuned baselines we can easily compare to.",
+  "rt.gpu.one_sky_run": true,
+  "rt.gpu.feedback": "Make the report files first, then begin the sky pilot run at the end. Keep it very small: as small as possible while still showing the code running e2e. NO actual benchmark or even micro-benchmark for that matter.\nDo no stubbing/mocking at all, except insire your private tests if you really want them. It's code debt that I don't like.",
+  "PLAN-free_form_feedback": "I am having trouble with a \"one random positive\" point. I thought the numerator should sum the positives?\n\nExplain this to me as it's important. Assume no green light yet."
+}

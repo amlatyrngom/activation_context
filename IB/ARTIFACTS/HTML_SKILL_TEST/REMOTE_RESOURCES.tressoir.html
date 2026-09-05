@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Single-file Tressoir HTML artifact whose every library comes from a pinned HTTPS URL.">
+  <title>Remote resources check</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.css">
+  <style>
+/* tressoir-linear.css (starter core, inlined verbatim so this file has no local siblings) */
+:root {
+  color-scheme: light dark;
+  --paper-fallback: #f7f7f5;
+  --surface-fallback: #ffffff;
+  --ink-fallback: #202124;
+  --muted-fallback: #62666d;
+  --line-fallback: #d8dadd;
+  --accent-fallback: #176b87;
+  --positive-fallback: #2f7657;
+  --warning-fallback: #946115;
+  --danger-fallback: #a33a3a;
+
+  --paper: var(--nb-bg, var(--paper-fallback));
+  --surface: var(--nb-surface, var(--surface-fallback));
+  --ink: var(--nb-text, var(--ink-fallback));
+  --muted: var(--nb-muted, var(--muted-fallback));
+  --line: var(--nb-border, var(--line-fallback));
+  --accent: var(--nb-accent, var(--accent-fallback));
+  --positive: var(--nb-green, var(--positive-fallback));
+  --warning: var(--nb-yellow, var(--warning-fallback));
+  --danger: var(--nb-red, var(--danger-fallback));
+  --code-surface: var(--nb-code-bg, #eff1f3);
+  --focus-ring: color-mix(in srgb, var(--accent) 38%, transparent);
+
+  --space-1: 0.375rem;
+  --space-2: 0.625rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.25rem;
+  --space-6: 3.25rem;
+  --radius: 0.4rem;
+  --measure: 48rem;
+  font-size: var(--tressoir-base-font-size, 16px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper-fallback: #17191d;
+    --surface-fallback: #202329;
+    --ink-fallback: #e5e7eb;
+    --muted-fallback: #a9afb8;
+    --line-fallback: #3b4049;
+    --accent-fallback: #69b7d1;
+    --positive-fallback: #78bd96;
+    --warning-fallback: #d4a85e;
+    --danger-fallback: #e08383;
+    --code-surface: var(--nb-code-bg, #111318);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+html {
+  min-width: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: break-word;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: 0.08em;
+}
+
+a:hover {
+  text-decoration-thickness: 0.13em;
+}
+
+:focus-visible {
+  outline: 0.16rem solid var(--accent);
+  outline-offset: 0.2rem;
+  box-shadow: 0 0 0 0.28rem var(--focus-ring);
+}
+
+.tressoir-document {
+  width: min(calc(100% - 2rem), var(--measure));
+  margin-inline: auto;
+  padding-block: var(--space-5) var(--space-6);
+}
+
+.document-header {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+}
+
+h1 {
+  max-width: 23ch;
+  font-size: clamp(1.85rem, 1.55rem + 1.2vw, 2.35rem);
+}
+
+h2 {
+  font-size: 1.45rem;
+}
+
+h3 {
+  font-size: 1.12rem;
+  letter-spacing: -0.012em;
+}
+
+p,
+ul,
+ol,
+blockquote {
+  margin-block: var(--space-2) var(--space-3);
+}
+
+.lede {
+  max-width: 62ch;
+  margin-block: var(--space-3);
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  list-style: none;
+}
+
+.section {
+  padding-block: var(--space-5) 0;
+}
+
+.section > h2 + p,
+.section > h3 + p {
+  margin-top: var(--space-2);
+}
+
+.card {
+  margin-block: var(--space-3);
+}
+
+.card > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--space-3);
+  padding: 1.15rem var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--line));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.card > summary:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.card[open] > summary {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.card-title,
+.card-oneliner {
+  display: block;
+}
+
+.card-title {
+  grid-column: 1;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.card-oneliner {
+  grid-column: 1;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.card-badge {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  padding: 0.18rem 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--warning) 48%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--warning);
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.card-body {
+  position: relative;
+  padding: var(--space-4) 0 var(--space-3) 1.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+}
+
+.card-gutter {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1.1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-gutter::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  left: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--accent) 42%, var(--line));
+  transition: background 120ms ease, width 120ms ease;
+}
+
+.card-gutter::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0.7rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 42%, var(--line));
+  transition: background 120ms ease, height 120ms ease;
+}
+
+.card-gutter:hover::before,
+.card-gutter:hover::after,
+.card-gutter:focus-visible::before,
+.card-gutter:focus-visible::after {
+  background: var(--accent);
+}
+
+.card-gutter:hover::before,
+.card-gutter:focus-visible::before {
+  width: 2px;
+}
+
+.card-gutter:hover::after,
+.card-gutter:focus-visible::after {
+  height: 2px;
+}
+
+.card-gutter:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.card-content {
+  min-width: 0;
+  user-select: text;
+}
+
+.card-content > :first-child {
+  margin-top: 0;
+}
+
+.card-content > :last-child {
+  margin-bottom: 0;
+}
+
+.decision {
+  --decision-tone: var(--warning);
+  margin-block: var(--space-3);
+  padding: 1rem 1.25rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--decision-tone) 38%, var(--line));
+  border-left: 0.25rem solid var(--decision-tone);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.decision[data-decision-state="resolved"] {
+  --decision-tone: var(--positive);
+  background: color-mix(in srgb, var(--positive) 4%, var(--surface));
+}
+
+.decision-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+.decision-title {
+  margin: 0;
+}
+
+.decision-context {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.decision-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-height: 1.65rem;
+  padding: 0.12rem 0.58rem;
+  border: 1px solid color-mix(in srgb, var(--decision-tone) 58%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--decision-tone) 10%, transparent);
+  color: var(--decision-tone);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.decision-state::before {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.decision-options {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.decision-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  padding-block: 0.45rem;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.decision-option input {
+  margin-top: 0.28rem;
+  accent-color: var(--accent);
+}
+
+.decision-option strong,
+.decision-option small {
+  display: block;
+}
+
+.decision-option small {
+  margin-top: 0.08rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.decision-feedback {
+  margin: 0.35rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--line);
+}
+
+textarea[data-tressoir-autogrow] {
+  min-height: 0;
+  resize: none;
+  overflow-y: hidden;
+}
+
+.scroll-region {
+  max-width: 100%;
+  margin-block: var(--space-3);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.scroll-region > svg {
+  display: block;
+  max-width: none;
+}
+
+.table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  padding: 0.62rem 0.78rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+code,
+kbd,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+:not(pre) > code,
+kbd {
+  padding: 0.08em 0.34em;
+  border: 1px solid var(--line);
+  border-radius: 0.28rem;
+  background: var(--code-surface);
+  font-size: 0.9em;
+}
+
+.code-block {
+  max-width: 100%;
+  margin-block: var(--space-3);
+  padding: var(--space-3);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--code-surface);
+  color: var(--ink);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.code-block code {
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.code-block .token {
+  background: transparent;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--muted);
+}
+
+.token.punctuation,
+.token.operator {
+  color: var(--ink);
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: var(--danger);
+}
+
+.token.boolean,
+.token.number,
+.token.function,
+.token.class-name {
+  color: var(--warning);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--positive);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--accent);
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: var(--warning);
+}
+
+pre.diff-highlight > code .token.deleted:not(.prefix),
+pre > code.diff-highlight .token.deleted:not(.prefix) {
+  background-color: color-mix(in srgb, var(--danger) 13%, transparent);
+}
+
+pre.diff-highlight > code .token.inserted:not(.prefix),
+pre > code.diff-highlight .token.inserted:not(.prefix) {
+  background-color: color-mix(in srgb, var(--positive) 15%, transparent);
+}
+
+.math-display {
+  max-width: 100%;
+  margin-block: var(--space-3);
+  padding: var(--space-2) 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin-block: var(--space-3);
+}
+
+.field > label,
+.field-label {
+  font-weight: 700;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.64rem 0.72rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.choice input {
+  margin-top: 0.35em;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  padding: 0.45rem 0.78rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--paper);
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.feedback-dock {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 30;
+}
+
+.feedback-trigger {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 72%, var(--line));
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--paper);
+  box-shadow: 0 0.45rem 1.35rem color-mix(in srgb, var(--ink) 20%, transparent);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.feedback-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.6rem 1.6rem color-mix(in srgb, var(--ink) 24%, transparent);
+}
+
+.feedback-trigger svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feedback-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 5.75rem);
+  padding: var(--space-3);
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1rem 3rem color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.feedback-popover[hidden] {
+  display: none;
+}
+
+.feedback-popover-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.feedback-popover-header h2 {
+  font-size: 1.08rem;
+  letter-spacing: -0.012em;
+}
+
+.feedback-close {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.feedback-close:hover {
+  background: var(--code-surface);
+  color: var(--ink);
+}
+
+.feedback-editor {
+  margin-top: 0.75rem;
+}
+
+.feedback-editor .CodeMirror {
+  height: 11rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.feedback-editor .CodeMirror-focused {
+  border-color: var(--accent);
+  outline: 0.16rem solid var(--accent);
+  outline-offset: 0.16rem;
+  box-shadow: 0 0 0 0.28rem var(--focus-ring);
+}
+
+.feedback-editor .CodeMirror-gutters {
+  border-right: 1px solid var(--line);
+  background: var(--code-surface);
+}
+
+.feedback-editor .CodeMirror-cursor {
+  border-left-color: var(--ink);
+}
+
+.feedback-editor .CodeMirror-selected,
+.feedback-editor .CodeMirror-line::selection,
+.feedback-editor .CodeMirror-line > span::selection,
+.feedback-editor .CodeMirror-line > span > span::selection {
+  background: var(--focus-ring);
+}
+
+.feedback-editor .cm-header,
+.feedback-editor .cm-link {
+  color: var(--accent);
+}
+
+.feedback-editor .cm-header {
+  font-weight: 750;
+}
+
+.feedback-editor .cm-strong {
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.feedback-editor .cm-em {
+  color: var(--warning);
+  font-style: italic;
+}
+
+.feedback-editor .cm-quote,
+.feedback-editor .cm-comment {
+  color: var(--muted);
+}
+
+.feedback-editor .cm-url,
+.feedback-editor .cm-string {
+  color: var(--positive);
+}
+
+@media (max-width: 32rem) {
+  .tressoir-document {
+    width: min(calc(100% - 1.25rem), var(--measure));
+    padding-block-start: var(--space-4);
+  }
+
+  .card > summary {
+    padding-inline: var(--space-3);
+  }
+
+  .decision {
+    padding: 0.9rem var(--space-3) 0.75rem;
+  }
+
+  .decision-header {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .decision-state {
+    justify-self: start;
+  }
+
+  .feedback-dock {
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .feedback-popover {
+    width: calc(100vw - 1.5rem);
+    max-height: calc(100vh - 5.25rem);
+  }
+
+  .feedback-editor .CodeMirror {
+    height: 9.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media print {
+  :root {
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --ink: #111111;
+    --muted: #4d4d4d;
+    --line: #b8b8b8;
+  }
+
+  .tressoir-document {
+    width: 100%;
+    padding: 0;
+  }
+
+  .button,
+  .feedback-dock {
+    display: none !important;
+  }
+
+  .scroll-region,
+  .code-block,
+  .math-display {
+    overflow: visible;
+  }
+}
+
+  </style>
+  <style>
+    /* Narrow artifact rules on the published tokens. */
+    .check-table td:first-child { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.85rem; }
+    .check-ok { color: var(--nb-accent, #2b7a4b); font-weight: 600; }
+    .check-fail { color: #b3261e; font-weight: 600; }
+    .check-pending { color: var(--muted, #777); }
+    #remote-plot { width: 100%; height: 20rem; margin-block: var(--space-2, 0.75rem) var(--space-3, 1.25rem); }
+  </style>
+</head>
+<body>
+  <main class="tressoir-document">
+    <header class="document-header">
+      <p class="eyebrow">Extension check · remote resources</p>
+      <h1>Does a single HTML file with only remote libraries render in Tressoir?</h1>
+      <p class="lede">This file has no local siblings. KaTeX, Prism, CodeMirror and Plotly load from pinned HTTPS URLs; the starter's own CSS and JavaScript are inlined. The table below fills itself in once the page runs, so a row that stays pending means that resource was blocked.</p>
+      <ul class="meta" aria-label="Artifact metadata">
+        <li>Updated 4 Sep 2026</li>
+        <li>jsDelivr and cdn.plot.ly, exact versions</li>
+        <li>No vendor folder</li>
+      </ul>
+    </header>
+
+    <section class="section" aria-labelledby="results">
+      <h2 id="results">Resource check</h2>
+      <p id="check-summary" class="check-pending">Waiting for the page scripts to run…</p>
+      <table class="table check-table" id="check-table">
+        <thead><tr><th>Resource</th><th>How it is detected</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr data-check="katex-css"><td>katex.min.css (jsDelivr)</td><td>a KaTeX element gets the KaTeX_Main font</td><td class="check-pending">pending</td></tr>
+          <tr data-check="katex-js"><td>katex.min.js + auto-render (jsDelivr)</td><td><code>window.katex</code> and rendered math below</td><td class="check-pending">pending</td></tr>
+          <tr data-check="prism"><td>Prism core, languages, diff-highlight (jsDelivr)</td><td><code>window.Prism</code> and highlighted tokens below</td><td class="check-pending">pending</td></tr>
+          <tr data-check="prism-css"><td>prism-diff-highlight.min.css (jsDelivr)</td><td>a rule for <code>.diff-highlight .token.inserted</code> exists</td><td class="check-pending">pending</td></tr>
+          <tr data-check="codemirror"><td>CodeMirror 5 + markdown mode (jsDelivr)</td><td><code>window.CodeMirror</code> and the markdown mode</td><td class="check-pending">pending</td></tr>
+          <tr data-check="codemirror-css"><td>codemirror.css (jsDelivr)</td><td>a rule for <code>.CodeMirror</code> exists</td><td class="check-pending">pending</td></tr>
+          <tr data-check="plotly"><td>plotly-basic-2.35.2.min.js (cdn.plot.ly)</td><td><code>window.Plotly</code> and an SVG chart below</td><td class="check-pending">pending</td></tr>
+          <tr data-check="bridge"><td>Tressoir bridge</td><td><code>window.tressoirNotebook</code> present (absent in a plain browser)</td><td class="check-pending">pending</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" aria-labelledby="math">
+      <h2 id="math">KaTeX from the network</h2>
+      <p>Inline math \(\mathrm{nDCG@10} = \frac{\mathrm{DCG@10}}{\mathrm{IDCG@10}}\) and a display block:</p>
+      <div class="math-display">\[\mathcal{L} = -\frac{1}{|P_q|}\sum_{p \in P_q} \log \frac{e^{s(q,p)/\tau}}{\sum_{c \in C \setminus (P_q \setminus \{p\})} e^{s(q,c)/\tau}}\]</div>
+    </section>
+
+    <section class="section" aria-labelledby="code">
+      <h2 id="code">Prism from the network</h2>
+      <pre class="code-block"><code class="language-python">def similarity(q, c):
+    scores = torch.einsum("bvd,nwd->bnvw", q, c)
+    return scores.max(dim=-1).values.mean(dim=-1)</code></pre>
+      <pre class="code-block diff-highlight"><code class="language-diff-python">-        return scores.max(dim=-1).values.sum(dim=-1)
++        return scores.max(dim=-1).values.mean(dim=-1)</code></pre>
+    </section>
+
+    <section class="section" aria-labelledby="plot">
+      <h2 id="plot">Plotly from the network</h2>
+      <p>A chart drawn by a library that the offline starter does not vendor. It follows the theme's text color.</p>
+      <div id="remote-plot" role="img" aria-label="Validation in-batch rank-1 per epoch for three runs"></div>
+    </section>
+
+    <section class="section" aria-labelledby="decision-example">
+      <h2 id="decision-example">Decision</h2>
+      <article class="decision" data-tressoir-decision data-decision-state="unresolved" aria-labelledby="decision-question">
+        <header class="decision-header">
+          <div>
+            <h3 class="decision-title" id="decision-question">Did every row above pass in the VS Code renderer?</h3>
+            <p class="decision-context">Checking an answer also exercises the interaction bridge; reload the artifact to see whether the choice persisted.</p>
+          </div>
+          <span class="decision-state" data-decision-indicator role="status" aria-live="polite">Unresolved</span>
+        </header>
+        <fieldset class="decision-options">
+          <legend class="visually-hidden">Decision answers</legend>
+          <label class="decision-option">
+            <input type="checkbox" data-tressoir-input="remote_check.all_passed">
+            <span><strong>All passed</strong><small>Remote CSS, remote JS, fonts and the bridge all worked.</small></span>
+          </label>
+          <label class="decision-option">
+            <input type="checkbox" data-tressoir-input="remote_check.some_failed">
+            <span><strong>Some rows failed</strong><small>Name them in the free response.</small></span>
+          </label>
+        </fieldset>
+        <div class="field decision-feedback">
+          <label for="decision-feedback">Free Response</label>
+          <textarea id="decision-feedback" rows="2" data-tressoir-input="remote_check.feedback" data-tressoir-autogrow="2:6" placeholder="Which rows failed, and what did the resource error say?"></textarea>
+        </div>
+      </article>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/xml/xml.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/meta.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/markdown/markdown.js"></script>
+  <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
+  <script>
+/* tressoir-linear.js (starter core, inlined verbatim) */
+(function () {
+  'use strict'
+
+  var boundControls = new Set()
+  var pendingSaves = new Map()
+  var feedbackEditors = new WeakMap()
+  var feedbackDockOpen = false
+  var feedbackDockRoutingInstalled = false
+  var cardRoutingInstalled = false
+  var decisionTrackingInstalled = false
+  var autogrowTrackingInstalled = false
+  var linkRoutingInstalled = false
+
+  function bridge() {
+    return window.tressoirNotebook || null
+  }
+
+  function context() {
+    var api = bridge()
+    if (api && typeof api.context === 'function') {
+      try {
+        return api.context()
+      } catch (_) {}
+    }
+    return { feedbackKey: 'free_form_feedback', interactionsFile: 'interactions.json' }
+  }
+
+  function keyFor(control) {
+    if (control.hasAttribute('data-tressoir-feedback')) return context().feedbackKey
+    return control.getAttribute('data-tressoir-input') || ''
+  }
+
+  function valueOf(control) {
+    if (control instanceof HTMLInputElement && control.type === 'checkbox') return control.checked
+    return control.value
+  }
+
+  function applyValue(control, value) {
+    if (control instanceof HTMLInputElement && control.type === 'checkbox') {
+      control.checked = Boolean(value)
+      return
+    }
+    if (typeof value === 'string' || typeof value === 'number') control.value = String(value)
+  }
+
+  function save(control) {
+    var key = keyFor(control)
+    if (!key) return
+    var timer = pendingSaves.get(control)
+    if (timer) window.clearTimeout(timer)
+    pendingSaves.delete(control)
+
+    var api = bridge()
+    if (!api || typeof api.storeInteraction !== 'function') return
+    try {
+      api.storeInteraction(key, valueOf(control), context().interactionsFile)
+    } catch (_) {}
+  }
+
+  function scheduleSave(control) {
+    var key = keyFor(control)
+    if (!key) return
+    var previous = pendingSaves.get(control)
+    if (previous) window.clearTimeout(previous)
+    pendingSaves.set(control, window.setTimeout(function () { save(control) }, 300))
+  }
+
+  function bindControl(control) {
+    if (boundControls.has(control)) return
+    boundControls.add(control)
+
+    var key = keyFor(control)
+    if (!key) return
+    var api = bridge()
+    if (api && typeof api.getInteraction === 'function') {
+      try {
+        var saved = api.getInteraction(key, context().interactionsFile)
+        if (saved !== undefined) applyValue(control, saved)
+      } catch (_) {}
+    }
+
+    control.addEventListener('input', function () { scheduleSave(control) })
+    control.addEventListener('change', function () { save(control) })
+    control.addEventListener('blur', function () { save(control) })
+  }
+
+  function enhanceInteractions(root) {
+    root.querySelectorAll('[data-tressoir-input], [data-tressoir-feedback]').forEach(bindControl)
+  }
+
+  function resizeAutogrow(textarea) {
+    var range = (textarea.getAttribute('data-tressoir-autogrow') || '2:6').split(':')
+    var minRows = Math.max(1, Number(range[0]) || 2)
+    var maxRows = Math.max(minRows, Number(range[1]) || 6)
+    textarea.rows = minRows
+
+    var style = window.getComputedStyle(textarea)
+    var fontSize = parseFloat(style.fontSize) || 16
+    var lineHeight = parseFloat(style.lineHeight) || fontSize * 1.55
+    var frame = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0) +
+      (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.borderBottomWidth) || 0)
+    var minimum = lineHeight * minRows + frame
+    var maximum = lineHeight * maxRows + frame
+
+    textarea.style.height = 'auto'
+    var needed = Math.max(textarea.scrollHeight, minimum)
+    textarea.style.height = Math.min(needed, maximum) + 'px'
+    textarea.style.overflowY = needed > maximum + 1 ? 'auto' : 'hidden'
+  }
+
+  function enhanceAutogrow(root) {
+    root.querySelectorAll('textarea[data-tressoir-autogrow]').forEach(resizeAutogrow)
+    if (autogrowTrackingInstalled) return
+    autogrowTrackingInstalled = true
+    document.addEventListener('input', function (event) {
+      var textarea = event.target
+      if (textarea instanceof HTMLTextAreaElement && textarea.hasAttribute('data-tressoir-autogrow')) {
+        resizeAutogrow(textarea)
+      }
+    })
+  }
+
+  function updateDecision(decision) {
+    var choices = Array.from(decision.querySelectorAll('input[type="checkbox"][data-tressoir-input]'))
+    var resolved = choices.some(function (choice) { return choice.checked })
+    var state = resolved ? 'resolved' : 'unresolved'
+    decision.setAttribute('data-decision-state', state)
+    var indicator = decision.querySelector('[data-decision-indicator]')
+    if (indicator) indicator.textContent = resolved ? 'Resolved' : 'Unresolved'
+  }
+
+  function enhanceDecisions(root) {
+    root.querySelectorAll('[data-tressoir-decision]').forEach(updateDecision)
+    if (decisionTrackingInstalled) return
+    decisionTrackingInstalled = true
+    document.addEventListener('input', function (event) {
+      var target = event.target
+      if (!(target instanceof HTMLInputElement) || target.type !== 'checkbox') return
+      var decision = target.closest('[data-tressoir-decision]')
+      if (decision) updateDecision(decision)
+    })
+  }
+
+  function enhanceFeedbackEditors(root) {
+    if (!window.CodeMirror || typeof window.CodeMirror.fromTextArea !== 'function') return
+    root.querySelectorAll('textarea[data-tressoir-feedback]').forEach(function (textarea) {
+      var existing = feedbackEditors.get(textarea)
+      if (existing && existing.getWrapperElement().isConnected) return
+      if (existing) {
+        try { existing.toTextArea() } catch (_) { textarea.style.display = '' }
+      }
+
+      var editor = window.CodeMirror.fromTextArea(textarea, {
+        mode: { name: 'markdown', highlightFormatting: true },
+        lineWrapping: true,
+        viewportMargin: 20
+      })
+      editor.getInputField().setAttribute('aria-label', 'Feedback Form (Markdown)')
+      editor.on('change', function () {
+        editor.save()
+        textarea.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      editor.on('blur', function () {
+        editor.save()
+        save(textarea)
+      })
+      feedbackEditors.set(textarea, editor)
+    })
+  }
+
+  function renderFeedbackDock(focusEditor) {
+    var dock = document.querySelector('[data-feedback-dock]')
+    if (!dock) return
+    var panel = dock.querySelector('[data-feedback-panel]')
+    var toggle = dock.querySelector('[data-feedback-toggle]')
+    if (!panel || !toggle) return
+
+    panel.hidden = !feedbackDockOpen
+    toggle.setAttribute('aria-expanded', feedbackDockOpen ? 'true' : 'false')
+    toggle.setAttribute('aria-label', feedbackDockOpen ? 'Close feedback form' : 'Open feedback form')
+
+    if (feedbackDockOpen && focusEditor) {
+      var textarea = panel.querySelector('textarea[data-tressoir-feedback]')
+      var editor = textarea && feedbackEditors.get(textarea)
+      if (editor) {
+        var scheduleFrame = window.requestAnimationFrame || function (callback) { window.setTimeout(callback, 0) }
+        scheduleFrame(function () {
+          editor.refresh()
+          editor.focus()
+        })
+      }
+    }
+  }
+
+  function installFeedbackDockRouting() {
+    if (feedbackDockRoutingInstalled) return
+    feedbackDockRoutingInstalled = true
+
+    document.addEventListener('click', function (event) {
+      var target = event.target instanceof Element ? event.target : null
+      var toggle = target && target.closest('[data-feedback-toggle]')
+      var close = target && target.closest('[data-feedback-close]')
+      if (!toggle && !close) return
+      event.preventDefault()
+
+      if (toggle) {
+        feedbackDockOpen = !feedbackDockOpen
+        renderFeedbackDock(feedbackDockOpen)
+        return
+      }
+
+      feedbackDockOpen = false
+      renderFeedbackDock(false)
+      var trigger = document.querySelector('[data-feedback-toggle]')
+      if (trigger) trigger.focus()
+    })
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape' || !feedbackDockOpen) return
+      event.preventDefault()
+      feedbackDockOpen = false
+      renderFeedbackDock(false)
+      var trigger = document.querySelector('[data-feedback-toggle]')
+      if (trigger) trigger.focus()
+    })
+  }
+
+  function installCardRouting() {
+    if (cardRoutingInstalled) return
+    cardRoutingInstalled = true
+
+    document.addEventListener('click', function (event) {
+      var target = event.target instanceof Element ? event.target : null
+      var gutter = target && target.closest('[data-card-collapse]')
+      if (!gutter) return
+      var card = gutter.closest('details.card')
+      if (!card || !card.open) return
+      event.preventDefault()
+      event.stopPropagation()
+      card.open = false
+      var summary = card.querySelector(':scope > summary')
+      if (summary) {
+        try {
+          summary.focus({ preventScroll: true })
+        } catch (_) {
+          summary.focus()
+        }
+      }
+    })
+  }
+
+  function ensureScrollRegions(root) {
+    root.querySelectorAll('.tressoir-document table, .tressoir-document svg').forEach(function (element) {
+      if (element.hasAttribute('data-tressoir-inline')) return
+      if (element.closest('.scroll-region, .katex, .CodeMirror')) return
+      var wrapper = document.createElement('div')
+      wrapper.className = 'scroll-region'
+      wrapper.setAttribute('data-tressoir-auto-scroll', '')
+      wrapper.setAttribute('tabindex', '0')
+      wrapper.setAttribute('role', 'region')
+      var caption = element.querySelector && element.querySelector('caption')
+      var label = element.getAttribute('aria-label') || (caption && caption.textContent) ||
+        (element.tagName === 'TABLE' ? 'Scrollable table' : 'Scrollable diagram')
+      wrapper.setAttribute('aria-label', label.trim())
+      element.parentNode.insertBefore(wrapper, element)
+      wrapper.appendChild(element)
+    })
+  }
+
+  function enhanceMath(root) {
+    if (typeof window.renderMathInElement !== 'function') return
+    try {
+      window.renderMathInElement(root, {
+        delimiters: [
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+        ignoredClasses: ['katex'],
+        trust: false,
+        strict: 'warn',
+        throwOnError: false
+      })
+    } catch (_) {}
+  }
+
+  function enhanceCode(root) {
+    if (!window.Prism || typeof window.Prism.highlightAllUnder !== 'function') return
+    try { window.Prism.highlightAllUnder(root) } catch (_) {}
+  }
+
+  function neutralizeLocalLinks(root) {
+    var api = bridge()
+    if (!api || typeof api.openFile !== 'function') return
+    root.querySelectorAll('a[data-tressoir-open-file]').forEach(function (link) {
+      var path = link.getAttribute('data-tressoir-local-path') || link.getAttribute('href')
+      if (!path || path === '#') return
+      link.setAttribute('data-tressoir-local-path', path)
+      link.setAttribute('href', '#')
+      link.removeAttribute('target')
+    })
+  }
+
+  function installLinkRouting() {
+    if (linkRoutingInstalled) return
+    linkRoutingInstalled = true
+    document.addEventListener('click', function (event) {
+      var target = event.target instanceof Element ? event.target.closest('[data-tressoir-open-file]') : null
+      if (!(target instanceof HTMLAnchorElement)) return
+      var api = bridge()
+      if (!api || typeof api.openFile !== 'function') return
+      var path = target.getAttribute('data-tressoir-local-path')
+      if (!path) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      api.openFile(path)
+    })
+  }
+
+  function enhance(root) {
+    ensureScrollRegions(root)
+    enhanceMath(root)
+    enhanceCode(root)
+    enhanceInteractions(root)
+    enhanceAutogrow(root)
+    enhanceDecisions(root)
+    enhanceFeedbackEditors(root)
+    renderFeedbackDock(false)
+    installCardRouting()
+    installFeedbackDockRouting()
+    neutralizeLocalLinks(root)
+    installLinkRouting()
+  }
+
+  document.addEventListener('tressoir:render', function () { enhance(document) })
+  window.addEventListener('pagehide', function () {
+    Array.from(pendingSaves.keys()).forEach(save)
+  })
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { enhance(document) }, { once: true })
+  } else {
+    enhance(document)
+  }
+})()
+
+  </script>
+  <script>
+    (function () {
+      function hasRule(selectorPart) {
+        for (var i = 0; i < document.styleSheets.length; i++) {
+          var rules;
+          try { rules = document.styleSheets[i].cssRules; } catch (_) { continue; }
+          if (!rules) continue;
+          for (var j = 0; j < rules.length; j++) {
+            if (rules[j].selectorText && rules[j].selectorText.indexOf(selectorPart) !== -1) return true;
+          }
+        }
+        return false;
+      }
+      function mark(name, ok, detail) {
+        var row = document.querySelector('[data-check="' + name + '"]');
+        if (!row) return;
+        var cell = row.lastElementChild;
+        cell.className = ok ? 'check-ok' : 'check-fail';
+        cell.textContent = (ok ? 'ok' : 'FAILED') + (detail ? ' · ' + detail : '');
+      }
+      function drawPlot() {
+        var div = document.getElementById('remote-plot');
+        if (!div || !window.Plotly || !div.isConnected) return false;
+        var text = getComputedStyle(document.body).color;
+        var epochs = [1, 2];
+        Plotly.react(div, [
+          { x: epochs, y: [0.34, 0.38], name: 'run 2 (no AC dropout)', mode: 'lines+markers' },
+          { x: epochs, y: [0.24, 0.28], name: 'run 4 (AC dropout 0.1)', mode: 'lines+markers' },
+          { x: epochs, y: [0.34, 0.42], name: 'run 5 (AC dropout 0.1, renamed metrics)', mode: 'lines+markers' }
+        ], {
+          margin: { l: 50, r: 20, t: 10, b: 45 }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+          font: { color: text }, xaxis: { title: 'epoch', dtick: 1, gridcolor: 'rgba(128,128,128,0.25)' },
+          yaxis: { title: 'validation in-batch rank-1', range: [0, 0.5], gridcolor: 'rgba(128,128,128,0.25)' },
+          legend: { orientation: 'h', y: -0.25 }
+        }, { displaylogo: false, responsive: false });
+        return true;
+      }
+      function runChecks() {
+        var katexEl = document.querySelector('.katex');
+        var katexFont = katexEl ? getComputedStyle(katexEl).fontFamily : '';
+        mark('katex-css', /KaTeX/.test(katexFont), katexFont ? katexFont.split(',')[0] : 'no .katex element yet');
+        mark('katex-js', !!window.katex && !!katexEl, window.katex ? 'katex ' + (window.katex.version || '') : 'window.katex missing');
+        var tokens = document.querySelectorAll('.code-block .token').length;
+        mark('prism', !!window.Prism && tokens > 0, window.Prism ? tokens + ' tokens' : 'window.Prism missing');
+        mark('prism-css', hasRule('.diff-highlight'), '');
+        var cm = !!window.CodeMirror;
+        var md = cm && window.CodeMirror.modes && !!window.CodeMirror.modes.markdown;
+        mark('codemirror', cm && md, cm ? 'CodeMirror ' + window.CodeMirror.version + (md ? ', markdown mode' : ', markdown mode missing') : 'window.CodeMirror missing');
+        mark('codemirror-css', hasRule('.CodeMirror'), '');
+        var plotted = drawPlot();
+        var svg = !!document.querySelector('#remote-plot svg.main-svg');
+        mark('plotly', !!window.Plotly && (plotted || svg), window.Plotly ? 'Plotly ' + window.Plotly.version : 'window.Plotly missing');
+        var bridgeCell = document.querySelector('[data-check="bridge"]').lastElementChild;
+        if (window.tressoirNotebook) { mark('bridge', true, 'inside Tressoir'); }
+        else { bridgeCell.className = 'check-pending'; bridgeCell.textContent = 'not present · plain browser, not a failure'; }
+        var failed = document.querySelectorAll('#check-table .check-fail').length;
+        var summary = document.getElementById('check-summary');
+        summary.className = failed ? 'check-fail' : 'check-ok';
+        summary.textContent = failed ? failed + ' resource check(s) failed.' : 'Every remote resource loaded and ran.';
+      }
+      var tries = 0;
+      function whenReady() {
+        var ready = window.katex && window.Prism && window.CodeMirror && window.Plotly;
+        if (ready || tries++ > 100) { setTimeout(runChecks, 200); return; }
+        setTimeout(whenReady, 100);
+      }
+      window.addEventListener('tressoir:render', function () { setTimeout(runChecks, 300); });
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', whenReady); else whenReady();
+    })();
+  </script>
+</body>
+</html>

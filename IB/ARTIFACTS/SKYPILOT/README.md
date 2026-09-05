@@ -76,6 +76,12 @@ uv run sky image
 uv run sky setup --name ac-test --gpu l40s --gpu-count 1
 ```
 
+`--gpu-count N` requests N GPUs on one node; the harness then runs one vLLM
+engine per visible GPU (`VLLMWrapper`, no extra flag). On AWS, `--gpu
+rtx6000pro --gpu-count 2` lands on `g7e.12xlarge` and `--gpu-count 4` on
+`g7e.24xlarge`; the L40S 4× shape is `g6e.12xlarge`. Multi-GPU capacity is
+scarcer than single-GPU, so expect more region shopping during setup.
+
 `sky exec` always performs an exact local-to-remote source upload before it
 submits the command. A failed upload prevents execution. A stopped managed
 cluster is started with `--retry-until-up`, so transient AWS capacity errors
@@ -107,6 +113,17 @@ uv run sky exec ac-test uv run pytest activation/tests/test_basic_engine.py --gp
 `~/sky_workdir` is disposable and exactly owned by the local repository.
 Remote-only state belongs outside it. Model/JIT caches use `/root/.cache`, and
 checkpoints or results should be written beneath `~/activation_artifacts`.
+
+Watch a run's artifact folder while it writes it. `sky watch` rsyncs the remote folder into a
+local `IB/TMP` path every few seconds (changed files replaced, nothing deleted locally), until
+Ctrl-C, until a named file appears (the file a run writes last), or until a time limit. A
+`.tressoir.html` in the folder morphs in the editor as each sync lands, so a live report on the
+node is a live report here. Run it in a second terminal or in the background next to `sky exec`.
+
+```bash
+uv run sky watch ac-test '~/activation_artifacts/run-1/' IB/TMP/run-1/ \
+  --interval 15 --until-file training_stats.json
+```
 
 Download artifacts explicitly. Quote a remote path beginning with `~` so the
 local shell does not expand it. Downloads never delete local files and keep

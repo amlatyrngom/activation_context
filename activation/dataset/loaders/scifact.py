@@ -3,7 +3,6 @@ SciFact Loader.
 Uses BeIR/scifact (paper abstracts + claims) with BeIR/scifact-qrels labels.
 """
 
-import random
 import time
 import typing as t
 from datasets import load_dataset
@@ -11,6 +10,7 @@ from datasets import load_dataset
 from ..dataset_utils import (
     make_dataset_id,
     take_to_budget,
+    extra_corpus_budget,
     normalize_split_name,
     initialize_dataset_stats,
 )
@@ -35,24 +35,29 @@ class SciFactDataset:
     def load(
         cls,
         harness: "HarnessRuntime",
-        max_examples: int,
+        max_examples: int|None,
         split: str = "train",
+        max_corpus_documents: int|None = None,
     ) -> LoadedDataset:
         """
-        Take up to max_examples claims, keep every gold abstract they reference
-        (overfetching documents rather than dropping claims), and add up to
-        max_examples seed-sampled distractor abstracts.
+        Take up to max_examples claims (all of them when None) and keep every
+        gold abstract they reference, plus up to
+        max(0, max_corpus_documents - golds) non-gold abstracts in corpus order
+        (None = the whole 5k-abstract reference corpus).
         """
         start_time = time.time()
-        dataset_id = make_dataset_id("scifact", split=split, n=max_examples)
+        dataset_id = make_dataset_id("scifact", split=split, n=max_examples, corpus=max_corpus_documents)
         print(f"{dataset_id} - Loading")
-        golds_by_query: dict[str, list[str]] = {}
-        for row in load_dataset("BeIR/scifact-qrels", split=split):
-            golds_by_query.setdefault(str(row["query-id"]), []).append(str(row["corpus-id"]))
         query_texts = {
             str(row["_id"]): str(row["text"])
             for row in load_dataset("BeIR/scifact", "queries", split="queries")
         }
+        golds_by_query: dict[str, list[str]] = {}
+        for row in load_dataset("BeIR/scifact-qrels", split=split):
+            query_id = str(row["query-id"])
+            if query_id not in query_texts:
+                continue # Defensive: a label without its claim text is unusable.
+            golds_by_query.setdefault(query_id, []).append(str(row["corpus-id"]))
         selected = take_to_budget(
             golds_by_query.items(),
             budget=max_examples,
@@ -60,26 +65,21 @@ class SciFactDataset:
         wanted_doc_ids: set[str] = set()
         for _query_id, gold_ids in selected:
             wanted_doc_ids.update(gold_ids)
-        corpus_rows = load_dataset("BeIR/scifact", "corpus", split="corpus")
-        doc_ids = [str(doc_id) for doc_id in corpus_rows["_id"]]
-        gold_positions = [p for p, doc_id in enumerate(doc_ids) if doc_id in wanted_doc_ids]
-        candidate_positions = [p for p, doc_id in enumerate(doc_ids) if doc_id not in wanted_doc_ids]
-        # Seeded uniform sample avoids any ordering bias in the corpus file.
-        sampled_distractors = random.Random(0).sample(
-            candidate_positions,
-            min(max_examples, len(candidate_positions)),
-        )
         documents: dict[str, DatasetDocument] = {}
-        for position in sorted(gold_positions + sampled_distractors):
-            row = corpus_rows[position]
+        extra_budget = extra_corpus_budget(max_corpus_documents, len(wanted_doc_ids))
+        for row in load_dataset("BeIR/scifact", "corpus", split="corpus"):
             doc_id = str(row["_id"])
+            if doc_id not in wanted_doc_ids:
+                if extra_budget is not None and extra_budget <= 0:
+                    continue
+                if extra_budget is not None:
+                    extra_budget -= 1
             title = str(row["title"]).strip()
             text = str(row["text"]).strip()
             documents[doc_id] = DatasetDocument(
                 doc_id=doc_id,
                 dataset_id=dataset_id,
                 text=f"{title}\n\n{text}" if title else text,
-                atomic=True, # One abstract is one retrieval unit.
             )
         examples: dict[str, LabeledRetrievalQAExample] = {}
         for query_id, gold_ids in selected:

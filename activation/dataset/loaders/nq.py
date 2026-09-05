@@ -11,6 +11,7 @@ from datasets import load_dataset
 from ..dataset_utils import (
     make_dataset_id,
     take_to_budget,
+    extra_corpus_budget,
     normalize_split_name,
     initialize_dataset_stats,
 )
@@ -35,19 +36,21 @@ class NqDataset:
     def load(
         cls,
         harness: "HarnessRuntime",
-        max_examples: int,
+        max_examples: int|None,
         split: str = "train",
+        max_corpus_documents: int|None = None,
     ) -> LoadedDataset:
         start_time = time.time()
-        dataset_id = make_dataset_id("nq", split=split, n=max_examples)
+        dataset_id = make_dataset_id("nq", split=split, n=max_examples, corpus=max_corpus_documents)
         print(f"{dataset_id} - Loading")
         rows = load_dataset(
             "sentence-transformers/natural-questions",
             split=split,
             streaming=True,
         )
+        row_iter = enumerate(rows)
         selected = take_to_budget(
-            enumerate(rows),
+            row_iter,
             budget=max_examples,
         )
         documents: dict[str, DatasetDocument] = {}
@@ -60,7 +63,6 @@ class NqDataset:
                     doc_id=f"nq:{split}:{ordinal}",
                     dataset_id=dataset_id,
                     text=text,
-                    atomic=True, # NQ passages are already retrieval units.
                 )
                 documents[doc.doc_id] = doc
                 documents_dedup[text] = doc
@@ -75,6 +77,24 @@ class NqDataset:
                 positive_doc_ids=[doc.doc_id],
             )
             examples[example.example_id] = example
+        # Distractor pool: keep scanning rows past max_examples, docs only.
+        extra_budget = extra_corpus_budget(max_corpus_documents, len(documents))
+        if extra_budget is None or extra_budget > 0:
+            for ordinal, row in row_iter:
+                text = str(row["answer"])
+                if text in documents_dedup:
+                    continue
+                doc = DatasetDocument(
+                    doc_id=f"nq:{split}:{ordinal}",
+                    dataset_id=dataset_id,
+                    text=text,
+                )
+                documents[doc.doc_id] = doc
+                documents_dedup[text] = doc
+                if extra_budget is not None:
+                    extra_budget -= 1
+                    if extra_budget <= 0:
+                        break
         loaded_dataset = LoadedDataset(
             dataset_id=dataset_id,
             documents=documents,

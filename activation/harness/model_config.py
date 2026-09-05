@@ -21,6 +21,7 @@ class LayerType(StrEnum):
     FULL_ATTENTION = auto()
     WINDOW_ATTENTION = auto()
     LINEAR_ATTENTION = auto()
+    FFN_ONLY = auto()
 
 class EmbeddingReadoutType(StrEnum):
     """The readout type of the embedding model."""
@@ -56,11 +57,6 @@ class ModelDescription:
     embedding_readout_type: EmbeddingReadoutType|None = None
 
 
-    
-
-
-
-
 @dataclass
 class ModelConfig:
     model_name: str
@@ -75,6 +71,8 @@ class ModelConfig:
     model_description: ModelDescription|None = None
     """Detailed Model Description. Auto-populated."""
 
+    engine_kwargs: dict[str, t.Any]|None = None
+    """Additional arguments passed to the engine. Override default ones."""
 
     def pretty_format_description(self) -> str:
         from .hf_utils import pretty_format_model_description

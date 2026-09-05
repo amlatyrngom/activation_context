@@ -1,16 +1,19 @@
 # Tressoir linear HTML starter
 
-Copy this entire folder into the existing broad-task folder under `IB/ARTIFACTS/`, then rename
-`ARTIFACT.tressoir.html`. Keep the relative asset paths and the floating feedback dock intact.
+Copy `ARTIFACT.tressoir.html` into the existing broad-task folder under `IB/ARTIFACTS/`, rename it,
+and replace the example content. Copy `SIBLING.md` only if you keep the example local link.
 
-The bundle is intentionally project-local: the artifact stays faithful in Tressoir, opens as a
-normal offline web page, and records the exact renderer assets used for that task.
+The starter is one compact, browser-portable HTML file. It loads exact KaTeX, PrismJS, and
+CodeMirror releases from public CDNs and loads the reviewed Tressoir CSS/runtime from release tag
+`v0.1.7`. Direct HTTPS scripts work in Tressoir and a normal browser. Preserve their order and do
+not replace them with `latest`, mutable branches, or GitHub raw-file URLs that are served with a
+non-JavaScript MIME type.
 
 ## Authoring rules
 
 - Replace the example content; keep one linear reading flow.
-- Keep the core CSS and JavaScript unchanged. Put narrow artifact-specific rules in a second local
-  stylesheet and use the published tokens.
+- Keep the pinned core CSS and JavaScript references unchanged. Prefer a short inline `<style>` for
+  narrow artifact-specific rules; use a sibling stylesheet when those rules become substantial.
 - Do not add a page-type selector, whole-page card, or one-off palette.
 - Use simple, concise language and keep ordinary information visible. A card summary must make sense while closed.
 - Tables and SVG diagrams are automatically placed in `.scroll-region`; mark only tiny inline SVG
@@ -64,7 +67,7 @@ they conflict with ordinary currency. KaTeX uses `trust: false`, `strict: "warn"
 
 Use `<pre class="code-block"><code class="language-LANGUAGE">...</code></pre>`.
 
-The offline Prism pack supports markup/HTML, CSS, JavaScript, TypeScript, JSX, TSX, JSON, YAML,
+The pinned Prism pack supports markup/HTML, CSS, JavaScript, TypeScript, JSX, TSX, JSON, YAML,
 Markdown, Bash, Python, Rust, SQL, and Diff. For language-aware diffs use:
 
 ```html
@@ -96,13 +99,16 @@ controls still work and links remain ordinary relative links, but values do not 
 
 The small bottom-right feedback trigger opens a non-modal **Feedback Form** above the page. The
 document remains readable and scrollable while it is open; use its close button or Escape to close
-it. The form uses the locally vendored CodeMirror Markdown mode and persists silently through the
+it. The form uses the pinned CodeMirror Markdown mode and persists silently through the
 same contained interaction bridge without changing the stored plain Markdown string.
 
-## Vendored dependencies
+## Pinned remote dependencies
 
-- KaTeX 0.18.4: `vendor/katex/`, MIT license included.
-- PrismJS 1.30.0: `vendor/prism/`, MIT license included.
-- CodeMirror 5.65.16: `vendor/codemirror/`, MIT license included.
+- KaTeX 0.18.4 from jsDelivr.
+- PrismJS 1.30.0 from jsDelivr.
+- CodeMirror 5.65.16 from cdnjs.
+- Tressoir linear CSS/runtime from release `v0.1.7` through jsDelivr.
 
-There are no runtime network requests, loaders, package-manager calls, `eval`, or `new Function`.
+The template makes network requests for those resources. It uses no runtime loader,
+package-manager call, `eval`, or `new Function`. For an explicitly offline deliverable, vendor the
+same pinned files as a project-specific adaptation and document their provenance.

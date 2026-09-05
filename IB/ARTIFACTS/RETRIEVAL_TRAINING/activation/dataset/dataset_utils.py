@@ -1,0 +1,110 @@
+"""
+Utilities to load and split datasets.
+"""
+
+import random
+import typing as t
+from .dataset import DataSplit, LoadedDataset, DatasetStats, DatasetDocumentChunk
+if t.TYPE_CHECKING:
+    from activation.harness import HarnessRuntime
+
+def make_dataset_id(base_name: str, **kwargs):
+    parts: list[str] = [
+        f"{k}_{v}" for k, v in kwargs.items()
+    ]
+    parts = "__".join(parts)
+    if not parts:
+        return base_name
+    return f"{base_name}___{parts}"
+
+
+def take_to_budget(
+    rows: t.Iterable,
+    budget: int | None,
+    cost_fn: t.Callable[[t.Any], int]|None = None,
+    filter_fn: t.Callable[[t.Any], int]|None=None
+) -> list:
+    """
+    Take items up to a given budget.
+    Uses streaming in case the dataset is very large.
+    """
+    if cost_fn is None:
+        # Assume a count-based cost.
+        cost_fn = lambda _x: 1
+    if filter_fn is None:
+        # Assume all true
+        filter_fn = lambda _x: True
+    if budget is None:
+        # Effectively infinite.
+        budget = 2**50
+    selected = []
+    total = 0
+    for row in rows:
+        if not filter_fn(row):
+            continue
+        row_cost = cost_fn(row)
+        selected.append(row)
+        total += row_cost
+        if total >= budget:
+            break
+    return selected
+
+
+
+def normalize_split_name(split: str) -> DataSplit:
+    """
+    Map ordinary upstream split names to the typed experiment role.
+    """
+    normalized = split.strip().lower()
+    if normalized in {"train"}:
+        return DataSplit.TRAIN
+    if normalized in {"validation", "val", "dev"}:
+        return DataSplit.VAL
+    if normalized == "test":
+        return DataSplit.TEST
+    raise ValueError(f"unknown labeled-example source split {split!r}")
+
+
+def initialize_dataset_stats(loaded_dataset: LoadedDataset, load_time: float) -> DatasetStats:
+    """
+    Compute the load-time statistics; index/query statistics fill in later.
+    """
+    total_chars = sum(len(document.text) for document in loaded_dataset.documents.values())
+    num_documents = len(loaded_dataset.documents)
+    return DatasetStats(
+        initial_load_latency=load_time,
+        total_document_chars=total_chars,
+        total_num_documents=num_documents,
+        avg_document_chars=total_chars // num_documents if num_documents else 0,
+    )
+
+
+def safe_truncate_embedding_chunk(chunk: str, limit: int|None):
+    if limit is None or len(chunk) <= limit:
+        return chunk
+    else:
+        half = limit // 2
+        return chunk[:half] + chunk[-(limit - half):]
+
+
+def extra_corpus_budget(max_corpus_documents: int | None, num_wanted: int) -> int | None:
+    """None means unlimited; otherwise extra non-gold docs on top of the golds."""
+    if max_corpus_documents is None:
+        return None
+    return max(0, max_corpus_documents - num_wanted)
+
+
+def shuffle_fill_truncate(items: list, num_samples: int, rng: random.Random) -> list:
+    """
+    Seeded selection without replacement that still honors a budget above the population: one
+    shuffled pass when num_samples <= len(items) (truncate), otherwise whole reshuffled passes
+    until the budget is covered, then truncate. Every item is seen before any item repeats.
+    """
+    if not items or num_samples <= 0:
+        return []
+    selected: list = []
+    while len(selected) < num_samples:
+        order = list(items)
+        rng.shuffle(order)
+        selected.extend(order)
+    return selected[:num_samples]
