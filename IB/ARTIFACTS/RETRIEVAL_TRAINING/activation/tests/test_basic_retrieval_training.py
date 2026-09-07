@@ -9,6 +9,7 @@ from activation.dataset.loaders import MsMarcoDataset
 from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
 from activation.harness.hf_utils import FREE_DEVICE
 from activation.retrieval import (
+    METRIC_NAMES,
     RetrievalModel,
     RetrievalReporter,
     RetrievalTrainer,
@@ -78,7 +79,8 @@ def test_basic_retrieval_training():
     assert sum(step_losses[-5:]) < 0.5 * sum(step_losses[:5]), step_losses
     reporting_losses = [loss for _progress, loss in stats.reporting_losses]
     assert min(reporting_losses) < reporting_losses[0], reporting_losses
-    assert len(stats.validation_losses) == 4
+    assert len(stats.validation_losses) == 5, "epoch 0 (untrained) plus one per epoch"
+    assert "frozen base" in stats.reference_metrics and set(stats.reference_metrics["frozen base"]) == set(METRIC_NAMES)
     assert os.path.exists(os.path.join(REPORT_FOLDER, "report.tressoir.html"))
     assert os.path.exists(os.path.join(REPORT_FOLDER, "report_data.json"))
 

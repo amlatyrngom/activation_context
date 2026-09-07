@@ -27,6 +27,8 @@ from activation.retrieval import (
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--base-model-id", default="Qwen/Qwen3-0.6B")
+    parser.add_argument("--baseline-model-id", default="Qwen/Qwen3-Embedding-0.6B",
+                        help="well-trained embedder scored on the validation batches as a reference; 'none' to skip")
     parser.add_argument("--num-queries", type=int, default=1000, help="queries selected before the validation split")
     parser.add_argument("--val-ratio", type=float, default=0.05)
     parser.add_argument("--reporting-size", type=int, default=50)
@@ -43,8 +45,13 @@ def main() -> None:
 
     base_model_name = args.base_model_id.split("/")[-1].lower()
     lora_name, ac_name = f"{base_model_name}-retrieval-lora", f"{base_model_name}-retrieval-ac"
+    model_configs = {base_model_name: ModelConfig(base_model_name, args.base_model_id)}
+    baseline_model_name = None
+    if args.baseline_model_id.lower() != "none":
+        baseline_model_name = args.baseline_model_id.split("/")[-1].lower()
+        model_configs[baseline_model_name] = ModelConfig(baseline_model_name, args.baseline_model_id)
     harness = HarnessRuntime(HarnessRuntimeConfig(
-        model_configs={base_model_name: ModelConfig(base_model_name, args.base_model_id)},
+        model_configs=model_configs,
         doc_chunk_size_chars=args.chunk_size_chars,
         doc_embedding_input_limit_chars=args.chunk_size_chars,
     ))
@@ -65,7 +72,7 @@ def main() -> None:
     retrieval_model = RetrievalModel(
         harness, base_model_name, d_embedding_result=args.d_embedding_result, ac_name=ac_name, lora_name=lora_name,
     )
-    config = RetrievalTrainingConfig(epochs=args.epochs, batch_size=args.batch_size, seed=args.seed)
+    config = RetrievalTrainingConfig(epochs=args.epochs, batch_size=args.batch_size, seed=args.seed, baseline_model_name=baseline_model_name)
     reporter = RetrievalReporter(
         args.report_folder,
         title=f"Retrieval training — MS-MARCO train, {len(training_data):,} queries",

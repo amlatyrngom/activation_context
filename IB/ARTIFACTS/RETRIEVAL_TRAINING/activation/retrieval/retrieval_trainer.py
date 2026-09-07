@@ -39,6 +39,7 @@ from .retrieval_batching import (
     probe_batch_size,
     recommended_batch_size,
 )
+from .retrieval_baseline import BaselineEmbedder, frozen_base_reference
 from .retrieval_model import RetrievalModel
 from .retrieval_reporter import METRIC_NAMES, RetrievalReporter
 from .retrieval_training_config import RetrievalTrainingConfig, RetrievalTrainingStats
@@ -124,7 +125,10 @@ class RetrievalTrainer:
 
     @torch.no_grad()
     def _evaluate(self, retrieval_model: RetrievalModel, batches: list[RetrievalBatch], temperature: float) -> tuple[float, dict[str, float]]:
-        """Example-weighted loss and in-batch metrics over the given batches, in eval mode."""
+        """
+        Example-weighted loss and in-batch metrics over the given batches, in eval mode. Any embedder
+        with the RetrievalModel scoring interface works here, including a BaselineEmbedder.
+        """
         total_loss, total_examples = 0.0, 0
         totals = {name: 0.0 for name in METRIC_NAMES}
         for batch in batches:
@@ -136,6 +140,29 @@ class RetrievalTrainer:
             total_examples += count
         divisor = max(1, total_examples)
         return total_loss / divisor, {name: value / divisor for name, value in totals.items()}
+
+    def evaluate_references(
+        self, config: RetrievalTrainingConfig, retrieval_model: RetrievalModel, batches: list[RetrievalBatch],
+    ) -> dict[str, tuple[float, dict[str, float]]]:
+        """
+        {reference name: (loss, in-batch metrics)} on the given batches for the references the config
+        asks for: the frozen base alone (the floor) and a well-trained baseline embedder (the target).
+        The baseline model is loaded for the pass and freed afterwards; the frozen base shares the
+        resident base. Same batches, pool, loss and metrics as the model under training.
+        """
+        references: dict[str, tuple[float, dict[str, float]]] = {}
+        if not batches:
+            return references
+        if config.reference_frozen_base:
+            reference = frozen_base_reference(self.harness, retrieval_model)
+            references["frozen base"] = self._evaluate(reference, batches, config.temperature)
+        if config.baseline_model_name:
+            baseline = BaselineEmbedder(self.harness, config.baseline_model_name, retrieval_model.query_instruction)
+            try:
+                references[config.baseline_model_name] = self._evaluate(baseline, batches, config.temperature)
+            finally:
+                baseline.free()
+        return references
 
     # ----------------------------------------------------------------------------- training
     def _dataset_indexes(self, *example_lists: list[LabeledRetrievalQAExample]) -> DatasetIndexes:
@@ -181,7 +208,8 @@ class RetrievalTrainer:
     ) -> RetrievalTrainingStats:
         """
         Holds base residency for the whole run. Order: ensure_resident -> batch size (config or
-        recommended) -> probe -> epochs. Raises before the first real step if the probe cannot fit.
+        recommended) -> probe -> references (frozen base, baseline embedder) -> epoch-0 point ->
+        epochs. Raises before the first real step if the probe cannot fit.
         """
         config = training_config
         reporter = retrieval_reporter
@@ -233,7 +261,17 @@ class RetrievalTrainer:
             "batch_size": batch_size,
         }
         lora_config = self.harness.module_manager.get_lora_config(retrieval_model.lora_name) if retrieval_model.lora_name else None
-        reporter.initialize_run(config, retrieval_model, lora_config, counts, batch_sizing, groups)
+        reference_names = (["frozen base"] if config.reference_frozen_base else []) + ([config.baseline_model_name] if config.baseline_model_name else [])
+        reporter.initialize_run(config, retrieval_model, lora_config, counts, batch_sizing, groups, reference_names)
+
+        # References on the validation batches (the reporting batch when there is no validation split).
+        reference_batches = validation_batches or reporting_batches
+        start = time.time()
+        for name, (loss, metrics) in self.evaluate_references(config, retrieval_model, reference_batches).items():
+            stats.reference_losses[name], stats.reference_metrics[name] = loss, metrics
+            reporter.report_reference(name, loss, metrics)
+        stats.total_validation_time += time.time() - start
+        retrieval_model.set_training_mode(True, config.gradient_checkpointing)
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(device)
 
@@ -252,9 +290,24 @@ class RetrievalTrainer:
             stats.reporting_metrics.append((progress, metrics))
             reporter.report_reporting_point(step, progress, loss, metrics)
 
+        def validate(epoch: int) -> None:
+            if not validation_batches:
+                return
+            start = time.time()
+            retrieval_model.set_training_mode(False)
+            validation_loss, validation_metrics = self._evaluate(retrieval_model, validation_batches, config.temperature)
+            retrieval_model.set_training_mode(True, config.gradient_checkpointing)
+            stats.total_validation_time += time.time() - start
+            stats.validation_losses.append((epoch, validation_loss))
+            stats.validation_metrics.append((epoch, validation_metrics))
+            reporter.report_validation(epoch, validation_loss, validation_metrics)
+
         run_start = time.time()
         step = 0
         last_report_step = -1
+        report_progress(0, 0.0)                                                       # the untrained model: epoch 0 of every curve
+        validate(0)
+        reporter.render(force=True)
         for epoch in range(1, config.epochs + 1):
             rng = random.Random(config.seed + epoch)
             epoch_start = time.time()
@@ -304,15 +357,7 @@ class RetrievalTrainer:
             if last_report_step != step:
                 report_progress(step, step / steps_per_epoch)
                 last_report_step = step
-            if validation_batches:
-                start = time.time()
-                retrieval_model.set_training_mode(False)
-                validation_loss, validation_metrics = self._evaluate(retrieval_model, validation_batches, config.temperature)
-                retrieval_model.set_training_mode(True, config.gradient_checkpointing)
-                stats.total_validation_time += time.time() - start
-                stats.validation_losses.append((epoch, validation_loss))
-                stats.validation_metrics.append((epoch, validation_metrics))
-                reporter.report_validation(epoch, validation_loss, validation_metrics)
+            validate(epoch)
             reporter.report_epoch(str(epoch), epoch_steps, epoch_shapes, epoch_time, peak_memory(), running=False)
             reporter.render(force=True)
 

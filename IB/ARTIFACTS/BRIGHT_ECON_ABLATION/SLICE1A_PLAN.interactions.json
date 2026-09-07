@@ -1,0 +1,12 @@
+{
+  "slice1a.d1.span": true,
+  "slice1a.d2.qwen4b": true,
+  "slice1a.d2.both": false,
+  "slice1a.d3.qwen3_4b": true,
+  "slice1a.d4.before": true,
+  "slice1a.d5.desc_only": true,
+  "slice1a.d6.parallel": true,
+  "slice1a.d6.feedback": "BTW in my ec2 console I often see orphan nodes. Clear them for me it they are still there.",
+  "slice1a.d2.feedback": "I am not so sure labeler should stay the 35BA3B one: I seem to remember labeling being actually slower, so perhaps using 4B is right?",
+  "SLICE1A_PLAN-free_form_feedback": "```\nEval pools are the batch's candidates. With 7.8 golds per query and batches of 50, a query is ranked against about 400 chunks, all golds of the batch's queries. That is the same in-batch rule as training feedback.\n```\nIn the probe, identify what the baseline is under this policy. That means the probes can run the full test-set I think, given how small it is."
+}

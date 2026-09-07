@@ -27,6 +27,8 @@ class RetrievalTrainingConfig:
     memory_headroom_fraction: float = 0.1
     reporting_fraction: float = 0.1         # of an epoch
     seed: int = 0
+    baseline_model_name: str | None = None  # a harness embedding model scored on the validation batches as a trained reference
+    reference_frozen_base: bool = True      # also score the frozen base alone (no LoRA, AC or head) as the floor
 
 
 @dataclass
@@ -47,6 +49,8 @@ class RetrievalTrainingStats:
     validation_losses: list[tuple[int, float]] = field(default_factory=list)            # (epoch, loss)
     validation_metrics: list[tuple[int, dict[str, float]]] = field(default_factory=list)  # (epoch, in-batch metrics)
     total_validation_time: float = 0.0
+    reference_losses: dict[str, float] = field(default_factory=dict)                    # {reference name: validation loss}
+    reference_metrics: dict[str, dict[str, float]] = field(default_factory=dict)        # {reference name: in-batch metrics}
     peak_memory_bytes: int = 0
     batch_sizing: str = ""                                                              # the printed arithmetic
 
@@ -99,4 +103,6 @@ class RetrievalTrainingStats:
             "last_reporting_metrics": self.reporting_metrics[-1][1] if self.reporting_metrics else None,
             "validation_losses": list(self.validation_losses),
             "validation_metrics": list(self.validation_metrics),
+            "reference_losses": dict(self.reference_losses),
+            "reference_metrics": dict(self.reference_metrics),
         }

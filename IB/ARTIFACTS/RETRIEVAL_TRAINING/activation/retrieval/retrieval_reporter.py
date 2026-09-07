@@ -48,11 +48,16 @@ class RetrievalReporter(HtmlReporter):
         counts: dict,
         batch_sizing: str,
         groups: dict[str, list],
+        reference_names: list[str] = (),
     ) -> None:
         """Create every widget of the run and write the first page."""
         self.total_steps = counts["total_steps"]
         self.epochs = config.epochs
         reporting_examples = counts["reporting_examples"]
+        reference_note = ""
+        if reference_names:
+            reference_note = (" Flat lines: " + ", ".join(reference_names) + " scored on the same validation batches before "
+                              "training (the frozen base alone is the floor, a well-trained embedder the target).")
         self.initialize_line_plot(
             "reporting", "Reporting and validation loss",
             f"Reporting: the fixed {reporting_examples}-query batch every {config.reporting_fraction:.0%} of an epoch. "
@@ -65,10 +70,18 @@ class RetrievalReporter(HtmlReporter):
             "Rank-1 (top candidate is an own positive), MRR@10 and nDCG@10 (binary relevance over own positives), all "
             "in-batch: each query is ranked against the batch's distinct candidates (its own positives and hard negatives "
             "plus the other queries' candidates) with same-document collisions masked, not against the corpus. "
-            "The reporting batch at every reporting point, the validation split at each epoch end.",
+            "The reporting batch at every reporting point, the validation split at each epoch end (epoch 0: untrained)."
+            + reference_note,
             "epochs", "metric",
-            [f"reporting {metric}" for metric in METRIC_NAMES] + [f"validation {metric}" for metric in METRIC_NAMES],
+            [f"reporting {metric}" for metric in METRIC_NAMES] + [f"validation {metric}" for metric in METRIC_NAMES]
+            + [f"{name} {metric}" for name in reference_names for metric in METRIC_NAMES],
         )
+        if reference_names:
+            self.initialize_table(
+                "references", "Reference embedders",
+                "Loss and in-batch metrics on the validation batches (same pool, loss and metrics as the model under training).",
+                ["reference", "loss", *METRIC_NAMES],
+            )
         self.initialize_line_plot(
             "step_loss", "Training loss per step", "Raw per-step loss (faint) with a 25-step moving average.",
             "step", "loss", ["loss"], smoothing_window=25,
@@ -123,6 +136,13 @@ class RetrievalReporter(HtmlReporter):
         self.add_data_point("metrics", {"x": progress, **{f"reporting {name}": value for name, value in metrics.items()}})
         self.set_status(last_reporting_loss=f"{loss:.3f}", **{f"reporting_{name}": f"{value:.2f}" for name, value in metrics.items()})
         print(f"Step {step}/{self.total_steps} (epoch {progress:.2f}): reporting loss {loss:.4f}, {_format_metrics(metrics)}")
+
+    def report_reference(self, name: str, loss: float, metrics: dict[str, float]) -> None:
+        """One flat line per metric across the whole run, plus a table row."""
+        for x in (0.0, float(self.epochs)):
+            self.add_data_point("metrics", {"x": x, **{f"{name} {metric}": value for metric, value in metrics.items()}})
+        self.add_data_point("references", {"reference": name, "loss": f"{loss:.4f}", **{metric: f"{value:.3f}" for metric, value in metrics.items()}})
+        print(f"Reference {name}: validation loss {loss:.4f}, {_format_metrics(metrics)}")
 
     def report_validation(self, epoch: int, loss: float, metrics: dict[str, float]) -> None:
         self.add_data_point("reporting", {"x": float(epoch), "validation": loss})
