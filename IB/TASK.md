@@ -55,3 +55,68 @@ def dataset_study(harness: HarnessRuntime) -> dict:
     ... # Or give it the problem without the answer, and have it generate a reasoning chain that leads to the answer, etc.
     ... # Or first solve the solvable ones, then for the unsolvable ones, retrieve similar solved problems, and iterate until convergence or a timeout, or something like that.
 ```
+
+# Next Step: Activation Context Modeling and Training
+## Modeling
+Here is what we'll broadly aim for:
+```py
+class ActicationContextModel: # This is now the one canonical activation context model. Delete the retrieval-specifc path.
+    """
+    Accepts input of the form:
+    messages = [
+        {
+            "role": "x",
+            "content": {
+                {"type": "text", "text": "Here is subcontent1",
+                {"type": "activation_context", "messages": [...]},
+                {"type": "text", "text": "Here is subcontent2"}, 
+                {"type": "activation_context", "messages": [...]},
+            }
+        },
+        ...
+    ]
+    and produces embedding tensor.
+    The recursive AC messages are independently passed into this model to get their values, ran into a standard ffn-based adapter, then passes in as embeddings at their right full position in the input stream.
+
+    It's important to have a very simple (cpu) cache of hash -> final tensor (NOT inner kvs). Just that given the same messages input (whether top-level or recursive), avoid recomputation.
+
+    It's also important to support (mostly through the utils files), schedule and batching that makes parallel calls to forward be very efficient. I don't know whether there should be a different mode for training and rollouts. I also don't know if we should reduce engine occupancy by ~5-10% to give room for this (is vllm literraly hogging things in way that makes any other side cache impossible?)
+
+    Tentative first architecture (give me an html visualization so I know we agree this makes sense).
+    - Run the recursive steps, adapt their output, then tokenize with placeholders where these outputs would go.
+        - Cache comes into play at recursive steps here or at the adapt step.
+    - Run the tokens through the frozen embeddings layer of the base model. Replace the embeddings.
+    - Do a self-attention based pooling to get the main major reduction in computation.
+    - At the same time, on do a larger pooling pass to create the view tokens. This creates the target number of tokens + a learned view marker. Append them to the stream.
+    - You now have <N/P_initial, N/P_target> tokens.
+    - Don't forget to add any necessary positional embeddings.
+    - Forward through the model as usual and read out the view tokens + some kind of head ffn (different from the recursive adapter; this targets the generative model, not the AC itself).
+    - Attach a lora to the base model.
+    - I am undecided on whether remove causality is worth it (embedding models don't seem to care either way, but this is slightly different). Let's defer if it introduces too many hacks to make it work. But let's do it if it's just a flag change.
+    """
+    def __init__(
+        self,
+        harness: HarnessRuntime,
+        side_base_model_name: str,
+        side_lora_name: str,
+        target_model_name: str, # read the target d_model from here.
+        pooling_factor: int = 4,
+        pooling_window: int = 32,
+        target_compression_ratio: float = 16.0, # Reduce the given input by this much.
+    ):
+        pass # Every other parameters should be as 
+
+
+    def forward(
+        messages: list[dict]|str, # support simple string input by converting it to a user message.
+    ):
+        pass
+
+
+    def forward_batch(
+        messages: list[dict]|str, # ...
+        for_training: bool, # needed ???
+    ):
+        pass
+```
+

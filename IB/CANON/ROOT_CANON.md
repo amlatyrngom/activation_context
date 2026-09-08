@@ -68,6 +68,8 @@ A small index and cross-cutting memory for this project.
 
 ## Subsystem index
 
+- [Agent training](AGENT_TRAINING_CANON.md): token segments, weighted training, adapter exchange/provenance, engine sleep, output limits, and validation scope.
+
 Create focused files such as `EDITOR_CANON.md`, `AUTH_CANON.md`, or `RELEASE_CANON.md` as needed, and link them here with a one-line description.
 
 ## Canon artifacts

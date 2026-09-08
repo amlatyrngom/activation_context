@@ -1,0 +1,86 @@
+# Agent training, slice 2 — agent-facing source of truth
+
+Projection: `SLICE2_PLAN.tressoir.md` (same folder). Interactions: `SLICE2_PLAN.interactions.json`.
+Version 4, 2026-09-08. Status: M0–M3 in Review (implemented, validated on CPU and on `ac-train`); M4–M5 TBD. Completion reports live in the projection's milestone cards; the handoff is `SLICE2_ROUND.tressoir.md`.
+
+## User asks (verbatim intent, from chat)
+
+- "The RAFT --> RAFT++ jump is what we are looking for ultimately, even with some performance sacrifices. Doing a 512/1024 rollouts, updating the weights, swapping the lora, then continuing, seems very reasonable to me."
+- Single loss with per-sample scalar weight in [-1, 1]; `selection_function(group) -> weighted items`; must "well handle positives/negatives, off-policy drifts, etc."
+- Log-probs must not be mandatory ("many trajectories will come from oracle teachers").
+- "The first plan should probably be decision-heavy (I'll ask you for html explainers whenever I am unfamiliar with something). My specialty before this is harness design, not model design/training … It's possible I have expectations about what co-design should achieve that are unrealistic. The reverse is also possible: I am missing something big."
+- `@AI` notes in the /source prototype: `engine_submit` "lora_name becomes supported"; "make sure the lora are sufficiently close to zero-init"; `exchane_lora` (typo, plan uses `exchange_lora`) "guarantees that a next call to the engine sees the checkpointed lora after training"; `branch_lora`; `AgentTrainingItem` "any other needed field, but tell me precisely"; test "Show me this interface in full"; AC model "defer to slice 3 or 4".
+
+## User prototype read (in /source, not modified)
+
+- `activation/agent/agent_config.py`: `agent_name: str = "main"`.
+- `activation/agent/agent_tools.py`: `SubagentTool` sets `agent_name="general_subagent"`.
+- `activation/harness/loaded_model.py`: `engine_submit` assertion on `lora_name` marked to go away.
+- `activation/harness/module_manager.py`: `register_lora(..., checkpoint_path=None)`, stubs `exchane_lora`, `branch_lora`; existing PEFT-per-base design (`ensure_lora`, `lora_context`, `lora_parameters`, `free_lora`, seven projections, alpha = 2·rank, dropout 0.05).
+- `activation/agent_training/`: `agent_trainer.py` (`AgentTrainingItem` with run_results/model_name/lora_name/weight/ignore_logprobs; `AgentTrainer.select_agent_runs`, `train(model_name, lora_name, training_data, reporting_data, reporter) -> AgentTrainingStats`), `agent_training_config.py`, `agent_training_utils.py`, empty reporter.
+- `activation/dataset/loaders/deepscaler_preview.py`: docstring only (AIME ≤ 2023 dev, AIME 2024–2025 held out).
+- `activation/tests/test_basic_agent_training.py`: two stubs.
+- `activation/agent/agent_ac_model.py`: notes; deferred.
+
+## Facts verified this session (evidence for the decisions)
+
+- vLLM 0.28: `AsyncLLM.sleep(level)`, `wake_up()`, `add_lora`, `remove_lora`, `list_loras`; `EngineArgs.enable_lora`, `max_loras`, `max_lora_rank`, `enable_sleep_mode`; `LoRARequest(lora_name, lora_int_id, lora_path, load_inplace)`; `SamplingParams(logprobs=0)` returns the sampled token's log-prob per position in `CompletionOutput.logprobs` (list of dict token_id -> Logprob) next to `token_ids`. Qwen3.5 model class is `SupportsLoRA`. `peft>=0.20.0` in the lock.
+- Harness: `HarnessRuntimeConfig` already carries `max_lora_rank`, `max_loras`; model and engine are mutually exclusive on the GPU via `engine_to_device` / `model_to_device`; engine reload ≈ 70 s with a warm compile cache.
+- Qwen3.5 template: XML `<function=…>` tool calls, tool results as user turns with `<tool_response>`; assistant `tool_calls` re-rendered from structure (hence the token-in token-out decision).
+- DAPO probe (slice 1 round doc): 4B 0.725 / 9B 0.795 accuracy at 100 × 2; 4B 1,150 out tok/s, 4,150 out tokens per rollout, 12 min per 200; 9B 670 tok/s, 3,620 tokens, 18 min per 200; failures 4:1 budget exhaustion : wrong answers; 17 mixed groups at group 2 (union over the two models 29); sympy missing in the sandbox image; a context overflow at 40,960.
+- RAFT / RAFT++ / Reinforce-Rej (arXiv 2504.11343): 1024 prompts × 4 per iteration, mini-batch 512 (8 steps), lr 1e-6 full fine-tune; RAFT++ = clipped IS ratio on positives; plateau ≈ iteration 100 from entropy collapse; GRPO's gain traced to dropping all-wrong prompts. W-REINFORCE (arXiv 2506.01347): λ·PSR + NSR with λ = 0.1 preserves entropy and pass@k.
+- Standard error of accuracy √(p(1−p)/n): p = 0.8 → ±2.8 (n = 200), ±1.8 (512), ±1.25 (1024) points.
+
+## Decisions (review of 2026-09-07 integrated; interactions file `SLICE2_PLAN.interactions.json`)
+
+| # | question | accepted / status | consequence |
+| --- | --- | --- | --- |
+| 1 | default selection rule | ACCEPTED group-mean advantage (reward − group mean, uniform groups dropped) | default in tests and M5; other three remain as functions |
+| 2 | round shape | ACCEPTED group 8; problems per round and rounds are driver parameters ("up to debate") | tests 16 × 8; `raft_rounds.py --problems --group --rounds` |
+| 3 | prompts between turns / training sequences | ACCEPTED (ticked) segments (v2.2, after the user's proposal) SEGMENTS: the agent owns the prompt as tokens, appends sampled tokens verbatim + dialect-rendered wrappers (`agent_utils.py`: `PromptSegment`, `prompt_tokens`, `tool_response_tokens`, `nudge_tokens`, `assistant_end_tokens`); one sequence per trajectory; AC = one more segment kind. Fallback: record the engine's prompt ids per turn (quadratic training cost: 2× at 3.5 turns, 10× at 20). Explainer §7. | M0 planned against segments |
+| 4 | GPU sharing | ACCEPTED vLLM sleep mode via `engine_to_device("cpu")` = sleep(level=1), target = wake_up(); user: "Add engine_to_device with cpu. I think that should be enough?" | `enable_sleep_mode=True`; the assertion against SOURCE_DEVICE goes |
+| 5 | credit assignment | ACCEPTED trajectory weight, subagents inherit; "fancy selection function can still do something custom" | as planned |
+| 6 | evaluation protocol | NOT A SLICE 2 DECISION (user); nothing may hinder later choices | eval = rollout manager on any task list; DeepScaleR loader only; generic `evaluate` helper |
+| 7 | paper claim | NONE (user: "slice 2 is still clearly within the implementation … right interfaces") | M5 = end-to-end dev run on the 4B, not a curve |
+| 8 | model / teacher | ACCEPTED 4B; teacher supported via `ignore_logprobs`, produced by the outer loop later | tests and M5 on 4B |
+
+Free-form review applied: `AgentTrainingItem` drops `agent_name` and `source` (redundant with `run_results`); `group_key` default `uuid4().hex[:8]`, `select_agent_runs` stamps one id per group; `save_lora(path)` → `save_lora(checkpoint_path=None)`.
+
+## Design (as planned; precise field lists in the projection's Interfaces section)
+
+- `TrajectoryStep.token_ids` = the step's own segment (assistant: sampled + end-of-turn if missing; tool/user: dialect wrapper), `logprobs` on assistant steps; `AgentRunResult.prompt_token_ids` = first-turn prefix, plus `source`, `lora_name`; `AgentConfig.record_sampling`. `engine_submit_tokens(prefix)`; `EngineChatOutput.token_ids/logprobs`. Template-equivalence unit test per dialect.
+- Sleep mode (decision 4): `engine_to_device(SOURCE_DEVICE)` → `sleep(level=1)`; `engine_to_device(TARGET_DEVICE)` on a sleeping engine → `wake_up()`; `enable_sleep_mode=True`; the trainer wraps `train()` with the two moves. Engine args already have `enable_lora=True`, `max_loras=4`, `max_lora_rank`.
+- LoRA on the engine: `enable_lora`, `max_lora_rank`, `max_loras` from harness config when any adapter is registered; `LoRARequest(name, version, path)` where version increments on `exchange_lora`; checkpoints `resolve_path("LORAS/<lora>/round_<n>")` + `latest`; `branch_lora` copies latest.
+- Trainer: one example per item (prompt_token_ids + Σ step.token_ids, loss mask on sampled assistant tokens), length cap drop, π_old from stored log-probs or a no-grad pass (`ignore_logprobs`), `updates_per_round` mini-batches, token-budgeted micro-batches with accumulation, loss `-mean_i (1/|a_i|) Σ_t min(s_t A_i, clip(s_t) A_i)` in fp32, grad clip 1.0, AdamW lr 2e-5 betas (0.9, 0.95), one epoch, stats + reporter, checkpoint. Trainer knows weights only.
+- Selection: `group_mean_advantage` (DEFAULT; reward − group mean, uniform groups dropped; Dr. GRPO / RLOO weights; group 8), `raft_positive`, `weighted_positive_negative`, `reinforce_reject`; `select_agent_runs` stamps `group_key` per group and buckets by `(model_name, lora_name)` into lists (the stub had a single item per key; lists are needed).
+- DeepScaleR loader (task source only); generic `evaluate` helper; `raft_rounds.py` driver for the M5 dev run (`--problems --group --rounds --selection`).
+
+## Expectations section (projection) — the honest framing
+
+Behaviour over knowledge; budget-exhaustion fixes dominate early gains; single-digit point gains realistic; noise; entropy collapse measurable via mean log-prob and mixed fraction; engine/trainer probability mismatch absorbed by ratio and clip, checked at step 1; contamination of AIME 2024–25; what co-design can show is learnability under harness variables, not beating a bigger model; LoRA rank matters little, lr matters a lot, one epoch per round.
+
+## Noted for later (user, 2026-09-07): trajectory source as the outer loop
+
+- User: "same model sft (shown the answer, asked to derive, independently use another call to remove contamination, sft) will also work right? … whether same model or more powerful model, is outer loop of our optimizations, note it down so we don't forget."
+- Answer: yes (STaR rationalisation / ReST-EM). Caveats: leakage (hint asserted, not derived) → keep only runs whose tool outputs produce the answer before submission plus a judge call for hint-as-premise; bounded by the model's own reasoning (rescues near-misses; a stronger teacher covers missing approaches); off-policy despite same model → `ignore_logprobs`, weight +1, re-templated prefix without the hint.
+- Design hook already present: `AgentRunResult.source` ∈ {"policy", "hinted:<model>", "oracle:<model>"}; selection functions and reporters key on it. Mixing sources per round = outer loop; not a slice 2 decision.
+
+## Validation plan
+
+CPU: trainer unit checks with Qwen3.5-0.8B and fake trajectories; selection functions on fabricated groups; token-mode prefix check on real Qwen3.5 templates. Node: zero-adapter probe (base reproduced at T=0), perturbed-adapter probe (output changes), the two tests, round-0 dev eval, then the run.
+
+## Status log
+
+- 2026-09-08 v4.4: the 3,160 vs 4,700 tok/s gap resolved (user: "go for it"). Not the engine (contention probe: identical throughput with the engine absent, asleep, freed). The trainer now prints its slowest micro-batches per step; they were 14-22 s stalls at particular lengths = fla's Triton autotune re-benchmarking its l2norm kernels for every new length bucket (block count in the tuning key; config cache off by default, no shipped configs for this GPU). New `agent_training/fla_cache.py` (dump live autotune results to fla's JSON format, load them in fuzzy mode) + checked-in `fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/` (ten kernels) + probes `engine_contention_probe.py`, `stall_probe.py`, `fla_config_dump.py`. Verified with a fresh Triton cache: no autotuning. Key test: step 1 75.2 → 33.9 s, step 2 40.2 → 26.3 s, round-0 training 134.6 → 72.2 s, `1 passed in 117.33s`, statistics identical. Node `ac-gil` torn down. Other GPU types need one run of `fla_config_dump.py` (the trainer prints a warning when no configs exist for the GPU).
+- 2026-09-08 v4.3: user: raise the engine and trainer caps to ~52k (done: `max_model_len` / `max_example_tokens` 52,000; a synthetic 52k example trains in 16.3 s at 37 GB) and continue with speed as the priority. Second profile pass on the cached rollouts (`training_profile_run3..6`): head-chunk checkpointing (28.6 → 20.5 GB at 12k), the output head as bf16 operands with fp32 accumulation via `torch.mm(out_dtype)` (+13%, 4,249 tok/s, exact to 5e-5), gradient checkpointing off below 6,144 tokens on ≥80 GB cards (+35% on those rows). Packed rows implemented and measured exact with spacer tokens (gated-delta conv leak found and closed) under sdpa and flex (flex forced, 16-wide backward blocks; 4,001 tok/s) but single rows are as fast or faster at every length, so packing stays off. Key test rerun: round-0 training steady step 44.7 → 40.2 s, round 126.4 → 134.6 s with one more (17k) example (`timed_round_run2.log`, passed). Open: the trainer runs at 3,160 tok/s inside the test process against 4,250-6,300 in the probe process on the same rows; suspect CPU contention with the sleeping engine's threads (the step is partly launch-bound); to be measured next. Node `ac-pack` torn down. The handoff `SLICE2_ROUND.tressoir.md` was left untouched while the user applies it; a delta handoff follows.
+- 2026-09-08 v4.2: user asks: rename the second test's prefixes (`single_*` / `multi_*`, done) and find the training-efficiency poles on existing data. Profile probe on the cached round-0 rollouts: pole 1 the torch fallback GDN kernels (fla, 2.4×), pole 2 the padding mask of packed micro-batches (pad-free single-example micro-batches, no mask: 2,983 → 4,055 tok/s, 41 → 29 GB); length rounding rejected (−30%); head chunk, attention implementation, checkpointing not poles. Key test rerun: round 360 → 231 → 126 s, passed. Round-10 stall explained (2 GB tool output kept as AC, re-serialised per step): sandbox capture capped at 4 MB, AC copy at 4× the visible output (user's cap). Ops lesson: a stale ssh port forward hung a chained node job for 7 h (node auto-stopped, no billing); chained jobs now carry hard timeouts.
+- 2026-09-08 v4.1: both key tests passed on `ac-train` (`2 passed in 1:34:58`; test 2 accuracies 0.391 → 0.578 → 0.648 with a ~20-min unexplained engine stall in its base phase, not reproduced; sampler log `IB/TMP/AGENT_ROLLOUTS/node_sampler_run1.log`); probe run 3 with the wake fix `PROBE OK`; fla rerun of round 0 on the cached rollouts: step 2 179.7 → 74.6 s, round 360 → 231 s, statistics unchanged; round document `SLICE2_ROUND.tressoir.md` written (17 cards incl. pyproject, staged `slice2/` with uv.lock); node torn down.
+- 2026-09-08 v4: M0–M3 implemented and validated. Node: key test 1 passed (16 × 8 on Qwen3.5-4B: 0.570 → 0.656 after one round; step-1 ratio 0.9998, clip 0.001; sleep 4.6 s, wake 0.4 s); probe run 1 OK, run 2 hit an OOM at wake (caching allocator; fixed: empty the CUDA cache when the model leaves the GPU and before a wake). Throughput finding: 703 tok/s in training because transformers ran the torch fallback for Qwen3.5's gated-delta-net layers; `flash-linear-attention` added to pyproject (user: "in pyproject?" → yes) and remeasured (round document). Drifts recorded per card: no PromptSegment/assistant_end_tokens (vLLM returns the end-of-turn token), wrapper derived from the template via a sentinel, templates re-render history (empty think blocks), fp32 output head, `enable_lora` had been forced off by the recommended kwargs, rename to agent_training_utils.py.
+- 2026-09-07 v1: plan pair written, checker clean; awaiting decisions 1–8.
+- 2026-09-07 v3: green light; decision 3 = segments; rename to agent_training_utils.py; M0–M3 → Implementing. Workspace synced to /source (user prototype files copied in).
+- 2026-09-07 v2.2: user proposed the segments design (in agent_utils) and asked whether 20+ turns make it a must → yes (quadratic per-turn cost); decision 3 recommendation flipped to segments, M0 replanned, explainer §7 added, tests adjusted (one example per item). Decision still open for the user's tick.
+- 2026-09-07 v2.1: user asked which option is friendlier to later AC (input_embeds) inputs → A; vLLM 0.28 mixed prompt (`EmbedsPrompt.prompt_token_ids` + `prompt_is_token_ids` + `prompt_embeds`, sentinel expansion in the HF renderer, per-block embeds hashing in `kv_cache_utils`) verified in the installed package; note added to decision 3 and to the outer-loop section.
+- 2026-09-07 v2: review integrated (7 accepted records, decision 3 reopened with options A/B/C + explainer `SLICE2_TOKENS_EXPLAINER.tressoir.md`); item fields trimmed; tests moved to 16 × 8 with `group_mean_advantage`; M1 gains sleep/wake; M4/M5 rescoped to loader+helper and a 4B dev run. Awaiting decision 3 and the green light.
+- 2026-09-07 v1.3: user asked for the simplest principled use of negatives → mean-reward baseline (weight = r − group mean; Dr. GRPO/RLOO), sparsity handled by group size + oversampling (DAPO dynamic sampling); added as a fourth selection function and a fourth option on decision 1. Batch-mean baseline noted as the dense alternative (W-REINFORCE's 0.1 = baseline at 90% accuracy) with its two failure modes.
+- 2026-09-07 v1.2: outer-loop note (trajectory sources: policy / hinted same-model with decontamination / oracle teacher) added to both files.
+- 2026-09-07 v1.1: expectations section corrected after the user's question: the "behaviour not knowledge" limit is about on-policy rejection sampling, not LoRA; teacher distillation and in-context (retrieval/AC) injection added as the other regimes.

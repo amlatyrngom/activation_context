@@ -1,0 +1,17 @@
+{
+  "slice2.selection.raftpp": false,
+  "slice2.selection.feedback": "",
+  "slice2.round.256x4": false,
+  "slice2.round.feedback": "The exact number of rounds and the distribution of the samples is up to debate.\nSome papers will compare again use groups of 8, I think we might actually need to do 8?\nIf that's the right number for group means, then fine.",
+  "slice2.selection.groupmean": true,
+  "slice2.tokens.feedback": "I don't understand this at all. 3-5x the training tokens of the single instance? \"one example per assistant turn\"? Etc?\n3-5x just from tokenizing? What's \"one example per assistant\" turn?\nThink again if this is an overkill (looks like one to me, but I am not an expert), or legit?\nWrite an explainer for me. Is the point to make it so what is seen at training and what is seen by the model are the same? If it's that crucial, then yes, but explain.",
+  "slice2.gpu.feedback": "Add engine_to_device with cpu. I think that should be enough?",
+  "slice2.gpu.sleep": true,
+  "slice2.credit.inherit": true,
+  "slice2.credit.feedback": "Some fancy selection function can still do something custom, but this is enough.",
+  "slice2.eval.feedback": "I am not sure this is question to be settled for now at all?\nThat's for later during benchmarks. No decision we make should hinder our choices?",
+  "slice2.claim.feedback": "To be clear, slice 2 is still clearly within the implementation. Few choices we make here should start setting paper experiments. It's about having the right interfaces.",
+  "slice2.model.feedback": "Again, don't make paper decisions. Use 4B here. For teacher, clearly support it, though its source will be the outer loop, which are not working on yet.",
+  "SLICE2_PLAN-free_form_feedback": "What are these for?\n    agent_name: str = \"main\"              # added: from AgentConfig.agent_name, so a selection function can route subagents\n    source: str = \"policy\"                # added: copied from the run result, for the reporter and ablations\n    group_key: str\n\nSeems redundant with agent_config and ignore logprobs.\nMake group_key default to some cheap and simple hash/uuid or whatever. There is no clean way to set it othwerwise.\n\ndef save_lora(self, model_name, lora_name, path) -> str                      # added: PEFT save_pretrained of that adapter only\npath->checkpoint_path.",
+  "slice2.tokens.segments": true
+}
