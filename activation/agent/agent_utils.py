@@ -11,7 +11,8 @@ The dialect also owns the token-level view of a conversation (slice 2): the firs
 once, then the agent appends its own sampled tokens verbatim and only the wrapper the template puts
 between a finished assistant turn and the next generation prompt (`continuation_token_ids`). The
 model therefore reads exactly the tokens it wrote, one trajectory is one training sequence, and
-prefix-cache hits are exact. `continuation_token_ids` renders the wrapper from the chat template with a
+prefix-cache hits are exact. Activation-context parts inside messages render as sentinels and become
+placeholder runs whose spans the agent fills with rows (`prompt_tokens`, `continuation_tokens`). `continuation_token_ids` renders the wrapper from the chat template with a
 sentinel in place of the assistant text, so it needs no assumptions about the template's wording. Note
 that templates re-render *history* in ways the model never saw while sampling (Qwen3 drops the empty
 `<think>` block of finished turns, Qwen3.5 once a user message follows); the segments keep the
@@ -25,8 +26,13 @@ import typing as t
 import uuid
 from dataclasses import dataclass, field
 
+from activation.common.ac_parts import encode_with_part_sentinels, flatten_with_sentinels
+
 if t.TYPE_CHECKING:
+    from .agent import Agent
+    from .agent_config import AgentConfig
     from .agent_tools import ToolCallResult
+    from activation.harness import HarnessRuntime
 
 PARSE_ERROR_TOOL = "parse_error"
 ASSISTANT_SENTINEL = "\u241f TRESSOIR_ASSISTANT_TURN \u241f"   # never in real text; marks where the sampled tokens sit in a rendering
@@ -189,7 +195,8 @@ class MessageRendering:
         return message
 
     def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
-        return [{"role": "tool", "content": result.output} for result in results]
+        from .agent_tools import tool_content
+        return [{"role": "tool", "content": tool_content(result)} for result in results]     # content lists: parts in order
 
 
 class InlineRendering(MessageRendering):
@@ -214,8 +221,13 @@ class InlineRendering(MessageRendering):
         return {"role": "assistant", "content": "\n\n".join([content] + blocks if content else blocks)}
 
     def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
-        body = "\n".join(f"<tool_response>\n{result.output}\n</tool_response>" for result in results)
-        return [{"role": "user", "content": body}]
+        from .agent_tools import tool_content
+        content: list[dict] = []
+        for index, result in enumerate(results):
+            content.append({"type": "text", "text": ("\n" if index else "") + "<tool_response>\n"})
+            content.extend(tool_content(result))
+            content.append({"type": "text", "text": "\n</tool_response>"})
+        return [{"role": "user", "content": content}]
 
 
 # --------------------------------------------------------------------------------------- dialect
@@ -258,25 +270,43 @@ class ModelDialect:
     # ------------------------------------------------------------------------------- tokens
     def prompt_token_ids(self, tokenizer, messages: list[dict], tools: list[dict] | None = None,
                          chat_template_kwargs: dict | None = None) -> list[int]:
-        """The first prompt of a conversation: the chat template, once, with the generation prompt open."""
+        """The first prompt of a conversation: the chat template, once, with the generation prompt open (text-only content)."""
         return _template_ids(tokenizer, messages, tools, True, chat_template_kwargs)
+
+    def prompt_tokens(self, tokenizer, messages: list[dict], tools: list[dict] | None = None, chat_template_kwargs: dict | None = None,
+                      part_lengths: list[int] = (), pad_id: int = 0) -> tuple[list[int], list[tuple[int, int]]]:
+        """
+        The first prompt of a conversation: the chat template, once, with the generation prompt open.
+        Every activation_context part in `messages` renders as a sentinel and becomes a run of
+        `part_lengths[k]` placeholder ids; the (start, end) of each run is returned for the caller to
+        write rows over.
+        """
+        text = _template_text(tokenizer, messages, tools, True, chat_template_kwargs, parts="sentinel")
+        return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
 
     def continuation_token_ids(self, tokenizer, messages_before: list[dict], new_messages: list[dict],
                                tools: list[dict] | None = None, chat_template_kwargs: dict | None = None) -> list[int]:
+        """The wrapper of `continuation_tokens` for text-only messages."""
+        return self.continuation_tokens(tokenizer, messages_before, new_messages, tools, chat_template_kwargs)[0]
+
+    def continuation_tokens(self, tokenizer, messages_before: list[dict], new_messages: list[dict], tools: list[dict] | None = None,
+                            chat_template_kwargs: dict | None = None, part_lengths: list[int] = (), pad_id: int = 0) -> tuple[list[int], list[tuple[int, int]]]:
         """
         The tokens the model reads between its own sampled text and its next turn: the end-of-turn
         marker, `new_messages` (tool results, or the nudge) and the next generation prompt, exactly as
         the chat template renders them. Rendered with a sentinel as the assistant content, so the
         wrapper is independent of what the model wrote. Starts with the end-of-turn token(s); the caller
-        drops the first one when the sample already ended with it.
+        drops the first one when the sample already ended with it. Parts inside `new_messages` become
+        placeholder runs (spans relative to the returned wrapper); parts in `messages_before` sit
+        before the sentinel and only need to render as some text.
         """
-        history = list(messages_before) + [{"role": "assistant", "content": ASSISTANT_SENTINEL}] + list(new_messages)
-        text = _template_text(tokenizer, history, tools, True, chat_template_kwargs)
+        history = (flatten_with_sentinels(messages_before, parts="drop") + [{"role": "assistant", "content": ASSISTANT_SENTINEL}]
+                   + flatten_with_sentinels(new_messages, parts="sentinel"))
+        text = _template_text(tokenizer, history, tools, True, chat_template_kwargs, parts="drop")
         index = text.rfind(ASSISTANT_SENTINEL)
         if index < 0:
             raise ValueError("the chat template did not render the assistant content verbatim; cannot derive the turn wrapper")
-        wrapper = text[index + len(ASSISTANT_SENTINEL):]
-        return list(tokenizer.encode(wrapper, add_special_tokens=False))
+        return encode_with_part_sentinels(tokenizer, text[index + len(ASSISTANT_SENTINEL):], list(part_lengths), pad_id)
 
     @staticmethod
     def join_continuation(sampled_token_ids: list[int], wrapper_token_ids: list[int]) -> list[int]:
@@ -286,28 +316,55 @@ class ModelDialect:
         return wrapper_token_ids
 
 
-def _template_text(tokenizer, messages: list[dict], tools, add_generation_prompt: bool, chat_template_kwargs: dict | None) -> str:
+def _template_text(tokenizer, messages: list[dict], tools, add_generation_prompt: bool, chat_template_kwargs: dict | None,
+                   parts: str = "drop") -> str:
     return tokenizer.apply_chat_template(
-        _flatten(messages), tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False, **(chat_template_kwargs or {}),
+        flatten_with_sentinels(messages, parts=parts), tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
+        **(chat_template_kwargs or {}),
     )
 
 
 def _template_ids(tokenizer, messages: list[dict], tools, add_generation_prompt: bool, chat_template_kwargs: dict | None) -> list[int]:
     ids = tokenizer.apply_chat_template(
-        _flatten(messages), tools=tools, add_generation_prompt=add_generation_prompt, tokenize=True, **(chat_template_kwargs or {}),
+        flatten_with_sentinels(messages, parts="drop"), tools=tools, add_generation_prompt=add_generation_prompt, tokenize=True,
+        **(chat_template_kwargs or {}),
     )
     if hasattr(ids, "keys"):                                                      # BatchEncoding / dict
         ids = ids["input_ids"]
     return list(ids)
 
 
-def _flatten(messages: list[dict]) -> list[dict]:
-    """Text-only content parts joined, the shape our templates take."""
-    out = []
-    for message in messages:
-        message = dict(message)
-        content = message.get("content")
-        if isinstance(content, list):
-            message["content"] = "".join(part.get("text", "") for part in content if isinstance(part, dict))
-        out.append(message)
-    return out
+# --------------------------------------------------------------------------------------- synthetic runs (tests)
+@dataclass
+class SyntheticTurn:
+    """One assistant turn of a synthetic run: its text, its calls, and the tool outputs to record (None leaves the calls pending)."""
+    content: str
+    calls: list[tuple[str, dict]] = field(default_factory=list)   # (tool name, arguments)
+    outputs: list[str] | None = None                               # tool outputs to record; None: `Agent.simulate_step()` executes the calls
+
+
+def synthesize_agent(harness: "HarnessRuntime", config: "AgentConfig", turns: list[SyntheticTurn], seed: int = 0) -> "Agent":
+    """
+    An agent whose run result holds `turns`, recorded through the same methods the loop uses with the
+    real dialect and tokenizer, so token segments, spans and rows are exactly what a rollout would
+    record. The sampled tokens of a turn are the rendered turn (text and call blocks) plus the model's
+    end-of-turn token. One-time test support: the main-tree AC agent test is the intended consumer.
+    """
+    from .agent import Agent
+    from .agent_tools import ToolCallResult
+    agent = Agent(harness, config, seed=seed)
+    agent.step_mode = True
+    agent.begin()
+    tokenizer = agent.loaded_model.tokenizer
+    eot = agent.loaded_model.model_config.model_description.eot_token or ""
+    for turn in turns:
+        calls = [{"id": uuid.uuid4().hex[:8], "name": name, "arguments": dict(arguments)} for name, arguments in turn.calls]
+        blocks = [agent.dialect.preferred_format.render(call["name"], call["arguments"]) for call in calls]
+        text = "\n\n".join([turn.content] + blocks if turn.content else blocks)
+        token_ids = list(tokenizer.encode(text + eot, add_special_tokens=False))
+        agent.record_assistant_turn(turn.content, calls, token_ids, [])
+        if calls and turn.outputs is not None:
+            assert len(turn.outputs) == len(calls), "one output per call"
+            results = [agent._finalize_result(call, ToolCallResult(output=output)) for call, output in zip(calls, turn.outputs)]
+            agent.append_tool_results(calls, results)
+    return agent

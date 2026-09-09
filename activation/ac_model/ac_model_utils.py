@@ -21,8 +21,9 @@ import torch.nn.functional as F
 if t.TYPE_CHECKING:
     from transformers import PreTrainedTokenizerBase
 
-AC_PART_TYPE = "activation_context"
-PART_SENTINEL = "⁣ACPART{index}⁣"     # rendered in place of a part by the chat template, split out before tokenizing
+from activation.common.ac_parts import (   # the part schema and the sentinel split live in common; re-exported here
+    AC_PART_TYPE, PART_SENTINEL, direct_parts, encode_with_part_sentinels, flatten_with_sentinels, is_ac_part,
+)
 
 
 # --------------------------------------------------------------------------------------- parts and keys
@@ -31,20 +32,6 @@ def normalize_messages(messages: list[dict] | str) -> list[dict]:
     if isinstance(messages, str):
         return [{"role": "user", "content": messages}]
     return list(messages)
-
-
-def is_ac_part(part: object) -> bool:
-    return isinstance(part, dict) and part.get("type") == AC_PART_TYPE
-
-
-def direct_parts(messages: list[dict]) -> list[dict]:
-    """The activation_context parts of these messages, in order of appearance (not their descendants)."""
-    parts = []
-    for message in messages:
-        content = message.get("content")
-        if isinstance(content, list):
-            parts.extend(part for part in content if is_ac_part(part))
-    return parts
 
 
 def canonical_json(value: object) -> str:
@@ -73,41 +60,14 @@ def tokenize_with_parts(
     renders one sentinel string per part; the text is split at the sentinels and the pieces tokenized
     (no special tokens, as the template's own tokenization). The caller writes rows over the spans.
     """
-    flat: list[dict] = []
-    index = 0
-    for message in messages:
-        message = dict(message)
-        content = message.get("content")
-        if isinstance(content, list):
-            pieces = []
-            for part in content:
-                if is_ac_part(part):
-                    pieces.append(PART_SENTINEL.format(index=index))
-                    index += 1
-                elif isinstance(part, dict):
-                    pieces.append(part.get("text", ""))
-                else:
-                    pieces.append(str(part))
-            message["content"] = "".join(pieces)
-        flat.append(message)
+    flat = flatten_with_sentinels(messages, parts="sentinel")
+    index = sum(1 for _ in direct_parts(messages))
     assert index == len(part_lengths), f"{index} parts in the messages, {len(part_lengths)} lengths given"
     if not any(message.get("role") == "user" and not str(message.get("content") or "").strip().startswith("<tool_response>") for message in flat):
         flat.insert(0, {"role": "user", "content": ""})                    # Qwen templates refuse a conversation without a user query (a mid-trajectory segment)
     text = tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
                                          **(chat_template_kwargs or {}))
-    ids: list[int] = []
-    spans: list[tuple[int, int]] = []
-    cursor = 0
-    for part_index, length in enumerate(part_lengths):
-        sentinel = PART_SENTINEL.format(index=part_index)
-        at = text.find(sentinel, cursor)
-        assert at >= 0, "the chat template did not render a part sentinel verbatim"
-        ids.extend(tokenizer.encode(text[cursor:at], add_special_tokens=False))
-        spans.append((len(ids), len(ids) + length))
-        ids.extend([pad_id] * length)
-        cursor = at + len(sentinel)
-    ids.extend(tokenizer.encode(text[cursor:], add_special_tokens=False))
-    return ids, spans
+    return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
 
 
 def sinusoidal_positions(length: int, d: int, device: torch.device, dtype: torch.dtype = torch.float32) -> torch.Tensor:

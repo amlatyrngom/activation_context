@@ -71,10 +71,12 @@ class AgentTrainingItem:
 
 
 def unroll(result: AgentRunResult) -> list[AgentRunResult]:
-    """The run and every subagent run beneath it, depth first."""
-    out = [result]
-    for child in result.subagent_results:
-        out.extend(unroll(child))
+    """The run's compacted segments, the run, and every subagent run beneath it (with theirs), depth first."""
+    out = []
+    for segment in list(result.compactions) + [result]:
+        out.append(segment)
+        for child in segment.subagent_results:
+            out.extend(unroll(child))
     return out
 
 

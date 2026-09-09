@@ -19,6 +19,7 @@ import zlib
 import torch
 import vllm
 from vllm.engine.arg_utils import AsyncEngineArgs
+from vllm.inputs import EmbedsPrompt
 from vllm.sampling_params import RequestOutputKind
 from vllm.v1.engine.async_llm import AsyncLLM
 
@@ -42,21 +43,26 @@ class _Replica:
 
         self.engine: AsyncLLM = asyncio.run_coroutine_threadsafe(construct(), self.loop).result()
 
-    async def _collect(self, prompt_token_ids: list[int], sampling_params, request_id: str, lora_request) -> vllm.RequestOutput:
+    async def _collect(self, prompt, sampling_params, request_id: str, lora_request) -> vllm.RequestOutput:
         sampling_params = sampling_params.clone()
         sampling_params.output_kind = RequestOutputKind.FINAL_ONLY
         final = None
-        async for output in self.engine.generate(
-            vllm.TokensPrompt(prompt_token_ids=prompt_token_ids), sampling_params, request_id, lora_request=lora_request,
-        ):
+        async for output in self.engine.generate(prompt, sampling_params, request_id, lora_request=lora_request):
             final = output
         assert final is not None, f"request {request_id} produced no output"
         return final
 
-    def submit(self, prompt_token_ids, sampling_params, request_id, lora_request=None) -> concurrent.futures.Future:
-        return asyncio.run_coroutine_threadsafe(
-            self._collect(prompt_token_ids, sampling_params, request_id, lora_request), self.loop,
-        )
+    def submit(self, prompt_token_ids, sampling_params, request_id, lora_request=None,
+               prompt_embeds=None, prompt_is_token_ids=None) -> concurrent.futures.Future:
+        if prompt_embeds is None:
+            prompt = vllm.TokensPrompt(prompt_token_ids=list(prompt_token_ids))
+        else:
+            # Mixed prompt: the engine embeds every position whose mask is True itself and reads the shipped row
+            # elsewhere. The tensor must be full length (vLLM 0.28 rejects a length mismatch); zero rows sit at
+            # token positions. Needs `enable_prompt_embeds` on the engine (LoadedModel.engine_to_device).
+            prompt = EmbedsPrompt(prompt_embeds=prompt_embeds, prompt_token_ids=list(prompt_token_ids),
+                                  prompt_is_token_ids=list(prompt_is_token_ids))
+        return asyncio.run_coroutine_threadsafe(self._collect(prompt, sampling_params, request_id, lora_request), self.loop)
 
     def run(self, coroutine):
         """Run one engine coroutine on this replica's loop and wait for it."""
@@ -188,10 +194,15 @@ class VLLMWrapper:
         return list(ids)
 
     def submit(self, prompt_token_ids: list[int], sampling_params: vllm.SamplingParams, request_id: str | None = None,
-               replica: int = 0, lora_request=None) -> concurrent.futures.Future:
-        """One request on one replica; the future resolves to the final vllm.RequestOutput."""
+               replica: int = 0, lora_request=None, prompt_embeds=None, prompt_is_token_ids=None) -> concurrent.futures.Future:
+        """
+        One request on one replica; the future resolves to the final vllm.RequestOutput. With `prompt_embeds`
+        ([len(prompt_token_ids), d_model], the model dtype, on CPU) and `prompt_is_token_ids` (True where the
+        engine embeds the token id itself) the request is a mixed prompt carrying activation-context rows.
+        """
         request_id = request_id or uuid.uuid4().hex
-        return self.replicas[replica % len(self.replicas)].submit(prompt_token_ids, sampling_params, request_id, lora_request)
+        return self.replicas[replica % len(self.replicas)].submit(prompt_token_ids, sampling_params, request_id, lora_request,
+                                                                  prompt_embeds, prompt_is_token_ids)
 
     def chat(self, conversations: list, **chat_kwargs) -> list[vllm.RequestOutput]:
         """Same signature as vllm.LLM.chat: template every conversation, submit strided over the replicas, return in order."""

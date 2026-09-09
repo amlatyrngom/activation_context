@@ -20,7 +20,9 @@ class AgentConfig:
     # Inputs
     system_prompt: str = ""                                   # System prompt.
     user_prompt: str = ""                                     # User prompt (the task).
-    ac_inputs: dict[str, object] = field(default_factory=dict)  # Activation-context inputs; carried as data in slice 1.
+    messages_input: list[dict] = field(default_factory=list)  # Dialect messages ahead of the task: content may be ordered text and
+                                                              # activation_context parts. The task (user_prompt) is appended as a trailing
+                                                              # text part of the last user message; empty = today's prompt.
     dataset_task: "DatasetTask | None" = None                 # Set if this corresponds to a specific dataset task.
     agent_name: str = "main" # Used to tag trajectories with their subagent.
 
@@ -36,15 +38,19 @@ class AgentConfig:
     env_args: dict[str, str] | None = None                    # Extra `podman run` flags, e.g. {"--env": "PYTHONHASHSEED=0"}.
     env_memory_limit_mb: int | None = None                    # Sandbox memory; None = the harness default (agent_env_memory_limit_mb). Hard container limit where cgroups exist, ulimit -v at 85% per process always.
     tools: dict[str, tuple[type["AgentTool"], dict]] = field(default_factory=dict)  # name -> (class, constructor kwargs), added to the defaults.
-    enable_ac_communication: bool = False                     # Subagents exchange trajectories as activation context.
+    enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
 
     # Budgets
     max_turns: int = 20
     max_tool_errors: int = 5
     max_duration: float = 600                                 # seconds
-    compaction_threshold_tokens: int = 32768                  # carried; compaction is slice 2. @AI: This is a soft threshold btw. Can be temporarily exceed by one turn. It's also a delta on top of the starting length (system prompt, <task or any prev compactions, ac vector> + delta of this much with absolute cap below).
-    absolute_trajectory_cap: int = 50_000 # @AI: Simply err if this is every reached.
-    ac_compaction_ratio: float|None = 1.0/16.0 # ~threshold*ratio-sized vector (slightly more due to nesting+text logic).
+    compaction_threshold_tokens: int = 32768                  # soft delta over the segment's start length (system, first messages, tree); exceeded by at most one turn, then compaction is due
+    absolute_trajectory_cap: int = 50_000                     # prefix length that ends the run with finish_reason "trajectory_cap"
+    # Activation-context ratios (rows per side token) of the four channels.
+    ac_compaction_ratio: float = 1.0 / 10.0                   # the finished segment as the tree part of the next prompt
+    ac_subagent_ratio: float = 1.0 / 20.0                     # parent -> child prompt, child -> parent result, and the nested parent context of the parts below
+    ac_tool_output_ratio: float = 1.0 / 40.0                  # a truncated tool output's full text
+    ac_search_ratio: float = 1.0 / 20.0                       # semantic search passages beyond top_k
 
     def serialize(self) -> dict:
         data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools")}
@@ -52,7 +58,7 @@ class AgentConfig:
             name: {"class": f"{cls.__module__}:{cls.__qualname__}", "kwargs": _jsonable(kwargs)}
             for name, (cls, kwargs) in self.tools.items()
         }
-        data["ac_inputs"] = _jsonable(self.ac_inputs)
+        data["messages_input"] = _jsonable(self.messages_input)
         task = self.dataset_task
         data["dataset_task"] = None if task is None else {
             "task_id": task.task_id, "dataset_id": task.dataset_id, "reference_metrics_kind": str(task.reference_metrics_kind),
@@ -65,6 +71,7 @@ class AgentConfig:
         """The dataset task is looked up in the harness when it holds the dataset, else rebuilt from the stored fields."""
         from activation.dataset import DatasetTask, DatasetTaskMetricsKind
         data = dict(data)
+        data.pop("ac_inputs", None)                                                   # rows written before slice 3b
         tools = {}
         for name, spec in (data.pop("tools", None) or {}).items():
             module_name, _, qualname = spec["class"].partition(":")
@@ -96,7 +103,9 @@ class TrajectoryStep:
     content: str                                               # assistant text (tool-call blocks removed) or the joined tool outputs
     tool_calls: list[dict] = field(default_factory=list)       # [{"id", "name", "arguments"}]
     tool_call_results: list[str] = field(default_factory=list) # truncated outputs, same order as tool_calls
-    activations: dict[str, object] = field(default_factory=dict)  # ac_outputs of this step's tools, keyed by call id
+    messages: list[dict] = field(default_factory=list)         # the dialect messages this step appended, activation_context parts inline and in
+                                                               # order: one assistant message, the tool messages, or the nudge
+    ac_spans: list[dict] = field(default_factory=list)         # [{"start", "length"}] placeholder runs inside token_ids, one per part of `messages`
     # Token segment (slice 2): the prompt the model read is AgentRunResult.prompt_token_ids + every step's token_ids in order.
     token_ids: list[int] = field(default_factory=list)         # assistant: the sampled tokens verbatim; tool/user: the template's wrapper up to the next generation prompt
     logprobs: list[float] = field(default_factory=list)        # assistant only: the engine's log-prob of each sampled token (pi_old); empty when not recorded
@@ -110,16 +119,22 @@ class AgentRunResult:
     num_input_tokens: int = 0
     num_cached_input_tokens: int = 0
     num_output_tokens: int = 0
-    num_ac_input_bytes: int = 0
-    num_ac_input_tokens: int = 0
+    num_ac_parts: int = 0                                      # parts encoded for this agent's prompts (nested children not counted)
+    num_ac_rows: int = 0                                       # rows those parts occupy in the prompts
     duration: float = 0.0
-    trajectory: list[dict] = field(default_factory=list)       # TrajectoryStep dicts, in order (a new activation type per step)
+    trajectory: list[dict] = field(default_factory=list)       # TrajectoryStep dicts of the current segment, in order
     score: float = 0.0
     score_feedback: str | None = None
     subagent_results: list["AgentRunResult"] = field(default_factory=list)
-    finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded | error
+    compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
+    finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded
+                                                               # | trajectory_cap | compaction_refused | compacted (a segment) | simulated | error
     seed: int = 0
-    prompt_token_ids: list[int] = field(default_factory=list)  # the first turn's prompt (system + task + tools, templated once)
+    prompt_token_ids: list[int] = field(default_factory=list)  # the segment's first prompt (system + first messages + tools, templated once)
+    prompt_messages: list[dict] = field(default_factory=list)  # the dialect messages of that prompt, parts inline (a compaction tree lives here)
+    prompt_ac_spans: list[dict] = field(default_factory=list)  # [{"start", "length"}] placeholder runs inside prompt_token_ids
+    ac_model_name: str | None = None                           # the encoder that produced the rows, and its version at run time
+    ac_model_version: int | None = None
     source: str = "policy"                                     # "policy" | "hinted:<model>" | "oracle:<model>": who produced this run
     lora_name: str | None = None                               # the adapter the engine actually applied (None: the base model)
 
@@ -129,11 +144,13 @@ class AgentRunResult:
         return sum(len(step.get("tool_calls", [])) for step in self.trajectory if step.get("role") == "assistant")
 
     def serialize(self) -> dict:
-        data = {key: value for key, value in self.__dict__.items() if key not in ("agent_config", "subagent_results", "trajectory", "answer")}
+        data = {key: value for key, value in self.__dict__.items()
+                if key not in ("agent_config", "subagent_results", "compactions", "trajectory", "answer")}
         data["agent_config"] = self.agent_config.serialize()
         data["answer"] = _jsonable(self.answer)
         data["trajectory"] = _jsonable(self.trajectory)
         data["subagent_results"] = [result.serialize() for result in self.subagent_results]
+        data["compactions"] = [result.serialize() for result in self.compactions]
         return data
 
     @staticmethod
@@ -144,7 +161,8 @@ class AgentRunResult:
         config_data = data.pop("agent_config")
         config = agent_config if agent_config is not None else AgentConfig.deserialize(config_data, harness)
         children = [AgentRunResult.deserialize(child, harness) for child in data.pop("subagent_results", [])]
-        return AgentRunResult(agent_config=config, subagent_results=children, **data)
+        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config) for segment in data.pop("compactions", [])]
+        return AgentRunResult(agent_config=config, subagent_results=children, compactions=segments, **data)
 
 
 def _jsonable(value):

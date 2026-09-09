@@ -261,6 +261,8 @@ class LoadedModel:
                 reservation = self.harness.harness_config.ac_engine_memory_reservation
                 engine_kwargs["gpu_memory_utilization"] = round(engine_kwargs["gpu_memory_utilization"] - reservation, 3)
                 print(f"{self.model_config.model_name} - Engine memory share lowered by {reservation} for the AC side model.")
+            if self.harness.module_manager.ac_models:
+                engine_kwargs.setdefault("enable_prompt_embeds", True)   # AC rows travel as prompt embeddings (mixed prompts)
             self.model_config.engine_kwargs = engine_kwargs
             self.vllm_model = VLLMWrapper(tokenizer=self.tokenizer, **engine_kwargs)
             self.current_engine_device = device
@@ -402,6 +404,8 @@ class LoadedModel:
         lora_name: str|None = None,
         chat_kwargs: dict|None = None,
         record_sampling: bool = False,
+        prompt_embeds: "torch.Tensor | None" = None,
+        prompt_is_token_ids: list[bool] | None = None,
     ) -> EngineChatOutput:
         """
         One request whose prompt the caller owns as token ids (the agent loop keeps its own prefix).
@@ -409,6 +413,9 @@ class LoadedModel:
         agent_id) so its prefix cache serves the next turn, the adapter the module manager currently
         exposes for `lora_name` (None until an exchange), and with `record_sampling` the sampled token
         log-probs. Blocks the calling thread while the engine batches this request with everything in flight.
+        With `prompt_embeds` ([len(prompt_token_ids), d_model], the model dtype, on CPU) the positions whose
+        `prompt_is_token_ids` entry is False take their embedding from that tensor (activation-context rows);
+        every other position is embedded by the engine from its token id as usual.
         """
         self.engine_to_device(TARGET_DEVICE)
         sampling_params, _ = self._merged_chat_kwargs(chat_kwargs, seed)
@@ -417,7 +424,7 @@ class LoadedModel:
         lora_request = self.harness.module_manager.engine_lora_request(lora_name) if lora_name else None
         engine = self.vllm_model
         future = engine.submit(list(prompt_token_ids), sampling_params, replica=VLLMWrapper.replica_for(agent_id, engine.world_size),
-                               lora_request=lora_request)
+                               lora_request=lora_request, prompt_embeds=prompt_embeds, prompt_is_token_ids=prompt_is_token_ids)
         return EngineChatOutput.from_request_output(future.result(), lora_name=lora_name if lora_request is not None else None)
 
 

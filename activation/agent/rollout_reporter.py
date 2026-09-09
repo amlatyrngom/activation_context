@@ -152,7 +152,8 @@ def trajectory_item(agent: "Agent", state: str, folder: Path | None = None) -> d
         _write_atomic(folder / file, json.dumps({
             "agent_id": agent.agent_id, "state": state, "system_prompt": agent.agent_config.system_prompt,
             "user_prompt": agent.agent_config.user_prompt,
-            "trajectory": [{key: value for key, value in step.items() if key not in ("token_ids", "logprobs")} for step in results.trajectory],
+            "trajectory": [{key: value for key, value in step.items() if key not in ("token_ids", "logprobs", "messages")} for step in results.trajectory],
+            "compactions": len(results.compactions), "prompt_ac_spans": results.prompt_ac_spans,
             "answer": results.answer, "finish_reason": results.finish_reason, "score": results.score,
         }, indent=1, default=str))
     steps = []
@@ -167,8 +168,8 @@ def trajectory_item(agent: "Agent", state: str, folder: Path | None = None) -> d
         elif step["role"] == "tool":
             steps.append({
                 "role": "tool", "turn": turn, "content": "",
-                "results": [{"name": call["name"], "output": _cut(output, RESULT_CHARS)}
-                            for call, output in zip(step["tool_calls"], step["tool_call_results"])],
+                "results": [{"name": call["name"], "output": _cut(output, RESULT_CHARS) + (_parts_note(step) if index == 0 else "")}
+                            for index, (call, output) in enumerate(zip(step["tool_calls"], step["tool_call_results"]))],
             })
         else:                                                                       # the nudge
             steps.append({"role": "tool", "turn": turn, "content": "", "results": [{"name": "user", "output": _cut(step["content"], RESULT_CHARS)}]})
@@ -176,6 +177,14 @@ def trajectory_item(agent: "Agent", state: str, folder: Path | None = None) -> d
         "id": agent.agent_id, "title": _title(agent), "state": state, "stats": _stats(agent),
         "prompt": _cut(agent.agent_config.user_prompt, PROMPT_CHARS), "steps": steps, "file": file,
     }
+
+
+def _parts_note(step: dict) -> str:
+    """One line per activation-context part of the step: its rows, so the page shows what the model read as rows."""
+    spans = step.get("ac_spans") or []
+    if not spans:
+        return ""
+    return "\n" + "\n".join(f"[activation context part {index + 1}: {span['length']} rows]" for index, span in enumerate(spans))
 
 
 def _title(agent: "Agent") -> str:
@@ -186,6 +195,10 @@ def _title(agent: "Agent") -> str:
 def _stats(agent: "Agent") -> str:
     results = agent.run_results
     parts = [f"turn {results.num_turns}", f"{results.num_input_tokens} in ({results.num_cached_input_tokens} cached) / {results.num_output_tokens} out"]
+    if results.compactions:
+        parts.append(f"{len(results.compactions)} compactions")
+    if results.num_ac_parts:
+        parts.append(f"{results.num_ac_parts} AC parts / {results.num_ac_rows} rows")
     if agent.finished:
         parts.append(results.finish_reason)
         parts.append(f"answer {str(results.answer)[:40]!r}")

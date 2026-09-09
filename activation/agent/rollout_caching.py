@@ -22,7 +22,8 @@ def config_key(config: AgentConfig) -> str:
     task = config.dataset_task
     if task is not None:
         return f"{task.dataset_id}/{task.task_id}"
-    digest = hashlib.sha256(json.dumps([config.system_prompt, config.user_prompt, config.model_name, config.lora_name]).encode()).hexdigest()
+    digest = hashlib.sha256(json.dumps([config.system_prompt, config.user_prompt, config.model_name, config.lora_name,
+                                        config.messages_input, config.ac_model_name], default=repr).encode()).hexdigest()
     return f"prompt/{digest[:16]}"
 
 

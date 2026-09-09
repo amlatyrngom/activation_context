@@ -72,7 +72,7 @@ A small index and cross-cutting memory for this project.
 ## Subsystem index
 
 - [Agent training](AGENT_TRAINING_CANON.md): token segments, weighted training, adapter exchange/provenance, engine sleep, output limits, and validation scope.
-- [Activation context](ACTIVATION_CONTEXT_CANON.md): the version-2 AC model/data/training contract, paired checkpoint recovery, reporting and validation conventions (slice 3a1; source-application status in STATE).
+- [Activation context](ACTIVATION_CONTEXT_CANON.md): the version-2 model/data/training contract, paired checkpoints, runtime compaction/subagent exchange, recorded row spans and harvesting (slices 3a1/3b).
 
 Create focused files such as `EDITOR_CANON.md`, `AUTH_CANON.md`, or `RELEASE_CANON.md` as needed, and link them here with a one-line description.
 

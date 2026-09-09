@@ -38,6 +38,10 @@ def build_example(item: "AgentTrainingItem", item_index: int) -> TrainingExample
     items). None when the run has no token segments or no sampled tokens.
     """
     run = item.run_results
+    if run.prompt_ac_spans or any(step.get("ac_spans") for step in run.trajectory):
+        # Placeholder ids at part positions would be embedded as pad tokens: training on AC-bearing sequences
+        # needs the rows rebuilt from the recorded parts (deferred to the training-recipe slices).
+        raise ValueError("Training on AC-bearing runs awaits the fixed-row trainer integration")
     token_ids = list(run.prompt_token_ids)
     if not token_ids:
         return None

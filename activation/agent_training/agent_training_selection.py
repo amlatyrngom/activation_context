@@ -10,7 +10,8 @@ out. The trainer only sees the weights, so the learning rule lives here:
 - `reinforce_reject`: +1 / -1 on mixed groups only.
 
 Every function unrolls subagent runs with the parent's weight (a subagent's trajectory is judged by the
-answer it helped produce) and marks non-policy sources (`run.source != "policy"`) as `ignore_logprobs`.
+answer it helped produce), always includes a run's compacted segments (the same agent's earlier
+sequences), and marks non-policy sources (`run.source != "policy"`) as `ignore_logprobs`.
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ def items_for(run: AgentRunResult, weight: float, model_name: str, lora_name: st
     """One item per (sub)agent run under `run`, all at `weight`; zero weights produce nothing."""
     if weight == 0.0:
         return []
-    runs = unroll(run) if include_subagents else [run]
+    runs = unroll(run) if include_subagents else list(run.compactions) + [run]   # compacted segments are the same agent: always included
     return [
         AgentTrainingItem(run_results=r, model_name=model_name, lora_name=lora_name, weight=float(weight), ignore_logprobs=r.source != "policy")
         for r in runs
