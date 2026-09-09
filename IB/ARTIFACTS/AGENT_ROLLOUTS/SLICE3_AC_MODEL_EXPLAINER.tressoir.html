@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How the AC model turns messages into view rows, how it is trained, and where it lives">
+  <title>The activation-context model, end to end</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.css">
+</head>
+<body>
+  <main class="tressoir-document">
+    <header class="document-header">
+      <p class="eyebrow">Explainer · slice 3a, implemented</p>
+      <h1>The activation-context model, end to end</h1>
+      <p class="lede">A side language model reads messages and emits a short run of "view rows" that the target model reads in place of the text. This page shows the exact path a part takes through the model, how the rows are trained by self-distillation, and where the code and checkpoints live. It describes what is implemented in <code>activation/ac_model/</code> (slice 3a), not a proposal.</p>
+      <ul class="meta" aria-label="Artifact metadata">
+        <li>Updated 9 Sep 2026</li>
+        <li>Companion to SLICE3_PLAN.tressoir.md and SLICE3_ROUND.tressoir.md</li>
+        <li>Numbers: side Qwen3.5-0.8B (d<sub>s</sub> = 1024), target Qwen3.5-4B (d<sub>t</sub> = 2560)</li>
+      </ul>
+    </header>
+
+    <section class="section" aria-labelledby="what">
+      <h2 id="what">What a part is</h2>
+      <p>A part is a content element of a message. The target model's conversation can carry, next to ordinary text, an <code>activation_context</code> part that names the AC model, a compression ratio and the messages to compress. Parts nest: a part's messages may themselves hold parts (a compaction of a compaction, a subagent's compaction inside a parent's).</p>
+      <pre class="code-block"><code class="language-json">[{"role": "user", "content": [
+    {"type": "text", "text": "Task: ...\n\nTrajectory 1:\n"},
+    {"type": "activation_context", "ac_name": "ac_dev", "compression_target": 0.0625,
+     "messages": [{"role": "user", "content": "Task: ..."}, {"role": "assistant", "content": "..."}, {"role": "tool", "content": "..."}]},
+    {"type": "text", "text": "\n\nAnswer the question from the trajectories above. Reply with the answer only.\nQuestion: ..."}]}]</code></pre>
+      <p>The number of rows a part becomes is fixed by its size under the side tokenizer: <strong>V = clamp(⌈N<sub>side</sub> × ratio⌉, 4, 4096)</strong>. A 32k-token span at ratio 1/16 is 2,048 rows; at 1/32, 1,024 rows. The target sees V positions where the text would have taken N.</p>
+    </section>
+
+    <section class="section" aria-labelledby="path">
+      <h2 id="path">The path of one part</h2>
+      <svg viewBox="0 0 1180 470" width="100%" role="img" aria-label="Data flow of the AC model" style="max-width:1180px;font-family:inherit;font-size:13px">
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--nb-text, #444)"/></marker></defs>
+        <g fill="none" stroke="var(--nb-text, #444)" stroke-width="1.2" marker-end="url(#arrow)">
+          <path d="M150 70 H190"/><path d="M370 70 H410"/><path d="M590 70 H630"/><path d="M810 70 H850"/><path d="M1030 70 V120"/>
+          <path d="M1030 180 V230"/><path d="M930 260 H890"/><path d="M710 260 H670"/><path d="M490 260 H450"/>
+          <path d="M340 290 V350"/><path d="M340 410 H240 V430"/><path d="M340 410 H560 V430"/>
+          <path d="M240 460 V440 M240 445 H120 V95 H150" stroke-dasharray="4 3"/>
+        </g>
+        <g stroke="var(--nb-accent, #3366cc)" stroke-width="1.2" fill="var(--nb-surface, #fff)">
+          <rect x="30" y="40" width="120" height="60" rx="8"/><rect x="190" y="40" width="180" height="60" rx="8"/><rect x="410" y="40" width="180" height="60" rx="8"/>
+          <rect x="630" y="40" width="180" height="60" rx="8"/><rect x="850" y="40" width="180" height="60" rx="8"/>
+          <rect x="930" y="120" width="200" height="60" rx="8"/><rect x="930" y="230" width="200" height="60" rx="8"/>
+          <rect x="710" y="230" width="180" height="60" rx="8"/><rect x="490" y="230" width="180" height="60" rx="8"/><rect x="230" y="230" width="220" height="60" rx="8"/>
+          <rect x="230" y="350" width="220" height="60" rx="8"/>
+          <rect x="130" y="430" width="220" height="30" rx="8" stroke-dasharray="4 3"/><rect x="450" y="430" width="220" height="30" rx="8"/>
+        </g>
+        <g fill="var(--nb-text, #222)" text-anchor="middle">
+          <text x="90" y="65">child parts</text><text x="90" y="82" font-size="11">encoded first, cached</text>
+          <text x="280" y="65">tokenize_with_parts</text><text x="280" y="82" font-size="11">side template, pad-id runs</text>
+          <text x="500" y="65">side embeddings</text><text x="500" y="82" font-size="11">child rows over the runs</text>
+          <text x="720" y="65">+ sinusoidal positions</text><text x="720" y="82" font-size="11">fp32</text>
+          <text x="940" y="65">mixer × 2</text><text x="940" y="82" font-size="11">blocked local attention, 256</text>
+          <text x="1030" y="145">windowed pooling</text><text x="1030" y="162" font-size="11">window 16, stride 4 → N/4 rows</text>
+          <text x="1030" y="255">+ V marker rows</text><text x="1030" y="272" font-size="11">kind (top / recursive) + index</text>
+          <text x="800" y="255">side decoder</text><text x="800" y="272" font-size="11">causal, LoRA r128, bf16</text>
+          <text x="580" y="255">rows at markers</text><text x="580" y="272" font-size="11">last V hidden states, fp32</text>
+          <text x="340" y="255">head</text><text x="340" y="272" font-size="11">FFN ×4, RMS-normalized × scale</text>
+          <text x="340" y="375">which head?</text><text x="340" y="392" font-size="11">by the part's position</text>
+          <text x="240" y="450" font-size="12">recursive_adapter → d_s (a parent's input)</text>
+          <text x="560" y="450" font-size="12">target_head → d_t (the target's input)</text>
+        </g>
+      </svg>
+      <p>Reading the diagram left to right: the part's own child parts are encoded first (recursively, through the same model) and adapted into the side model's input space; the part's messages are rendered by the side chat template with one placeholder run per child and tokenized; the side input embeddings get the child rows written over the runs and fixed sinusoidal positions; two bidirectional mixer layers spread information locally (blocked local attention: blocks of 256 rows attending to themselves and their two neighbours, never an N×N mask); windowed attention pooling shrinks the sequence to a quarter; V learned marker rows are appended and the whole sequence runs through the causal side decoder with its LoRA; the hidden states at the marker positions are the rows, sent through the target head (top-level part) or the recursive adapter (a child).</p>
+      <table>
+        <thead><tr><th>stage</th><th>shape for a 32k-token part at ratio 1/16</th><th>trainable</th></tr></thead>
+        <tbody>
+          <tr><td>side embeddings + child rows</td><td>[32,768, 1024]</td><td>frozen table; rows from the children</td></tr>
+          <tr><td>mixer (2 layers)</td><td>[32,768, 1024], cost linear in N</td><td>25.2 M</td></tr>
+          <tr><td>windowed pooling</td><td>[8,189, 1024]</td><td>12.6 M</td></tr>
+          <tr><td>markers</td><td>[2,048, 1024] appended → [10,237, 1024]</td><td>4.2 M (kind 2 rows, index 4,096 rows)</td></tr>
+          <tr><td>side decoder</td><td>[10,237, 1024] through the 0.8B with its LoRA</td><td>LoRA rank 128 (≈200 MB)</td></tr>
+          <tr><td>target head / recursive adapter</td><td>[2,048, 2560] / [2,048, 1024]</td><td>14.7 M / 8.4 M</td></tr>
+          <tr><td>AC modules total (fp32)</td><td></td><td>65.1 M, <code>ac_modules.pt</code> 219 MB</td></tr>
+        </tbody>
+      </table>
+      <p>The head scales start at the RMS of the destination embedding table (0.019 for both Qwen3.5 sizes), so rows land at the magnitude the decoders expect from token embeddings.</p>
+    </section>
+
+    <section class="section" aria-labelledby="training">
+      <h2 id="training">How the rows are trained</h2>
+      <p>Self-distillation on completions. The <strong>teacher</strong> is the target model reading the full text (with the same target adapter, no gradient); the <strong>student</strong> is the same target model reading the AC prefix, whose parts became rows. Both then read the same completion tokens; the loss is the full-vocabulary KL(teacher ∥ student) averaged over the completion positions. One optimizer, two groups: the AC modules and the side LoRA at 5e-4, the target LoRA at 2e-5.</p>
+      <pre class="code-block"><code class="language-text">teacher ids : template(in_context_prefix, generation prompt) [+ text the cut turn already produced] + completion + eot
+student ids : template(ac_prefix with pad runs, generation prompt)  →  rows written over the runs        + completion + eot
+loss        : mean over completion positions of  Σ_v p_teacher(v) · (log p_teacher(v) − log p_student(v))</code></pre>
+      <table>
+        <thead><tr><th>item kind</th><th>in-context prefix (teacher)</th><th>AC prefix (student)</th><th>completion</th></tr></thead>
+        <tbody>
+          <tr><td><strong>compaction</strong></td><td>system + task + the trajectory up to the last cut (an assistant turn may be cut mid-text)</td><td>system + task + one user message: AC<sub>d</sub>{ AC<sub>d−1</sub>{…}, segment d } and the compaction instructions; the innermost segment starts with the task</td><td>the rest of the cut turn, or the next assistant turn (its text and its tool call in the model's own format), ≤ 512 tokens</td></tr>
+          <tr><td><strong>traj_qa</strong></td><td>system + the transcript window around the source chunk + question</td><td>system + "Task: question", then the window and 0–2 distractor trajectories as separate parts (each with the task first, shuffled) + question</td><td>the study question's gold answer</td></tr>
+          <tr><td><strong>rag_qa</strong></td><td>system + the gold passage + question</td><td>system + "Task: question", one part with the gold and bm25 distractor passages shuffled to the token budget (depth 2 wraps it once more) + question</td><td>the gold answer</td></tr>
+        </tbody>
+      </table>
+      <p>Every completion is real text, so no sampling happens at item-generation time. The study questions come from the dataset study engine (<code>dataset_study.py</code>, <code>qa</code> on text chunks and <code>traj_qa</code> on trajectory chunks) and are cached under <code>STUDY/</code>.</p>
+    </section>
+
+    <section class="section" aria-labelledby="modes">
+      <h2 id="modes">Modes, caching, checkpoints</h2>
+      <table>
+        <thead><tr><th>concern</th><th>rollout mode</th><th>training mode</th></tr></thead>
+        <tbody>
+          <tr><td>gradients</td><td>none</td><td>through the side LoRA and the AC modules (and, in the trainer, the target LoRA)</td></tr>
+          <tr><td>row cache</td><td>CPU, bf16, LRU by bytes (4 GB default), keyed by sha256(part messages, ratio, kind, model version)</td><td>off</td></tr>
+          <tr><td>batching</td><td>an encode queue: concurrent callers' requests drained every 5 ms and encoded together (length-sorted, ≤ 65k side tokens per padded batch)</td><td>the caller batches; children of one item are encoded in one batch</td></tr>
+          <tr><td>placement</td><td>side base + LoRA and modules on the GPU next to the engine (<code>ac_engine_memory_reservation</code> = 0.1 of the GPU when registered before the engine builds)</td><td>engine asleep; both bases with their adapters on the GPU</td></tr>
+        </tbody>
+      </table>
+      <p>A checkpoint is <code>AC_MODELS/&lt;name&gt;/round_NNN/</code> (and a refreshed <code>latest/</code>) holding <code>ac_modules.pt</code> and the side LoRA folder; the target LoRA is checkpointed by the module manager under <code>LORAS/&lt;name&gt;/round_NNN</code> as before. Every save bumps the model version, which invalidates the row cache. <code>ModuleManager.register_ac_model(config)</code> builds the model, registers the side adapter when it is new, and loads <code>checkpoint_path</code> when given.</p>
+    </section>
+
+    <section class="section" aria-labelledby="numbers">
+      <h2 id="numbers">What the CPU checks showed</h2>
+      <p>With Qwen3.5-0.8B as both side and target on this container (no GPU): a 1,095-token part becomes 64 rows in 5.8 s; a nested part encodes its child first (three network passes for a top-level text, a child and its parent); the second encode of the same part is a cache hit; a part encoded alone and inside a padded batch differ by at most 0.009 against a row RMS of 0.019 (bf16 decoder noise on CPU); gradients reach all 46 module tensors and the side LoRA B matrices; save, load and a version bump work. One trainer round on fabricated items brought the held KL from 3.19 (untrained) down within the first step; the node tests and the M9 runs give the real numbers.</p>
+    </section>
+
+    <section class="section" aria-labelledby="node">
+      <h2 id="node">What the node showed (RTX PRO 6000, 96 GB)</h2>
+      <p>The three key tests pass (held KL untrained → no context → after one round of five updates: compaction 0.579 → 0.574 → 0.525, trajectory QA 1.055 → 0.936 → 0.917, RAG QA 0.897 → 0.869 → 0.849). One training example, profiled per phase against the card's measured bf16 GEMM ceiling of 411 TFLOPS:</p>
+      <table>
+        <thead><tr><th>teacher tokens</th><th>seconds per example</th><th>examples per hour</th><th>in-context tokens per hour</th><th>achieved TFLOPS (of ceiling)</th><th>peak GB</th></tr></thead>
+        <tbody>
+          <tr><td>≈ 5k</td><td>0.97</td><td>3,694</td><td>18M</td><td>73 (18%)</td><td>27</td></tr>
+          <tr><td>≈ 15k</td><td>1.77</td><td>2,037</td><td>31M</td><td>120 (29%)</td><td>47</td></tr>
+          <tr><td>≈ 23k</td><td>2.50</td><td>1,441</td><td>33M</td><td>125 (30%)</td><td>47</td></tr>
+          <tr><td>≈ 36k</td><td>3.80</td><td>948</td><td>34M</td><td>129 (32%)</td><td>51</td></tr>
+          <tr><td>≈ 50k</td><td>5.56</td><td>647</td><td>32M</td><td>134 (33%)</td><td>61</td></tr>
+          <tr><td>≈ 75k (depth 2, synthetic)</td><td>8.46</td><td>426</td><td>32M</td><td>144 (35%)</td><td>69</td></tr>
+          <tr><td>≈ 108k (depth 2, synthetic)</td><td>12.65</td><td>285</td><td>31M</td><td>157 (38%)</td><td>74</td></tr>
+        </tbody>
+      </table>
+      <p>The teacher forward is 46–69% of an example (34–45% of the ceiling, about 12k tokens/s on HF eager with the fla kernels), the backward 20–23%, the AC encode 7–11% (the side decoder is 85% of it), the head chunks 0.01 s. Two levers landed: the AC trainer now loads the fla kernel configs like the agent trainer (the test round went from 4,681 to 9,714 tokens/s), and <code>teacher_cache_top_k</code> keeps the teacher's top-k log-probs per completion position after an item's first pass so later epochs skip the teacher forward (the coarsened KL is within 0.1–0.4% of the exact one at k = 128; eval stays exact). The cap on one input is 72k teacher tokens (depth 2 at the default 32k threshold); 104k fits at 74 GB and was measured, not tuned for. About 30M in-context tokens per node hour with a live teacher, whatever the length mix above 8k.</p>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-tsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-rust.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-sql.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/meta.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.js"></script>
+</body>
+</html>

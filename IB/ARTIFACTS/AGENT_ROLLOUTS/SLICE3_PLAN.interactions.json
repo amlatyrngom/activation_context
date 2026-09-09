@@ -1,0 +1,17 @@
+{
+  "slice3.teacher.snapshot": true,
+  "slice3.teacher.feedback": "Need not necessarily be branched (as a matter of fact, generally not branch, since the next some later rollout should probably use it.)",
+  "slice3.pooler.attention_mixer": true,
+  "slice3.shape.one_slice": false,
+  "slice3.payload.measure": true,
+  "slice3.payload.feedback": "These are on cpu and help bypass the embedding the vllm would have to do anyway right?\n(or should we also ship the full embeddings of even non AC inputs to truly save performance?)",
+  "slice3.trajectories.feedback": "I forgot to specify the datasets:\n- Coding agents: https://huggingface.co/datasets/nvidia/Open-SWE-Traces/viewer/v1.2\n- Math: https://huggingface.co/datasets/nvidia/Nemotron-SFT-Math-v4 (confirm that it does not leak AIME 2024/2025, our eval set; some of the earlier versions don't so we might have to fall back).\n- General Search: https://huggingface.co/datasets/artillerywu/DeepResearch-9K or https://huggingface.co/datasets/ScienceOne-AI/S1-DeepResearch-15k (not sure which is best).\nIt's best if they are reformatted, so that the compression bias is in our favor.",
+  "slice3.trajectories.public_agentic": true,
+  "slice3.archive.ib_and_drop_faiss": true,
+  "slice3.archive.ib_keep_faiss": false,
+  "slice3.sidemodel.dev_08_target_4": true,
+  "slice3.shape.two_halves": true,
+  "slice3.assumptions.adjust": true,
+  "slice3.assumptions.feedback": "the real continuation when the sample has one (next assistant turn of a trajectory; the gold answer of a QA item), teacher-forced; else a teacher-sampled 512-token completion.\nOnly this.\nIn the presense of traj truncation, do have to fake a next assistant turn?\n(for the last option, given the scale of what we are working with, I hope 512 tokens don't require custom rollouts, just some encode-only pass?)\n",
+  "SLICE3_PLAN-free_form_feedback": "You might need dataset-specific reformattings. From my quick browsing of HF, the format looks fairly different, but maybe there is a shared universal.\n\n"
+}

@@ -27,6 +27,7 @@ class AgentConfig:
     # Model calls.
     model_name: str | None = None                             # A harness model name; its engine serves the rollout.
     lora_name: str | None = None                              # Adapter on the serving engine (plumbed, untested).
+    ac_model_name: str | None = None # the activation context model to use.
     call_kwargs: dict | None = None                           # Engine chat kwargs (sampling_params inside), merged like engine_chat_many.
     record_sampling: bool = True                              # Ask the engine for the sampled token ids and their log-probs (training needs them).
 
@@ -41,7 +42,9 @@ class AgentConfig:
     max_turns: int = 20
     max_tool_errors: int = 5
     max_duration: float = 600                                 # seconds
-    compaction_threshold_tokens: int = 32768                  # carried; compaction is slice 2
+    compaction_threshold_tokens: int = 32768                  # carried; compaction is slice 2. @AI: This is a soft threshold btw. Can be temporarily exceed by one turn. It's also a delta on top of the starting length (system prompt, <task or any prev compactions, ac vector> + delta of this much with absolute cap below).
+    absolute_trajectory_cap: int = 50_000 # @AI: Simply err if this is every reached.
+    ac_compaction_ratio: float|None = 1.0/16.0 # ~threshold*ratio-sized vector (slightly more due to nesting+text logic).
 
     def serialize(self) -> dict:
         data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools")}

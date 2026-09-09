@@ -224,9 +224,34 @@ class SubagentTool(AgentTool):
         return ToolCallResult(output=output, is_error=result.finish_reason == "error", ac_outputs=ac_outputs)
 
 
+
+class CompactionTool(AgentTool):
+    """
+    Explicit compaction tool.
+    In the absense of AC mode, just produces a string and moves on.
+    In AC mode, produces a string and moves the trajectory to a compaction list passed in as AC.
+    Has a side-effect of transforming the agent result (that may happen here in the agent class):
+    - The current trajectory effectively becomes a subagent_trajectories = [current trajectory].
+    - The new trajectory starts with initial user message and AC updated, but likely not at the config-level though (or maybe it should be, I don't know).
+    (It's the responsibility of trajectory selectors to unroll. New logic: auto-unroll any "main" agent trajectory, however deeply nested).
+
+    The compaction AC input is basically a kind of tree or linked list of nested trajectories:
+    AC {
+        AC {
+            ...
+            <2nd to last trajectory + text summary>,
+        } <- recursive.
+        <most recent trajectory + text summary>,
+    }, text summary <- last text summary visible whether AC is activated or not.
+    Caching should prevent repeated calls, but this happens infrequently enough that that might be fine in some cases.
+    """
+    def __init__(self, harness, agent, base_config: "AgentConfig"):
+        pass
+
 DEFAULT_TOOLS: dict[str, tuple[type[AgentTool], dict]] = {
     ShellTool.name: (ShellTool, {}),
     PythonTool.name: (PythonTool, {}),
     ParallelCallTool.name: (ParallelCallTool, {}),
     SubmitAnswerTool.name: (SubmitAnswerTool, {}),
+    CompactionTool.name: (CompactionTool, {})
 }
