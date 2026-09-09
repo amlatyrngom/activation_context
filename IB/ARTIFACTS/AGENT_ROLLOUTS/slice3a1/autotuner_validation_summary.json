@@ -1,0 +1,462 @@
+{
+  "status": "pass",
+  "source_application": "pending: read-only source unchanged; shared handoff ready",
+  "recipe_sha256": "0fcb479a962398d9f86d89408a0af8b37de3b56d5613bcd52889bed3a56d2109",
+  "profiles": [
+    {
+      "path": "activation/autotuners/configs/5486919eb89a24875d3faaf74c906cdbb61440c041d6c332a5482d485e45ef90-36c91c34021b9964a5522eba154452f2bdef7ac8e45129472751213cf6cb08e4.json",
+      "sha256": "59c63f4c05638994d58afdc78bd76b35ced995e9cc80f3e108681661fb90bb8f",
+      "identity": {
+        "environment": {
+          "candidates": "648ec5665f01e13c416bb8ba409ba45c24c21902e6d7d11a46c95a387353943d",
+          "capability": [
+            12,
+            0
+          ],
+          "cuda": "13.0",
+          "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "memory_bytes": 101973950464,
+          "multiprocessors": 188,
+          "recipe": "0fcb479a962398d9f86d89408a0af8b37de3b56d5613bcd52889bed3a56d2109",
+          "sources": "e91048d73e2369c5b966a2d5a918d65c2c81994b2186bf88c5dc67c82a66f68a",
+          "versions": {
+            "fla-core": "0.5.2",
+            "torch": "2.13.0",
+            "transformers": "5.15.1",
+            "triton": "3.7.1"
+          }
+        },
+        "geometry": {
+          "dtype": "bfloat16",
+          "heads": 32,
+          "key_dim": 128,
+          "value_dim": 128
+        }
+      },
+      "validation": {
+        "batches": [
+          1,
+          3,
+          7
+        ],
+        "max_relative_rms_error": 0.004589342046529055,
+        "measured_lengths": [
+          65,
+          129,
+          2048,
+          8192,
+          32768
+        ],
+        "passed": true,
+        "reuse": "independent rows/batches; performance beyond measured lengths is unmeasured"
+      },
+      "tuning": {
+        "benchmarks": 44,
+        "extension_reason": null,
+        "phase": "bounded_search",
+        "seconds": 4.448
+      },
+      "records": 27
+    },
+    {
+      "path": "activation/autotuners/configs/aea730dfde286f1bebc7598eeb6b0aafe72b505628648330775304cda57a2cfa-534f4d702fdde980f3f03cbcbdb56a90b9f73916a3f7a498046645d270a61904.json",
+      "sha256": "c6e12deca9e14952c865f680610c19d617ee17ebebc8ebafa7fa1d2d8f76f3f8",
+      "identity": {
+        "environment": {
+          "candidates": "648ec5665f01e13c416bb8ba409ba45c24c21902e6d7d11a46c95a387353943d",
+          "capability": [
+            12,
+            0
+          ],
+          "cuda": "13.0",
+          "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "memory_bytes": 101973950464,
+          "multiprocessors": 188,
+          "recipe": "0fcb479a962398d9f86d89408a0af8b37de3b56d5613bcd52889bed3a56d2109",
+          "sources": "e91048d73e2369c5b966a2d5a918d65c2c81994b2186bf88c5dc67c82a66f68a",
+          "versions": {
+            "fla-core": "0.5.2",
+            "torch": "2.13.0",
+            "transformers": "5.15.1",
+            "triton": "3.7.1"
+          }
+        },
+        "geometry": {
+          "dtype": "bfloat16",
+          "heads": 16,
+          "key_dim": 128,
+          "value_dim": 128
+        }
+      },
+      "validation": {
+        "batches": [
+          1,
+          3,
+          7
+        ],
+        "max_relative_rms_error": 0.0045500402338802814,
+        "measured_lengths": [
+          65,
+          129,
+          2048,
+          8192,
+          32768
+        ],
+        "passed": true,
+        "reuse": "independent rows/batches; performance beyond measured lengths is unmeasured"
+      },
+      "tuning": {
+        "benchmarks": 44,
+        "extension_reason": null,
+        "phase": "bounded_search",
+        "seconds": 4.27
+      },
+      "records": 27
+    }
+  ],
+  "cpu": {
+    "agent_public_training": "pass",
+    "ac_epochs": 2,
+    "ac_steps": 22,
+    "teacher_cache_hits": 10,
+    "paired_reload": "bitwise exact",
+    "cache_and_worker": {
+      "verdict": "pass",
+      "cache_hit_no_worker": true,
+      "shared_precedes_preset": true,
+      "corrupt_incompatible_partial_rejected": true,
+      "concurrent_atomic_publication": true,
+      "real_worker_watchdog": true
+    },
+    "native_bridge": "independent callback, restoration, unknown-key, zero-benchmark and alternate-candidate fixtures pass"
+  },
+  "gpu": {
+    "hardware": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "initial_cold": {
+      "seconds": 60.76370294200001,
+      "geometries": [
+        16,
+        32
+      ],
+      "revision_limit": "Fresh physical node with previous recipe bf7e5c11\u2026 before the final extra post-search long check; final-code profiles were separately rebuilt with warm native JIT."
+    },
+    "final_public_trainers": {
+      "status": "pass",
+      "agent": {
+        "dense": {
+          "autotuning": {
+            "fla": [
+              "cold"
+            ],
+            "seconds": 6.684,
+            "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+            "logits": "heuristic: bounded vocabulary scratch",
+            "memory_budget_bytes": 101388648448,
+            "logits_chunk_tokens": 512,
+            "gradient_checkpointing_min_tokens": 0
+          },
+          "round_index": 0,
+          "items": 3,
+          "examples": 3,
+          "dropped_too_long": 0,
+          "dropped_empty": 0,
+          "recomputed_old_logprobs": 3,
+          "total_tokens": 396,
+          "assistant_tokens": 9,
+          "steps": 1,
+          "first_loss": -1.0000000298023224,
+          "last_loss": -1.0000000298023224,
+          "first_mean_ratio": 1.0,
+          "first_clip_fraction": 0.0,
+          "mean_logprob_first": -4.303917249043782,
+          "mean_logprob_last": -4.303917249043782,
+          "reporting_loss": -1.2000000476837158,
+          "positive_weight_sum": 3.0,
+          "negative_weight_sum": 0,
+          "duration_s": 69.0,
+          "tokens_per_s": 5.7,
+          "checkpoint_path": null,
+          "peak_memory_gb": 10.22
+        },
+        "packed": {
+          "autotuning": {
+            "fla": [
+              "shared"
+            ],
+            "seconds": 0.02,
+            "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+            "logits": "heuristic: bounded vocabulary scratch",
+            "memory_budget_bytes": 101199904768,
+            "logits_chunk_tokens": 512,
+            "gradient_checkpointing_min_tokens": 0
+          },
+          "round_index": 1,
+          "items": 3,
+          "examples": 3,
+          "dropped_too_long": 0,
+          "dropped_empty": 0,
+          "recomputed_old_logprobs": 3,
+          "total_tokens": 396,
+          "assistant_tokens": 9,
+          "steps": 1,
+          "first_loss": -0.9959287643432617,
+          "last_loss": -0.9959287643432617,
+          "first_mean_ratio": 0.9959287643432617,
+          "first_clip_fraction": 0.0,
+          "mean_logprob_first": -3.2052783966064453,
+          "mean_logprob_last": -3.2052783966064453,
+          "reporting_loss": -1.2000000476837158,
+          "positive_weight_sum": 3.0,
+          "negative_weight_sum": 0,
+          "duration_s": 5.9,
+          "tokens_per_s": 67.4,
+          "checkpoint_path": null,
+          "peak_memory_gb": 10.22
+        }
+      },
+      "ac": {
+        "before": {
+          "items": 1,
+          "dropped_too_long": 0,
+          "kl": 2.3981544971466064,
+          "agreement": 0.5,
+          "by_kind": {
+            "compaction": {
+              "kl": 2.3981544971466064,
+              "agreement": 0.5,
+              "items": 1
+            }
+          },
+          "per_item": [
+            {
+              "item_id": "autotune_recursive",
+              "kind": "compaction",
+              "kl": 2.3981544971466064,
+              "agreement": 0.5,
+              "positions": 2,
+              "teacher_tokens": 288,
+              "student_tokens": 57
+            }
+          ]
+        },
+        "training": {
+          "autotuning": {
+            "fla": [
+              "shared",
+              "shared"
+            ],
+            "seconds": 0.027,
+            "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+            "logits": "heuristic: bounded vocabulary scratch",
+            "memory_budget_bytes": 101195710464,
+            "logits_chunk_tokens": 512,
+            "side_gradient_checkpointing_min_tokens": 0,
+            "target_gradient_checkpointing_min_tokens": 0
+          },
+          "start_epoch": 1,
+          "epochs": [
+            {
+              "progress": {
+                "epoch": 1,
+                "epochs": 1,
+                "epoch_number": 1,
+                "step": 1,
+                "steps": 1,
+                "global_step": 1,
+                "epoch_elapsed_s": 1.5977429539998411,
+                "elapsed_s": 3.9906995609999285
+              },
+              "training_seconds": 0.8124517809999361,
+              "reporting_seconds": 0.25681978099987646,
+              "validation_seconds": 0.0,
+              "sample_seconds": 0.5284144300001117,
+              "checkpoint_seconds": 0.0,
+              "reporting": {
+                "items": 1,
+                "dropped_too_long": 0,
+                "kl": 1.9110270738601685,
+                "agreement": 0.5,
+                "by_kind": {
+                  "compaction": {
+                    "kl": 1.9110270738601685,
+                    "agreement": 0.5,
+                    "items": 1
+                  }
+                },
+                "per_item": [
+                  {
+                    "item_id": "autotune_recursive",
+                    "kind": "compaction",
+                    "kl": 1.9110270738601685,
+                    "agreement": 0.5,
+                    "positions": 2,
+                    "teacher_tokens": 288,
+                    "student_tokens": 57
+                  }
+                ]
+              },
+              "validation": null,
+              "checkpoint_path": null,
+              "target_lora_checkpoint_path": null,
+              "samples": [
+                {
+                  "item_id": "autotune_recursive",
+                  "kind": "compaction",
+                  "reference": " alpha beta",
+                  "teacher": "Thinking Process:\n\n",
+                  "student": "Thinking Process:\n\n",
+                  "epoch_number": 1,
+                  "global_step": 1,
+                  "ac_version": 1,
+                  "target_lora": "autotune_target"
+                }
+              ]
+            }
+          ],
+          "placement_seconds": 1.5367620029999216,
+          "cleanup_seconds": 4.640176126000142,
+          "other_seconds": 0.006574973000169848,
+          "baseline_samples": [
+            {
+              "item_id": "autotune_recursive",
+              "kind": "compaction",
+              "reference": " alpha beta",
+              "teacher": "Thinking Process:\n\n",
+              "student": "Thinking Process:\n\n",
+              "epoch_number": 0,
+              "global_step": 0,
+              "ac_version": 0,
+              "target_lora": "autotune_target"
+            }
+          ],
+          "baseline_seconds": 0.8497186749998491,
+          "global_steps": [
+            1
+          ],
+          "learning_rates": [
+            [
+              0.0005,
+              2e-05
+            ]
+          ],
+          "items": 1,
+          "examples": 1,
+          "dropped_too_long": 0,
+          "steps": 1,
+          "kl_first": 2.3982,
+          "kl_last": 2.3982,
+          "agreement_last": 0.5,
+          "kl_by_kind": {
+            "compaction": 2.3982
+          },
+          "completion_tokens": 2,
+          "teacher_tokens": 288,
+          "student_tokens": 57,
+          "side_tokens": 852,
+          "tokens_per_second": 424.6,
+          "reporting": {
+            "items": 1,
+            "dropped_too_long": 0,
+            "kl": 1.9110270738601685,
+            "agreement": 0.5,
+            "by_kind": {
+              "compaction": {
+                "kl": 1.9110270738601685,
+                "agreement": 0.5,
+                "items": 1
+              }
+            },
+            "per_item": [
+              {
+                "item_id": "autotune_recursive",
+                "kind": "compaction",
+                "kl": 1.9110270738601685,
+                "agreement": 0.5,
+                "positions": 2,
+                "teacher_tokens": 288,
+                "student_tokens": 57
+              }
+            ]
+          },
+          "checkpoint": null,
+          "target_lora_checkpoint": null,
+          "peak_memory_gb": 14.15,
+          "duration_s": 8.6,
+          "seconds_by_bucket": {
+            "<8k": {
+              "examples": 1,
+              "mean_s": 0.78,
+              "per_hour": 4592
+            }
+          },
+          "teacher_cache_hits": 0,
+          "teacher_cache_mb": 0.0
+        },
+        "after": {
+          "items": 1,
+          "dropped_too_long": 0,
+          "kl": 1.9110270738601685,
+          "agreement": 0.5,
+          "by_kind": {
+            "compaction": {
+              "kl": 1.9110270738601685,
+              "agreement": 0.5,
+              "items": 1
+            }
+          },
+          "per_item": [
+            {
+              "item_id": "autotune_recursive",
+              "kind": "compaction",
+              "kl": 1.9110270738601685,
+              "agreement": 0.5,
+              "positions": 2,
+              "teacher_tokens": 288,
+              "student_tokens": 57
+            }
+          ]
+        }
+      }
+    },
+    "fresh_shared": {
+      "status": "pass",
+      "origin": "shared",
+      "getter_seconds": 0.5513411829999768,
+      "native_runtime_benchmarks": 0,
+      "worker_starts": 0,
+      "long_nonmultiple_length": 65539
+    },
+    "fresh_preset": {
+      "status": "pass",
+      "origin": "preset",
+      "getter_seconds": 0.5566390599999522,
+      "native_runtime_benchmarks": 0,
+      "worker_starts": 0,
+      "long_nonmultiple_length": 65539
+    }
+  },
+  "operations": {
+    "temporary_node": "ac-autotune-3a1-temp: torn down after scoped results/profiles synchronized",
+    "retained_node": "ac-fp4-probe: STOPPED; original disk retained"
+  },
+  "limits": [
+    "Kernel numerical checks and finite long-sequence backward do not measure global-optimal throughput.",
+    "Checkpoint and logits auto settings are conservative heuristics; no whole-model memory profile is claimed.",
+    "Unsupported recipes, versions or uncovered runtime semantics fail explicitly; no unlimited native fallback.",
+    "Existing small AC quality outcomes are retained in validation_summary.json; that real-data suite was not rerun for this extension.",
+    "Compiled binaries remain local native caches; compatible profile reuse can still require JIT compilation."
+  ],
+  "evidence_sha256": {
+    "TMP/SYNC/AUTOTUNE_VALIDATION/gpu_probe_result.json": "bc20d8d254dfbfe199c08916977225d0b5dcc6342a990d3c06264ffb2f9ee2c1",
+    "TMP/SYNC/AUTOTUNE_VALIDATION/gpu_trainers_result.json": "a00503e386f40cbe4009de0e8c9a596545175b182f9f4fb24aa0e5ee87efd7da",
+    "TMP/SYNC/AUTOTUNE_VALIDATION/shared_fresh_result.json": "5489fa14bc5d0f3d89df674901e32514a49acf87909b9db8cce4b0bfd8a55f25",
+    "TMP/SYNC/AUTOTUNE_VALIDATION/preset_fresh_result.json": "872c7d60437405c7cb18e07ae72b2bcfbb3c726345e526daa303bdf95f6c9af0",
+    "TMP/SLICE3A1/implementation/autotuner_cpu_training.log": "a82b2fb5cc906ebf5e8c3ec954c8f53bb7b11a18d8309d8793f4b5d09a2b203c",
+    "TMP/SLICE3A1/implementation/autotuner_gpu_cold_run.log": "57fead58cfdf8ba9c03c9928ea25fcf173de62389bfa7ccd03d6a1ec2b64918f",
+    "TMP/SLICE3A1/implementation/autotuner_gpu_trainers.log": "1a5f3b8c15407ed950c07ac6d83350690310e669519cf79066c31460597bdddb",
+    "TMP/SLICE3A1/implementation/autotuner_shared_fresh.log": "e321c8d044a2a31bde1ab8ce2baa6c678319d113a14958675c9446cd50e5e4a9",
+    "TMP/SLICE3A1/implementation/autotuner_preset_fresh.log": "aa95702b295f44d450aa5c8ee7cfa1706433afd738891990075ea9a3c1c8f0ff",
+    "TMP/SLICE3A1/implementation/autotuner_teardown.log": "7d03c1005f86c99d1e05597485cdb7057f22f46e8863e0b7ee754e381ed6fed7",
+    "TMP/SLICE3A1/implementation/autotuner_final_status.log": "2fc8684f855bca1c1227f80673764f1b90f914296968bd8579e0b019291a42fc"
+  }
+}

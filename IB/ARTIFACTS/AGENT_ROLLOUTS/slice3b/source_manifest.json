@@ -1,0 +1,66 @@
+{
+  "activation/common/ac_parts.py": {
+    "source_sha256": null,
+    "staged_sha256": "45232e31b18f75897db23e11e142cc0d542db5b0ecba84111f7a1e268edf1f07"
+  },
+  "activation/ac_model/ac_model_utils.py": {
+    "source_sha256": "f74df6e4e625d2583ea154e65f25c8ceb3ff77b3c3c3a46e4cab1f82aaff17d5",
+    "staged_sha256": "6af5cf8221f5927ea51765908eebb6be9144126d4fc8374b95b9a24809219ec9"
+  },
+  "activation/ac_model/ac_model_study.py": {
+    "source_sha256": "4c33dfdbcd3f6a7fe633113cee166ea82e0338dcaa92733021d61883854522f0",
+    "staged_sha256": "6f31ecd990c8cae72753d65a5502356adf6e4dce2055dfe801c435dfc0ef6bfe"
+  },
+  "activation/harness/vllm_wrapper.py": {
+    "source_sha256": "6069617985edec537868d2b316a6536a5f534c2a945018f25b5eb396d2a02ea7",
+    "staged_sha256": "8667271db3db707fdd5948cd50f54ea9ffaf62a3441c36e6e41d930d335fadb1"
+  },
+  "activation/harness/loaded_model.py": {
+    "source_sha256": "784a9f3aeecd7755538cdcdfc04d50252a6f4c13200066ec020b9f7781659afd",
+    "staged_sha256": "b5761616ba0498ec18bfc4c1cb9e6f7f3c4745d79c92d066ccfe00bd59a70610"
+  },
+  "activation/agent/agent_config.py": {
+    "source_sha256": "2d20df6469d8f78a94ad22efe5b648814c1a08bf99afd6c3537411cd73767d5d",
+    "staged_sha256": "7e6875b9df2ed31461791de804c8c8ace458107ea1d0958a1f47ae6f73e6f686"
+  },
+  "activation/agent/agent_utils.py": {
+    "source_sha256": "06bac2fd39e8fee442cef97dbe789df0ee7c53c4c5c53d2cee9bbd0e40bf6aff",
+    "staged_sha256": "ab0ec12224fad4de56e32dceef8c68a7ba6deacdd1c359c629a2225b700496e4"
+  },
+  "activation/agent/agent_tools.py": {
+    "source_sha256": "8ff5aead452ee37d611df817a6868650818ba50a11c6cb33e80c15b58b0e2a87",
+    "staged_sha256": "d2f246b2044100c82fe948cd60297a478bc7de60753261d3ba40072c65b9e051"
+  },
+  "activation/agent/agent.py": {
+    "source_sha256": "121603ed5e5509dbfb0979acd11c64a10df7baad0149671f744058c19a90b1da",
+    "staged_sha256": "59484168258facdef73d5ee0edc3350f3c8cf6f2aed4a59e7d6dc9c8596ac33a"
+  },
+  "activation/agent/rollout_caching.py": {
+    "source_sha256": "bee14bbfd3102c35786c6ef5a358eb3f2885ee61a3d1718a981d23d461d00f81",
+    "staged_sha256": "0dcfe09d874ba67b0fa38080ab6789031e6c3bd83e3a3b078cfd62887cde96d2"
+  },
+  "activation/agent/rollout_reporter.py": {
+    "source_sha256": "026f0d5fb1ec9c024b3b82592870ffcc89c1da819cf7810e40cc80e2d9ab015e",
+    "staged_sha256": "0b152a529987caad92ff4ebe01ca377da231468c63fc9b451d3c8c3d80f093a0"
+  },
+  "activation/agent/__init__.py": {
+    "source_sha256": "ce9b1f5b9cb6f252f20f6acd50868f883aa979002d282719760b968c64bf901e",
+    "staged_sha256": "82769ac571b5f2cfdf32605a0bc1d5b7b604ca83c259aeb2b71b03071ff5ead1"
+  },
+  "activation/agent_training/agent_trainer.py": {
+    "source_sha256": "5c25a75c9341a4b766dfc5622a211d6100fa404606dbe6d8845f6cf7cfd793c9",
+    "staged_sha256": "5afa8d3839af14b50524a7fde10fa72431f6f92725355f1d05b0b7a0efe4c9cc"
+  },
+  "activation/agent_training/agent_training_selection.py": {
+    "source_sha256": "ce8f52ed49f87841ea27444f2e0ca6908ea2368610059b13d389731e53ad8bbc",
+    "staged_sha256": "feab1ea6a55c0330117848a006390ef2a6c1aa5d5a18d7fe4a2fba7860f0bef4"
+  },
+  "activation/agent_training/agent_training_utils.py": {
+    "source_sha256": "51ef2ce5646a0eed60fa149d61d5fe5872f185f4d75083355b32bc34fef4fe9f",
+    "staged_sha256": "b1be720b1b33d39b1afbfb94aaceebae5ca5c7afe97ebdd1b92855436765dfb7"
+  },
+  "activation/tests/test_basic_agent_ac.py": {
+    "source_sha256": null,
+    "staged_sha256": "b6e0c1e76c7aec66f121370e2a03ed136e777ece4ce1c52abd0ae318321bcd85"
+  }
+}

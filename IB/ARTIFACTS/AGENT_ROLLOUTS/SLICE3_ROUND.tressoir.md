@@ -1,6 +1,6 @@
 # Activation context, slice 3a: the handoff
 
-Round 2 (2026-09-09). Round 1 implemented and CPU-validated M0–M5, the three key tests of M8 and the M9 driver. This round ran everything on a node before the application, as asked: the three tests pass; the trainer is profiled per phase against the card's measured GEMM ceiling; two throughput levers landed (the fla kernel configs in the AC trainer, including the 0.8B's kernels, and a cached top-k teacher for the later epochs); the cap on one input moved from 52k to 72k teacher tokens with 104k measured; and the validity runs A (compaction), B (trajectory QA) and C (RAG QA) run for two epochs each. While A trained, a review pass over both trainers for training practice (the user's ask: nothing training-unfriendly outside the new parts, agent training included) fixed four things, listed under "Review pass" below; its cards are part of this handoff and B and C run on that code. The cards at the end are the complete diffs against `/source`; the staged tree under `slice3/activation/` is what they produce.
+Round 2 (2026-09-09). Round 1 implemented and CPU-validated M0–M5, the three key tests of M8 and the M9 driver. This round ran everything on a node before the application, as asked: the three tests pass; the trainer is profiled per phase against the card's measured GEMM ceiling; two throughput levers landed (the fla kernel configs in the AC trainer, including the 0.8B's kernels, and a cached top-k teacher for the later epochs); the cap on one input moved from 52k to 72k teacher tokens with 104k measured; and the validity run A (compaction) ran for two epochs; the user read A as a tentative success (more investigation needed) and had B (trajectory QA) and C (RAG QA) torn down while B was still generating its items. While A trained, a review pass over both trainers for training practice (the user's ask: nothing training-unfriendly outside the new parts, agent training included) fixed four things, listed under "Review pass" below; its cards are part of this handoff and B and C run on that code. The cards at the end are the complete diffs against `/source`; the staged tree under `slice3/activation/` is what they produce.
 
 ## Application handoff (for your workspace agent)
 
@@ -9,7 +9,7 @@ Order of work, in your checkout of `/source` (HEAD `1cfa058` plus your uncommitt
 1. **The deletions first** (block below): the retrieval package, its bench and its test leave the tree; their archive is `IB/ARTIFACTS/RETRIEVAL_TRAINING/archive_slice3/`.
 2. **Copy the implementation, the tests, the probe and the kernel configs**: `rsync -a IB/ARTIFACTS/AGENT_ROLLOUTS/slice3/activation/ activation/` (45 files: `ac_model/` (6), `agent_training/` (`agent_trainer.py`, `agent_training_config.py`, `agent_training_utils.py`, `fla_cache.py`) + the 10 JSON kernel configs under `agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/` (merged: every earlier entry kept, the 0.8B's and the new length buckets added), `bench/agent_probes/ac_training_bench.py` + `ac_training_profile.py`, `dataset/` (6), `dataset/loaders/` (10), `harness/` (3), `tests/` (3)); copy the staged `pyproject.toml` (`faiss-cpu` removed) and `uv.lock`. The cards are the fallback if a local file has drifted.
 3. **CPU checks**: `uv run python -m compileall -q activation`; `uv run pytest activation/tests/test_basic_dataset_loading.py` (4 passed here in about 2.5 min with the network); the scratch checks are reproducible from `IB/TMP/SLICE3_CHECKS/` (`check_fixtures.py`, `study_cache_smoke.py`, `optimizer_smoke.py`, `ac_smoke.py`, `ac_train_smoke.py`, `ac_perf_smoke.py`; the last three need Qwen3.5-0.8B and about 12 GB of RAM; run with `MALLOC_ARENA_MAX=2`).
-4. **Node** (what ran on `ac-fp4-probe`, for the record; run A used the pre-review code, B and C the reviewed code with its defaults, `--warmup-updates 10` and the stratified split; the runs' final numbers land in this document's next update, nothing is needed from you on a node):
+4. **Node** (what ran on `ac-fp4-probe`, for the record; run A used the pre-review code; B and C were launched with the reviewed code and cancelled at the user's request during B's item generation; the node is idle and autostops; nothing is needed from you on a node):
 
 ```bash
 uv run sky exec --sync ac-fp4-probe -- uv run pytest activation/tests/test_basic_agent_ac_training.py --gpu --slow -s -x
@@ -38,7 +38,7 @@ Read end to end during run A: `ac_model_training.py`, `ac_model.py`, `ac_model_u
 
 Looked at and left alone: the loss normalization (per-example mean over positions, mean over the examples of a step; the agent trainer's per-sequence mean of the clipped surrogate), gradient clipping before the step, the fp32 head logits, `weight_decay` 0 on adapters, the betas, the seeds, the checkpointing switches, the frozen embeddings, the no-grad teacher, the placement (models to host RAM between rounds), the packing and the pi_old fill in agent training. Left for slice 3a1 (the user's list): the eval cadence inside `train()` (the bench splits an epoch into `train()` calls to get held evals every 50 updates, which also moves the models and writes a checkpoint per chunk), the round / chunk / epoch naming in the reports, the sync of large folders.
 
-Run A had already trained for an epoch on the earlier code when the pass finished, so it completed on that code; runs B and C picked up the reviewed tree (the wrapper uploads the working copy at launch). The change to the AC trainer is exercised by B and C on the node; the agent trainer's change is CPU-checked (`optimizer_smoke.py`, the helpers on toy parameters) and syntax-checked, and its node test (`test_basic_agent_training.py --gpu --slow`) is queued after C.
+Run A had already trained for an epoch on the earlier code when the pass finished, so it completed on that code; runs B and C picked up the reviewed tree (the wrapper uploads the working copy at launch). B and C were cancelled before training started, so the reviewed AC trainer has run on the node only through B's item generation; both trainers' changes are CPU-checked (`ac_train_smoke.py` two rounds through the persisted optimizer, `optimizer_smoke.py` for the shared helpers) and the node tests (`test_basic_agent_ac_training.py`, `test_basic_agent_training.py`, `--gpu --slow`) are the first thing to run on a node in 3a1.
 
 ## Node results
 
@@ -113,6 +113,9 @@ From the r2 profile (one example at a time, live teacher), and from the runs (th
 | examples of 48k-64k (50,038 teacher tokens on average), live teacher | 647 examples, 32M in-context tokens |
 | examples of synthetic 72k depth 2 (74,918 teacher tokens on average), live teacher | 426 examples, 32M in-context tokens |
 | examples of synthetic 104k depth 2 (107,814 teacher tokens on average), live teacher | 285 examples, 31M in-context tokens |
+| run compaction_r1 training loop, teacher live (mean 20,527 teacher tokens) | 1,505 examples, 31M in-context tokens |
+| run compaction_r1 training loop, teacher cached (mean 20,527 teacher tokens) | 3,379 examples, 69M in-context tokens |
+| run compaction_r1 wall clock | 3.59 h for 2 epochs of 2000 items (training steps 1.92 h; the rest is references, held evals, secondary decoding, checkpoints and model moves) |
 
 Rule of thumb for sizing: a live-teacher epoch costs about 30M in-context tokens per hour whatever the length mix above 8k; a cached-teacher epoch about 2.5–3× that; evals cost one live forward pair per held item.
 
@@ -120,7 +123,7 @@ Rule of thumb for sizing: a live-teacher epoch costs about 30M in-context tokens
 
 Side Qwen3.5-0.8B (LoRA 128), target Qwen3.5-4B (LoRA 64), 2,000 items and 200 held per run, `examples_per_update` 16, two epochs, held evals every 50 updates in epoch 1 and per epoch, the cached teacher (k = 128) from the second pass of an item on, the greedy secondary metric on 100 held items per epoch. References on the held set: `no_context` (the parts removed), `recent_text` (each part replaced by verbatim text of the same token budget as its rows), `untrained_ac`, and `in_context` (the teacher, KL 0 by construction). The read-out the plan asked for: held KL below `recent_text` within epoch 1 and still descending at the end of epoch 2.
 
-**compaction_r1** (compaction, 2000 training / 200 held items, 2 epochs, in progress when this document was built: 1 of 2 epochs done)
+**compaction_r1** (compaction, 2000 training / 200 held items, 2 epochs, 3.59 h)
 
 | reference / eval | held KL | agreement |
 | --- | --- | --- |
@@ -130,6 +133,7 @@ Side Qwen3.5-0.8B (LoRA 128), target Qwen3.5-4B (LoRA 64), 2,000 items and 200 h
 | epoch 1, after 50 updates | 0.4590 | 0.797 |
 | epoch 1, after 100 updates | 0.4407 | 0.802 |
 | epoch 1, after 125 updates | 0.4360 | 0.804 |
+| epoch 2, after 250 updates | 0.4248 | 0.809 |
 
 Secondary metric (greedy 64 tokens on 100 held items): agreement of the first tool call with the teacher's greedy continuation, over the items where the teacher calls a tool (share `teacher_calls`); `name` = same tool, `exact` = same tool and arguments, `args` = token overlap of the arguments when the tool matches:
 
@@ -137,12 +141,13 @@ Secondary metric (greedy 64 tokens on 100 held items): agreement of the first to
 | --- | --- | --- | --- | --- |
 | 0 | 0.30 | 0.03 / 0.00 / 0.00 | 0.43 / 0.03 / 0.04 | 0.03 / 0.00 / 0.00 |
 | 1 | 0.21 | 0.29 / 0.00 / 0.02 | 0.29 / 0.00 / 0.05 | 0.29 / 0.00 / 0.06 |
+| 2 | 0.25 | 0.56 / 0.00 / 0.12 | 0.48 / 0.00 / 0.07 | 0.44 / 0.00 / 0.15 |
 
-Read-out so far: below `recent_text` never; still descending at the end (the run continues; the final numbers land in the next update of this document).
+Read-out: below `recent_text` never; still descending at the end. Best held KL 0.4248, final 0.4248.
 
-**traj_qa_r1**: pending (the run had not started when this document was built).
+**traj_qa_r1**: cancelled before it produced a reference eval (the user called run A a tentative success and asked for the remaining runs to be torn down; the node job was cancelled at 11:45 UTC while B was still generating its items).
 
-**rag_qa_r1**: pending (the run had not started when this document was built).
+**rag_qa_r1**: cancelled before it produced a reference eval (the user called run A a tentative success and asked for the remaining runs to be torn down; the node job was cancelled at 11:45 UTC while B was still generating its items).
 
 ## Validation (CPU, this container)
 
@@ -236,7 +241,7 @@ The cards below are exact deltas against `/source` (HEAD `1cfa058` plus your unc
 
 ## Diffs to apply
 
-At build time `/source` already matched the staged tree for 44 of the 46 files (the application has started); the cards still to apply are `activation/bench/agent_probes/ac_training_bench.py`, `activation/bench/agent_probes/ac_training_profile.py`. Cards of applied files say so and carry no diff.
+At build time `/source` already matched the staged tree for 39 of the 46 files (the application has started); the cards still to apply are `activation/ac_model/ac_model.py`, `activation/ac_model/ac_model_reporter.py`, `activation/ac_model/ac_model_study.py`, `activation/ac_model/ac_model_training.py`, `activation/bench/agent_probes/ac_training_bench.py`, `activation/bench/agent_probes/ac_training_profile.py`, `activation/tests/test_basic_agent_ac_training.py`. Cards of applied files say so and carry no diff.
 
 <details class="card" data-tressoir-markdown>
   <summary>
@@ -253,10 +258,36 @@ Already in `/source` when this document was built (byte-identical to the staged 
   <summary>
     <span class="card-title">activation/ac_model/ac_model.py</span>
     <span class="card-oneliner">The AC model: config, modules, encode / encode_batch / encode_async, part_view_rows, modes, save / load; optional encode phase timings.</span>
-    <span class="card-badge">Applied</span>
+    <span class="card-badge">Diff</span>
   </summary>
 
-Already in `/source` when this document was built (byte-identical to the staged copy `slice3/activation/ac_model/ac_model.py`): nothing to apply. The staged file stays the reference.
+Exact delta vs `/source` for `activation/ac_model/ac_model.py` (23 lines):
+
+```diff
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index 4266b93..fa07b3c 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -73,8 +73,8 @@ class ActivationContextModelConfig:
+     target_model_name: str                   # whose input space the rows land in
+     target_model_lora_name: str              # the target adapter trained alongside (ActivationContextTrainer)
+     default_compression_ratio: float = 1.0 / 16.0
+-    input_pooling_stride: int = 2 # Changed.
+-    input_pooling_window: int = 8
++    input_pooling_stride: int = 4
++    input_pooling_window: int = 16
+     mixer_layers: int = 2
+     mixer_window: int = 256                  # block size of the blocked local attention (each row sees 256-512 rows per side)
+     mixer_heads: int = 8
+@@ -126,7 +126,6 @@ class ActivationContextModules(nn.Module):
+         nn.init.normal_(self.marker_index.weight, std=0.02)
+ 
+ 
+-# @AI: Review correctness and efficiency of implementation and of training (avoid few percent micro-optimizations though; look for high poles in the tent, if any). Configs, dual loras, heads, etc.
+ class ActivationContextModel:
+     def __init__(self, harness: "HarnessRuntime", config: ActivationContextModelConfig):
+         self.harness = harness
+```
 
 </details>
 
@@ -264,10 +295,28 @@ Already in `/source` when this document was built (byte-identical to the staged 
   <summary>
     <span class="card-title">activation/ac_model/ac_model_reporter.py</span>
     <span class="card-oneliner">HTML report of AC training: KL with reference lines, agreement, throughput, tables, completions.</span>
-    <span class="card-badge">Applied</span>
+    <span class="card-badge">Diff</span>
   </summary>
 
-Already in `/source` when this document was built (byte-identical to the staged copy `slice3/activation/ac_model/ac_model_reporter.py`): nothing to apply. The staged file stays the reference.
+Exact delta vs `/source` for `activation/ac_model/ac_model_reporter.py` (15 lines):
+
+```diff
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index 6f4bb45..433441d 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -12,10 +12,6 @@ if t.TYPE_CHECKING:
+ REFERENCE_SERIES = ("no_context", "recent_text", "untrained_ac", "in_context")
+ 
+ 
+-# @AI: Rewrite into epochs and reporting intervals. Should look similar to the old retrieval reporting.
+-# So in the header, there is the epoch progress (epoch e/E), step within epoch (s/S), etc, elapsed time in epoch, total elapsed time, and other good metrics.
+-# Then, the graph belows should show both reporting (with references) and training loss progress.
+-# 
+ class ActivationContextTrainingReporter(HtmlReporter):
+     def __init__(self, folder: str, title: str = "AC training", description: str = "", **kwargs):
+         super().__init__(folder, title, description, eyebrow="AC training", **kwargs)
+```
 
 </details>
 
@@ -275,10 +324,63 @@ Already in `/source` when this document was built (byte-identical to the staged 
   <summary>
     <span class="card-title">activation/ac_model/ac_model_study.py</span>
     <span class="card-oneliner">Item generators: compaction (nested cuts, total ≤ 72k), trajectory QA (window + distractor parts), RAG QA (one part of passages).</span>
-    <span class="card-badge">Applied</span>
+    <span class="card-badge">Diff</span>
   </summary>
 
-Already in `/source` when this document was built (byte-identical to the staged copy `slice3/activation/ac_model/ac_model_study.py`): nothing to apply. The staged file stays the reference.
+Exact delta vs `/source` for `activation/ac_model/ac_model_study.py` (50 lines):
+
+```diff
+diff --git a/activation/ac_model/ac_model_study.py b/activation/ac_model/ac_model_study.py
+index 108cd8a..3cf9722 100644
+--- a/activation/ac_model/ac_model_study.py
++++ b/activation/ac_model/ac_model_study.py
+@@ -48,12 +48,6 @@ def ac_part(messages: list[dict], ac_name: str, compression_target: float) -> di
+     return {"type": AC_PART_TYPE, "ac_name": ac_name, "compression_target": compression_target, "messages": messages}
+ 
+ 
+-# @AI: Double-check that the study formation strategies are, as much as possible, biased towards what our trajectories will end up looking like in 3b.
+-# (It can't be perfect since we are taking external trajectories, but we should not kneecap ourselves; e.g., use things like submit answer where possible, etc.).
+-# If not perform on semi-on-policy fine-tuning from rollouts is always on the table.
+-# Can also please suggest some way to mimic subagent spawning? I am drawing a blank.
+-# My only idea involves: craft a fake multi-task combining 2-5 trajectories, the prompt asks it to do one specific one given its id. It takes the parent context is maps the id to the given task, showing that it can "see" its parent.
+-# But this is a bit too fake (only teaches id reading; probably worse than qa). It's not a big  deal if we end up having to roll our own if there are no clean synthetic approaches.
+ class ActivationContextStudyGenerator:
+     """Item generators bound to one AC model (its name goes into the parts; its target tokenizer counts tokens)."""
+ 
+@@ -110,8 +104,6 @@ class ActivationContextStudyGenerator:
+         depth_range: tuple[int, int] = (1, 2),
+         threshold_range_tokens: tuple[int, int] = (8192, 32768),
+         ratios_range: tuple[float, float] = (1.0 / 8.0, 1.0 / 16.0),
+-        max_post_compaction_steps: tuple[float, float] = 8192, # @AI: test not just the first immediate step after question.
+-        immediate_continuation_ratio: float = 0.25, # Still bias towards many trajectories being immediate continuations, as that's most important.
+         completion_max_tokens: int = 512,
+         max_total_tokens: int = 72_000,
+         min_trajectory_tokens: int = MIN_COMPACTION_TOKENS,
+@@ -332,7 +324,6 @@ class ActivationContextStudyGenerator:
+         return items
+ 
+     # ------------------------------------------------------------------------------------------ RAG QA
+-    # @AI: Make sure the query is passed into the AC, so the model can do contextual compression. This does not apply to traj qa.
+     def generate_rag_qa_samples(
+         self,
+         dataset_id: str,
+@@ -391,15 +382,3 @@ class ActivationContextStudyGenerator:
+                       "gold_position": passages.index(gold), "example_id": example.example_id, "gold_chunk_text": gold.chunk_text},
+             ))
+         return items
+-
+-    # --- complete me
+-    # @AI: New subagent completion.
+-    def generate_subagent_trajectory_samples(
+-        
+-    )    
+-
+-    @staticmethod
+-    def transform_for_eval_reference(items: list[ActivationContextTrainingItem], kind: t.Literal["no_context", "recent_text"]) -> list[ActivationContextTrainingItem]:
+-        pass # Perform the transform here.
+-
+-
+```
 
 </details>
 
@@ -286,10 +388,76 @@ Already in `/source` when this document was built (byte-identical to the staged 
   <summary>
     <span class="card-title">activation/ac_model/ac_model_training.py</span>
     <span class="card-oneliner">Items, config, stats and the trainer: teacher/student sequences, chunked KL (exact or against the cached top-k teacher), fla configs, 72k cap, per-example records.</span>
-    <span class="card-badge">Applied</span>
+    <span class="card-badge">Diff</span>
   </summary>
 
-Already in `/source` when this document was built (byte-identical to the staged copy `slice3/activation/ac_model/ac_model_training.py`): nothing to apply. The staged file stays the reference.
+Exact delta vs `/source` for `activation/ac_model/ac_model_training.py` (63 lines):
+
+```diff
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index 60bb121..b22dbad 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -82,10 +82,8 @@ class ActivationContextTrainingConfig:
+     gradient_checkpointing: bool = True        # on both bases
+     gradient_checkpointing_min_tokens: int | None = None
+     seed: int = 0
+-    # @AI: Remove the notion of rounds from here. Rename to checkpoint every epoch.
+-    checkpoint_every_epoch: bool = True        # AC_MODELS/<name>/epoch_<n> (+ latest) and LORAS/<target lora>/epoch_<n>
+-    num_epochs: int = 1 # Probably should be higher.
+-    reporting_interval: int = 0.1 # Run mini-eval this much.
++    checkpoint_every_round: bool = True        # AC_MODELS/<name>/round_<n> (+ latest) and LORAS/<target lora>/round_<n>
++
+ 
+ @dataclass
+ class ActivationContextTrainingStats:
+@@ -152,15 +150,13 @@ class _Example:
+     num_completion: int                        # completion tokens (+ eot) at the end of both sequences
+ 
+ 
+-# @AI: In the bench file, also identify which secondary metrics and other patterns should be promoted.
+-# Let's avoid anything expansive though; these should be cheap (I believe that file spends a noticeable amount on these secondary things).
+ class ActivationContextTrainer:
+     def __init__(self, harness: "HarnessRuntime", config: ActivationContextTrainingConfig | None = None):
+         self.harness = harness
+         self.config = config or ActivationContextTrainingConfig()
+         self.rounds_done: dict[str, int] = {}
+         self.updates_done: dict[str, int] = {}                    # optimizer steps so far per AC model (the warm-up clock)
+-        self.optimizers: dict[str, torch.optim.AdamW] = {}        # one per AC model, kept across rounds (moments survive a round boundary). # @AI: Keeping this across train seems like a  good idea even with our epoch-based progress.
++        self.optimizers: dict[str, torch.optim.AdamW] = {}        # one per AC model, kept across rounds (moments survive a round boundary)
+         self.teacher_cache: dict[str, tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = {}   # item id -> (ids [C, k], log-probs [C, k], log remainder [C]), CPU
+ 
+     # ------------------------------------------------------------------------------------------ examples
+@@ -187,7 +183,7 @@ class ActivationContextTrainer:
+         self,
+         ac_model_name: str,
+         training_data: list[ActivationContextTrainingItem],
+-        reporting_data: t.Sequence[ActivationContextTrainingItem] = (), # @AI: This is the small bit of data that is periodically evaled on.
++        reporting_data: t.Sequence[ActivationContextTrainingItem] = (),
+         reporter: "ActivationContextTrainingReporter | None" = None,
+     ) -> ActivationContextTrainingStats:
+         """
+@@ -324,17 +320,8 @@ class ActivationContextTrainer:
+         print(f"ActivationContextTrainer - round {round_index} done: {stats.summarize()}", flush=True)
+         return stats
+ 
+-    def eval(
+-        self,
+-        ac_model_name: str,
+-        items: list[ActivationContextTrainingItem],
+-        release: bool = True,
+-        reporting_name: str|None = None, # Handles reporting.
+-    ) -> dict:
+-        """
+-        KL and agreement of the items without gradient (models placed as for training, moved back when `release`).
+-        When reporting_reference is given, this auto-handles the reporting.
+-        """
++    def eval(self, ac_model_name: str, items: list[ActivationContextTrainingItem], release: bool = True) -> dict:
++        """KL and agreement of the items without gradient (models placed as for training, moved back when `release`)."""
+         module_manager = self.harness.module_manager
+         ac_model = module_manager.get_ac_model(ac_model_name)
+         target = ac_model.target
+```
 
 </details>
 
@@ -1533,10 +1701,46 @@ Already in `/source` when this document was built (byte-identical to the staged 
   <summary>
     <span class="card-title">activation/tests/test_basic_agent_ac_training.py</span>
     <span class="card-oneliner">The three slice-3a key tests (compaction, trajectory QA, RAG QA); adapters freed before the bases.</span>
-    <span class="card-badge">Applied</span>
+    <span class="card-badge">Diff</span>
   </summary>
 
-Already in `/source` when this document was built (byte-identical to the staged copy `slice3/activation/tests/test_basic_agent_ac_training.py`): nothing to apply. The staged file stays the reference.
+Exact delta vs `/source` for `activation/tests/test_basic_agent_ac_training.py` (33 lines):
+
+```diff
+diff --git a/activation/tests/test_basic_agent_ac_training.py b/activation/tests/test_basic_agent_ac_training.py
+index 0ef8ebe..d7c0087 100644
+--- a/activation/tests/test_basic_agent_ac_training.py
++++ b/activation/tests/test_basic_agent_ac_training.py
+@@ -26,7 +26,6 @@ from activation.harness import FREE_DEVICE, SUPPORTS_FP4, HarnessRuntime, Harnes
+ SIDE_NAME, SIDE_ID = "qwen3.5-0.8b", "Qwen/Qwen3.5-0.8B"
+ TARGET_NAME, TARGET_ID = "qwen3.5-4b", "Qwen/Qwen3.5-4B"
+ AC_NAME, SIDE_LORA, TARGET_LORA = "ac_dev", "ac_side", "ac_target"
+-# @AI: Reduce study models to RedHatAI/Qwen3.5-9B-FP8-dynamic
+ QA_MODEL_NAME = "unsloth/Qwen3.8-27B-NVFP4" if SUPPORTS_FP4 else "Qwen/Qwen3.8-27B-FP8"
+ ITEMS, HELD = 48, 8
+ CACHING_ID = "ac_training_test"
+@@ -42,12 +41,10 @@ def _harness(with_study: bool) -> HarnessRuntime:
+     return harness
+ 
+ 
+-# @AI: Strongly type. Applies to everything else.
+ def _trainer(harness) -> ActivationContextTrainer:
+     return ActivationContextTrainer(harness, ActivationContextTrainingConfig(examples_per_update=8))
+ 
+ 
+-# @AI: move this into the study class.
+ def _no_context(items):
+     """Reference items: the student sees the question / instructions only (every part dropped)."""
+     from dataclasses import replace
+@@ -72,7 +69,6 @@ def _run(harness, items, name):
+     try:
+         before = trainer.eval(AC_NAME, held, release=False)
+         no_context = trainer.eval(AC_NAME, _no_context(held), release=False)
+-        # @AI: Move reporting logic to inside eval.
+         reporter.report_eval(0, "untrained_ac", before)
+         reporter.report_eval(0, "no_context", no_context)
+         reporter.report_reference("no_context", no_context["kl"])
+```
 
 </details>
 

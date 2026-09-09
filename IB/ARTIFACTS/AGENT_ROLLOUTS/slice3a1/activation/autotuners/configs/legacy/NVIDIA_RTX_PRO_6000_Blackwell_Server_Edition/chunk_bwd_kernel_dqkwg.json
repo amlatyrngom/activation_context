@@ -1,0 +1,81 @@
+{
+ "kernel_name": "chunk_bwd_kernel_dqkwg",
+ "triton_version": "3.7.1",
+ "autotune_entries": {
+  "6039e3ce3a4493cfdbc8ce97921282ef": {
+   "autotune_key": [
+    32,
+    32,
+    128,
+    128,
+    64,
+    64,
+    64,
+    true,
+    false,
+    true,
+    false,
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32"
+   ],
+   "config": {
+    "kwargs": {},
+    "num_warps": 4,
+    "num_stages": 2,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "8acc2bca329ce636718452ad0372f9ce": {
+   "autotune_key": [
+    16,
+    16,
+    128,
+    128,
+    64,
+    64,
+    64,
+    true,
+    false,
+    true,
+    false,
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32"
+   ],
+   "config": {
+    "kwargs": {},
+    "num_warps": 4,
+    "num_stages": 2,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  }
+ },
+ "default_config": {
+  "kwargs": {},
+  "num_warps": 4,
+  "num_stages": 2,
+  "num_ctas": 1,
+  "maxnreg": null
+ }
+}

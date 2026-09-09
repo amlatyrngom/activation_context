@@ -1,0 +1,316 @@
+{
+  "scope": "Recorded GPU execution and quality diagnostics, with separate assertion-version results.",
+  "real_data": {
+    "compaction": {
+      "status": "recorded",
+      "report_sha256": "44bd11c86a97c93351f07ef7bdefb79f3ce7e113d956657a03ddfe4626d5e217",
+      "train_items": 33,
+      "held_items": 8,
+      "steps": 10,
+      "epochs": 2,
+      "initial_ac_kl": 0.43027882277965546,
+      "initial_no_context_kl": 0.42819214053452015,
+      "final_ac_kl": 0.3593997685238719,
+      "final_no_context_kl": 0.35534052085131407,
+      "ac_kl_advantage": -0.004059247672557831,
+      "matched_quality_assertion_passes": false,
+      "final_ac_agreement": 0.8206451882313327,
+      "final_no_context_agreement": 0.8208374987879463,
+      "training_call_seconds": 560.1,
+      "peak_memory_gib": 23.63,
+      "checkpoint_epochs": [
+        1,
+        2
+      ],
+      "checkpoints": [
+        {
+          "epoch": 1,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_001/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_001/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_001/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_001/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_001/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        },
+        {
+          "epoch": 2,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_002/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_002/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_002/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_002/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_002/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        }
+      ],
+      "mechanics_checks": {
+        "matched_nonempty_evaluation_counts": true,
+        "finite_evaluation_kl": true,
+        "two_complete_epochs": true,
+        "four_fixed_samples_each_boundary": true,
+        "finite_training_kl": true,
+        "zero_dropped_training_items": true,
+        "zero_dropped_evaluation_items": true,
+        "report_starts_at_zero": true,
+        "paired_epoch_weights_delivered": true
+      },
+      "per_item_limit": "Final AC per-item rows retained in report; the preceding test version did not persist final empty-context per-item rows."
+    },
+    "traj_qa": {
+      "status": "recorded",
+      "report_sha256": "ae5e57d0091c5f70715c68be1c1fb3f58ff112dee24a79ec0b83458e42cd4fba",
+      "train_items": 40,
+      "held_items": 8,
+      "steps": 10,
+      "epochs": 2,
+      "initial_ac_kl": 0.6170994397252798,
+      "initial_no_context_kl": 0.6027401816099882,
+      "final_ac_kl": 0.44960111752152443,
+      "final_no_context_kl": 0.445362881757319,
+      "ac_kl_advantage": -0.004238235764205456,
+      "matched_quality_assertion_passes": false,
+      "final_ac_agreement": 0.8409387993478774,
+      "final_no_context_agreement": 0.8336588021602707,
+      "training_call_seconds": 1030.1,
+      "peak_memory_gib": 32.61,
+      "checkpoint_epochs": [
+        3,
+        4
+      ],
+      "checkpoints": [
+        {
+          "epoch": 3,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_003/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_003/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_003/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_003/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_003/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        },
+        {
+          "epoch": 4,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_004/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_004/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_004/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_004/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_004/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        }
+      ],
+      "mechanics_checks": {
+        "matched_nonempty_evaluation_counts": true,
+        "finite_evaluation_kl": true,
+        "two_complete_epochs": true,
+        "four_fixed_samples_each_boundary": true,
+        "finite_training_kl": true,
+        "zero_dropped_training_items": true,
+        "zero_dropped_evaluation_items": true,
+        "report_starts_at_zero": true,
+        "paired_epoch_weights_delivered": true
+      },
+      "per_item_limit": "Final AC per-item rows retained in report; the preceding test version did not persist final empty-context per-item rows."
+    },
+    "rag_qa": {
+      "status": "recorded",
+      "report_sha256": "012c222622d06e1c92657edd0f6ae4bef2292bf4515f36df1265d345de64630e",
+      "train_items": 34,
+      "held_items": 8,
+      "steps": 10,
+      "epochs": 2,
+      "initial_ac_kl": 0.5350155849009752,
+      "initial_no_context_kl": 0.5197580708190799,
+      "final_ac_kl": 0.4492658912204206,
+      "final_no_context_kl": 0.4547357149422169,
+      "ac_kl_advantage": 0.005469823721796274,
+      "matched_quality_assertion_passes": true,
+      "final_ac_agreement": 0.8480239224747445,
+      "final_no_context_agreement": 0.8427195967946085,
+      "training_call_seconds": 204.0,
+      "peak_memory_gib": 29.26,
+      "checkpoint_epochs": [
+        5,
+        6
+      ],
+      "checkpoints": [
+        {
+          "epoch": 5,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_005/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_005/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_005/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_005/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_005/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        },
+        {
+          "epoch": 6,
+          "all_expected_files_delivered": true,
+          "files": [
+            {
+              "path": "AC_MODELS/ac_dev/epoch_006/ac_modules.pt",
+              "bytes": 243491509
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_006/side_lora/adapter_config.json",
+              "bytes": 1152
+            },
+            {
+              "path": "AC_MODELS/ac_dev/epoch_006/side_lora/adapter_model.safetensors",
+              "bytes": 204500912
+            },
+            {
+              "path": "LORAS/ac_target/epoch_006/adapter_config.json",
+              "bytes": 1149
+            },
+            {
+              "path": "LORAS/ac_target/epoch_006/adapter_model.safetensors",
+              "bytes": 339776632
+            }
+          ]
+        }
+      ],
+      "mechanics_checks": {
+        "matched_nonempty_evaluation_counts": true,
+        "finite_evaluation_kl": true,
+        "two_complete_epochs": true,
+        "four_fixed_samples_each_boundary": true,
+        "finite_training_kl": true,
+        "zero_dropped_training_items": true,
+        "zero_dropped_evaluation_items": true,
+        "report_starts_at_zero": true,
+        "paired_epoch_weights_delivered": true
+      },
+      "per_item_limit": "Final AC per-item rows retained in report; the preceding test version did not persist final empty-context per-item rows."
+    }
+  },
+  "qa_pytest": [
+    {
+      "name": "test_ac_trajectory_qa",
+      "seconds": 1398.398,
+      "outcome": "failed",
+      "failure": "AssertionError: trained AC should beat empty context with the same target adapter\nassert 0.44960111752152443 < 0.445362881757319"
+    },
+    {
+      "name": "test_ac_rag_qa",
+      "seconds": 252.715,
+      "outcome": "passed",
+      "failure": null
+    }
+  ],
+  "compaction_pytest": {
+    "outcome": "failed",
+    "cause": "Final matched-adapter AC KL did not beat empty context; original strict-quality assertion."
+  },
+  "later_staged_test": {
+    "change": "Finite/count-matched mechanics gate; persist four eval summaries and signed final AC advantage.",
+    "validation": {
+      "verdict": "pass",
+      "scope": "Current public smoke-gate/reporting layer with replaced training boundary; no GPU rerun.",
+      "cases": [
+        {
+          "case": "negative_quality",
+          "rejected": false,
+          "ac_kl_advantage": -0.010000000000000009
+        },
+        {
+          "case": "positive_quality",
+          "rejected": false,
+          "ac_kl_advantage": 0.009999999999999953
+        },
+        {
+          "case": "unequal_counts",
+          "rejected": true
+        },
+        {
+          "case": "nonfinite_quality",
+          "rejected": true
+        }
+      ]
+    },
+    "limit": "The revised gate was checked at the test/report boundary, not by repeating all three GPU training tests."
+  },
+  "errors": []
+}

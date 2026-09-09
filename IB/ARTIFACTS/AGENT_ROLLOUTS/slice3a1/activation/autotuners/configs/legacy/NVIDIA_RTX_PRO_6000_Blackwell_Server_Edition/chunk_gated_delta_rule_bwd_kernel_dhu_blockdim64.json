@@ -1,0 +1,71 @@
+{
+ "kernel_name": "chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64",
+ "triton_version": "3.7.1",
+ "autotune_entries": {
+  "8811e24b122ca7387bb091ef4c75b0ec": {
+   "autotune_key": [
+    32,
+    32,
+    128,
+    128,
+    64,
+    true,
+    false,
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BV": 32
+    },
+    "num_warps": 4,
+    "num_stages": 1,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "cc69dc1458077a2db718506be13c0895": {
+   "autotune_key": [
+    16,
+    16,
+    128,
+    128,
+    64,
+    true,
+    false,
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BV": 32
+    },
+    "num_warps": 4,
+    "num_stages": 1,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  }
+ },
+ "default_config": {
+  "kwargs": {
+   "BV": 32
+  },
+  "num_warps": 4,
+  "num_stages": 1,
+  "num_ctas": 1,
+  "maxnreg": null
+ }
+}

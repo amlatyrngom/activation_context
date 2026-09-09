@@ -252,7 +252,7 @@ CPU: chunking, rename and reformatting on fixtures (a few rows of each dataset s
 
 Validity runs:
 
-**compaction_r1** (compaction, 2000 training / 200 held items, 2 epochs, in progress when this document was built: 1 of 2 epochs done)
+**compaction_r1** (compaction, 2000 training / 200 held items, 2 epochs, 3.59 h)
 
 | reference / eval | held KL | agreement |
 | --- | --- | --- |
@@ -262,6 +262,7 @@ Validity runs:
 | epoch 1, after 50 updates | 0.4590 | 0.797 |
 | epoch 1, after 100 updates | 0.4407 | 0.802 |
 | epoch 1, after 125 updates | 0.4360 | 0.804 |
+| epoch 2, after 250 updates | 0.4248 | 0.809 |
 
 Secondary metric (greedy 64 tokens on 100 held items): agreement of the first tool call with the teacher's greedy continuation, over the items where the teacher calls a tool (share `teacher_calls`); `name` = same tool, `exact` = same tool and arguments, `args` = token overlap of the arguments when the tool matches:
 
@@ -269,12 +270,13 @@ Secondary metric (greedy 64 tokens on 100 held items): agreement of the first to
 | --- | --- | --- | --- | --- |
 | 0 | 0.30 | 0.03 / 0.00 / 0.00 | 0.43 / 0.03 / 0.04 | 0.03 / 0.00 / 0.00 |
 | 1 | 0.21 | 0.29 / 0.00 / 0.02 | 0.29 / 0.00 / 0.05 | 0.29 / 0.00 / 0.06 |
+| 2 | 0.25 | 0.56 / 0.00 / 0.12 | 0.48 / 0.00 / 0.07 | 0.44 / 0.00 / 0.15 |
 
-Read-out so far: below `recent_text` never; still descending at the end (the run continues; the final numbers land in the next update of this document).
+Read-out: below `recent_text` never; still descending at the end. Best held KL 0.4248, final 0.4248.
 
-**traj_qa_r1**: pending (the run had not started when this document was built).
+**traj_qa_r1**: cancelled before it produced a reference eval (the user called run A a tentative success and asked for the remaining runs to be torn down; the node job was cancelled at 11:45 UTC while B was still generating its items).
 
-**rag_qa_r1**: pending (the run had not started when this document was built).
+**rag_qa_r1**: cancelled before it produced a reference eval (the user called run A a tentative success and asked for the remaining runs to be torn down; the node job was cancelled at 11:45 UTC while B was still generating its items).
 
 ## Status log
 

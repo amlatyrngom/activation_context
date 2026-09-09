@@ -37,7 +37,7 @@ A small index and cross-cutting memory for this project.
 - **Invariant — Labeled examples are first-class under budgets.** Loaders select examples as an unbiased prefix via `take_to_budget` (append-then-break, so it errs toward overfetching), with `filter_fn` for validity predicates and `cost_fn` available when fan-out (gold documents, passages) is the real resource. Never drop or skip examples because their documents are long or numerous.
 - **Decision — Bound embedding cost by truncation, not document filtering.** Documents always load complete; `doc_embedding_input_limit_chars` applies `safe_truncate_embedding_chunk` (head + tail halves) to embedding inputs only, on both index-build and query paths. CPU tests run small limits (64–512); GPU runs use `None`. Filtering documents by length skews benchmark composition and drops examples.
 - **Decision — Subsampled corpora hold the selected examples' gold documents only.** All separated-corpus loaders (BRIGHT, SciFact) load golds only; other examples' golds are the natural distractors. `max_examples: int | None` is uniform across all five loaders, with `None` meaning every labeled example. No loader carries distractor-sampling logic.
-- **Decision — Benchmark exclusions are respected per query, not per corpus.** `LabeledRetrievalQAExample.excluded_doc_ids` carries native exclusions (BRIGHT `excluded_ids`, minus the `'N/A'` sentinel); `query_many_frozen` filters every chunk of an excluded document, over-fetching a flat +10 (can undershoot `top_k` in pathological cases, accepted).
+- **Decision — Benchmark exclusions are respected per query, not per corpus.** `DatasetQAExample.excluded_doc_ids` carries native exclusions (BRIGHT `excluded_ids`, minus the `'N/A'` sentinel); `query_many_frozen` filters every chunk of an excluded document, over-fetching a flat +10 (can undershoot `top_k` in pathological cases, accepted).
 - **Convention — Chunk ids are `"{doc_id}:{chunk_num}"` and every document chunks at the same size.** There is no atomic exception: pre-sized retrieval units (BRIGHT passages, MS-MARCO/NQ passages, SciFact abstracts, SciQ supports) chunk at `doc_chunk_size_chars` like everything else. Chunks sort by length before batching so padding stays tight.
 - **Convention — Public-dataset sanity is printed inspection plus reliable asserts.** The public loading test prints labeled queries with gold-marked top-k and per-dataset `DatasetStats.summarize()`; asserts cover only what is reliably true (example bounds, label integrity, exclusion respect, exact-chunk self-retrieval). No performance A/B in loading tests.
 
@@ -72,7 +72,7 @@ A small index and cross-cutting memory for this project.
 ## Subsystem index
 
 - [Agent training](AGENT_TRAINING_CANON.md): token segments, weighted training, adapter exchange/provenance, engine sleep, output limits, and validation scope.
-- [Activation context](ACTIVATION_CONTEXT_CANON.md): the part schema, the AC model's contract and training objective, trajectory-source quirks, CPU runtime facts (slice 3a).
+- [Activation context](ACTIVATION_CONTEXT_CANON.md): the version-2 AC model/data/training contract, paired checkpoint recovery, reporting and validation conventions (slice 3a1; source-application status in STATE).
 
 Create focused files such as `EDITOR_CANON.md`, `AUTH_CANON.md`, or `RELEASE_CANON.md` as needed, and link them here with a one-line description.
 
