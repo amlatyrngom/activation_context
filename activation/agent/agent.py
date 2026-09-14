@@ -35,7 +35,7 @@ from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part, direct_
 
 from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
 from .agent_env import AgentEnv
-from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output
+from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output, subagent_config_of
 from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
 
 MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
@@ -86,6 +86,8 @@ class Agent:
         self._think_end_id: int | None = None
         self._last_turn_timing: dict | None = None
         self.last_calls_signature: str | None = None   # the previous turn's calls; an identical turn is not run
+        self.program_content: list[dict] = []          # placed ahead of the task by an agentic program; consumed once by first_user_messages()
+        self.reported = False                          # report_agent_start done (run_program reports before its solvers start)
         self.last_sampled: list[int] = [] # the previous assistant turn's tokens, for join_continuation
         self.step_mode = False            # simulation: subagents do not run, nothing is submitted
         self.started = False
@@ -183,12 +185,13 @@ class Agent:
         config = self.agent_config
         messages = deepcopy(config.messages_input)
         prompt = self._offloaded_prompt(config.user_prompt)
+        lead = list(self.program_content)                                       # a program's content goes ahead of the task text
         if not messages or messages[-1].get("role") != "user":
-            messages.append({"role": "user", "content": prompt})
-        elif prompt:
+            messages.append({"role": "user", "content": (lead + [{"type": "text", "text": prompt or ""}]) if lead else prompt})
+        elif prompt or lead:
             content = messages[-1]["content"]
             content = [{"type": "text", "text": content}] if isinstance(content, str) else list(content)
-            messages[-1]["content"] = content + [{"type": "text", "text": prompt}]
+            messages[-1]["content"] = content + lead + ([{"type": "text", "text": prompt}] if prompt else [])
         return messages
 
     def _offloaded_prompt(self, prompt: str | None) -> str | None:
@@ -366,6 +369,63 @@ class Agent:
             f"absolute_trajectory_cap {self.agent_config.absolute_trajectory_cap} + max_tokens {max_tokens} exceeds max_model_len {max_len}")
 
     # ----------------------------------------------------------------------------- run
+    # ----------------------------------------------------------------------------- agentic programs
+    def run_program(self) -> AgentRunResult:
+        """
+        What the rollout manager calls: the config's agentic program when there is one, else run(). The program's
+        execute() must return this agent's own run_results; its duration covers the whole program (solvers included).
+        A program failure ends the run with finish_reason "error" and the traceback in score_feedback, like a tool failure.
+        """
+        program = self.agent_config.agentic_program
+        if program is None:
+            return self.run()
+        program_class, kwargs = program
+        results, start = self.run_results, time.time()
+        if self.reporter is not None and not self.reported:
+            self.reporter.report_agent_start(self)                              # before the solvers, so they show under a known parent
+            self.reported = True
+        try:
+            returned = program_class(self, **kwargs).execute()
+            if returned is not results:
+                raise TypeError(f"{getattr(program_class, '__name__', program_class)}.execute must return the main agent's own run_results")
+        except Exception:
+            results.finish_reason = "error"
+            results.score_feedback = traceback.format_exc()
+            print(f"Agent {self.agent_id[:8]} - program error:\n{results.score_feedback}", flush=True)
+        finally:
+            results.duration = time.time() - start
+            if not self.finished:                                               # a program that never ran the model loop
+                self.finished = True
+                if self.reporter is not None:
+                    self.reporter.report_agent_finish(self)
+        return results
+
+    def augment_context(self, content: list[dict]) -> None:
+        """Content items (text and activation parts) placed ahead of the task in the first user message; before the first turn only."""
+        assert not self.started, "augment_context runs before the first turn"
+        self.program_content.extend(deepcopy(content))
+
+    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> AgentRunResult:
+        """A solver on `brief` in this agent's sandbox: no delegation tools, no program; its result joins subagent_results."""
+        config = subagent_config_of(self, brief, agent_name=agent_name)
+        if max_duration is not None:
+            config.max_duration = min(float(config.max_duration), float(max_duration))
+        child = Agent(self.harness, config, agent_env=self.agent_env, parent_agent=self, reporter=self.reporter, seed=self.seed)
+        try:
+            result = child.run()
+        finally:
+            child.shutdown()                                                    # the env is this agent's; the child releases only its own state
+        with self.lock:
+            self.run_results.subagent_results.append(result)
+        return result
+
+    def set_final_answer(self, answer: t.Any) -> None:
+        """A program's answer without a model turn: the run finishes as "programmed"."""
+        if answer is None or (isinstance(answer, str) and not answer.strip()):
+            raise ValueError("set_final_answer needs a non-empty answer")
+        self.run_results.answer = answer
+        self.run_results.finish_reason = "programmed"
+
     def run(self) -> AgentRunResult:
         """
         Simple in/out run. Populates run_results. Never raises for a model or tool failure: the run
@@ -376,8 +436,9 @@ class Agent:
         start = time.time()
         try:
             self.begin()
-            if self.reporter is not None:
+            if self.reporter is not None and not self.reported:
                 self.reporter.report_agent_start(self)
+                self.reported = True
             self._check_engine_context()
             while True:
                 if results.finish_reason:                                                        # trajectory_cap, set by an append

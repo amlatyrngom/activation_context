@@ -294,6 +294,19 @@ class SemanticSearchTool(AgentTool):
         return ToolCallResult(output=output, content=content)
 
 
+def subagent_config_of(parent: "Agent", task: str = "", agent_name: str = "general_subagent") -> "AgentConfig":
+    """
+    The caller's config as a focused subagent: same model, tools, env image, budgets and dataset task; the subagent note
+    appended to the system prompt; every delegation tool removed and no agentic program (no recursion); no env setups
+    (the env is the parent's, already prepared). Shared by the subagent tool and Agent.run_subagent.
+    """
+    parent_config = parent.agent_config
+    delegation = {name: None for name, tool in parent.tools.items() if isinstance(tool, SubagentTool)}
+    return replace(parent_config, agent_name=agent_name, user_prompt=task, messages_input=[], agentic_program=None,
+                   system_prompt=(parent_config.system_prompt or "") + SUBAGENT_SYSTEM_NOTE,
+                   tools={**parent_config.tools, **delegation}, env_setups={})
+
+
 class SubagentTool(AgentTool):
     aliases = {'prompt': 'task', 'brief': 'task', 'instructions': 'task', 'description': 'task', 'query': 'task'}
     """
@@ -327,17 +340,8 @@ class SubagentTool(AgentTool):
         self.parameters = {**self.parameters, "properties": {"task": {"type": "string", "description": task_description}}}
 
     def _inherit_general_config(self) -> "AgentConfig":
-        """
-        The caller's config as a focused subagent: same model, tools, env image, budgets and dataset task; a note appended
-        to the system prompt; every delegation tool removed (no recursive subagents); no env setups (the env is the
-        parent's, already prepared). The task and AC fields are filled by execute.
-        """
-        parent = self.agent
-        parent_config = parent.agent_config
-        delegation = {name: None for name, tool in parent.tools.items() if isinstance(tool, SubagentTool)}
-        return replace(parent_config, agent_name="general_subagent", user_prompt="", messages_input=[],
-                       system_prompt=(parent_config.system_prompt or "") + SUBAGENT_SYSTEM_NOTE,
-                       tools={**parent_config.tools, **delegation}, env_setups={})
+        """The caller's config as a focused subagent (`subagent_config_of`); the task and AC fields are filled by execute."""
+        return subagent_config_of(self.agent)
 
     def execute(self, task: str | None = None) -> ToolCallResult:
         from .agent import Agent
