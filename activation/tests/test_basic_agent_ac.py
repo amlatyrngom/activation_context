@@ -110,7 +110,7 @@ def test_ac_agent_channels_simulated():
         assert tree["messages"][1]["content"] == config.user_prompt
         assert len(tree["messages"]) == 2 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
         assert results.prompt_messages[2]["content"][1]["text"].endswith("Printed 0..3; next sum the primes.")
-        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
+        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"], tree.get("tools"))
         assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
         _probe_engine(agent, "compaction")
         # A second compaction nests the first tree verbatim.

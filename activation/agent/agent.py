@@ -432,7 +432,8 @@ class Agent:
         (its own base config, for instance). The same path as a model's call: normalized arguments, error wrapping,
         truncation with its part, `tool` set on the result.
         """
-        call = {"id": uuid.uuid4().hex[:8], "name": tool if isinstance(tool, str) else tool.name, "arguments": dict(arguments)}
+        name = tool if isinstance(tool, str) else (tool.name or type(tool).__name__)
+        call = {"id": uuid.uuid4().hex[:8], "name": name, "arguments": dict(arguments)}
         if isinstance(tool, str):
             return self.execute_tool_call(call)
         try:
@@ -452,7 +453,9 @@ class Agent:
         base = subagent_config_of(self, agent_name=agent_name)
         if max_duration is not None:
             base.max_duration = min(float(base.max_duration), float(max_duration))
-        return self.run_tool(SubagentTool(self.harness, self, base_config=base), task=brief)
+        tool = SubagentTool(self.harness, self, base_config=base)
+        tool.name = "subagent"                                                     # the class carries no name; the registry names it
+        return self.run_tool(tool, task=brief)
 
     def set_final_answer(self, answer: t.Any) -> None:
         """A program's answer without a model turn: the run finishes as "programmed"."""
