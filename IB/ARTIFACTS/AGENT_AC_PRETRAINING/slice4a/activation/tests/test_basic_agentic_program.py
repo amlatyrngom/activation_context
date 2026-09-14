@@ -13,6 +13,7 @@ from dataclasses import replace
 import pytest
 
 from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult, RolloutReporter
+from activation.agent.rollout_caching import RedoPolicy
 from activation.common.data_syncing import resolve_path
 from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
 from activation.harness import FREE_DEVICE, HarnessRuntime, HarnessRuntimeConfig, ModelConfig
@@ -61,6 +62,8 @@ class SolveThenVerifyProgram(AgenticProgram):
         return self.agent.run()
 
 
+CACHING_ID = "agent_test_program_v3"                                   # a failed row under an older id is not replayed as this test
+
 PROGRAM_CONFIG = replace(
     BASE_AGENT_CONFIG,
     agentic_program=(SolveThenVerifyProgram, {"solver_max_duration": 120.0}),
@@ -102,11 +105,12 @@ def test_basic_agentic_program_solve_then_verify():
     )
     try:
         results = harness.rollout_manager.perform_single_rollouts(
-            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program", reporter=reporter,
+            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id=CACHING_ID, reporter=reporter,
+            redo=RedoPolicy(finish_reasons=("error", "context_exceeded", "max_duration", "max_turns", "max_tool_errors", "no_tool_call")),
         )
         loads_before = len(harness.harness_stats.model_loading_times)
         cached = harness.rollout_manager.perform_single_rollouts(
-            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program",
+            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id=CACHING_ID,
         )
     finally:
         harness.loaded_models[MODEL_NAME].engine_to_device(FREE_DEVICE)
@@ -120,7 +124,7 @@ def test_basic_agentic_program_solve_then_verify():
 
     # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s; the parent's
     # note is its injected input (the parent had no segment yet, so its part holds only the system message).
-    assert solver.agent_config.agentic_program is None and "subagent" not in solver.agent_config.tools.keys() - {None}
+    assert solver.agent_config.agentic_program is None and solver.agent_config.tools.get("subagent", None) is None   # delegation removed
     assert solver.agent_config.max_duration <= 120.0
     assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
     assert [item["tool"] for item in solver.injected_input] == ["parent"]

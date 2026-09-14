@@ -110,7 +110,7 @@ def test_ac_agent_channels_simulated():
         assert tree["messages"][1]["content"] == config.user_prompt
         assert len(tree["messages"]) == 2 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
         assert results.prompt_messages[2]["content"][1]["text"].endswith("Printed 0..3; next sum the primes.")
-        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
+        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"], tree.get("tools"))
         assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
         _probe_engine(agent, "compaction")
         # A second compaction nests the first tree verbatim.
@@ -149,12 +149,16 @@ def test_ac_agent_channels_simulated():
         agent = synthesize_agent(harness, config, [SyntheticTurn("Printing.", [("python", {"code": "print('x' * 100000)"})])])
         state = agent.simulate_step()
         result = state["results"][0]
-        assert len(result.output) < 21_000 and "truncated" in result.output and result.content is not None
-        part, text = result.content
+        assert len(result.output) < 21_000 and "truncated" in result.output and result.content == [{"type": "text", "text": result.output}]
+        raw = result.activation_content[0]                                                     # produced without encoder settings
+        assert raw["kind"] == "tool_output" and "compression_target" not in raw and raw["messages"][1]["role"] == "tool"
+        step = agent.run_results.trajectory[-1]
+        part, text = step["messages"][0]["content"]                                             # rendered ahead of the text on the step
         assert part["type"] == "activation_context" and text["text"] == result.output
         assert part["compression_target"] == BASE.ac_tool_output_ratio and part["messages"][1]["role"] == "tool"
-        assert len(part["messages"][1]["content"]) >= 80_000 and direct_parts(part["messages"])[0]["messages"][0]["content"] == config.user_prompt
-        assert agent.run_results.trajectory[-1]["ac_spans"][0]["length"] == agent.rows[0].shape[0]
+        nested = direct_parts(part["messages"])[0]
+        assert len(part["messages"][1]["content"]) >= 80_000 and nested["messages"][0]["role"] == "system" and nested["messages"][1]["content"] == config.user_prompt
+        assert step["ac_spans"][0]["length"] == agent.rows[0].shape[0] and step["tool_results"][0]["activation_content"] == [raw]
         _probe_engine(agent, "tool output")
         agent.shutdown()
 
@@ -163,9 +167,11 @@ def test_ac_agent_channels_simulated():
         agent = synthesize_agent(harness, config, [SyntheticTurn("Searching.", [("semantic_search", {"query": example.query[:200]})])])
         state = agent.simulate_step()
         result = state["results"][0]
-        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content[0]["type"] == "text" and result.content[1]["type"] == "activation_context"
-        extra = result.content[1]["messages"][1]["content"]
-        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6) and result.content[1]["compression_target"] == BASE.ac_search_ratio
+        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content is None and result.activation_content[0]["kind"] == "search"
+        extra = result.activation_content[0]["messages"][1]["content"]
+        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6)
+        rendered = direct_parts(agent.run_results.trajectory[-1]["messages"])[0]
+        assert rendered["compression_target"] == BASE.ac_search_ratio and rendered["messages"][0]["content"][0]["compression_target"] == BASE.ac_subagent_ratio
         _probe_engine(agent, "search")
 
         # --- resume: the serialized record rebuilds the same prefix, spans and rows.

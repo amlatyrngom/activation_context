@@ -300,11 +300,24 @@ Elided: `agent/__init__.py` exports (`AgenticProgram`, `MissingClass`, `MissingC
 <details class="card" data-tressoir-markdown>
   <summary>
     <span class="card-title">P2 — The basic agentic-program test</span>
-    <span class="card-oneliner">Written as planned; job 11 failed on the engine-context check (fixed locally); rewritten in P4 on run_tool before the rerun.</span>
-    <span class="card-badge">Implementing</span>
+    <span class="card-oneliner">Passed on the 9B node (job 15) after the P4 rewrite on run_tool; the CPU checks live in the probe.</span>
+    <span class="card-badge">Review</span>
   </summary>
 
-#### Planning Overview
+#### What landed
+
+`activation/tests/test_basic_agentic_program.py`: the solve-then-verify program (`run_subagent`, then `augment_context([solver, note])`, then `run()`) on the DeepMath difficulty-2 problem, a fixture task with math-verify scoring, the 9B model with default tools and a 40,000-token cap. Assertions cover the solver's config (no program, no delegation, bounded duration) and its injected parent note, the main agent's `injected_input` (`subagent` with `subagent_index` 0 and a system-first `subagent_return` part with tools, then `program`), the first user message layout (two labelled text blocks ahead of the task, no rendered part without an AC model), submission with a tool check and score 1.0, the program-wide duration, and the cached replay (no engine reload, the program class restored, the injected input equal). `activation/bench/agent_probes/agentic_program_probe.py` holds the CPU checks (serde placeholder, strict, cache key, `__main__` mapping, programmed finish, error handling, `run_tool`, truncation part, record round trip, conversion).
+
+#### Drifts, challenges, and unplanned steps
+
+- The first run (job 11) failed before any model turn: the default cap plus one turn exceeded the 9B engine's 52k context and the assertion was misfiled as `context_exceeded` (both fixed in P4). The second run (job 12) replayed that failed row from the cache; the test now uses caching id `agent_test_program_v3` with a `RedoPolicy` over failure finish reasons. The third run exposed the unnamed program-built tool. The fourth passed.
+- `test_basic_agent.py` printed the score with a float format and failed on the new `None` default; it prints the value now. It also carries the 40,000 cap.
+
+#### Validation
+
+Job 15 on `ac-4a-camp`: solver `submitted` after 2 turns (4.9 s, answer 24); main `submitted` after 2 turns (9.4 s, score 1.0); cached replay without an engine reload; the reporter's `report.tressoir.html` written. Report pulled to `IB/TMP/AGENT_AC_PRETRAINING/node_camp/program_test/`.
+
+#### Planning Overview (as planned)
 
 The problem is DeepMath-103K train shard 0, difficulty 2.0, topic Number Theory → Factorization: "How many trailing zeroes are there in 100!?", answer 24, scored by math-verify. It is embedded as a `DatasetTask` so the test needs no network. The program, `SolveThenVerifyProgram`, runs one solver subagent on the plain task (bounded to 120 s), injects the solver's answer ahead of the task with an instruction to check it with python, and runs the main agent. The GPU test runs on a node with the 9B model through the rollout manager (so `run_program` is exercised where it matters), scores, and runs the same call again from the cache. The CPU test covers the placeholder deserialization and the cache key without an engine. Exact file below.
 
@@ -500,7 +513,7 @@ Notes: `AgentRunResult.deserialize` gains `strict` and passes it to `AgentConfig
 <details class="card" data-tressoir-markdown>
   <summary>
     <span class="card-title">P4 — Activation content everywhere</span>
-    <span class="card-oneliner">Landed: activation content on every tool result, one rendering rule, parts with the frame, run_tool and injected input, the record and its conversion. GPU runs in flight.</span>
+    <span class="card-oneliner">Landed and validated on CPU and GPU: activation content on every tool result, one rendering rule, parts with the frame, run_tool and injected input, the record and its conversion.</span>
     <span class="card-badge">Review</span>
   </summary>
 
@@ -516,13 +529,14 @@ The five rules, as planned, in `activation/common/ac_parts.py` (`activation_part
 - The `enable_ac_communication` decision was taken as recommended (drop) with the plan's approval; the field is removed rather than kept inert.
 - The multi-line import in `ac_model_utils.py` was corrupted by the first patch (both 3b checks failed on a NameError) and repaired.
 - Old campaign rows have neither `tool_results` nor `injected_input`, so `activation_messages_of` leaves them as they are. Deriving subagent parts for old rows from `subagent_results` is a separate record-upgrade step, not written.
+- Three GPU rounds were needed. Job 12 replayed job 11's failed row from the rollout cache (the cache key ignores budgets and finish reasons), so the test now uses its own caching id with a `RedoPolicy` over the failure finish reasons. Job 14 exposed that a tool instance built by a program has no name until the registry names it; `run_tool` now falls back to the class name and `run_subagent` names its tool `subagent`. Jobs 13 and 15 exposed three AC-test assertions still written for the old shapes (rows counted without tools, the part inside `content`), updated.
 
 #### Validation
 
 - `activation/bench/agent_probes/agentic_program_probe.py`: PASS (serde, runtime, and the new activation-content checks: `run_tool` through the model's path, a 50k-char echo truncated with a `tool_output` part, a recorded tool step with a `parent_context` part whose messages start with the system message and carry the tools, the serialized record restored unchanged, `activation_messages_of` rendering both parts with `ac_name` and the configured ratios for a reader with an AC model and nothing for one without).
 - CPU suite from `/workspace`: 48 passed, 13 skipped, 3 failed. The three failures are pre-existing and unrelated (`test_basic_engine` needs a live vLLM engine; `test_basic_harness` calls `simple_chat` with a stale signature and has a `harnes` typo).
 - 3b CPU checks (`channels_cpu.py`, `harvest_cpu.py`): PASS with the new expectations (system-first parts with tools, the injected parent note, `subagent_index` on the tool step, search extras recorded raw and rendered with the ratios).
-- GPU, `ac-4a-camp`: `test_basic_agentic_program.py` + `test_basic_agent.py` (one job) and `test_basic_agent_ac.py` (queued behind it) are running; results go here when they land.
+- GPU, `ac-4a-camp` (9B): `test_basic_agentic_program.py` passed (job 15: the solver submitted 24 after 2 turns in 4.9 s; the main agent verified with python and submitted 24 after 2 turns, score 1.0; the cached replay restored the program class and the injected input). `test_basic_agent.py`: 2 passed (job 14). `test_basic_agent_ac.py`: 3 passed (job 16) with the compaction, subagent, tool-output and search channels rendering system-first parts with tools, the engine probes on prompt embeddings, the resume round trip, the harvest (6 items from 2 runs) and the text-only fallback.
 
 #### Planning Overview (as planned)
 
@@ -815,7 +829,15 @@ and the assertions: one child in `subagent_results`, `solver.subagent_index == 0
   <summary>
     <span class="card-title">P3 — Docs, round and canon</span>
     <span class="card-oneliner">Round rebuild from the workspace, canon entry moved from planned to applied, STATE update.</span>
-    <span class="card-badge">TBD</span>
+    <span class="card-badge">Review</span>
+
+#### What landed
+
+This document's completion reports (P0–P4), the accepted-decision records, the canon entries "Agentic programs (landed, v0.3)", "Activation content" and the `score` default, `IB/STATE.md`, and the round rebuilt from `/workspace` (56 product files, `IB/ARTIFACTS/AGENT_AC_PRETRAINING/slice4a/`). Commits on `/workspace` `main`: 979ff0a (P4), 3b3556a and 2e7ea2b (test fixes), plus the final docs commit.
+
+#### Validation
+
+`check_md.js` clean on this projection; the round builder reports every changed product file listed.
   </summary>
 
 Rebuild the round from `/workspace` with the new files; update the canon decision to the landed shape and note any drift; record the test results in STATE. Teacher-kind integration and library programs are decided later, when we get there.

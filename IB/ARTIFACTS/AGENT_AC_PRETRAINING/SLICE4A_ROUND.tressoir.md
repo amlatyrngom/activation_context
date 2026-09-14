@@ -683,7 +683,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          )
  
      def submit_probe(self, max_tokens: int | None = None):
-@@ -325,6 +384,83 @@
+@@ -325,6 +384,86 @@
              f"absolute_trajectory_cap {self.agent_config.absolute_trajectory_cap} + max_tokens {max_tokens} exceeds max_model_len {max_len}")
  
      # ----------------------------------------------------------------------------- run
@@ -735,7 +735,8 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
 +        (its own base config, for instance). The same path as a model's call: normalized arguments, error wrapping,
 +        truncation with its part, `tool` set on the result.
 +        """
-+        call = {"id": uuid.uuid4().hex[:8], "name": tool if isinstance(tool, str) else tool.name, "arguments": dict(arguments)}
++        name = tool if isinstance(tool, str) else (tool.name or type(tool).__name__)
++        call = {"id": uuid.uuid4().hex[:8], "name": name, "arguments": dict(arguments)}
 +        if isinstance(tool, str):
 +            return self.execute_tool_call(call)
 +        try:
@@ -755,7 +756,9 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
 +        base = subagent_config_of(self, agent_name=agent_name)
 +        if max_duration is not None:
 +            base.max_duration = min(float(base.max_duration), float(max_duration))
-+        return self.run_tool(SubagentTool(self.harness, self, base_config=base), task=brief)
++        tool = SubagentTool(self.harness, self, base_config=base)
++        tool.name = "subagent"                                                     # the class carries no name; the registry names it
++        return self.run_tool(tool, task=brief)
 +
 +    def set_final_answer(self, answer: t.Any) -> None:
 +        """A program's answer without a model turn: the run finishes as "programmed"."""
@@ -767,7 +770,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
      def run(self) -> AgentRunResult:
          """
          Simple in/out run. Populates run_results. Never raises for a model or tool failure: the run
-@@ -335,19 +471,24 @@
+@@ -335,19 +474,24 @@
          start = time.time()
          try:
              self.begin()
@@ -794,7 +797,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  if results.num_turns == 0:
                      results.lora_name = output.lora_name
                  results.num_turns += 1
-@@ -374,12 +515,21 @@
+@@ -374,12 +518,21 @@
                          break
                      self._report_step()
                      continue
@@ -818,7 +821,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  self._report_step()
                  if any(result.is_final for result in call_results):
                      results.finish_reason = "submitted"
-@@ -402,6 +552,12 @@
+@@ -402,6 +555,12 @@
              if self.reporter is not None:
                  self.reporter.report_agent_finish(self)
          return results
@@ -831,7 +834,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
      @staticmethod
      def _is_lone_compact(calls: list[dict]) -> bool:
-@@ -505,7 +661,7 @@
+@@ -505,7 +664,7 @@
              result = ToolCallResult(output=f"Unknown tool {name!r}. Available: {', '.join(self.tools)}.", is_error=True)
          else:
              try:
@@ -840,7 +843,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
              except TypeError as error:
                  result = ToolCallResult(output=f"Bad arguments for {name}: {error}", is_error=True)
              except Exception as error:
-@@ -513,14 +669,16 @@
+@@ -513,14 +672,16 @@
          return self._finalize_result(call, result)
  
      def _finalize_result(self, call: dict, result: ToolCallResult) -> ToolCallResult:
@@ -859,7 +862,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
              result.output = visible
          return result
  
-@@ -528,12 +686,14 @@
+@@ -528,12 +689,14 @@
          return [self.execute_tool_call(call) for call in calls]
  
      # ----------------------------------------------------------------------------- scoring and teardown
@@ -876,7 +879,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          except Exception as error:
              self.run_results.score = 0.0
              self.run_results.score_feedback = f"scoring failed: {type(error).__name__}: {error}"
-@@ -550,7 +710,10 @@
+@@ -550,7 +713,10 @@
          except Exception:
              pass
  
@@ -6291,7 +6294,7 @@ diff --git a/activation/tests/test_basic_agentic_program.py b/activation/tests/t
 new file mode 100644
 --- /dev/null
 +++ b/activation/tests/test_basic_agentic_program.py
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,161 @@
 +"""
 +One end-to-end agentic-program rollout on a GPU node, in the style of test_basic_agent.py: a program written in this
 +file runs a solver subagent (run_subagent), injects its result ahead of the task (augment_context), and runs the main
@@ -6307,6 +6310,7 @@ new file mode 100644
 +import pytest
 +
 +from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult, RolloutReporter
++from activation.agent.rollout_caching import RedoPolicy
 +from activation.common.data_syncing import resolve_path
 +from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
 +from activation.harness import FREE_DEVICE, HarnessRuntime, HarnessRuntimeConfig, ModelConfig
@@ -6355,6 +6359,8 @@ new file mode 100644
 +        return self.agent.run()
 +
 +
++CACHING_ID = "agent_test_program_v3"                                   # a failed row under an older id is not replayed as this test
++
 +PROGRAM_CONFIG = replace(
 +    BASE_AGENT_CONFIG,
 +    agentic_program=(SolveThenVerifyProgram, {"solver_max_duration": 120.0}),
@@ -6396,11 +6402,12 @@ new file mode 100644
 +    )
 +    try:
 +        results = harness.rollout_manager.perform_single_rollouts(
-+            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program", reporter=reporter,
++            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id=CACHING_ID, reporter=reporter,
++            redo=RedoPolicy(finish_reasons=("error", "context_exceeded", "max_duration", "max_turns", "max_tool_errors", "no_tool_call")),
 +        )
 +        loads_before = len(harness.harness_stats.model_loading_times)
 +        cached = harness.rollout_manager.perform_single_rollouts(
-+            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program",
++            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id=CACHING_ID,
 +        )
 +    finally:
 +        harness.loaded_models[MODEL_NAME].engine_to_device(FREE_DEVICE)
@@ -6414,7 +6421,7 @@ new file mode 100644
 +
 +    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s; the parent's
 +    # note is its injected input (the parent had no segment yet, so its part holds only the system message).
-+    assert solver.agent_config.agentic_program is None and "subagent" not in solver.agent_config.tools.keys() - {None}
++    assert solver.agent_config.agentic_program is None and solver.agent_config.tools.get("subagent", None) is None   # delegation removed
 +    assert solver.agent_config.max_duration <= 120.0
 +    assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
 +    assert [item["tool"] for item in solver.injected_input] == ["parent"]
@@ -7097,7 +7104,7 @@ diff --git a/activation/tests/test_basic_agent_ac.py b/activation/tests/test_bas
  LONG = "0123456789" * 120   # 1,200 chars per synthetic tool output
  
  
-@@ -107,8 +106,9 @@
+@@ -107,10 +106,11 @@
          assert results.trajectory == [] and not agent.compaction_due and agent.segment_start == len(agent.prefix)
          assert [m["role"] for m in results.prompt_messages] == ["system", "user", "user"]
          tree = direct_parts(results.prompt_messages)[0]
@@ -7107,8 +7114,11 @@ diff --git a/activation/tests/test_basic_agent_ac.py b/activation/tests/test_bas
 +        assert tree["messages"][1]["content"] == config.user_prompt
 +        assert len(tree["messages"]) == 2 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
          assert results.prompt_messages[2]["content"][1]["text"].endswith("Printed 0..3; next sum the primes.")
-         assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
+-        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
++        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"], tree.get("tools"))
          assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
+         _probe_engine(agent, "compaction")
+         # A second compaction nests the first tree verbatim.
 @@ -129,12 +129,18 @@
          child = agent.run_results.subagent_results[0]
          assert child.finish_reason == "simulated" and child.answer.endswith("simulated run")
@@ -7132,7 +7142,43 @@ diff --git a/activation/tests/test_basic_agent_ac.py b/activation/tests/test_bas
          assert len(tool_step["ac_spans"]) == 1 and len(agent.spans) == 1
          _probe_engine(agent, "subagent")
  
-@@ -205,7 +211,7 @@
+@@ -143,12 +149,16 @@
+         agent = synthesize_agent(harness, config, [SyntheticTurn("Printing.", [("python", {"code": "print('x' * 100000)"})])])
+         state = agent.simulate_step()
+         result = state["results"][0]
+-        assert len(result.output) < 21_000 and "truncated" in result.output and result.content is not None
+-        part, text = result.content
++        assert len(result.output) < 21_000 and "truncated" in result.output and result.content == [{"type": "text", "text": result.output}]
++        raw = result.activation_content[0]                                                     # produced without encoder settings
++        assert raw["kind"] == "tool_output" and "compression_target" not in raw and raw["messages"][1]["role"] == "tool"
++        step = agent.run_results.trajectory[-1]
++        part, text = step["messages"][0]["content"]                                             # rendered ahead of the text on the step
+         assert part["type"] == "activation_context" and text["text"] == result.output
+         assert part["compression_target"] == BASE.ac_tool_output_ratio and part["messages"][1]["role"] == "tool"
+-        assert len(part["messages"][1]["content"]) >= 80_000 and direct_parts(part["messages"])[0]["messages"][0]["content"] == config.user_prompt
+-        assert agent.run_results.trajectory[-1]["ac_spans"][0]["length"] == agent.rows[0].shape[0]
++        nested = direct_parts(part["messages"])[0]
++        assert len(part["messages"][1]["content"]) >= 80_000 and nested["messages"][0]["role"] == "system" and nested["messages"][1]["content"] == config.user_prompt
++        assert step["ac_spans"][0]["length"] == agent.rows[0].shape[0] and step["tool_results"][0]["activation_content"] == [raw]
+         _probe_engine(agent, "tool output")
+         agent.shutdown()
+ 
+@@ -157,9 +167,11 @@
+         agent = synthesize_agent(harness, config, [SyntheticTurn("Searching.", [("semantic_search", {"query": example.query[:200]})])])
+         state = agent.simulate_step()
+         result = state["results"][0]
+-        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content[0]["type"] == "text" and result.content[1]["type"] == "activation_context"
+-        extra = result.content[1]["messages"][1]["content"]
+-        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6) and result.content[1]["compression_target"] == BASE.ac_search_ratio
++        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content is None and result.activation_content[0]["kind"] == "search"
++        extra = result.activation_content[0]["messages"][1]["content"]
++        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6)
++        rendered = direct_parts(agent.run_results.trajectory[-1]["messages"])[0]
++        assert rendered["compression_target"] == BASE.ac_search_ratio and rendered["messages"][0]["content"][0]["compression_target"] == BASE.ac_subagent_ratio
+         _probe_engine(agent, "search")
+ 
+         # --- resume: the serialized record rebuilds the same prefix, spans and rows.
+@@ -205,7 +217,7 @@
  def test_agent_compaction_text_only():
      """No AC model: the same protocol with the summary alone; at least one rollout compacts. Finish reasons are printed, not asserted beyond the allowed set."""
      harness = _harness(with_ac=False)
@@ -7166,6 +7212,15 @@ diff --git a/activation/tests/test_basic_agent.py b/activation/tests/test_basic_
  )
  
  
+@@ -46,7 +47,7 @@
+     print(
+         f"\n=== rollout seed={result.seed} finish={result.finish_reason} turns={result.num_turns} "
+         f"tokens in/cached/out={result.num_input_tokens}/{result.num_cached_input_tokens}/{result.num_output_tokens} "
+-        f"duration={result.duration:.1f}s score={result.score:.2f} answer={result.answer!r}"
++        f"duration={result.duration:.1f}s score={result.score} answer={result.answer!r}"
+     )
+     for step in result.trajectory:
+         if step["role"] == "assistant":
 ```
 
 </details>

@@ -9,7 +9,7 @@
   },
   "activation/agent/agent.py": {
     "source_sha256": "e5e3afc7224882515dc090c5f08ff863ffdca2e96d6bbf675cfb6006f404336a",
-    "staged_sha256": "32ef1124badb100cea730932d4277ddfa976cca0ebc52665e6f1290802237702"
+    "staged_sha256": "324fc456d0a36fad8216655da04a9368d67f34ee55b150a95a7496faf3196fb5"
   },
   "activation/agent/agent_tools.py": {
     "source_sha256": "8baebd0f2c0ea966273fea677386908c569e5d300eab493029b85791ebd5ec37",
@@ -181,7 +181,7 @@
   },
   "activation/tests/test_basic_agentic_program.py": {
     "source_sha256": null,
-    "staged_sha256": "5bcb3f4b598ab26ec2d0621e540f250e90f731b52d13c2422d7d230f0923b91b"
+    "staged_sha256": "e6df87d6eab21b93fc05568c363cee8e08bbb3bb554ea73db189b120ec57b6f1"
   },
   "activation/bench/agent_probes/agentic_program_probe.py": {
     "source_sha256": null,
@@ -213,11 +213,11 @@
   },
   "activation/tests/test_basic_agent_ac.py": {
     "source_sha256": "b6e0c1e76c7aec66f121370e2a03ed136e777ece4ce1c52abd0ae318321bcd85",
-    "staged_sha256": "adea8c75962a560f83412375dd501b7d7f68d9a85fc7484c16a9053d0ae5c706"
+    "staged_sha256": "29d636cf4d13cd6b9eb7b9425987b8a8aec3a24889721fc94c00bc85fbce0b7c"
   },
   "activation/tests/test_basic_agent.py": {
     "source_sha256": "65b67c992d59f43561e50f84857a20d572714b8f83ca4a606065825e0c2a6439",
-    "staged_sha256": "c8de9b91911dbe7bc7d16cf3995a00449f0f24af3f692a82fd99960ab3e0dee5"
+    "staged_sha256": "85a0f0fb7e668d1a32ce901bba9abfc3792535695721ec6fccf20c035da5ae18"
   },
   "activation/tests/test_basic_rollout_redo.py": {
     "source_sha256": null,

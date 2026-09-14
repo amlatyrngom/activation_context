@@ -47,7 +47,7 @@ def _print_rollout(result) -> None:
     print(
         f"\n=== rollout seed={result.seed} finish={result.finish_reason} turns={result.num_turns} "
         f"tokens in/cached/out={result.num_input_tokens}/{result.num_cached_input_tokens}/{result.num_output_tokens} "
-        f"duration={result.duration:.1f}s score={result.score:.2f} answer={result.answer!r}"
+        f"duration={result.duration:.1f}s score={result.score} answer={result.answer!r}"
     )
     for step in result.trajectory:
         if step["role"] == "assistant":
