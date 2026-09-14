@@ -26,18 +26,18 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
  
      # Model calls.
      model_name: str | None = None                             # A harness model name; its engine serves the rollout.
-@@ -37,12 +40,15 @@
+@@ -37,12 +40,14 @@
      env_dockerfile_path: str | None = None                    # None: the harness default image.
      env_args: dict[str, str] | None = None                    # Extra `podman run` flags, e.g. {"--env": "PYTHONHASHSEED=0"}.
      env_memory_limit_mb: int | None = None                    # Sandbox memory; None = the harness default (agent_env_memory_limit_mb). Hard container limit where cgroups exist, ulimit -v at 85% per process always.
 -    tools: dict[str, tuple[type["AgentTool"], dict]] = field(default_factory=dict)  # name -> (class, constructor kwargs), added to the defaults.
 -    env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = ... # NEW: Support setup.
+-    enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
 +    tools: dict[str, tuple[type["AgentTool"], dict] | None] = field(default_factory=dict)  # name -> (class, constructor kwargs), added to the
 +                                                              # defaults; None removes a default tool (subagents lose `subagent` this way).
 +    env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = field(default_factory=dict)  # name -> (setup class, constructor kwargs). Run once,
 +    agentic_program: tuple[type["AgenticProgram"], dict] | None = None   # the program that owns the rollout (Agent.run_program); None: the model loop
 +                                                              # in order, when this agent's env is created; never for subagents (they share the env).
-     enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
  
      # Budgets
 -    max_turns: int = 20
@@ -45,7 +45,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
      max_tool_errors: int = 5
      max_duration: float = 600                                 # seconds
      compaction_threshold_tokens: int = 32768                  # soft delta over the segment's start length (system, first messages, tree); exceeded by at most one turn, then compaction is due
-@@ -54,11 +60,10 @@
+@@ -54,11 +59,10 @@
      ac_search_ratio: float = 1.0 / 20.0                       # semantic search passages beyond top_k
  
      def serialize(self) -> dict:
@@ -61,7 +61,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
          data["messages_input"] = _jsonable(self.messages_input)
          task = self.dataset_task
          data["dataset_task"] = None if task is None else {
-@@ -68,18 +73,21 @@
+@@ -68,18 +72,22 @@
          return data
  
      @staticmethod
@@ -84,6 +84,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 -            for part in qualname.split("."):
 -                cls = getattr(cls, part)
 -            tools[name] = (cls, dict(spec.get("kwargs") or {}))
++        data.pop("enable_ac_communication", None)                                     # rows written before P4: an agent with an AC model renders every channel
 +        resolve = lambda spec: _resolve_class_spec(spec, strict=strict)
 +        tools = {name: None if spec is None else resolve(spec) for name, spec in (data.pop("tools", None) or {}).items()}
 +        setups = {name: resolve(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
@@ -114,7 +115,15 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
  
  
  @dataclass
-@@ -110,6 +131,9 @@
+@@ -104,12 +125,17 @@
+     content: str                                               # assistant text (tool-call blocks removed) or the joined tool outputs
+     tool_calls: list[dict] = field(default_factory=list)       # [{"id", "name", "arguments"}]
+     tool_call_results: list[str] = field(default_factory=list) # truncated outputs, same order as tool_calls
++    tool_results: list[dict] = field(default_factory=list)     # serialized ToolCallResults, same order: output, content, activation_content
++                                                               # (recorded whether or not it was rendered), subagent_index. Empty on old records.
+     messages: list[dict] = field(default_factory=list)         # the dialect messages this step appended, activation_context parts inline and in
+                                                                # order: one assistant message, the tool messages, or the nudge
+     ac_spans: list[dict] = field(default_factory=list)         # [{"start", "length"}] placeholder runs inside token_ids, one per part of `messages`
      # Token segment (slice 2): the prompt the model read is AgentRunResult.prompt_token_ids + every step's token_ids in order.
      token_ids: list[int] = field(default_factory=list)         # assistant: the sampled tokens verbatim; tool/user: the template's wrapper up to the next generation prompt
      logprobs: list[float] = field(default_factory=list)        # assistant only: the engine's log-prob of each sampled token (pi_old); empty when not recorded
@@ -124,7 +133,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
  
  
  @dataclass
-@@ -124,7 +148,7 @@
+@@ -124,10 +150,12 @@
      num_ac_rows: int = 0                                       # rows those parts occupy in the prompts
      duration: float = 0.0
      trajectory: list[dict] = field(default_factory=list)       # TrajectoryStep dicts of the current segment, in order
@@ -133,7 +142,12 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
      score_feedback: str | None = None
      subagent_results: list["AgentRunResult"] = field(default_factory=list)
      compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
-@@ -144,6 +168,35 @@
++    injected_input: list[dict] = field(default_factory=list)   # serialized ToolCallResults placed ahead of the task in the first user message
++                                                               # (a program's augment_context; the parent's context for a subagent)
+     finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded
+                                                                # | trajectory_cap | compaction_refused | compacted (a segment) | simulated | error
+     seed: int = 0
+@@ -144,6 +172,35 @@
          # Assistant steps only: the tool step that follows repeats the same calls next to their results.
          return sum(len(step.get("tool_calls", [])) for step in self.trajectory if step.get("role") == "assistant")
  
@@ -169,7 +183,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
      def serialize(self) -> dict:
          data = {key: value for key, value in self.__dict__.items()
                  if key not in ("agent_config", "subagent_results", "compactions", "trajectory", "answer")}
-@@ -155,14 +208,15 @@
+@@ -155,14 +212,15 @@
          return data
  
      @staticmethod
@@ -346,12 +360,17 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  import threading
  import time
  import traceback
-@@ -34,11 +35,15 @@
+@@ -30,15 +31,19 @@
+ 
+ import torch
+ 
+-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part, direct_parts
++from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part, direct_parts, resolve_activation_part
  
  from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
  from .agent_env import AgentEnv
 -from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output
-+from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output, subagent_config_of
++from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, tool_content, truncate_output, subagent_config_of
  from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
  
  MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
@@ -363,7 +382,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
  if t.TYPE_CHECKING:
      from activation.harness import HarnessRuntime
-@@ -77,6 +82,12 @@
+@@ -77,6 +82,11 @@
          self.compaction_refusals = 0
          self.no_tool_turns = 0
          self.errors = 0
@@ -371,12 +390,11 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
 +        self._think_end_id: int | None = None
 +        self._last_turn_timing: dict | None = None
 +        self.last_calls_signature: str | None = None   # the previous turn's calls; an identical turn is not run
-+        self.program_content: list[dict] = []          # placed ahead of the task by an agentic program; consumed once by first_user_messages()
 +        self.reported = False                          # report_agent_start done (run_program reports before its solvers start)
          self.last_sampled: list[int] = [] # the previous assistant turn's tokens, for join_continuation
          self.step_mode = False            # simulation: subagents do not run, nothing is submitted
          self.started = False
-@@ -93,15 +104,22 @@
+@@ -93,15 +103,22 @@
      def agent_env(self) -> AgentEnv:
          """Created on first use, so a cached or failed-early run never starts a container."""
          if self._env is None:
@@ -405,16 +423,73 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          for name, (tool_class, kwargs) in specs.items():
              tool = tool_class(self.harness, self, **kwargs)
              if not tool.name:
-@@ -164,17 +182,31 @@
+@@ -128,13 +145,25 @@
+         dtype = self.loaded_model.model_config.dtype
+         return dtype if isinstance(dtype, torch.dtype) else torch.bfloat16
+ 
+-    def segment_messages(self) -> list[dict]:
+-        """The current segment without the system message: what a part sees as 'the parent so far'."""
+-        return [message for message in self.messages if message.get("role") != "system"]
+-
+-    def context_part(self, ratio: float) -> dict:
+-        """The current segment as an activation_context part (task first; a compaction tree rides inside its first user message)."""
+-        return ac_part(deepcopy(self.segment_messages()), self.agent_config.ac_model_name, ratio, kind="parent_context")
++    def to_activation_context(self, kind: str) -> dict:
++        """
++        This agent's current segment as an activation part of `kind`: its system message first, then the segment verbatim
++        (a compaction tree rides inside the first user message), with its tool definitions as the part's `tools`. The one
++        builder of segment parts: subagent prompt and return, compaction, and the parent context nested in tool parts.
++        """
++        return activation_part(kind, deepcopy(self.messages), deepcopy(self.tool_definitions or self._tool_definitions()))
++
++    def nested_in_context(self, message: dict) -> list[dict]:
++        """`message` after this agent's segment as a nested parent_context part; the message alone before the first turn."""
++        if not self.messages:
++            return [message]
++        return [{"role": "user", "content": [self.to_activation_context("parent_context")]}, message]
++
++    def render_activation(self, parts: list[dict]) -> list[dict]:
++        """The parts with this reader's encoder settings (ac_name and compression target by kind, nested parts too); [] without an AC model."""
++        if self.ac_model is None or not parts:
++            return []
++        return [resolve_activation_part(part, self.agent_config) for part in parts]
+ 
+     def _pad_id(self) -> int:
+         tokenizer = self.loaded_model.tokenizer
+@@ -146,7 +175,7 @@
+             return []
+         ac_model = self.ac_model
+         assert ac_model is not None, "activation_context parts need agent_config.ac_model_name"
+-        return [ac_model.part_view_rows(part["messages"], part.get("compression_target")) for part in parts]
++        return [ac_model.part_view_rows(part["messages"], part.get("compression_target"), part.get("tools")) for part in parts]
+ 
+     def _encode_parts(self, messages: list[dict]) -> list[torch.Tensor]:
+         """Rows of the parts in `messages`, in order, through the rollout queue (children first, cached), cast once to the target dtype."""
+@@ -155,7 +184,7 @@
+             return []
+         ac_model = self.ac_model
+         assert ac_model is not None, "activation_context parts need agent_config.ac_model_name"
+-        futures = [ac_model.encode_async(part["messages"], part.get("compression_target")) for part in parts]
++        futures = [ac_model.encode_async(part["messages"], part.get("compression_target"), tools=part.get("tools")) for part in parts]
+         rows = [future.result().detach().to(dtype=self.row_dtype).cpu().contiguous() for future in futures]
+         self.run_results.num_ac_parts += len(rows)
+         self.run_results.num_ac_rows += sum(int(r.shape[0]) for r in rows)
+@@ -163,18 +192,36 @@
+ 
      # ----------------------------------------------------------------------------- segments
      def first_user_messages(self) -> list[dict]:
-         """messages_input with the task appended as a trailing text part of the last user message (today's prompt when empty)."""
+-        """messages_input with the task appended as a trailing text part of the last user message (today's prompt when empty)."""
 -        # @AI: Auto-offload here.
 -        # Truncate task to head[:10000], tail[:10000] and write to env.
++        """
++        messages_input, then the injected results (run_results.injected_input: rendered activation parts and a labelled
++        text block each), then the task text, as trailing parts of the last user message (a new one when messages_input
++        does not end with a user message).
++        """
          config = self.agent_config
          messages = deepcopy(config.messages_input)
 +        prompt = self._offloaded_prompt(config.user_prompt)
-+        lead = list(self.program_content)                                       # a program's content goes ahead of the task text
++        lead = injected_content(self.run_results.injected_input, self.render_activation)
          if not messages or messages[-1].get("role") != "user":
 -            messages.append({"role": "user", "content": config.user_prompt})
 -        elif config.user_prompt:
@@ -442,7 +517,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
      def begin(self) -> None:
          """Dialect, tool schemas and the first segment; templated once. Safe without an engine (tokenizer only)."""
-@@ -183,6 +215,10 @@
+@@ -183,6 +230,10 @@
          config, results = self.agent_config, self.run_results
          self.dialect = ModelDialect.for_tokenizer(self.loaded_model.tokenizer)
          self._prepare_tools()
@@ -453,7 +528,30 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          results.ac_model_name = config.ac_model_name
          results.ac_model_version = self.ac_model.version if self.ac_model is not None else None
          system = self.dialect.rendering.system_prompt(config.system_prompt or "", self.tool_definitions)
-@@ -233,12 +269,17 @@
+@@ -214,31 +265,34 @@
+     def compact(self, summary: str) -> None:
+         """Close the current segment into run_results.compactions and start the next one from its tree (or the summary alone)."""
+         config, results = self.agent_config, self.run_results
+-        first_user = next(i for i, message in enumerate(self.messages) if message.get("role") == "user")
+-        inner, segment = self.messages[first_user], self.messages[first_user + 1:]          # verbatim; through the compact call
++        tree = self.render_activation([self.to_activation_context("compaction")])           # the segment through the compact call; [] without an AC model
+         record = AgentRunResult(
+             agent_config=config, seed=self.seed, source=results.source, lora_name=results.lora_name, finish_reason="compacted",
+             trajectory=results.trajectory, prompt_token_ids=results.prompt_token_ids, prompt_messages=results.prompt_messages,
+             prompt_ac_spans=results.prompt_ac_spans, ac_model_name=results.ac_model_name, ac_model_version=results.ac_model_version,
+-            num_turns=sum(1 for step in results.trajectory if step["role"] == "assistant"),
++            injected_input=deepcopy(results.injected_input), num_turns=sum(1 for step in results.trajectory if step["role"] == "assistant"),
+         )
+         results.compactions.append(record)
+         results.trajectory = []
+         text = COMPACTION_INSTRUCTIONS + (f"\n\nSummary written before compaction:\n{summary}" if summary.strip() else "")
+-        if self.ac_model is not None:
+-            tree = ac_part(deepcopy([inner] + segment), config.ac_model_name, config.ac_compaction_ratio, kind="compaction")
+-            after = {"role": "user", "content": [tree, {"type": "text", "text": "\n\n" + text}]}
++        if tree:
++            after = {"role": "user", "content": tree + [{"type": "text", "text": "\n\n" + text}]}
+         else:
+             after = {"role": "user", "content": "The conversation so far was compacted.\n\n" + text}
          system = [message for message in self.messages if message.get("role") == "system"]
          self._begin_segment(system + self.first_user_messages() + [after])
          self.compaction_due, self.compaction_refusals = False, 0
@@ -472,23 +570,26 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          self.messages.append(message)
          self.prefix += list(token_ids)
          self.last_sampled = list(token_ids)
-@@ -249,12 +290,13 @@
+@@ -249,12 +303,15 @@
          wrapper, spans = self._continuation([message])
          self._append_step(TrajectoryStep(role="user", content=text, messages=[message], token_ids=wrapper), [message], spans, [])
  
 -    def append_tool_results(self, calls: list[dict], results: list[ToolCallResult]) -> None:
+-        tool_messages = self.dialect.rendering.tool_messages(calls, results)          # content lists with parts, in order
 +    def append_tool_results(self, calls: list[dict], results: list[ToolCallResult], tool_seconds: float | None = None) -> None:
-         tool_messages = self.dialect.rendering.tool_messages(calls, results)          # content lists with parts, in order
++        contents = [self.render_activation(result.activation_content) + tool_content(result) for result in results]   # parts, then the text
++        tool_messages = self.dialect.rendering.tool_messages(calls, contents)
          wrapper, spans = self._continuation(tool_messages)
          rows = self._encode_parts(tool_messages)
          step = TrajectoryStep(role="tool", content="\n\n".join(result.output for result in results), tool_calls=calls,
 -                              tool_call_results=[result.output for result in results], messages=tool_messages, token_ids=wrapper)
-+                              tool_call_results=[result.output for result in results], messages=tool_messages, token_ids=wrapper,
++                              tool_call_results=[result.output for result in results], tool_results=[result.serialize() for result in results],
++                              messages=tool_messages, token_ids=wrapper,
 +                              timing=None if tool_seconds is None else {"tool_seconds": round(tool_seconds, 3)})
          self._append_step(step, tool_messages, spans, rows)
  
      def _continuation(self, new_messages: list[dict]) -> tuple[list[int], list[tuple[int, int]]]:
-@@ -300,10 +342,12 @@
+@@ -300,10 +357,12 @@
      def _submit(self, chat_kwargs: dict | None = None):
          config = self.agent_config
          prefix, embeds, mask = self.prepare_request()
@@ -503,7 +604,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          )
  
      def submit_probe(self, max_tokens: int | None = None):
-@@ -325,6 +369,63 @@
+@@ -325,6 +384,83 @@
              f"absolute_trajectory_cap {self.agent_config.absolute_trajectory_cap} + max_tokens {max_tokens} exceeds max_model_len {max_len}")
  
      # ----------------------------------------------------------------------------- run
@@ -538,24 +639,44 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
 +                    self.reporter.report_agent_finish(self)
 +        return results
 +
-+    def augment_context(self, content: list[dict]) -> None:
-+        """Content items (text and activation parts) placed ahead of the task in the first user message; before the first turn only."""
++    def augment_context(self, results: "ToolCallResult | str | list[ToolCallResult | str]") -> None:
++        """
++        Tool results placed ahead of the task in the first user message (their activation parts rendered when this agent has
++        an AC model, their text always); a plain string is a result of the pseudo-tool "program". Recorded verbatim under
++        run_results.injected_input. Before the first turn only.
++        """
 +        assert not self.started, "augment_context runs before the first turn"
-+        self.program_content.extend(deepcopy(content))
++        for item in (results if isinstance(results, list) else [results]):
++            result = ToolCallResult(tool="program", output=item) if isinstance(item, str) else item
++            self.run_results.injected_input.append(result.serialize())
 +
-+    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> AgentRunResult:
-+        """A solver on `brief` in this agent's sandbox: no delegation tools, no program; its result joins subagent_results."""
-+        config = subagent_config_of(self, brief, agent_name=agent_name)
-+        if max_duration is not None:
-+            config.max_duration = min(float(config.max_duration), float(max_duration))
-+        child = Agent(self.harness, config, agent_env=self.agent_env, parent_agent=self, reporter=self.reporter, seed=self.seed)
++    def run_tool(self, tool: "str | AgentTool", **arguments) -> ToolCallResult:
++        """
++        A tool call made by a program: one of this agent's configured tools by name, or a tool instance the program built
++        (its own base config, for instance). The same path as a model's call: normalized arguments, error wrapping,
++        truncation with its part, `tool` set on the result.
++        """
++        call = {"id": uuid.uuid4().hex[:8], "name": tool if isinstance(tool, str) else tool.name, "arguments": dict(arguments)}
++        if isinstance(tool, str):
++            return self.execute_tool_call(call)
 +        try:
-+            result = child.run()
-+        finally:
-+            child.shutdown()                                                    # the env is this agent's; the child releases only its own state
-+        with self.lock:
-+            self.run_results.subagent_results.append(result)
-+        return result
++            result = tool.execute(**tool.normalize_arguments(call["arguments"]))
++        except TypeError as error:
++            result = ToolCallResult(output=f"Bad arguments for {tool.name}: {error}", is_error=True)
++        except Exception as error:
++            result = ToolCallResult(output=f"{tool.name} failed: {type(error).__name__}: {error}", is_error=True)
++        return self._finalize_result(call, result)
++
++    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> ToolCallResult:
++        """
++        Convenience over run_tool: a subagent tool on this agent's inherited config (no delegation tools, no program; the
++        subagent note on the system prompt), bounded to `max_duration`. The child's run joins subagent_results and the
++        result carries its index and its segment as activation content.
++        """
++        base = subagent_config_of(self, agent_name=agent_name)
++        if max_duration is not None:
++            base.max_duration = min(float(base.max_duration), float(max_duration))
++        return self.run_tool(SubagentTool(self.harness, self, base_config=base), task=brief)
 +
 +    def set_final_answer(self, answer: t.Any) -> None:
 +        """A program's answer without a model turn: the run finishes as "programmed"."""
@@ -567,7 +688,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
      def run(self) -> AgentRunResult:
          """
          Simple in/out run. Populates run_results. Never raises for a model or tool failure: the run
-@@ -335,19 +436,24 @@
+@@ -335,19 +471,24 @@
          start = time.time()
          try:
              self.begin()
@@ -594,7 +715,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  if results.num_turns == 0:
                      results.lora_name = output.lora_name
                  results.num_turns += 1
-@@ -374,12 +480,21 @@
+@@ -374,12 +515,21 @@
                          break
                      self._report_step()
                      continue
@@ -618,7 +739,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  self._report_step()
                  if any(result.is_final for result in call_results):
                      results.finish_reason = "submitted"
-@@ -402,6 +517,12 @@
+@@ -402,6 +552,12 @@
              if self.reporter is not None:
                  self.reporter.report_agent_finish(self)
          return results
@@ -631,7 +752,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
      @staticmethod
      def _is_lone_compact(calls: list[dict]) -> bool:
-@@ -505,7 +626,7 @@
+@@ -505,7 +661,7 @@
              result = ToolCallResult(output=f"Unknown tool {name!r}. Available: {', '.join(self.tools)}.", is_error=True)
          else:
              try:
@@ -640,7 +761,26 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
              except TypeError as error:
                  result = ToolCallResult(output=f"Bad arguments for {name}: {error}", is_error=True)
              except Exception as error:
-@@ -528,12 +649,14 @@
+@@ -513,14 +669,16 @@
+         return self._finalize_result(call, result)
+ 
+     def _finalize_result(self, call: dict, result: ToolCallResult) -> ToolCallResult:
+-        """Truncation and its part, applied to any tool's result (the one text part of a content list equals the visible output)."""
++        """The tool's name on the result, then truncation: the visible text replaces the output and the full text becomes a part."""
++        result.tool = call["name"]
+         visible, part = truncate_output(self._env, result.output, call["id"], agent=self if not result.compacted else None)
+         if visible != result.output:
+             content = [dict(item) for item in tool_content(result)]
+             for item in content:
+                 if item.get("type") == "text" and item.get("text") == result.output:
+                     item["text"] = visible
+-            result.content = ([part] if part is not None else []) + content
++            result.content = content
++            result.activation_content = ([part] if part is not None else []) + list(result.activation_content)
+             result.output = visible
+         return result
+ 
+@@ -528,12 +686,14 @@
          return [self.execute_tool_call(call) for call in calls]
  
      # ----------------------------------------------------------------------------- scoring and teardown
@@ -657,30 +797,58 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          except Exception as error:
              self.run_results.score = 0.0
              self.run_results.score_feedback = f"scoring failed: {type(error).__name__}: {error}"
-@@ -550,6 +673,7 @@
+@@ -550,7 +710,10 @@
          except Exception:
              pass
  
 +
  def _is_context_overflow(error: BaseException) -> bool:
      """vLLM's validation error for a prompt over max_model_len (its class differs across versions)."""
++    if isinstance(error, AssertionError):                                       # our own budget checks name max_model_len too
++        return False
      text = str(error)
+     return "maximum context length" in text or "max_model_len" in text or "longer than the maximum" in text
 diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
 --- a/activation/agent/agent_tools.py
 +++ b/activation/agent/agent_tools.py
-@@ -14,7 +14,7 @@
+@@ -1,11 +1,13 @@
+ """
+ Defines tool calls.
+ All tool results are truncated to ~20000 chars as head[:10000] ... [truncated and written to
+-/tmp/agent_outputs/<id>.txt] ... tail[-10000:] (the env writes these files). A result's content is an
+-ordered list of text and activation_context parts: with an AC model a truncated output's full text
+-rides as a part before the visible text, a subagent's final segment before its answer line, and the
+-semantic-search passages beyond top_k after the visible ones. Every such part nests the parent's
+-current segment as its own part, so the encoder compresses the content in the parent's context.
++/tmp/agent_outputs/<id>.txt] ... tail[-10000:] (the env writes these files). A result has `content`
++(the text the model reads) and `activation_content`: parts every tool produces on every call, whether
++or not the reader has an AC model (a truncated output's full text, the semantic-search passages beyond
++top_k, a subagent's final segment). The agent renders them ahead of the content when it has an AC
++model and records them on the tool step either way (`TrajectoryStep.tool_results`), so a base run can
++be converted to an AC-bearing one for training. Parts that compress a segment carry its system message
++first and its tool definitions; a tool-output or search part nests the parent's segment the same way.
+ """
+ from __future__ import annotations
+ 
+@@ -14,9 +16,9 @@
  import uuid
  from concurrent.futures import ThreadPoolExecutor
  from copy import deepcopy
 -from dataclasses import dataclass, field
+-
+-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part
 +from dataclasses import dataclass, field, replace
++
++from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part
  
- from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part
- 
-@@ -29,6 +29,22 @@
+ if t.TYPE_CHECKING:
+     from .agent_config import AgentConfig, AgentRunResult
+@@ -28,7 +30,23 @@
+ AC_OUTPUT_LIMIT_CHARS = 4 * TOOL_OUTPUT_LIMIT_CHARS   # kept as activation context (and written to the env file): 4x what the model sees, head and tail beyond
  TOOL_OUTPUT_DIR = "/tmp/agent_outputs"
  SEARCH_EXTRA_MAX = 20                                 # passages beyond top_k that ride as activation context: min(this, 2 * top_k)
- SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far is provided as activation context; your task follows.\n"
+-SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far is provided as activation context; your task follows.\n"
++SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far may precede this note as activation context. Your task follows."
 +SUBAGENT_TASK_FORMAT = (
 +    "A self-contained brief for the subagent, which sees none of your context. Write it as:\n"
 +    "TASK:\n- what to do, with every fact, path and constraint it needs\n"
@@ -700,7 +868,93 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
  
  
  @dataclass
-@@ -89,15 +105,38 @@
+@@ -36,21 +54,57 @@
+     output: str                                          # what the model sees as text (already truncated)
+     is_error: bool = False
+     is_final: bool = False                               # submit_answer sets it
+-    content: list[dict] | None = None                    # ordered content parts (text and activation_context) when the result carries
+-                                                         # activation context; None means [text(output)]. Exactly one text part equals output.
++    content: list[dict] | None = None                    # text parts; None means [text(output)]. Exactly one text part equals output.
++    activation_content: list[dict] = field(default_factory=list)   # parts {type, kind, messages, tools} (activation_part): what the reader
++                                                         # may see compressed. Produced always; the agent renders them when it has an AC
++                                                         # model and records them on the step either way.
++    tool: str = ""                                       # the tool that produced it (the agent sets it; "program" / "parent" for injections)
++    subagent_index: int | None = None                    # record only: the child's index in subagent_results; never rendered
+     compacted: bool = False                              # the compaction tool restarted the segment: no tool message follows this result
++
++    def serialize(self) -> dict:
++        return {"tool": self.tool, "output": self.output, "is_error": self.is_error, "is_final": self.is_final,
++                "content": deepcopy(self.content), "activation_content": deepcopy(self.activation_content),
++                "subagent_index": self.subagent_index, "compacted": self.compacted}
++
++    @classmethod
++    def deserialize(cls, data: dict) -> "ToolCallResult":
++        return cls(output=data.get("output", ""), is_error=bool(data.get("is_error", False)), is_final=bool(data.get("is_final", False)),
++                   content=deepcopy(data.get("content")), activation_content=deepcopy(data.get("activation_content") or []),
++                   tool=data.get("tool", ""), subagent_index=data.get("subagent_index"), compacted=bool(data.get("compacted", False)))
+ 
+ 
+ def tool_content(result: ToolCallResult) -> list[dict]:
+     return result.content if result.content is not None else [{"type": "text", "text": result.output}]
+ 
+ 
++def injected_block_text(result: "ToolCallResult | dict") -> str:
++    """The text part of an injected result in the first user message: the tool's name as a label, then its output."""
++    tool = result.get("tool") if isinstance(result, dict) else result.tool
++    output = result.get("output") if isinstance(result, dict) else result.output
++    return f"[{tool or 'program'}]\n{output}\n\n"
++
++
++def injected_content(injected: list[dict], render: "t.Callable[[list[dict]], list[dict]]") -> list[dict]:
++    """
++    The content parts that injected results (`AgentRunResult.injected_input`, serialized) contribute ahead of the task:
++    per result, its rendered activation parts (`render` returns [] for a reader without an AC model) then its block text.
++    Shared by Agent.first_user_messages and the training-side conversion (activation_messages_of).
++    """
++    content: list[dict] = []
++    for result in injected:
++        content.extend(render(list(result.get("activation_content") or [])))
++        content.append({"type": "text", "text": injected_block_text(result)})
++    return content
++
++
+ def truncate_output(env: "AgentEnv | None", text: str, call_id: str, limit: int = TOOL_OUTPUT_LIMIT_CHARS,
+                     agent: "Agent | None" = None) -> tuple[str, dict | None]:
+     """
+-    Head + tail of a long output; the full text goes to a file in the env and, with an AC model on the
+-    agent, into an activation_context part (the full text as a tool message, nested with the parent's
+-    current segment). Returns (visible text, part or None).
++    Head + tail of a long output; the full text goes to a file in the env and, with an agent given, into an
++    activation part (kind tool_output: the full text as a tool message, nested with the parent's current
++    segment). Returns (visible text, part or None). The part is produced whether or not the agent has an
++    AC model: the agent renders it when it has one and records it either way.
+     """
+     if len(text) <= limit:
+         return text, None
+@@ -62,20 +116,9 @@
+     half = limit // 2
+     note = f"full output written to {path}" if written else "full output kept as activation context"
+     truncated = f"{text[:half]}\n... [truncated {len(text) - limit} chars; {note}] ...\n{text[-half:]}"
+-    if agent is None or agent.ac_model is None:
++    if agent is None:
+         return truncated, None
+-    config = agent.agent_config
+-    part = ac_part([{"role": "user", "content": [agent.context_part(config.ac_subagent_ratio)]}, {"role": "tool", "content": text}],
+-                   config.ac_model_name, config.ac_tool_output_ratio, kind="tool_output")
+-    return truncated, part
+-
+-
+-def segment_messages_of(result: "AgentRunResult") -> list[dict]:
+-    """A run's final segment as dialect messages without the system message: prompt messages, then each step's messages."""
+-    messages = [message for message in result.prompt_messages if message.get("role") != "system"]
+-    for step in result.trajectory:
+-        messages.extend(step.get("messages") or [])
+-    return deepcopy(messages)
++    return truncated, activation_part("tool_output", agent.nested_in_context({"role": "tool", "content": text}))
+ 
+ 
+ class AgentTool:
+@@ -89,15 +132,38 @@
          if kwargs:
              raise TypeError(f"{type(self).__name__} got unexpected kwargs {sorted(kwargs)}")
  
@@ -739,7 +993,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      name = "shell"
      description = "Run a bash script in your sandbox (no network). Returns combined stdout and stderr."
      parameters = {
-@@ -115,6 +154,7 @@
+@@ -115,6 +181,7 @@
  
  
  class PythonTool(AgentTool):
@@ -747,7 +1001,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      name = "python"
      description = "Run a Python 3 program in your sandbox (no network, no state kept between calls). Print what you need to see."
      parameters = {
-@@ -132,6 +172,7 @@
+@@ -132,6 +199,7 @@
  
  
  class SubmitAnswerTool(AgentTool):
@@ -755,7 +1009,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      name = "submit_answer"
      description = "Submit your final answer and end the task. Call it exactly once, when you are done."
      parameters = {
-@@ -141,11 +182,14 @@
+@@ -141,11 +209,14 @@
      }
  
      def execute(self, answer: t.Any = None) -> ToolCallResult:
@@ -770,7 +1024,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      name = "parallel_tool_call"
      description = "Run several tool calls at once. Each call names a tool and its arguments; the results come back in the same order."
      parameters = {
-@@ -163,10 +207,30 @@
+@@ -163,31 +234,46 @@
          "required": ["calls"],
      }
  
@@ -802,7 +1056,20 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
          with ThreadPoolExecutor(max_workers=min(8, len(nested))) as pool:
              results = list(pool.map(self.agent.execute_tool_call, nested))
          outputs = [f"[{call['name']}] {result.output}" for call, result in zip(nested, results)]
-@@ -185,9 +249,11 @@
+-        content: list[dict] = []
+-        for call, result, labeled in zip(nested, results, outputs):
+-            for item in tool_content(result):                                            # each call's parts in its own order
+-                content.append({"type": "text", "text": labeled + "\n\n"} if item.get("type") == "text" else item)
+-        if content and content[-1].get("type") == "text":
+-            content[-1] = {"type": "text", "text": content[-1]["text"].rstrip("\n")}
+-        has_parts = any(result.content is not None for result in results)
+         return ToolCallResult(
+             output="\n\n".join(outputs), is_error=any(result.is_error for result in results),
+-            is_final=any(result.is_final for result in results), compacted=any(result.compacted for result in results),
+-            content=content if has_parts else None,
++            is_final=any(result.is_final for result in results),
++            activation_content=[part for result in results for part in result.activation_content],   # members' parts in call order
+         )
  
  
  class SemanticSearchTool(AgentTool):
@@ -815,10 +1082,31 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      parameters = {
          "type": "object",
          "properties": {
-@@ -228,7 +294,21 @@
-         return ToolCallResult(output=output, content=content)
+@@ -210,8 +296,7 @@
+         index = self.harness.dataset_manager._get_or_create_index(self.dataset_id)
+         index.build_bm25_index()
+         k = int(top_k or self.top_k)
+-        config = self.agent.agent_config
+-        extra = min(SEARCH_EXTRA_MAX, 2 * k) if self.agent.ac_model is not None else 0    # the model sees top_k; the next `extra` ride as rows
++        extra = min(SEARCH_EXTRA_MAX, 2 * k)                  # the model sees top_k; the next `extra` ride as a part (recorded either way)
+         chunks = index.bm25_query_many_frozen([query], top_k=k + extra)[0]
+         if not chunks:
+             return ToolCallResult(output="No passage matched the query.")
+@@ -220,72 +305,73 @@
+             return "\n\n".join(f"[{chunk.chunk_id}]\n{index.get_chunk_section(chunk)[:self.max_chars]}" for chunk in subset)
  
- 
+         output = blocks(chunks[:k])
+-        content = None
++        activation = []
+         if chunks[k:]:
+-            part = ac_part([{"role": "user", "content": [self.agent.context_part(config.ac_subagent_ratio)]},
+-                            {"role": "tool", "content": blocks(chunks[k:])}], config.ac_model_name, config.ac_search_ratio, kind="search")
+-            content = [{"type": "text", "text": output}, part]                                # text first, the extra passages after
+-        return ToolCallResult(output=output, content=content)
++            activation = [activation_part("search", self.agent.nested_in_context({"role": "tool", "content": blocks(chunks[k:])}))]
++        return ToolCallResult(output=output, activation_content=activation)
++
++
 +def subagent_config_of(parent: "Agent", task: str = "", agent_name: str = "general_subagent") -> "AgentConfig":
 +    """
 +    The caller's config as a focused subagent: same model, tools, env image, budgets and dataset task; the subagent note
@@ -830,17 +1118,38 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
 +    return replace(parent_config, agent_name=agent_name, user_prompt=task, messages_input=[], agentic_program=None,
 +                   system_prompt=(parent_config.system_prompt or "") + SUBAGENT_SYSTEM_NOTE,
 +                   tools={**parent_config.tools, **delegation}, env_setups={})
-+
-+
- class SubagentTool(AgentTool):
-+    aliases = {'prompt': 'task', 'brief': 'task', 'instructions': 'task', 'description': 'task', 'query': 'task'}
-     """
-     Simple in/out without a persistent handle. Runs in the same env as the caller. With AC
-     communication the child's first user message carries the parent's current segment as a part
-@@ -245,36 +325,31 @@
-     }
-     SHARED_FIELDS = ("ac_model_name", "enable_ac_communication", "ac_compaction_ratio", "ac_subagent_ratio", "ac_tool_output_ratio", "ac_search_ratio")
  
+ 
+ class SubagentTool(AgentTool):
+-    """
+-    Simple in/out without a persistent handle. Runs in the same env as the caller. With AC
+-    communication the child's first user message carries the parent's current segment as a part
+-    (intro text, part, task) and the child's final segment comes back as a part before the answer
+-    line; the child's own compaction tree rides inside that segment. The result is registered in the
+-    caller's subagent results. Some subagents are general-purpose, others specific: all are registered
+-    as tools under their own name, with `base_config` and `extra_description` as constructor kwargs.
+-    In step mode (simulation) the child is created with a dummy submitted answer and does not run.
++    aliases = {'prompt': 'task', 'brief': 'task', 'instructions': 'task', 'description': 'task', 'query': 'task'}
++    """
++    Simple in/out without a persistent handle. Runs in the same env as the caller. The parent's current
++    segment goes to the child as an injected result (`augment_context`: the intro note, the segment as a
++    subagent_prompt part) and the child's final segment comes back as the result's activation content
++    (a subagent_return part) before the answer line; either side renders the part when it has an AC
++    model and records it regardless. The child's own compaction tree rides inside its segment. The
++    result is registered in the caller's subagent results and the result carries the child's index.
++    Some subagents are general-purpose, others specific: all are registered as tools under their own
++    name, with `base_config` and `extra_description` as constructor kwargs. The child's system prompt
++    is its base config's (the general subagent's base config is the caller's config with the subagent
++    note appended once). In step mode (simulation) the child is created with a dummy submitted answer
++    and does not run.
+     """
+     parameters = {
+         "type": "object",
+         "properties": {"task": {"type": "string", "description": "A self-contained description of what the subagent should do and return."}},
+         "required": ["task"],
+     }
+-    SHARED_FIELDS = ("ac_model_name", "enable_ac_communication", "ac_compaction_ratio", "ac_subagent_ratio", "ac_tool_output_ratio", "ac_search_ratio")
+-
 -    # @AI: Smartly inherent from the top-level agent when base_config is None.
 -    # E.g., disable the subagent tool, reformat system to add something about being a subagent that focuses on the given subtask, etc.
 -    # Further, improve the description a bit to structure the given task to be like this when the guide boolean is set.
@@ -894,7 +1203,37 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
          if subagent_config.agent_name == "main":
              subagent_config.agent_name = "general_subagent"
          subagent_config.user_prompt = task
-@@ -309,6 +384,7 @@
+-        share_ac = parent_config.enable_ac_communication and parent.ac_model is not None
+-        if share_ac:
+-            for name in self.SHARED_FIELDS:
+-                setattr(subagent_config, name, getattr(parent_config, name))
+-            subagent_config.messages_input = [{"role": "user", "content": [
+-                {"type": "text", "text": SUBAGENT_INTRO},
+-                ac_part(deepcopy(parent.segment_messages()), parent_config.ac_model_name, parent_config.ac_subagent_ratio, kind="subagent_prompt"),   # the parent's segment up to and including this delegating turn
+-            ]}]                                                                # the child appends the task as the trailing text part
+         subagent = Agent(
+             harness=self.harness,
+             agent_config=subagent_config,
+@@ -295,20 +381,20 @@
+             seed=parent.seed,
+         )
+         subagent.step_mode = parent.step_mode
++        subagent.augment_context(ToolCallResult(tool="parent", output=SUBAGENT_INTRO,
++                                                activation_content=[parent.to_activation_context("subagent_prompt")]))
+         result = subagent.simulated_run() if parent.step_mode else subagent.run()
+         with parent.lock:
+             parent.run_results.subagent_results.append(result)
++            index = len(parent.run_results.subagent_results) - 1
+         output = (f"Subagent finished ({result.finish_reason}, {result.num_turns} turns). "
+                   f"Answer: {result.answer if result.answer is not None else '(none)'}")
+-        content = None
+-        if share_ac:
+-            final_segment = segment_messages_of(result)                         # its first user messages (tree inside, if any) + every step
+-            content = [ac_part(final_segment, parent_config.ac_model_name, parent_config.ac_subagent_ratio, kind="subagent_return"),
+-                       {"type": "text", "text": output}]
+-        return ToolCallResult(output=output, is_error=result.finish_reason == "error", content=content)
++        return ToolCallResult(output=output, is_error=result.finish_reason == "error", subagent_index=index,
++                              activation_content=[subagent.to_activation_context("subagent_return")])
  
  
  class CompactionTool(AgentTool):
@@ -902,7 +1241,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      """
      Compacts the conversation into a new segment. With an AC model the finished segment becomes the
      recursive tree part of the new prompt and the summary follows it as text; without one only the
-@@ -336,4 +412,5 @@
+@@ -336,4 +422,5 @@
      ParallelCallTool.name: (ParallelCallTool, {}),
      SubmitAnswerTool.name: (SubmitAnswerTool, {}),
      CompactionTool.name: (CompactionTool, {}),
@@ -2376,6 +2715,63 @@ diff --git a/activation/agent_training/agent_training_utils.py b/activation/agen
              recorded = min(len(logprobs), len(segment))
              any_recorded = any_recorded or recorded > 0
              sampled = len(segment) if item.ignore_logprobs or recorded == 0 else recorded
+@@ -410,3 +437,56 @@
+             child.eval()
+             count += 1
+     return count
++
++
++def activation_messages_of(run: "AgentRunResult", config: "AgentConfig") -> list[dict]:
++    """
++    The run's current segment as messages with every recorded activation part rendered for `config` (its ac_model_name and
++    ratios; a config without an AC model renders nothing): the first user message rebuilt from `injected_input`, each tool
++    step's message from its `tool_results`. A base run (no parts rendered at run time) comes out AC-bearing; an AC run comes
++    out as recorded. Steps without `tool_results` (old records) stay as they are. Token ids are not produced here.
++    """
++    from copy import deepcopy
++    from activation.common.ac_parts import is_ac_part, resolve_activation_part
++    from activation.agent.agent_tools import injected_block_text
++
++    def render(parts: list[dict]) -> list[dict]:
++        return [resolve_activation_part(part, config) for part in parts] if config.ac_model_name and parts else []
++
++    def text_items(content) -> list[dict]:
++        items = content if isinstance(content, list) else [{"type": "text", "text": content or ""}]
++        return [item for item in items if not is_ac_part(item)]
++
++    messages = deepcopy(run.prompt_messages)
++    injected = list(run.injected_input)
++    if injected:
++        for message in messages:
++            if message.get("role") != "user":
++                continue
++            items, out, j = text_items(message.get("content")), [], 0
++            for item in items:
++                if j < len(injected) and item.get("type") == "text" and item.get("text") == injected_block_text(injected[j]):
++                    out.extend(render(list(injected[j].get("activation_content") or [])))
++                    j += 1
++                out.append(item)
++            if j:
++                message["content"] = out
++                break
++    for step in run.trajectory:
++        results = step.get("tool_results") or []
++        step_messages = deepcopy(step.get("messages") or [])
++        if step.get("role") == "tool" and results and step_messages:
++            if step_messages[0].get("role") == "tool":                                            # structured: one message per result
++                for message, result in zip(step_messages, results):
++                    message["content"] = render(list(result.get("activation_content") or [])) + text_items(message.get("content"))
++            else:                                                                                  # inline: one user message of <tool_response> blocks
++                out, index = [], 0
++                for item in text_items(step_messages[0].get("content")):
++                    out.append(item)
++                    if item.get("type") == "text" and item.get("text", "").lstrip("\n").startswith("<tool_response>") and index < len(results):
++                        out.extend(render(list(results[index].get("activation_content") or [])))
++                        index += 1
++                step_messages[0]["content"] = out
++        messages.extend(step_messages)
++    return messages
++
 diff --git a/activation/agent_training/agent_trainer.py b/activation/agent_training/agent_trainer.py
 --- a/activation/agent_training/agent_trainer.py
 +++ b/activation/agent_training/agent_trainer.py
@@ -5100,7 +5496,7 @@ diff --git a/activation/agent/agentic_program.py b/activation/agent/agentic_prog
 new file mode 100644
 --- /dev/null
 +++ b/activation/agent/agentic_program.py
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,40 @@
 +"""
 +Agentic programs: harness-written workflows that own one rollout in code. Where a prompt can only ask the model to
 +delegate, verify or synthesize, a program does the coordination itself and leaves the model the leaf work.
@@ -5109,15 +5505,19 @@ new file mode 100644
 +`Agent.run_program()` (what the rollout manager calls) constructs it with the initialized, unstarted agent and calls
 +`execute()`, which returns the main agent's own `AgentRunResult`. Inside `execute` a program may, before the first turn:
 +
-+- `agent.augment_context(content)`: text and activation parts placed ahead of the task in the first user message;
-+- `agent.run_subagent(brief, max_duration=None)`: a solver in the same sandbox (delegation tools and program removed),
-+  its result appended to `subagent_results`;
++- `agent.run_tool(tool, **arguments)`: a tool call on the same path as the model's (a configured tool by name, or a tool
++  instance the program built); returns the ToolCallResult with its text and its activation content;
++- `agent.run_subagent(brief, max_duration=None)`: run_tool on a subagent tool over this agent's inherited config (delegation
++  tools and program removed); the child's run joins `subagent_results`, the result carries its index and segment;
++- `agent.augment_context(results)`: tool results (or plain text) placed ahead of the task in the first user message, their
++  activation parts rendered when the agent has an AC model, recorded under `run_results.injected_input` either way;
 +- `agent.set_final_answer(answer)`: finish without a model turn (finish reason "programmed");
 +- `agent.run()`: the model loop on the (augmented) task.
 +
 +A program that runs the main agent through `run()` and solvers through `run_subagent()` gets every trajectory recorded
-+for SFT/RL. A program that drives agents any other way must populate the run results itself. Programs never mutate the
-+config (the cache key is computed from it before and after the run) and never touch a started segment.
++for SFT/RL, activation content included. A program that drives agents any other way must populate the run results itself.
++Programs never mutate the config (the cache key is computed from it before and after the run) and never touch a started
++segment.
 +"""
 +from __future__ import annotations
 +
@@ -5210,10 +5610,10 @@ diff --git a/activation/tests/test_basic_agentic_program.py b/activation/tests/t
 new file mode 100644
 --- /dev/null
 +++ b/activation/tests/test_basic_agentic_program.py
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,157 @@
 +"""
 +One end-to-end agentic-program rollout on a GPU node, in the style of test_basic_agent.py: a program written in this
-+file runs a solver subagent on a simple DeepMath problem, puts the solver's answer ahead of the task, and runs the main
++file runs a solver subagent (run_subagent), injects its result ahead of the task (augment_context), and runs the main
 +agent to verify and submit. Then the same request from the cache. (The lenient-deserialization and runtime checks that
 +need no GPU live in activation/bench/agent_probes/agentic_program_probe.py.)
 +
@@ -5255,6 +5655,7 @@ new file mode 100644
 +    max_turns=10,
 +    max_tool_errors=3,
 +    max_duration=300,
++    absolute_trajectory_cap=40_000,                                # the 9B engine holds 52k tokens: cap + max_tokens must fit
 +)
 +
 +
@@ -5268,12 +5669,8 @@ new file mode 100644
 +
 +    def execute(self) -> AgentRunResult:
 +        task = self.agent.agent_config.dataset_task
-+        solver = self.agent.run_subagent(task.agent_prompt, max_duration=self.solver_max_duration)
-+        self.agent.augment_context([{
-+            "type": "text",
-+            "text": (f"A first solver finished ({solver.finish_reason}, {solver.num_turns} turns) with the answer "
-+                     f"{solver.answer!r}. Check it with the python tool before you submit, and submit the correct value."),
-+        }])
++        solver = self.agent.run_subagent(task.agent_prompt, max_duration=self.solver_max_duration)   # a ToolCallResult
++        self.agent.augment_context([solver, "Check the solver's answer above with the python tool before you submit, and submit the correct value."])
 +        return self.agent.run()
 +
 +
@@ -5334,16 +5731,26 @@ new file mode 100644
 +    _print_rollout("solver", solver)
 +    _print_rollout("main", result)
 +
-+    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s.
-+    assert solver.agent_config.agentic_program is None
++    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s; the parent's
++    # note is its injected input (the parent had no segment yet, so its part holds only the system message).
++    assert solver.agent_config.agentic_program is None and "subagent" not in solver.agent_config.tools.keys() - {None}
 +    assert solver.agent_config.max_duration <= 120.0
 +    assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
++    assert [item["tool"] for item in solver.injected_input] == ["parent"]
++    assert solver.injected_input[0]["activation_content"][0]["kind"] == "subagent_prompt"
 +
-+    # The main agent: the solver's line sits ahead of the task text in the first user message.
++    # The main agent: the solver's result and the program's note are recorded as injected input, and their text blocks
++    # sit ahead of the task text in the first user message; no part is rendered (no AC model on this config).
++    assert [item["tool"] for item in result.injected_input] == ["subagent", "program"], result.injected_input
++    returned = result.injected_input[0]
++    assert returned["subagent_index"] == 0 and returned["output"].startswith("Subagent finished")
++    part = returned["activation_content"][0]
++    assert part["kind"] == "subagent_return" and part["messages"][0]["role"] == "system" and part["tools"]
++    assert part["messages"][-1]["role"] in ("tool", "assistant") and "compression_target" not in part
 +    first_user = next(message for message in result.prompt_messages if message["role"] == "user")
 +    content = first_user["content"]
-+    assert isinstance(content, list) and len(content) >= 2, content
-+    assert "A first solver finished" in content[0]["text"]
++    assert isinstance(content, list) and len(content) == 3 and all(item["type"] == "text" for item in content), content
++    assert content[0]["text"].startswith("[subagent]\nSubagent finished") and content[1]["text"].startswith("[program]\nCheck")
 +    assert content[-1]["text"].startswith(QUESTION)
 +    assert result.finish_reason == "submitted", result.finish_reason
 +    assert any(
@@ -5357,7 +5764,7 @@ new file mode 100644
 +    assert len(harness.harness_stats.model_loading_times) == loads_before
 +    assert cached[0].answer == result.answer and cached[0].score == result.score
 +    assert cached[0].agent_config.agentic_program[0] is SolveThenVerifyProgram
-+    assert len(cached[0].subagent_results) == 1
++    assert len(cached[0].subagent_results) == 1 and cached[0].injected_input == result.injected_input
 +    assert os.path.exists(os.path.join(reporter.report_folder, "report.tressoir.html"))
 +    print("\n=== harness stats ===")
 +    print(json.dumps(harness.harness_stats.summarize(), indent=2))
@@ -5365,12 +5772,13 @@ diff --git a/activation/bench/agent_probes/agentic_program_probe.py b/activation
 new file mode 100644
 --- /dev/null
 +++ b/activation/bench/agent_probes/agentic_program_probe.py
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,210 @@
 +"""
 +CPU probe of the agentic-program plumbing (no engine, no sandbox): a record deserializes without the program class
 +present (MissingClass placeholder that errs on construction and re-serializes unchanged), the cache key separates the
-+programmed and plain variants, `__main__` classes serialize under the script's module name, and the runtime API
-+(augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny fixture.
++programmed and plain variants, `__main__` classes serialize under the script's module name, the runtime API
++(run_tool, augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny
++fixture, and a base run's record converts to AC-bearing messages (activation_messages_of).
 +
 +    uv run python -m activation.bench.agent_probes.agentic_program_probe
 +"""
@@ -5381,7 +5789,10 @@ new file mode 100644
 +
 +from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult
 +from activation.agent.agent_config import _class_spec
++from activation.agent.agent_tools import AgentTool, ToolCallResult
 +from activation.agent.rollout_caching import config_key
++from activation.agent_training.agent_training_utils import activation_messages_of
++from activation.common.ac_parts import direct_parts
 +from activation.common.utils import MissingClass, MissingClassError
 +from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
 +from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
@@ -5404,9 +5815,18 @@ new file mode 100644
 +        self.answer = answer
 +
 +    def execute(self) -> AgentRunResult:
-+        self.agent.augment_context([{"type": "text", "text": "Programmed context ahead of the task."}])
++        self.agent.augment_context("Programmed context ahead of the task.")
 +        self.agent.set_final_answer(self.answer)
 +        return self.agent.run_results
++
++
++class EchoTool(AgentTool):
++    """A tool with no sandbox: returns its argument, so run_tool and truncation can be exercised on this host."""
++    name = "echo"
++    parameters = {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}
++
++    def execute(self, text: str = "") -> ToolCallResult:
++        return ToolCallResult(output=text)
 +
 +
 +class Broken(AgenticProgram):
@@ -5465,12 +5885,14 @@ new file mode 100644
 +    assert result is agent.run_results and result.finish_reason == "programmed" and result.answer == "24", result.finish_reason
 +    assert result.num_turns == 0 and result.duration >= 0
 +    assert agent.score() == 1.0
++    assert agent.run_results.injected_input == [ToolCallResult(tool="program", output="Programmed context ahead of the task.").serialize()]
 +    agent.begin()                                                                       # tokenizer only: the recorded prompt
 +    first_user = next(message for message in agent.run_results.prompt_messages if message["role"] == "user")
 +    content = first_user["content"]
-+    assert isinstance(content, list) and content[0]["text"] == "Programmed context ahead of the task." and content[-1]["text"].startswith(QUESTION), content
++    assert isinstance(content, list) and content[0]["text"] == "[program]\nProgrammed context ahead of the task.\n\n", content
++    assert content[-1]["text"].startswith(QUESTION), content
 +    try:
-+        agent.augment_context([{"type": "text", "text": "late"}])
++        agent.augment_context("late")
 +        raise AssertionError("augment_context after begin must be refused")
 +    except AssertionError as error:
 +        assert "before the first turn" in str(error)
@@ -5493,6 +5915,60 @@ new file mode 100644
 +    print("runtime: programmed finish, context ahead of the task, error handling OK", flush=True)
 +
 +
++def check_activation_content(harness: HarnessRuntime) -> None:
++    """run_tool through the model's path; activation content produced without an AC model, recorded, and rendered on conversion."""
++    base = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny", max_duration=30)
++    agent = Agent(harness, base, seed=0)
++    long_text = "0123456789" * 5_000                                                    # 50k chars: past the 20k visible limit
++    result = agent.run_tool(EchoTool(harness, agent), text=long_text)
++    assert result.tool == "echo" and "truncated" in result.output and len(result.output) < 21_000
++    assert [part["kind"] for part in result.activation_content] == ["tool_output"]
++    part = result.activation_content[0]
++    assert part["messages"] == [{"role": "tool", "content": long_text}] and "compression_target" not in part   # no segment yet: no nested parent context
++    short = agent.run_tool(EchoTool(harness, agent), text="short")
++    assert short.output == "short" and short.activation_content == [] and short.tool == "echo"
++    bad = agent.run_tool(EchoTool(harness, agent), text="x", nonsense=1)                 # an unknown extra argument (no alias target)
++    assert bad.is_error and bad.output.startswith("Bad arguments for echo")
++    agent.augment_context([result, "Check the echo."])
++    agent.begin()
++    run = agent.run_results
++    assert [item["tool"] for item in run.injected_input] == ["echo", "program"]
++    first_user = next(message for message in run.prompt_messages if message["role"] == "user")
++    assert not direct_parts([first_user]) and first_user["content"][0]["text"].startswith("[echo]\n0123456789")   # nothing rendered: no AC model
++    # A tool step recorded through the model's path, with a nested parent context now that the segment exists.
++    tokenizer = agent.loaded_model.tokenizer
++    call = {"id": "e1", "name": "echo", "arguments": {"text": "again"}}
++    agent.record_assistant_turn("Echoing.", [call], tokenizer.encode("Echoing."), [])
++    stepped = agent._finalize_result(call, ToolCallResult(output=long_text))
++    agent.append_tool_results([call], [stepped])
++    step = run.trajectory[-1]
++    assert step["role"] == "tool" and not direct_parts(step["messages"]) and step["tool_results"][0]["tool"] == "echo"
++    nested = step["tool_results"][0]["activation_content"][0]
++    assert nested["kind"] == "tool_output" and nested["messages"][0]["role"] == "user"
++    parent = nested["messages"][0]["content"][0]
++    assert parent["kind"] == "parent_context" and parent["messages"][0]["role"] == "system" and parent["tools"]
++    assert parent["messages"][-1]["role"] == "assistant"                                     # the segment through the echoing turn
++    # The record survives serialization and converts to AC-bearing messages for a reader with an AC model.
++    restored = AgentRunResult.deserialize(__import__("json").loads(__import__("json").dumps(run.serialize())))
++    assert restored.injected_input == run.injected_input and restored.trajectory[-1]["tool_results"] == step["tool_results"]
++    reader = replace(base, ac_model_name="ac_x")
++    converted = activation_messages_of(restored, reader)
++    parts = direct_parts(converted)
++    assert [part["kind"] for part in parts] == ["tool_output", "tool_output"], [part["kind"] for part in parts]
++    assert all(part["ac_name"] == "ac_x" and part["compression_target"] == reader.ac_tool_output_ratio for part in parts)
++    first = next(message for message in converted if message["role"] == "user")
++    assert first["content"][0]["type"] == "activation_context" and first["content"][1]["text"].startswith("[echo]\n")
++    assert first["content"][2]["text"].startswith("[program]\n") and first["content"][-1]["text"].startswith(QUESTION)
++    tool_message = converted[-1]
++    assert tool_message["role"] == "tool" and tool_message["content"][0]["type"] == "activation_context"
++    inner = direct_parts(tool_message["content"][0]["messages"])[0]
++    assert inner["kind"] == "parent_context" and inner["compression_target"] == reader.ac_subagent_ratio and inner["ac_name"] == "ac_x"
++    assert activation_messages_of(restored, base) == restored.prompt_messages + [m for s in restored.trajectory for m in s["messages"]]
++    assert restored.trajectory[-1]["messages"] == step["messages"]                             # the record itself is untouched
++    agent.shutdown()
++    print("activation content: run_tool, truncation part, nested parent context, record and conversion OK", flush=True)
++
++
 +def main() -> int:
 +    check_serde()
 +    if not os.path.isdir(TINY):
@@ -5500,12 +5976,389 @@ new file mode 100644
 +        return 0
 +    harness = HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
 +    check_runtime(harness)
++    check_activation_content(harness)
 +    print("AGENTIC PROGRAM PROBE PASS", flush=True)
 +    return 0
 +
 +
 +if __name__ == "__main__":
 +    raise SystemExit(main())
+diff --git a/activation/common/ac_parts.py b/activation/common/ac_parts.py
+--- a/activation/common/ac_parts.py
++++ b/activation/common/ac_parts.py
+@@ -25,6 +25,79 @@
+     if kind is not None:
+         part["kind"] = kind
+     return part
++
++
++RATIO_FIELD_BY_KIND = {                    # the AgentConfig field that sets a part's compression target, by channel
++    "compaction": "ac_compaction_ratio", "tool_output": "ac_tool_output_ratio", "search": "ac_search_ratio",
++    "subagent_prompt": "ac_subagent_ratio", "subagent_return": "ac_subagent_ratio", "parent_context": "ac_subagent_ratio",
++}
++
++
++def activation_part(kind: str, messages: list[dict], tools: list[dict] | None = None) -> dict:
++    """
++    A part without encoder settings: what a tool or an agent produces (`ToolCallResult.activation_content`). The reader's
++    `render_activation` / `resolve_activation_part` fills `ac_name` and `compression_target` by kind. `tools` are the
++    definitions the compressed segment ran with; the encoder templates them natively when the side template takes tools.
++    """
++    part = {"type": AC_PART_TYPE, "kind": kind, "messages": messages}
++    if tools:
++        part["tools"] = tools
++    return part
++
++
++def resolve_activation_part(part: dict, config, ac_name: str | None = None) -> dict:
++    """
++    A deep copy of `part` with `ac_name` and `compression_target` filled from `config` (an AgentConfig: its
++    ac_model_name and the ratio field of the part's kind), recursively for the parts nested in its messages.
++    Parts that already carry both keep them.
++    """
++    from copy import deepcopy
++    ac_name = ac_name or getattr(config, "ac_model_name", None)
++    assert ac_name, "resolving a part needs the reader's ac_model_name"
++
++    def resolve(item: dict) -> dict:
++        out = deepcopy(item)
++        out.setdefault("ac_name", ac_name)
++        if out.get("compression_target") is None:
++            field = RATIO_FIELD_BY_KIND.get(out.get("kind") or "", "ac_subagent_ratio")
++            out["compression_target"] = float(getattr(config, field))
++        out["messages"] = [resolve_in_message(message) for message in out.get("messages") or []]
++        return out
++
++    def resolve_in_message(message: dict) -> dict:
++        content = message.get("content")
++        if not isinstance(content, list):
++            return message
++        return dict(message, content=[resolve(piece) if is_ac_part(piece) else piece for piece in content])
++
++    return resolve(part)
++
++
++def tools_in_system_text(messages: list[dict], tools: list[dict] | None) -> list[dict]:
++    """
++    For a chat template without tool support: the tool definitions appended to the system message (one is inserted
++    when the messages have none). With `tools` empty the messages come back unchanged.
++    """
++    if not tools:
++        return list(messages)
++    import json
++    listing = "\n".join(json.dumps(definition) for definition in tools)
++    block = f"\n\n# Tools\n\nThe functions available in this conversation:\n<tools>\n{listing}\n</tools>"
++    out = [dict(message) for message in messages]
++    for message in out:
++        if message.get("role") == "system":
++            content = message.get("content")
++            text = content if isinstance(content, str) else "".join(
++                piece.get("text", "") if isinstance(piece, dict) else str(piece) for piece in content or [])
++            message["content"] = text + block
++            return out
++    return [{"role": "system", "content": block.strip()}] + out
++
++
++def template_takes_tools(tokenizer: "PreTrainedTokenizerBase") -> bool:
++    """Whether the tokenizer's chat template renders a `tools` argument (Qwen's do)."""
++    template = getattr(tokenizer, "chat_template", None)
++    return isinstance(template, str) and "tools" in template
+ 
+ 
+ def is_ac_part(part: object) -> bool:
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -22,6 +22,7 @@
+     from transformers import PreTrainedTokenizerBase
+ 
+ from activation.common.ac_parts import (   # the part schema and the sentinel split live in common; re-exported here
++    template_takes_tools, tools_in_system_text,
+     AC_PART_TYPE, PART_SENTINEL, direct_parts, encode_with_part_sentinels, flatten_with_sentinels, is_ac_part,
+ )
+ 
+@@ -38,9 +39,10 @@
+     return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+ 
+ 
+-def row_cache_key(messages: list[dict], compression_ratio: float, is_recursive: bool, version: int) -> str:
+-    """sha256 of the canonical part: the same messages, ratio, kind and model version hit the same rows."""
+-    payload = canonical_json({"messages": messages, "ratio": round(float(compression_ratio), 8), "recursive": bool(is_recursive), "version": int(version)})
++def row_cache_key(messages: list[dict], compression_ratio: float, is_recursive: bool, version: int, tools: list[dict] | None = None) -> str:
++    """sha256 of the canonical part: the same messages, tools, ratio, kind and model version hit the same rows."""
++    payload = canonical_json({"messages": messages, "ratio": round(float(compression_ratio), 8), "recursive": bool(is_recursive), "version": int(version),
++                              **({"tools": tools} if tools else {})})
+     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+ 
+ 
+@@ -63,6 +65,8 @@
+     flat = flatten_with_sentinels(messages, parts="sentinel")
+     index = sum(1 for _ in direct_parts(messages))
+     assert index == len(part_lengths), f"{index} parts in the messages, {len(part_lengths)} lengths given"
++    if tools and not template_takes_tools(tokenizer):
++        flat, tools = tools_in_system_text(flat, tools), None                     # the definitions ride in the system text instead
+     if not any(message.get("role") == "user" and not str(message.get("content") or "").strip().startswith("<tool_response>") for message in flat):
+         flat.insert(0, {"role": "user", "content": ""})                    # Qwen templates refuse a conversation without a user query (a mid-trajectory segment)
+     text = tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
+@@ -293,6 +297,7 @@
+     messages: list[dict]
+     compression_ratio: float
+     is_recursive: bool
++    tools: list[dict] | None = None            # the definitions the compressed segment ran with (part["tools"]); templated on the side
+ 
+ 
+ class EncodeQueue:
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -180,11 +180,12 @@
+         ratio = self.config.default_compression_ratio if compression_ratio is None else compression_ratio
+         return int(min(self.config.max_view_rows, max(self.config.min_view_rows, math.ceil(num_side_tokens * ratio))))
+ 
+-    def part_view_rows(self, messages: list[dict], compression_ratio: float | None = None) -> int:
++    def part_view_rows(self, messages: list[dict], compression_ratio: float | None = None, tools: list[dict] | None = None) -> int:
+         """V of a part before encoding it: its side tokenization (children's rows counted recursively) times the ratio."""
+         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
+-        child_lengths = [self.part_view_rows(*self._child_request(part, ratio)[:2]) for part in direct_parts(messages)]
+-        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id)
++        child_lengths = [self.part_view_rows(child.messages, child.compression_ratio, child.tools)
++                         for child in (self._child_request(part, ratio) for part in direct_parts(messages))]
++        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)
+         return self.num_view_rows(len(ids), ratio)
+ 
+     def set_mode(self, mode: str) -> None:
+@@ -253,18 +254,20 @@
+         return self.parameters() + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
+ 
+     # ------------------------------------------------------------------------------------------ encoding
+-    def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False) -> torch.Tensor:
++    def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
++               tools: list[dict] | None = None) -> torch.Tensor:
+         """Rows [V, d_target] of one part (or [V, d_side] after the recursive adapter when is_recursive)."""
+         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
+-        return self.encode_batch([EncodeRequest(normalize_messages(messages), ratio, is_recursive)])[0]
+-
+-    def encode_async(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False) -> Future:
++        return self.encode_batch([EncodeRequest(normalize_messages(messages), ratio, is_recursive, tools or None)])[0]
++
++    def encode_async(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
++                     tools: list[dict] | None = None) -> Future:
+         """Rollout mode: the rows through the encode queue (concurrent callers share batches)."""
+         assert self.mode == ROLLOUT, "the encode queue serves rollout mode only"
+         if self.queue is None:
+             self.queue = EncodeQueue(self.encode_batch)
+         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
+-        return self.queue.submit(EncodeRequest(normalize_messages(messages), ratio, is_recursive))
++        return self.queue.submit(EncodeRequest(normalize_messages(messages), ratio, is_recursive, tools or None))
+ 
+     def encode_batch(self, requests: list[EncodeRequest]) -> list[torch.Tensor]:
+         """The rows of every request, cache first in rollout mode, the rest encoded together (children first)."""
+@@ -273,7 +276,7 @@
+         results: list[torch.Tensor | None] = [None] * len(requests)
+         pending: list[int] = []
+         for index, request in enumerate(requests):
+-            cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version)) if self.mode == ROLLOUT else None
++            cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools)) if self.mode == ROLLOUT else None
+             if cached is not None:
+                 self.stats.cache_hits += 1
+                 results[index] = cached
+@@ -291,7 +294,7 @@
+                 results[index] = part_rows
+                 if self.mode == ROLLOUT:
+                     request = requests[index]
+-                    self.cache.put(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version), part_rows)
++                    self.cache.put(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools), part_rows)
+         if self.queue is not None:
+             self.stats.queue_batches, self.stats.queue_requests = self.queue.batches, self.queue.requests
+         device = self.device
+@@ -301,7 +304,8 @@
+         ac_name = part.get("ac_name") or self.name
+         assert ac_name == self.name, f"a part of AC model {ac_name!r} inside {self.name!r} (routing between AC models is not supported)"
+         ratio = part.get("compression_target")
+-        return EncodeRequest(normalize_messages(part.get("messages") or []), float(ratio) if ratio is not None else parent_ratio, True)
++        return EncodeRequest(normalize_messages(part.get("messages") or []), float(ratio) if ratio is not None else parent_ratio, True,
++                             part.get("tools") or None)
+ 
+     def _encode_requests(self, requests: list[EncodeRequest]) -> list[torch.Tensor]:
+         """Children of every request (one recursive batch), then the requests in token-budgeted padded batches."""
+@@ -316,7 +320,7 @@
+         prepared: list[PreparedPart] = []
+         for request, (start, end) in zip(requests, child_slices):
+             rows = child_rows[start:end]
+-            ids, spans = tokenize_with_parts(self.side.tokenizer, request.messages, [r.shape[0] for r in rows], self.pad_id)
++            ids, spans = tokenize_with_parts(self.side.tokenizer, request.messages, [r.shape[0] for r in rows], self.pad_id, tools=request.tools)
+             prepared.append((ids, spans, rows, self.num_view_rows(len(ids), request.compression_ratio), request.is_recursive))
+         order = sorted(range(len(prepared)), key=lambda index: len(prepared[index][0]))
+         results: list[torch.Tensor | None] = [None] * len(prepared)
+diff --git a/activation/ac_model/ac_model_study.py b/activation/ac_model/ac_model_study.py
+--- a/activation/ac_model/ac_model_study.py
++++ b/activation/ac_model/ac_model_study.py
+@@ -269,7 +269,9 @@
+         nested: dict | None = None
+         for segment in segments:
+             inner = [{"role": "user", "content": [nested]}] if nested is not None else [task]   # the innermost segment carries the task: what the reader is after
+-            nested = ac_part(inner + segment, self.ac_name, ratio)
++            nested = ac_part(deepcopy(system) + inner + segment, self.ac_name, ratio)           # a segment part carries its system message first
++            if tools:
++                nested["tools"] = deepcopy(tools)
+         ac_user = {"role": "user", "content": [nested, {"type": "text", "text": "\n\n" + COMPACTION_INSTRUCTIONS}]}
+         item = ActivationContextTrainingItem(
+             item_id=f"compaction:{dataset_id}:{seed}:{index}",
+@@ -471,7 +473,7 @@
+ 
+     def _expand_tree(self, tree: dict) -> list[dict]:
+         """The history a compaction tree holds, as text: its first user message (recursively) then the segment through the compact call."""
+-        inner = list(tree.get("messages") or [])
++        inner = [message for message in tree.get("messages") or [] if message.get("role") != "system"]   # the frame is the reader's own
+         if not inner:
+             return []
+         expanded = self._expand_parts([inner[0]]) + self._expand_parts(inner[1:])
+@@ -642,13 +644,18 @@
+             ratio = self._sample_ratio(rng, ratios_range)
+             depth = rng.randint(min(depth_range), max(depth_range))
+             question = example.query
+-            def part_for(messages: list[dict]) -> dict:
+-                part = ac_part(messages, self.ac_name, ratio)
++            def part_for(source: DatasetDocument, messages: list[dict]) -> dict:
++                kwargs = source.trajectory_kwargs or {}                              # the frame the trajectory ran with, when the loader kept it
++                frame = [{"role": "system", "content": kwargs["system_prompt"]}] if kwargs.get("system_prompt") else []
++                part = ac_part(frame + messages, self.ac_name, ratio)
+                 if depth >= 2:
+-                    part = ac_part([messages[0], {"role": "user", "content": [part]}], self.ac_name, ratio)
++                    part = ac_part(frame + [messages[0], {"role": "user", "content": [part]}], self.ac_name, ratio)
++                if kwargs.get("tools"):
++                    part["tools"] = deepcopy(kwargs["tools"])
+                 return part
+ 
+-            parts = [("gold", part_for(window))] + [("distractor", part_for(messages)) for messages in distractors]
++            parts = [("gold", part_for(document, window))] + [("distractor", part_for(candidate, messages))
++                                                                for candidate, messages in zip(candidates[:num_distractors], distractors)]
+             rng.shuffle(parts)
+             content = [{"type": "text", "text": f"Task: {question}\n\n"}]
+             for number, (_, part) in enumerate(parts, start=1):
+@@ -753,7 +760,7 @@
+                         pieces.append(part.get("text", ""))
+                         continue
+                     if kind == "recent_text":
+-                        rows = self.ac_model.part_view_rows(part["messages"], part.get("compression_target"))
++                        rows = self.ac_model.part_view_rows(part["messages"], part.get("compression_target"), part.get("tools"))
+                         if item.kind == "compaction":
+                             text = render_messages(_expand_parts(part["messages"]))
+                             ids = self.tokenizer.encode(text, add_special_tokens=False)[-rows:]
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -292,8 +292,8 @@
+             teacher_prefix += tokenizer.encode(item.teacher_partial_text, add_special_tokens=False)
+         parts = direct_parts(item.ac_prefix)
+         requests = [ac_model._child_request(part, ac_model.config.default_compression_ratio) for part in parts]
+-        requests = [EncodeRequest(request.messages, request.compression_ratio, False) for request in requests]   # top-level parts: target rows
+-        lengths = [ac_model.part_view_rows(request.messages, request.compression_ratio) for request in requests]
++        requests = [EncodeRequest(request.messages, request.compression_ratio, False, request.tools) for request in requests]   # top-level parts: target rows
++        lengths = [ac_model.part_view_rows(request.messages, request.compression_ratio, request.tools) for request in requests]
+         pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else (tokenizer.eos_token_id or 0)
+         student_prefix, spans = tokenize_with_parts(tokenizer, item.ac_prefix, lengths, pad_id, tools=item.tools, add_generation_prompt=True)
+         if not completion_ids or not teacher_prefix or not student_prefix:
+diff --git a/activation/agent/agent_utils.py b/activation/agent/agent_utils.py
+--- a/activation/agent/agent_utils.py
++++ b/activation/agent/agent_utils.py
+@@ -194,9 +194,9 @@
+             ]
+         return message
+ 
+-    def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
+-        from .agent_tools import tool_content
+-        return [{"role": "tool", "content": tool_content(result)} for result in results]     # content lists: parts in order
++    def tool_messages(self, calls: list[dict], contents: list[list[dict]]) -> list[dict]:
++        """One tool message per result; `contents` are the per-result content lists (rendered parts, then text), in call order."""
++        return [{"role": "tool", "content": content} for content in contents]
+ 
+ 
+ class InlineRendering(MessageRendering):
+@@ -220,12 +220,11 @@
+         blocks = [self.format.render(call["name"], call["arguments"]) for call in calls]
+         return {"role": "assistant", "content": "\n\n".join([content] + blocks if content else blocks)}
+ 
+-    def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
+-        from .agent_tools import tool_content
++    def tool_messages(self, calls: list[dict], contents: list[list[dict]]) -> list[dict]:
+         content: list[dict] = []
+-        for index, result in enumerate(results):
++        for index, result_content in enumerate(contents):
+             content.append({"type": "text", "text": ("\n" if index else "") + "<tool_response>\n"})
+-            content.extend(tool_content(result))
++            content.extend(result_content)
+             content.append({"type": "text", "text": "\n</tool_response>"})
+         return [{"role": "user", "content": content}]
+ 
+diff --git a/activation/tests/test_basic_agent_ac.py b/activation/tests/test_basic_agent_ac.py
+--- a/activation/tests/test_basic_agent_ac.py
++++ b/activation/tests/test_basic_agent_ac.py
+@@ -29,8 +29,7 @@
+ SYSTEM = ("You are a careful problem solver working in a sandbox. Use the python or shell tools to compute rather than "
+           "guessing. When you are done, call submit_answer exactly once with the final answer.")
+ PRIMES = "Compute the sum of the 140th, 141st and 142nd prime numbers (2 is the 1st prime)."
+-BASE = AgentConfig(system_prompt=SYSTEM, model_name=MODEL_NAME, ac_model_name=AC_NAME, enable_ac_communication=True,
+-                   call_kwargs={"sampling_params": {"max_tokens": 1024, "temperature": 0.7}}, max_turns=12, max_tool_errors=3, max_duration=300)
++BASE = AgentConfig(system_prompt=SYSTEM, model_name=MODEL_NAME, ac_model_name=AC_NAME,                    call_kwargs={"sampling_params": {"max_tokens": 1024, "temperature": 0.7}}, max_turns=12, max_tool_errors=3, max_duration=300)
+ LONG = "0123456789" * 120   # 1,200 chars per synthetic tool output
+ 
+ 
+@@ -107,8 +106,9 @@
+         assert results.trajectory == [] and not agent.compaction_due and agent.segment_start == len(agent.prefix)
+         assert [m["role"] for m in results.prompt_messages] == ["system", "user", "user"]
+         tree = direct_parts(results.prompt_messages)[0]
+-        assert tree["compression_target"] == config.ac_compaction_ratio and tree["messages"][0]["content"] == config.user_prompt
+-        assert len(tree["messages"]) == 1 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
++        assert tree["compression_target"] == config.ac_compaction_ratio and tree["messages"][0]["role"] == "system" and tree["tools"]
++        assert tree["messages"][1]["content"] == config.user_prompt
++        assert len(tree["messages"]) == 2 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
+         assert results.prompt_messages[2]["content"][1]["text"].endswith("Printed 0..3; next sum the primes.")
+         assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
+         assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
+@@ -129,12 +129,18 @@
+         child = agent.run_results.subagent_results[0]
+         assert child.finish_reason == "simulated" and child.answer.endswith("simulated run")
+         child_user = child.prompt_messages[1]
+-        assert [p.get("type") for p in child_user["content"]] == ["text", "activation_context", "text"]
+-        assert child_user["content"][2]["text"] == "Find the 140th prime." and child_user["content"][1]["messages"][0]["content"] == config.user_prompt
+-        assert child.prompt_ac_spans and child.prompt_ac_spans[0]["length"] == ac_model.part_view_rows(child_user["content"][1]["messages"], BASE.ac_subagent_ratio)
++        assert [p.get("type") for p in child_user["content"]] == ["activation_context", "text", "text"]      # the parent's part, the intro block, the brief
++        part = child_user["content"][0]
++        assert child_user["content"][2]["text"] == "Find the 140th prime." and part["kind"] == "subagent_prompt"
++        assert part["messages"][0]["role"] == "system" and part["messages"][1]["content"] == config.user_prompt and part["tools"]
++        assert child.prompt_ac_spans and child.prompt_ac_spans[0]["length"] == ac_model.part_view_rows(part["messages"], BASE.ac_subagent_ratio, part["tools"])
++        assert child.injected_input and child.injected_input[0]["tool"] == "parent"
+         tool_step = agent.run_results.trajectory[-1]
+         assert [p.get("type") for p in tool_step["messages"][0]["content"]] == ["activation_context", "text"]
+-        assert tool_step["messages"][0]["content"][0]["messages"][0]["content"][1]["type"] == "activation_context"   # the child's segment starts with its part
++        returned = tool_step["messages"][0]["content"][0]
++        assert returned["kind"] == "subagent_return" and returned["messages"][0]["role"] == "system"
++        assert returned["messages"][1]["content"][0]["type"] == "activation_context"                          # the child's segment starts with the parent's part
++        assert tool_step["tool_results"][0]["subagent_index"] == 0
+         assert len(tool_step["ac_spans"]) == 1 and len(agent.spans) == 1
+         _probe_engine(agent, "subagent")
+ 
+@@ -205,7 +211,7 @@
+ def test_agent_compaction_text_only():
+     """No AC model: the same protocol with the summary alone; at least one rollout compacts. Finish reasons are printed, not asserted beyond the allowed set."""
+     harness = _harness(with_ac=False)
+-    config = replace(BASE, ac_model_name=None, enable_ac_communication=False, compaction_threshold_tokens=300, user_prompt=PRIMES)
++    config = replace(BASE, ac_model_name=None, compaction_threshold_tokens=300, user_prompt=PRIMES)
+     reporter = RolloutReporter(str(resolve_path("AGENT_AC_TEST/text_only")), title="Agent AC test: text-only compaction")
+     try:
+         results = harness.rollout_manager.perform_grouped_rollouts([config], group_count=2, base_seed=0, perform_scoring=False, reporter=reporter)[0]
+diff --git a/activation/tests/test_basic_agent.py b/activation/tests/test_basic_agent.py
+--- a/activation/tests/test_basic_agent.py
++++ b/activation/tests/test_basic_agent.py
+@@ -32,6 +32,7 @@
+     max_turns=10,
+     max_tool_errors=3,
+     max_duration=300,
++    absolute_trajectory_cap=40_000,                                # the 9B engine holds 52k tokens: cap + max_tokens must fit
+ )
+ 
+ 
 diff --git a/activation/tests/test_basic_rollout_redo.py b/activation/tests/test_basic_rollout_redo.py
 new file mode 100644
 --- /dev/null

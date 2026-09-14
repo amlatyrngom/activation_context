@@ -6,15 +6,19 @@ A program is configuration: `AgentConfig.agentic_program = (ProgramClass, kwargs
 `Agent.run_program()` (what the rollout manager calls) constructs it with the initialized, unstarted agent and calls
 `execute()`, which returns the main agent's own `AgentRunResult`. Inside `execute` a program may, before the first turn:
 
-- `agent.augment_context(content)`: text and activation parts placed ahead of the task in the first user message;
-- `agent.run_subagent(brief, max_duration=None)`: a solver in the same sandbox (delegation tools and program removed),
-  its result appended to `subagent_results`;
+- `agent.run_tool(tool, **arguments)`: a tool call on the same path as the model's (a configured tool by name, or a tool
+  instance the program built); returns the ToolCallResult with its text and its activation content;
+- `agent.run_subagent(brief, max_duration=None)`: run_tool on a subagent tool over this agent's inherited config (delegation
+  tools and program removed); the child's run joins `subagent_results`, the result carries its index and segment;
+- `agent.augment_context(results)`: tool results (or plain text) placed ahead of the task in the first user message, their
+  activation parts rendered when the agent has an AC model, recorded under `run_results.injected_input` either way;
 - `agent.set_final_answer(answer)`: finish without a model turn (finish reason "programmed");
 - `agent.run()`: the model loop on the (augmented) task.
 
 A program that runs the main agent through `run()` and solvers through `run_subagent()` gets every trajectory recorded
-for SFT/RL. A program that drives agents any other way must populate the run results itself. Programs never mutate the
-config (the cache key is computed from it before and after the run) and never touch a started segment.
+for SFT/RL, activation content included. A program that drives agents any other way must populate the run results itself.
+Programs never mutate the config (the cache key is computed from it before and after the run) and never touch a started
+segment.
 """
 from __future__ import annotations
 

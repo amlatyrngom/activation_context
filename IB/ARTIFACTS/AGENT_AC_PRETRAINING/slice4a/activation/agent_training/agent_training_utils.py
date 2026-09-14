@@ -437,3 +437,56 @@ def disable_dropout(module: torch.nn.Module) -> int:
             child.eval()
             count += 1
     return count
+
+
+def activation_messages_of(run: "AgentRunResult", config: "AgentConfig") -> list[dict]:
+    """
+    The run's current segment as messages with every recorded activation part rendered for `config` (its ac_model_name and
+    ratios; a config without an AC model renders nothing): the first user message rebuilt from `injected_input`, each tool
+    step's message from its `tool_results`. A base run (no parts rendered at run time) comes out AC-bearing; an AC run comes
+    out as recorded. Steps without `tool_results` (old records) stay as they are. Token ids are not produced here.
+    """
+    from copy import deepcopy
+    from activation.common.ac_parts import is_ac_part, resolve_activation_part
+    from activation.agent.agent_tools import injected_block_text
+
+    def render(parts: list[dict]) -> list[dict]:
+        return [resolve_activation_part(part, config) for part in parts] if config.ac_model_name and parts else []
+
+    def text_items(content) -> list[dict]:
+        items = content if isinstance(content, list) else [{"type": "text", "text": content or ""}]
+        return [item for item in items if not is_ac_part(item)]
+
+    messages = deepcopy(run.prompt_messages)
+    injected = list(run.injected_input)
+    if injected:
+        for message in messages:
+            if message.get("role") != "user":
+                continue
+            items, out, j = text_items(message.get("content")), [], 0
+            for item in items:
+                if j < len(injected) and item.get("type") == "text" and item.get("text") == injected_block_text(injected[j]):
+                    out.extend(render(list(injected[j].get("activation_content") or [])))
+                    j += 1
+                out.append(item)
+            if j:
+                message["content"] = out
+                break
+    for step in run.trajectory:
+        results = step.get("tool_results") or []
+        step_messages = deepcopy(step.get("messages") or [])
+        if step.get("role") == "tool" and results and step_messages:
+            if step_messages[0].get("role") == "tool":                                            # structured: one message per result
+                for message, result in zip(step_messages, results):
+                    message["content"] = render(list(result.get("activation_content") or [])) + text_items(message.get("content"))
+            else:                                                                                  # inline: one user message of <tool_response> blocks
+                out, index = [], 0
+                for item in text_items(step_messages[0].get("content")):
+                    out.append(item)
+                    if item.get("type") == "text" and item.get("text", "").lstrip("\n").startswith("<tool_response>") and index < len(results):
+                        out.extend(render(list(results[index].get("activation_content") or [])))
+                        index += 1
+                step_messages[0]["content"] = out
+        messages.extend(step_messages)
+    return messages
+

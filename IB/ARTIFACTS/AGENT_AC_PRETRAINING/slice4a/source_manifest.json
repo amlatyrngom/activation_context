@@ -1,7 +1,7 @@
 {
   "activation/agent/agent_config.py": {
     "source_sha256": "e611f7f83f6b208c7b304fd74b4183126e5c8da2019a09a34c12eed38f4f0b5a",
-    "staged_sha256": "23d32a052461e1fff77b03a388b25e8d1da22320f263a3abef07f015a7b5802d"
+    "staged_sha256": "8140cd6d2d5d6d7e2993be4144c549a0bec9a776b015eb699235e5344414ef43"
   },
   "activation/agent/agent_env.py": {
     "source_sha256": "bd621c326f8290a1fd13458f282f51322832d9df325a8d8b56b5b5407f784eb4",
@@ -9,11 +9,11 @@
   },
   "activation/agent/agent.py": {
     "source_sha256": "e5e3afc7224882515dc090c5f08ff863ffdca2e96d6bbf675cfb6006f404336a",
-    "staged_sha256": "060d7785ab0018704bc3c5dff1f4439e2fdbc784584349c0114b50c1d930c873"
+    "staged_sha256": "32ef1124badb100cea730932d4277ddfa976cca0ebc52665e6f1290802237702"
   },
   "activation/agent/agent_tools.py": {
     "source_sha256": "8baebd0f2c0ea966273fea677386908c569e5d300eab493029b85791ebd5ec37",
-    "staged_sha256": "2c06b2adfa401dec908916718ae310cf51f7b7fea2bba401a4dc763be53756ce"
+    "staged_sha256": "82fc0bbc8a54114a74aa424f5487ee112e0bc68796ed2b8e61d8447b62816343"
   },
   "activation/agent/rollout_caching.py": {
     "source_sha256": "0dcfe09d874ba67b0fa38080ab6789031e6c3bd83e3a3b078cfd62887cde96d2",
@@ -41,7 +41,7 @@
   },
   "activation/agent_training/agent_training_utils.py": {
     "source_sha256": "b1be720b1b33d39b1afbfb94aaceebae5ca5c7afe97ebdd1b92855436765dfb7",
-    "staged_sha256": "45b099282b81c324165fdf8c8bd175b010877a3fc1c184a60753780c394b077b"
+    "staged_sha256": "ee2d55940019bb9760a5974299ec19f90c567a7a718f7494a5142fdc80e53641"
   },
   "activation/agent_training/agent_trainer.py": {
     "source_sha256": "5afa8d3839af14b50524a7fde10fa72431f6f92725355f1d05b0b7a0efe4c9cc",
@@ -173,7 +173,7 @@
   },
   "activation/agent/agentic_program.py": {
     "source_sha256": null,
-    "staged_sha256": "fd2851ab570d038cc03daba45b674c577b99ac88b971df92ae6176cc278680b3"
+    "staged_sha256": "c6952de5dc40c74b643671210ac794566d4cb7cd1ff6696cbc382492fc6d533f"
   },
   "activation/common/utils.py": {
     "source_sha256": null,
@@ -181,11 +181,43 @@
   },
   "activation/tests/test_basic_agentic_program.py": {
     "source_sha256": null,
-    "staged_sha256": "e6f7613ecf08142907ac3eb26b6427c1bdd9ed5246ad059da61ceae373ca5b13"
+    "staged_sha256": "5bcb3f4b598ab26ec2d0621e540f250e90f731b52d13c2422d7d230f0923b91b"
   },
   "activation/bench/agent_probes/agentic_program_probe.py": {
     "source_sha256": null,
-    "staged_sha256": "8c723cf1a5c3c4bbaba739c6b53e2df0e4edfefed340e78695430471046f0009"
+    "staged_sha256": "f53925e0c9ca40eb52760ba68250bb1b15b0be31851d7e2498305cd3f161136b"
+  },
+  "activation/common/ac_parts.py": {
+    "source_sha256": "45232e31b18f75897db23e11e142cc0d542db5b0ecba84111f7a1e268edf1f07",
+    "staged_sha256": "4658e0a32c36aa887f83956ed10dc70a7b8f0d92c561e13a67269eea4fd2ae70"
+  },
+  "activation/ac_model/ac_model_utils.py": {
+    "source_sha256": "6af5cf8221f5927ea51765908eebb6be9144126d4fc8374b95b9a24809219ec9",
+    "staged_sha256": "76c3cf1f83f0d7d90bd2a895e2967edd011db86399c0f2561a4a84dd6ac9a141"
+  },
+  "activation/ac_model/ac_model.py": {
+    "source_sha256": "1f3c69227def577ef366ccc301af2c53a45ce8254ea470a1b5d9ecafe56077b7",
+    "staged_sha256": "32b4155acf05e52accb55415e7b7a30bf46c669643fdda867960f551ff5bc633"
+  },
+  "activation/ac_model/ac_model_study.py": {
+    "source_sha256": "6f31ecd990c8cae72753d65a5502356adf6e4dce2055dfe801c435dfc0ef6bfe",
+    "staged_sha256": "a4c9c48b0b58d0b58c3db527a9fc427c84e3e927028aac0d99b19312c978cf85"
+  },
+  "activation/ac_model/ac_model_training.py": {
+    "source_sha256": "ca301e494782786e0691f8eeac1c1aa9b46062ac1707767912a2bb6d1fafc147",
+    "staged_sha256": "ace6174f494009d5ef304bf6e9dc50f3e64b65ddb085b33dab956d17291764a7"
+  },
+  "activation/agent/agent_utils.py": {
+    "source_sha256": "ab0ec12224fad4de56e32dceef8c68a7ba6deacdd1c359c629a2225b700496e4",
+    "staged_sha256": "db0674ef44eb4bcc2b3c14b654d921d8595999cb2fb27d0fcdc62db900af2a66"
+  },
+  "activation/tests/test_basic_agent_ac.py": {
+    "source_sha256": "b6e0c1e76c7aec66f121370e2a03ed136e777ece4ce1c52abd0ae318321bcd85",
+    "staged_sha256": "adea8c75962a560f83412375dd501b7d7f68d9a85fc7484c16a9053d0ae5c706"
+  },
+  "activation/tests/test_basic_agent.py": {
+    "source_sha256": "65b67c992d59f43561e50f84857a20d572714b8f83ca4a606065825e0c2a6439",
+    "staged_sha256": "c8de9b91911dbe7bc7d16cf3995a00449f0f24af3f692a82fd99960ab3e0dee5"
   },
   "activation/tests/test_basic_rollout_redo.py": {
     "source_sha256": null,

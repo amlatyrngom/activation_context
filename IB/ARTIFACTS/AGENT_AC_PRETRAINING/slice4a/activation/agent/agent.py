@@ -31,11 +31,11 @@ from dataclasses import asdict
 
 import torch
 
-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part, direct_parts
+from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part, direct_parts, resolve_activation_part
 
 from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
 from .agent_env import AgentEnv
-from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output, subagent_config_of
+from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, tool_content, truncate_output, subagent_config_of
 from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
 
 MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
@@ -86,7 +86,6 @@ class Agent:
         self._think_end_id: int | None = None
         self._last_turn_timing: dict | None = None
         self.last_calls_signature: str | None = None   # the previous turn's calls; an identical turn is not run
-        self.program_content: list[dict] = []          # placed ahead of the task by an agentic program; consumed once by first_user_messages()
         self.reported = False                          # report_agent_start done (run_program reports before its solvers start)
         self.last_sampled: list[int] = [] # the previous assistant turn's tokens, for join_continuation
         self.step_mode = False            # simulation: subagents do not run, nothing is submitted
@@ -146,13 +145,25 @@ class Agent:
         dtype = self.loaded_model.model_config.dtype
         return dtype if isinstance(dtype, torch.dtype) else torch.bfloat16
 
-    def segment_messages(self) -> list[dict]:
-        """The current segment without the system message: what a part sees as 'the parent so far'."""
-        return [message for message in self.messages if message.get("role") != "system"]
+    def to_activation_context(self, kind: str) -> dict:
+        """
+        This agent's current segment as an activation part of `kind`: its system message first, then the segment verbatim
+        (a compaction tree rides inside the first user message), with its tool definitions as the part's `tools`. The one
+        builder of segment parts: subagent prompt and return, compaction, and the parent context nested in tool parts.
+        """
+        return activation_part(kind, deepcopy(self.messages), deepcopy(self.tool_definitions or self._tool_definitions()))
 
-    def context_part(self, ratio: float) -> dict:
-        """The current segment as an activation_context part (task first; a compaction tree rides inside its first user message)."""
-        return ac_part(deepcopy(self.segment_messages()), self.agent_config.ac_model_name, ratio, kind="parent_context")
+    def nested_in_context(self, message: dict) -> list[dict]:
+        """`message` after this agent's segment as a nested parent_context part; the message alone before the first turn."""
+        if not self.messages:
+            return [message]
+        return [{"role": "user", "content": [self.to_activation_context("parent_context")]}, message]
+
+    def render_activation(self, parts: list[dict]) -> list[dict]:
+        """The parts with this reader's encoder settings (ac_name and compression target by kind, nested parts too); [] without an AC model."""
+        if self.ac_model is None or not parts:
+            return []
+        return [resolve_activation_part(part, self.agent_config) for part in parts]
 
     def _pad_id(self) -> int:
         tokenizer = self.loaded_model.tokenizer
@@ -164,7 +175,7 @@ class Agent:
             return []
         ac_model = self.ac_model
         assert ac_model is not None, "activation_context parts need agent_config.ac_model_name"
-        return [ac_model.part_view_rows(part["messages"], part.get("compression_target")) for part in parts]
+        return [ac_model.part_view_rows(part["messages"], part.get("compression_target"), part.get("tools")) for part in parts]
 
     def _encode_parts(self, messages: list[dict]) -> list[torch.Tensor]:
         """Rows of the parts in `messages`, in order, through the rollout queue (children first, cached), cast once to the target dtype."""
@@ -173,7 +184,7 @@ class Agent:
             return []
         ac_model = self.ac_model
         assert ac_model is not None, "activation_context parts need agent_config.ac_model_name"
-        futures = [ac_model.encode_async(part["messages"], part.get("compression_target")) for part in parts]
+        futures = [ac_model.encode_async(part["messages"], part.get("compression_target"), tools=part.get("tools")) for part in parts]
         rows = [future.result().detach().to(dtype=self.row_dtype).cpu().contiguous() for future in futures]
         self.run_results.num_ac_parts += len(rows)
         self.run_results.num_ac_rows += sum(int(r.shape[0]) for r in rows)
@@ -181,11 +192,15 @@ class Agent:
 
     # ----------------------------------------------------------------------------- segments
     def first_user_messages(self) -> list[dict]:
-        """messages_input with the task appended as a trailing text part of the last user message (today's prompt when empty)."""
+        """
+        messages_input, then the injected results (run_results.injected_input: rendered activation parts and a labelled
+        text block each), then the task text, as trailing parts of the last user message (a new one when messages_input
+        does not end with a user message).
+        """
         config = self.agent_config
         messages = deepcopy(config.messages_input)
         prompt = self._offloaded_prompt(config.user_prompt)
-        lead = list(self.program_content)                                       # a program's content goes ahead of the task text
+        lead = injected_content(self.run_results.injected_input, self.render_activation)
         if not messages or messages[-1].get("role") != "user":
             messages.append({"role": "user", "content": (lead + [{"type": "text", "text": prompt or ""}]) if lead else prompt})
         elif prompt or lead:
@@ -250,20 +265,18 @@ class Agent:
     def compact(self, summary: str) -> None:
         """Close the current segment into run_results.compactions and start the next one from its tree (or the summary alone)."""
         config, results = self.agent_config, self.run_results
-        first_user = next(i for i, message in enumerate(self.messages) if message.get("role") == "user")
-        inner, segment = self.messages[first_user], self.messages[first_user + 1:]          # verbatim; through the compact call
+        tree = self.render_activation([self.to_activation_context("compaction")])           # the segment through the compact call; [] without an AC model
         record = AgentRunResult(
             agent_config=config, seed=self.seed, source=results.source, lora_name=results.lora_name, finish_reason="compacted",
             trajectory=results.trajectory, prompt_token_ids=results.prompt_token_ids, prompt_messages=results.prompt_messages,
             prompt_ac_spans=results.prompt_ac_spans, ac_model_name=results.ac_model_name, ac_model_version=results.ac_model_version,
-            num_turns=sum(1 for step in results.trajectory if step["role"] == "assistant"),
+            injected_input=deepcopy(results.injected_input), num_turns=sum(1 for step in results.trajectory if step["role"] == "assistant"),
         )
         results.compactions.append(record)
         results.trajectory = []
         text = COMPACTION_INSTRUCTIONS + (f"\n\nSummary written before compaction:\n{summary}" if summary.strip() else "")
-        if self.ac_model is not None:
-            tree = ac_part(deepcopy([inner] + segment), config.ac_model_name, config.ac_compaction_ratio, kind="compaction")
-            after = {"role": "user", "content": [tree, {"type": "text", "text": "\n\n" + text}]}
+        if tree:
+            after = {"role": "user", "content": tree + [{"type": "text", "text": "\n\n" + text}]}
         else:
             after = {"role": "user", "content": "The conversation so far was compacted.\n\n" + text}
         system = [message for message in self.messages if message.get("role") == "system"]
@@ -291,11 +304,13 @@ class Agent:
         self._append_step(TrajectoryStep(role="user", content=text, messages=[message], token_ids=wrapper), [message], spans, [])
 
     def append_tool_results(self, calls: list[dict], results: list[ToolCallResult], tool_seconds: float | None = None) -> None:
-        tool_messages = self.dialect.rendering.tool_messages(calls, results)          # content lists with parts, in order
+        contents = [self.render_activation(result.activation_content) + tool_content(result) for result in results]   # parts, then the text
+        tool_messages = self.dialect.rendering.tool_messages(calls, contents)
         wrapper, spans = self._continuation(tool_messages)
         rows = self._encode_parts(tool_messages)
         step = TrajectoryStep(role="tool", content="\n\n".join(result.output for result in results), tool_calls=calls,
-                              tool_call_results=[result.output for result in results], messages=tool_messages, token_ids=wrapper,
+                              tool_call_results=[result.output for result in results], tool_results=[result.serialize() for result in results],
+                              messages=tool_messages, token_ids=wrapper,
                               timing=None if tool_seconds is None else {"tool_seconds": round(tool_seconds, 3)})
         self._append_step(step, tool_messages, spans, rows)
 
@@ -400,24 +415,44 @@ class Agent:
                     self.reporter.report_agent_finish(self)
         return results
 
-    def augment_context(self, content: list[dict]) -> None:
-        """Content items (text and activation parts) placed ahead of the task in the first user message; before the first turn only."""
+    def augment_context(self, results: "ToolCallResult | str | list[ToolCallResult | str]") -> None:
+        """
+        Tool results placed ahead of the task in the first user message (their activation parts rendered when this agent has
+        an AC model, their text always); a plain string is a result of the pseudo-tool "program". Recorded verbatim under
+        run_results.injected_input. Before the first turn only.
+        """
         assert not self.started, "augment_context runs before the first turn"
-        self.program_content.extend(deepcopy(content))
+        for item in (results if isinstance(results, list) else [results]):
+            result = ToolCallResult(tool="program", output=item) if isinstance(item, str) else item
+            self.run_results.injected_input.append(result.serialize())
 
-    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> AgentRunResult:
-        """A solver on `brief` in this agent's sandbox: no delegation tools, no program; its result joins subagent_results."""
-        config = subagent_config_of(self, brief, agent_name=agent_name)
-        if max_duration is not None:
-            config.max_duration = min(float(config.max_duration), float(max_duration))
-        child = Agent(self.harness, config, agent_env=self.agent_env, parent_agent=self, reporter=self.reporter, seed=self.seed)
+    def run_tool(self, tool: "str | AgentTool", **arguments) -> ToolCallResult:
+        """
+        A tool call made by a program: one of this agent's configured tools by name, or a tool instance the program built
+        (its own base config, for instance). The same path as a model's call: normalized arguments, error wrapping,
+        truncation with its part, `tool` set on the result.
+        """
+        call = {"id": uuid.uuid4().hex[:8], "name": tool if isinstance(tool, str) else tool.name, "arguments": dict(arguments)}
+        if isinstance(tool, str):
+            return self.execute_tool_call(call)
         try:
-            result = child.run()
-        finally:
-            child.shutdown()                                                    # the env is this agent's; the child releases only its own state
-        with self.lock:
-            self.run_results.subagent_results.append(result)
-        return result
+            result = tool.execute(**tool.normalize_arguments(call["arguments"]))
+        except TypeError as error:
+            result = ToolCallResult(output=f"Bad arguments for {tool.name}: {error}", is_error=True)
+        except Exception as error:
+            result = ToolCallResult(output=f"{tool.name} failed: {type(error).__name__}: {error}", is_error=True)
+        return self._finalize_result(call, result)
+
+    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> ToolCallResult:
+        """
+        Convenience over run_tool: a subagent tool on this agent's inherited config (no delegation tools, no program; the
+        subagent note on the system prompt), bounded to `max_duration`. The child's run joins subagent_results and the
+        result carries its index and its segment as activation content.
+        """
+        base = subagent_config_of(self, agent_name=agent_name)
+        if max_duration is not None:
+            base.max_duration = min(float(base.max_duration), float(max_duration))
+        return self.run_tool(SubagentTool(self.harness, self, base_config=base), task=brief)
 
     def set_final_answer(self, answer: t.Any) -> None:
         """A program's answer without a model turn: the run finishes as "programmed"."""
@@ -634,14 +669,16 @@ class Agent:
         return self._finalize_result(call, result)
 
     def _finalize_result(self, call: dict, result: ToolCallResult) -> ToolCallResult:
-        """Truncation and its part, applied to any tool's result (the one text part of a content list equals the visible output)."""
+        """The tool's name on the result, then truncation: the visible text replaces the output and the full text becomes a part."""
+        result.tool = call["name"]
         visible, part = truncate_output(self._env, result.output, call["id"], agent=self if not result.compacted else None)
         if visible != result.output:
             content = [dict(item) for item in tool_content(result)]
             for item in content:
                 if item.get("type") == "text" and item.get("text") == result.output:
                     item["text"] = visible
-            result.content = ([part] if part is not None else []) + content
+            result.content = content
+            result.activation_content = ([part] if part is not None else []) + list(result.activation_content)
             result.output = visible
         return result
 
@@ -676,5 +713,7 @@ class Agent:
 
 def _is_context_overflow(error: BaseException) -> bool:
     """vLLM's validation error for a prompt over max_model_len (its class differs across versions)."""
+    if isinstance(error, AssertionError):                                       # our own budget checks name max_model_len too
+        return False
     text = str(error)
     return "maximum context length" in text or "max_model_len" in text or "longer than the maximum" in text

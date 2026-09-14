@@ -45,7 +45,6 @@ class AgentConfig:
     env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = field(default_factory=dict)  # name -> (setup class, constructor kwargs). Run once,
     agentic_program: tuple[type["AgenticProgram"], dict] | None = None   # the program that owns the rollout (Agent.run_program); None: the model loop
                                                               # in order, when this agent's env is created; never for subagents (they share the env).
-    enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
 
     # Budgets
     max_turns: int = 20                                       # total over the run, compaction segments included
@@ -83,6 +82,7 @@ class AgentConfig:
         from activation.dataset import DatasetTask, DatasetTaskMetricsKind
         data = dict(data)
         data.pop("ac_inputs", None)                                                   # rows written before slice 3b
+        data.pop("enable_ac_communication", None)                                     # rows written before P4: an agent with an AC model renders every channel
         resolve = lambda spec: _resolve_class_spec(spec, strict=strict)
         tools = {name: None if spec is None else resolve(spec) for name, spec in (data.pop("tools", None) or {}).items()}
         setups = {name: resolve(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
@@ -125,6 +125,8 @@ class TrajectoryStep:
     content: str                                               # assistant text (tool-call blocks removed) or the joined tool outputs
     tool_calls: list[dict] = field(default_factory=list)       # [{"id", "name", "arguments"}]
     tool_call_results: list[str] = field(default_factory=list) # truncated outputs, same order as tool_calls
+    tool_results: list[dict] = field(default_factory=list)     # serialized ToolCallResults, same order: output, content, activation_content
+                                                               # (recorded whether or not it was rendered), subagent_index. Empty on old records.
     messages: list[dict] = field(default_factory=list)         # the dialect messages this step appended, activation_context parts inline and in
                                                                # order: one assistant message, the tool messages, or the nudge
     ac_spans: list[dict] = field(default_factory=list)         # [{"start", "length"}] placeholder runs inside token_ids, one per part of `messages`
@@ -152,6 +154,8 @@ class AgentRunResult:
     score_feedback: str | None = None
     subagent_results: list["AgentRunResult"] = field(default_factory=list)
     compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
+    injected_input: list[dict] = field(default_factory=list)   # serialized ToolCallResults placed ahead of the task in the first user message
+                                                               # (a program's augment_context; the parent's context for a subagent)
     finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded
                                                                # | trajectory_cap | compaction_refused | compacted (a segment) | simulated | error
     seed: int = 0

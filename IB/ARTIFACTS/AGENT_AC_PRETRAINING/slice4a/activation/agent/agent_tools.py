@@ -1,11 +1,13 @@
 """
 Defines tool calls.
 All tool results are truncated to ~20000 chars as head[:10000] ... [truncated and written to
-/tmp/agent_outputs/<id>.txt] ... tail[-10000:] (the env writes these files). A result's content is an
-ordered list of text and activation_context parts: with an AC model a truncated output's full text
-rides as a part before the visible text, a subagent's final segment before its answer line, and the
-semantic-search passages beyond top_k after the visible ones. Every such part nests the parent's
-current segment as its own part, so the encoder compresses the content in the parent's context.
+/tmp/agent_outputs/<id>.txt] ... tail[-10000:] (the env writes these files). A result has `content`
+(the text the model reads) and `activation_content`: parts every tool produces on every call, whether
+or not the reader has an AC model (a truncated output's full text, the semantic-search passages beyond
+top_k, a subagent's final segment). The agent renders them ahead of the content when it has an AC
+model and records them on the tool step either way (`TrajectoryStep.tool_results`), so a base run can
+be converted to an AC-bearing one for training. Parts that compress a segment carry its system message
+first and its tool definitions; a tool-output or search part nests the parent's segment the same way.
 """
 from __future__ import annotations
 
@@ -16,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 
-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part
+from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part
 
 if t.TYPE_CHECKING:
     from .agent_config import AgentConfig, AgentRunResult
@@ -28,7 +30,7 @@ TOOL_OUTPUT_LIMIT_CHARS = 20_000
 AC_OUTPUT_LIMIT_CHARS = 4 * TOOL_OUTPUT_LIMIT_CHARS   # kept as activation context (and written to the env file): 4x what the model sees, head and tail beyond
 TOOL_OUTPUT_DIR = "/tmp/agent_outputs"
 SEARCH_EXTRA_MAX = 20                                 # passages beyond top_k that ride as activation context: min(this, 2 * top_k)
-SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far is provided as activation context; your task follows.\n"
+SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far may precede this note as activation context. Your task follows."
 SUBAGENT_TASK_FORMAT = (
     "A self-contained brief for the subagent, which sees none of your context. Write it as:\n"
     "TASK:\n- what to do, with every fact, path and constraint it needs\n"
@@ -52,21 +54,57 @@ class ToolCallResult:
     output: str                                          # what the model sees as text (already truncated)
     is_error: bool = False
     is_final: bool = False                               # submit_answer sets it
-    content: list[dict] | None = None                    # ordered content parts (text and activation_context) when the result carries
-                                                         # activation context; None means [text(output)]. Exactly one text part equals output.
+    content: list[dict] | None = None                    # text parts; None means [text(output)]. Exactly one text part equals output.
+    activation_content: list[dict] = field(default_factory=list)   # parts {type, kind, messages, tools} (activation_part): what the reader
+                                                         # may see compressed. Produced always; the agent renders them when it has an AC
+                                                         # model and records them on the step either way.
+    tool: str = ""                                       # the tool that produced it (the agent sets it; "program" / "parent" for injections)
+    subagent_index: int | None = None                    # record only: the child's index in subagent_results; never rendered
     compacted: bool = False                              # the compaction tool restarted the segment: no tool message follows this result
+
+    def serialize(self) -> dict:
+        return {"tool": self.tool, "output": self.output, "is_error": self.is_error, "is_final": self.is_final,
+                "content": deepcopy(self.content), "activation_content": deepcopy(self.activation_content),
+                "subagent_index": self.subagent_index, "compacted": self.compacted}
+
+    @classmethod
+    def deserialize(cls, data: dict) -> "ToolCallResult":
+        return cls(output=data.get("output", ""), is_error=bool(data.get("is_error", False)), is_final=bool(data.get("is_final", False)),
+                   content=deepcopy(data.get("content")), activation_content=deepcopy(data.get("activation_content") or []),
+                   tool=data.get("tool", ""), subagent_index=data.get("subagent_index"), compacted=bool(data.get("compacted", False)))
 
 
 def tool_content(result: ToolCallResult) -> list[dict]:
     return result.content if result.content is not None else [{"type": "text", "text": result.output}]
 
 
+def injected_block_text(result: "ToolCallResult | dict") -> str:
+    """The text part of an injected result in the first user message: the tool's name as a label, then its output."""
+    tool = result.get("tool") if isinstance(result, dict) else result.tool
+    output = result.get("output") if isinstance(result, dict) else result.output
+    return f"[{tool or 'program'}]\n{output}\n\n"
+
+
+def injected_content(injected: list[dict], render: "t.Callable[[list[dict]], list[dict]]") -> list[dict]:
+    """
+    The content parts that injected results (`AgentRunResult.injected_input`, serialized) contribute ahead of the task:
+    per result, its rendered activation parts (`render` returns [] for a reader without an AC model) then its block text.
+    Shared by Agent.first_user_messages and the training-side conversion (activation_messages_of).
+    """
+    content: list[dict] = []
+    for result in injected:
+        content.extend(render(list(result.get("activation_content") or [])))
+        content.append({"type": "text", "text": injected_block_text(result)})
+    return content
+
+
 def truncate_output(env: "AgentEnv | None", text: str, call_id: str, limit: int = TOOL_OUTPUT_LIMIT_CHARS,
                     agent: "Agent | None" = None) -> tuple[str, dict | None]:
     """
-    Head + tail of a long output; the full text goes to a file in the env and, with an AC model on the
-    agent, into an activation_context part (the full text as a tool message, nested with the parent's
-    current segment). Returns (visible text, part or None).
+    Head + tail of a long output; the full text goes to a file in the env and, with an agent given, into an
+    activation part (kind tool_output: the full text as a tool message, nested with the parent's current
+    segment). Returns (visible text, part or None). The part is produced whether or not the agent has an
+    AC model: the agent renders it when it has one and records it either way.
     """
     if len(text) <= limit:
         return text, None
@@ -78,20 +116,9 @@ def truncate_output(env: "AgentEnv | None", text: str, call_id: str, limit: int 
     half = limit // 2
     note = f"full output written to {path}" if written else "full output kept as activation context"
     truncated = f"{text[:half]}\n... [truncated {len(text) - limit} chars; {note}] ...\n{text[-half:]}"
-    if agent is None or agent.ac_model is None:
+    if agent is None:
         return truncated, None
-    config = agent.agent_config
-    part = ac_part([{"role": "user", "content": [agent.context_part(config.ac_subagent_ratio)]}, {"role": "tool", "content": text}],
-                   config.ac_model_name, config.ac_tool_output_ratio, kind="tool_output")
-    return truncated, part
-
-
-def segment_messages_of(result: "AgentRunResult") -> list[dict]:
-    """A run's final segment as dialect messages without the system message: prompt messages, then each step's messages."""
-    messages = [message for message in result.prompt_messages if message.get("role") != "system"]
-    for step in result.trajectory:
-        messages.extend(step.get("messages") or [])
-    return deepcopy(messages)
+    return truncated, activation_part("tool_output", agent.nested_in_context({"role": "tool", "content": text}))
 
 
 class AgentTool:
@@ -234,17 +261,10 @@ class ParallelCallTool(AgentTool):
         with ThreadPoolExecutor(max_workers=min(8, len(nested))) as pool:
             results = list(pool.map(self.agent.execute_tool_call, nested))
         outputs = [f"[{call['name']}] {result.output}" for call, result in zip(nested, results)]
-        content: list[dict] = []
-        for call, result, labeled in zip(nested, results, outputs):
-            for item in tool_content(result):                                            # each call's parts in its own order
-                content.append({"type": "text", "text": labeled + "\n\n"} if item.get("type") == "text" else item)
-        if content and content[-1].get("type") == "text":
-            content[-1] = {"type": "text", "text": content[-1]["text"].rstrip("\n")}
-        has_parts = any(result.content is not None for result in results)
         return ToolCallResult(
             output="\n\n".join(outputs), is_error=any(result.is_error for result in results),
-            is_final=any(result.is_final for result in results), compacted=any(result.compacted for result in results),
-            content=content if has_parts else None,
+            is_final=any(result.is_final for result in results),
+            activation_content=[part for result in results for part in result.activation_content],   # members' parts in call order
         )
 
 
@@ -276,8 +296,7 @@ class SemanticSearchTool(AgentTool):
         index = self.harness.dataset_manager._get_or_create_index(self.dataset_id)
         index.build_bm25_index()
         k = int(top_k or self.top_k)
-        config = self.agent.agent_config
-        extra = min(SEARCH_EXTRA_MAX, 2 * k) if self.agent.ac_model is not None else 0    # the model sees top_k; the next `extra` ride as rows
+        extra = min(SEARCH_EXTRA_MAX, 2 * k)                  # the model sees top_k; the next `extra` ride as a part (recorded either way)
         chunks = index.bm25_query_many_frozen([query], top_k=k + extra)[0]
         if not chunks:
             return ToolCallResult(output="No passage matched the query.")
@@ -286,12 +305,10 @@ class SemanticSearchTool(AgentTool):
             return "\n\n".join(f"[{chunk.chunk_id}]\n{index.get_chunk_section(chunk)[:self.max_chars]}" for chunk in subset)
 
         output = blocks(chunks[:k])
-        content = None
+        activation = []
         if chunks[k:]:
-            part = ac_part([{"role": "user", "content": [self.agent.context_part(config.ac_subagent_ratio)]},
-                            {"role": "tool", "content": blocks(chunks[k:])}], config.ac_model_name, config.ac_search_ratio, kind="search")
-            content = [{"type": "text", "text": output}, part]                                # text first, the extra passages after
-        return ToolCallResult(output=output, content=content)
+            activation = [activation_part("search", self.agent.nested_in_context({"role": "tool", "content": blocks(chunks[k:])}))]
+        return ToolCallResult(output=output, activation_content=activation)
 
 
 def subagent_config_of(parent: "Agent", task: str = "", agent_name: str = "general_subagent") -> "AgentConfig":
@@ -310,21 +327,23 @@ def subagent_config_of(parent: "Agent", task: str = "", agent_name: str = "gener
 class SubagentTool(AgentTool):
     aliases = {'prompt': 'task', 'brief': 'task', 'instructions': 'task', 'description': 'task', 'query': 'task'}
     """
-    Simple in/out without a persistent handle. Runs in the same env as the caller. With AC
-    communication the child's first user message carries the parent's current segment as a part
-    (intro text, part, task) and the child's final segment comes back as a part before the answer
-    line; the child's own compaction tree rides inside that segment. The result is registered in the
-    caller's subagent results. Some subagents are general-purpose, others specific: all are registered
-    as tools under their own name, with `base_config` and `extra_description` as constructor kwargs.
-    In step mode (simulation) the child is created with a dummy submitted answer and does not run.
+    Simple in/out without a persistent handle. Runs in the same env as the caller. The parent's current
+    segment goes to the child as an injected result (`augment_context`: the intro note, the segment as a
+    subagent_prompt part) and the child's final segment comes back as the result's activation content
+    (a subagent_return part) before the answer line; either side renders the part when it has an AC
+    model and records it regardless. The child's own compaction tree rides inside its segment. The
+    result is registered in the caller's subagent results and the result carries the child's index.
+    Some subagents are general-purpose, others specific: all are registered as tools under their own
+    name, with `base_config` and `extra_description` as constructor kwargs. The child's system prompt
+    is its base config's (the general subagent's base config is the caller's config with the subagent
+    note appended once). In step mode (simulation) the child is created with a dummy submitted answer
+    and does not run.
     """
     parameters = {
         "type": "object",
         "properties": {"task": {"type": "string", "description": "A self-contained description of what the subagent should do and return."}},
         "required": ["task"],
     }
-    SHARED_FIELDS = ("ac_model_name", "enable_ac_communication", "ac_compaction_ratio", "ac_subagent_ratio", "ac_tool_output_ratio", "ac_search_ratio")
-
     def __init__(self, harness, agent, base_config: "AgentConfig | None" = None, extra_description: str = "",
                  include_full_subagent_guide: bool = True):
         """
@@ -353,14 +372,6 @@ class SubagentTool(AgentTool):
         if subagent_config.agent_name == "main":
             subagent_config.agent_name = "general_subagent"
         subagent_config.user_prompt = task
-        share_ac = parent_config.enable_ac_communication and parent.ac_model is not None
-        if share_ac:
-            for name in self.SHARED_FIELDS:
-                setattr(subagent_config, name, getattr(parent_config, name))
-            subagent_config.messages_input = [{"role": "user", "content": [
-                {"type": "text", "text": SUBAGENT_INTRO},
-                ac_part(deepcopy(parent.segment_messages()), parent_config.ac_model_name, parent_config.ac_subagent_ratio, kind="subagent_prompt"),   # the parent's segment up to and including this delegating turn
-            ]}]                                                                # the child appends the task as the trailing text part
         subagent = Agent(
             harness=self.harness,
             agent_config=subagent_config,
@@ -370,17 +381,16 @@ class SubagentTool(AgentTool):
             seed=parent.seed,
         )
         subagent.step_mode = parent.step_mode
+        subagent.augment_context(ToolCallResult(tool="parent", output=SUBAGENT_INTRO,
+                                                activation_content=[parent.to_activation_context("subagent_prompt")]))
         result = subagent.simulated_run() if parent.step_mode else subagent.run()
         with parent.lock:
             parent.run_results.subagent_results.append(result)
+            index = len(parent.run_results.subagent_results) - 1
         output = (f"Subagent finished ({result.finish_reason}, {result.num_turns} turns). "
                   f"Answer: {result.answer if result.answer is not None else '(none)'}")
-        content = None
-        if share_ac:
-            final_segment = segment_messages_of(result)                         # its first user messages (tree inside, if any) + every step
-            content = [ac_part(final_segment, parent_config.ac_model_name, parent_config.ac_subagent_ratio, kind="subagent_return"),
-                       {"type": "text", "text": output}]
-        return ToolCallResult(output=output, is_error=result.finish_reason == "error", content=content)
+        return ToolCallResult(output=output, is_error=result.finish_reason == "error", subagent_index=index,
+                              activation_content=[subagent.to_activation_context("subagent_return")])
 
 
 class CompactionTool(AgentTool):

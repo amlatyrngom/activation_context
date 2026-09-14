@@ -42,7 +42,26 @@ P2 — Teacher kind and node smoke run (Planning): `AgentTeacherKind.PROGRAM_PAR
 
 P3 — Docs, round, canon (TBD).
 
+## Status (2026-09-14, after "See my interactions and go.")
+
+- Serde decision accepted via the projection: `MissingClass` placeholder, living in `activation/common/utils.py` and reused for tools, env setups and programs; the deserialization test is a CPU agent probe (`activation/bench/agent_probes/agentic_program_probe.py`), not part of the basic test file.
+- P0 Review: `/workspace` is the development tree (commit c374cf1 = work tree 7b1002e + `activation/extensions/` from the source; branch `campaign-stable`, tag `redo-launch-2026-09-11`); `build_round.py` reads `/workspace`; `TMP/` added to `.skyignore`. The source repository is a pre-campaign snapshot; its `@AI` notes are all implemented already.
+- P1 Review: commit abac685. Files: `common/utils.py` (new), `agent/agentic_program.py` (new), `agent_config.py`, `agent.py`, `agent_tools.py` (`subagent_config_of`), `rollout_manager.py`, `rollout_caching.py`, `agent/__init__.py`. Drifts: `python -m` module identity (probe checks names), `run_program` reports the start and `run()` guards it, `augment_context` refused after start. Validation: probe PASS, 48 tests passed, 3b checks pass.
+- P2 Implementing: `activation/tests/test_basic_agentic_program.py` written; GPU run on `ac-4a-camp` job 11.
+
+## Version 0.3 — P4 "Activation content everywhere" (planned 2026-09-14)
+
+Accepted in chat: subagent system prompt from the base config; parts always carry the system prompt and tools (natively via the side template, else appended to the system text); `ToolCallResult.content` + `activation_content` (produced always, rendered only with an AC model, recorded always); `Agent.to_activation_context(kind)` builds segment parts; `run_tool(tool, **args)` and `augment_context(results)` with `AgentRunResult.injected_input`; `subagent_index` on the result is record-only. The projection's P4 card holds the rules, the channel table and the per-file diffs; the P2 test is rewritten on `run_tool` before the GPU rerun. Already applied: `_is_context_overflow` ignores AssertionError; the program test's cap is 40,000 (9B engine: 52k). One open decision: keep `enable_ac_communication` as a rendering gate (recommend drop).
+
+## P4 status (2026-09-14)
+
+Implemented as planned (see the projection's P4 card for What landed / Drifts / Validation). Gate decision taken as recommended: `enable_ac_communication` removed. Probe PASS, 3b checks PASS, suite 48 passed (3 pre-existing unrelated failures in engine/harness tests). GPU: program+basic test job and the AC channel test job running on ac-4a-camp. Not written: a record-upgrade step deriving subagent parts for old campaign rows.
+
 ## Open decisions (in the projection)
+
+None open.
+
+### Historical: the serde decision as posed
 
 1. Solver result injection: ACCEPTED 2026-09-11 (projection interaction `programs.output.mirror_tool`): mirror the subagent tool.
 2. Solver time bound: fraction of the parent budget, `solver_share=0.6` (recommended) / absolute seconds.

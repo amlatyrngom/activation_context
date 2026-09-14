@@ -1,6 +1,6 @@
 """
 One end-to-end agentic-program rollout on a GPU node, in the style of test_basic_agent.py: a program written in this
-file runs a solver subagent on a simple DeepMath problem, puts the solver's answer ahead of the task, and runs the main
+file runs a solver subagent (run_subagent), injects its result ahead of the task (augment_context), and runs the main
 agent to verify and submit. Then the same request from the cache. (The lenient-deserialization and runtime checks that
 need no GPU live in activation/bench/agent_probes/agentic_program_probe.py.)
 
@@ -42,6 +42,7 @@ BASE_AGENT_CONFIG = AgentConfig(
     max_turns=10,
     max_tool_errors=3,
     max_duration=300,
+    absolute_trajectory_cap=40_000,                                # the 9B engine holds 52k tokens: cap + max_tokens must fit
 )
 
 
@@ -55,12 +56,8 @@ class SolveThenVerifyProgram(AgenticProgram):
 
     def execute(self) -> AgentRunResult:
         task = self.agent.agent_config.dataset_task
-        solver = self.agent.run_subagent(task.agent_prompt, max_duration=self.solver_max_duration)
-        self.agent.augment_context([{
-            "type": "text",
-            "text": (f"A first solver finished ({solver.finish_reason}, {solver.num_turns} turns) with the answer "
-                     f"{solver.answer!r}. Check it with the python tool before you submit, and submit the correct value."),
-        }])
+        solver = self.agent.run_subagent(task.agent_prompt, max_duration=self.solver_max_duration)   # a ToolCallResult
+        self.agent.augment_context([solver, "Check the solver's answer above with the python tool before you submit, and submit the correct value."])
         return self.agent.run()
 
 
@@ -121,16 +118,26 @@ def test_basic_agentic_program_solve_then_verify():
     _print_rollout("solver", solver)
     _print_rollout("main", result)
 
-    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s.
-    assert solver.agent_config.agentic_program is None
+    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s; the parent's
+    # note is its injected input (the parent had no segment yet, so its part holds only the system message).
+    assert solver.agent_config.agentic_program is None and "subagent" not in solver.agent_config.tools.keys() - {None}
     assert solver.agent_config.max_duration <= 120.0
     assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
+    assert [item["tool"] for item in solver.injected_input] == ["parent"]
+    assert solver.injected_input[0]["activation_content"][0]["kind"] == "subagent_prompt"
 
-    # The main agent: the solver's line sits ahead of the task text in the first user message.
+    # The main agent: the solver's result and the program's note are recorded as injected input, and their text blocks
+    # sit ahead of the task text in the first user message; no part is rendered (no AC model on this config).
+    assert [item["tool"] for item in result.injected_input] == ["subagent", "program"], result.injected_input
+    returned = result.injected_input[0]
+    assert returned["subagent_index"] == 0 and returned["output"].startswith("Subagent finished")
+    part = returned["activation_content"][0]
+    assert part["kind"] == "subagent_return" and part["messages"][0]["role"] == "system" and part["tools"]
+    assert part["messages"][-1]["role"] in ("tool", "assistant") and "compression_target" not in part
     first_user = next(message for message in result.prompt_messages if message["role"] == "user")
     content = first_user["content"]
-    assert isinstance(content, list) and len(content) >= 2, content
-    assert "A first solver finished" in content[0]["text"]
+    assert isinstance(content, list) and len(content) == 3 and all(item["type"] == "text" for item in content), content
+    assert content[0]["text"].startswith("[subagent]\nSubagent finished") and content[1]["text"].startswith("[program]\nCheck")
     assert content[-1]["text"].startswith(QUESTION)
     assert result.finish_reason == "submitted", result.finish_reason
     assert any(
@@ -144,7 +151,7 @@ def test_basic_agentic_program_solve_then_verify():
     assert len(harness.harness_stats.model_loading_times) == loads_before
     assert cached[0].answer == result.answer and cached[0].score == result.score
     assert cached[0].agent_config.agentic_program[0] is SolveThenVerifyProgram
-    assert len(cached[0].subagent_results) == 1
+    assert len(cached[0].subagent_results) == 1 and cached[0].injected_input == result.injected_input
     assert os.path.exists(os.path.join(reporter.report_folder, "report.tressoir.html"))
     print("\n=== harness stats ===")
     print(json.dumps(harness.harness_stats.summarize(), indent=2))

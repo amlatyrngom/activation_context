@@ -1,8 +1,9 @@
 """
 CPU probe of the agentic-program plumbing (no engine, no sandbox): a record deserializes without the program class
 present (MissingClass placeholder that errs on construction and re-serializes unchanged), the cache key separates the
-programmed and plain variants, `__main__` classes serialize under the script's module name, and the runtime API
-(augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny fixture.
+programmed and plain variants, `__main__` classes serialize under the script's module name, the runtime API
+(run_tool, augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny
+fixture, and a base run's record converts to AC-bearing messages (activation_messages_of).
 
     uv run python -m activation.bench.agent_probes.agentic_program_probe
 """
@@ -13,7 +14,10 @@ from dataclasses import replace
 
 from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult
 from activation.agent.agent_config import _class_spec
+from activation.agent.agent_tools import AgentTool, ToolCallResult
 from activation.agent.rollout_caching import config_key
+from activation.agent_training.agent_training_utils import activation_messages_of
+from activation.common.ac_parts import direct_parts
 from activation.common.utils import MissingClass, MissingClassError
 from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
 from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
@@ -36,9 +40,18 @@ class AnswerFromKwargs(AgenticProgram):
         self.answer = answer
 
     def execute(self) -> AgentRunResult:
-        self.agent.augment_context([{"type": "text", "text": "Programmed context ahead of the task."}])
+        self.agent.augment_context("Programmed context ahead of the task.")
         self.agent.set_final_answer(self.answer)
         return self.agent.run_results
+
+
+class EchoTool(AgentTool):
+    """A tool with no sandbox: returns its argument, so run_tool and truncation can be exercised on this host."""
+    name = "echo"
+    parameters = {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}
+
+    def execute(self, text: str = "") -> ToolCallResult:
+        return ToolCallResult(output=text)
 
 
 class Broken(AgenticProgram):
@@ -97,12 +110,14 @@ def check_runtime(harness: HarnessRuntime) -> None:
     assert result is agent.run_results and result.finish_reason == "programmed" and result.answer == "24", result.finish_reason
     assert result.num_turns == 0 and result.duration >= 0
     assert agent.score() == 1.0
+    assert agent.run_results.injected_input == [ToolCallResult(tool="program", output="Programmed context ahead of the task.").serialize()]
     agent.begin()                                                                       # tokenizer only: the recorded prompt
     first_user = next(message for message in agent.run_results.prompt_messages if message["role"] == "user")
     content = first_user["content"]
-    assert isinstance(content, list) and content[0]["text"] == "Programmed context ahead of the task." and content[-1]["text"].startswith(QUESTION), content
+    assert isinstance(content, list) and content[0]["text"] == "[program]\nProgrammed context ahead of the task.\n\n", content
+    assert content[-1]["text"].startswith(QUESTION), content
     try:
-        agent.augment_context([{"type": "text", "text": "late"}])
+        agent.augment_context("late")
         raise AssertionError("augment_context after begin must be refused")
     except AssertionError as error:
         assert "before the first turn" in str(error)
@@ -125,6 +140,60 @@ def check_runtime(harness: HarnessRuntime) -> None:
     print("runtime: programmed finish, context ahead of the task, error handling OK", flush=True)
 
 
+def check_activation_content(harness: HarnessRuntime) -> None:
+    """run_tool through the model's path; activation content produced without an AC model, recorded, and rendered on conversion."""
+    base = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny", max_duration=30)
+    agent = Agent(harness, base, seed=0)
+    long_text = "0123456789" * 5_000                                                    # 50k chars: past the 20k visible limit
+    result = agent.run_tool(EchoTool(harness, agent), text=long_text)
+    assert result.tool == "echo" and "truncated" in result.output and len(result.output) < 21_000
+    assert [part["kind"] for part in result.activation_content] == ["tool_output"]
+    part = result.activation_content[0]
+    assert part["messages"] == [{"role": "tool", "content": long_text}] and "compression_target" not in part   # no segment yet: no nested parent context
+    short = agent.run_tool(EchoTool(harness, agent), text="short")
+    assert short.output == "short" and short.activation_content == [] and short.tool == "echo"
+    bad = agent.run_tool(EchoTool(harness, agent), text="x", nonsense=1)                 # an unknown extra argument (no alias target)
+    assert bad.is_error and bad.output.startswith("Bad arguments for echo")
+    agent.augment_context([result, "Check the echo."])
+    agent.begin()
+    run = agent.run_results
+    assert [item["tool"] for item in run.injected_input] == ["echo", "program"]
+    first_user = next(message for message in run.prompt_messages if message["role"] == "user")
+    assert not direct_parts([first_user]) and first_user["content"][0]["text"].startswith("[echo]\n0123456789")   # nothing rendered: no AC model
+    # A tool step recorded through the model's path, with a nested parent context now that the segment exists.
+    tokenizer = agent.loaded_model.tokenizer
+    call = {"id": "e1", "name": "echo", "arguments": {"text": "again"}}
+    agent.record_assistant_turn("Echoing.", [call], tokenizer.encode("Echoing."), [])
+    stepped = agent._finalize_result(call, ToolCallResult(output=long_text))
+    agent.append_tool_results([call], [stepped])
+    step = run.trajectory[-1]
+    assert step["role"] == "tool" and not direct_parts(step["messages"]) and step["tool_results"][0]["tool"] == "echo"
+    nested = step["tool_results"][0]["activation_content"][0]
+    assert nested["kind"] == "tool_output" and nested["messages"][0]["role"] == "user"
+    parent = nested["messages"][0]["content"][0]
+    assert parent["kind"] == "parent_context" and parent["messages"][0]["role"] == "system" and parent["tools"]
+    assert parent["messages"][-1]["role"] == "assistant"                                     # the segment through the echoing turn
+    # The record survives serialization and converts to AC-bearing messages for a reader with an AC model.
+    restored = AgentRunResult.deserialize(__import__("json").loads(__import__("json").dumps(run.serialize())))
+    assert restored.injected_input == run.injected_input and restored.trajectory[-1]["tool_results"] == step["tool_results"]
+    reader = replace(base, ac_model_name="ac_x")
+    converted = activation_messages_of(restored, reader)
+    parts = direct_parts(converted)
+    assert [part["kind"] for part in parts] == ["tool_output", "tool_output"], [part["kind"] for part in parts]
+    assert all(part["ac_name"] == "ac_x" and part["compression_target"] == reader.ac_tool_output_ratio for part in parts)
+    first = next(message for message in converted if message["role"] == "user")
+    assert first["content"][0]["type"] == "activation_context" and first["content"][1]["text"].startswith("[echo]\n")
+    assert first["content"][2]["text"].startswith("[program]\n") and first["content"][-1]["text"].startswith(QUESTION)
+    tool_message = converted[-1]
+    assert tool_message["role"] == "tool" and tool_message["content"][0]["type"] == "activation_context"
+    inner = direct_parts(tool_message["content"][0]["messages"])[0]
+    assert inner["kind"] == "parent_context" and inner["compression_target"] == reader.ac_subagent_ratio and inner["ac_name"] == "ac_x"
+    assert activation_messages_of(restored, base) == restored.prompt_messages + [m for s in restored.trajectory for m in s["messages"]]
+    assert restored.trajectory[-1]["messages"] == step["messages"]                             # the record itself is untouched
+    agent.shutdown()
+    print("activation content: run_tool, truncation part, nested parent context, record and conversion OK", flush=True)
+
+
 def main() -> int:
     check_serde()
     if not os.path.isdir(TINY):
@@ -132,6 +201,7 @@ def main() -> int:
         return 0
     harness = HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
     check_runtime(harness)
+    check_activation_content(harness)
     print("AGENTIC PROGRAM PROBE PASS", flush=True)
     return 0
 
