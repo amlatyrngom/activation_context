@@ -149,12 +149,20 @@ def check_activation_content(harness: HarnessRuntime) -> None:
     assert result.tool == "echo" and "truncated" in result.output and len(result.output) < 21_000
     assert [part["kind"] for part in result.activation_content] == ["tool_output"]
     part = result.activation_content[0]
-    assert part["messages"] == [{"role": "tool", "content": long_text}] and "compression_target" not in part   # no segment yet: no nested parent context
+    assert part["messages"][1] == {"role": "tool", "content": long_text} and "compression_target" not in part
+    context = part["messages"][0]["content"][0]                                       # before the first turn: the first prompt as it stands
+    assert context["kind"] == "parent_context" and context["messages"][0] == {"role": "system", "content": "s"}
+    assert context["messages"][1]["content"] == TASK.agent_prompt and context["tools"]
     short = agent.run_tool(EchoTool(harness, agent), text="short")
     assert short.output == "short" and short.activation_content == [] and short.tool == "echo"
     bad = agent.run_tool(EchoTool(harness, agent), text="x", nonsense=1)                 # an unknown extra argument (no alias target)
     assert bad.is_error and bad.output.startswith("Bad arguments for echo")
     agent.augment_context([result, "Check the echo."])
+    before = agent.to_activation_context("subagent_prompt")                           # what a solver spawned now would receive
+    first = before["messages"][1]["content"]
+    assert [item.get("type") for item in first] == ["activation_context", "text", "text", "text"], [item.get("type") for item in first]
+    assert first[0]["kind"] == "tool_output" and "ac_name" not in first[0] and first[1]["text"].startswith("[echo]\n")
+    assert first[2]["text"].startswith("[program]\n") and first[3]["text"].startswith(QUESTION)
     agent.begin()
     run = agent.run_results
     assert [item["tool"] for item in run.injected_input] == ["echo", "program"]
@@ -180,6 +188,7 @@ def check_activation_content(harness: HarnessRuntime) -> None:
     converted = activation_messages_of(restored, reader)
     parts = direct_parts(converted)
     assert [part["kind"] for part in parts] == ["tool_output", "tool_output"], [part["kind"] for part in parts]
+    assert direct_parts(parts[0]["messages"])[0]["ac_name"] == "ac_x"                      # the nested pre-turn parent context resolved too
     assert all(part["ac_name"] == "ac_x" and part["compression_target"] == reader.ac_tool_output_ratio for part in parts)
     first = next(message for message in converted if message["role"] == "user")
     assert first["content"][0]["type"] == "activation_context" and first["content"][1]["text"].startswith("[echo]\n")

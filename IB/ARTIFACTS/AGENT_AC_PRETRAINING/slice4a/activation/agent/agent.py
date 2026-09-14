@@ -35,7 +35,8 @@ from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part,
 
 from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
 from .agent_env import AgentEnv
-from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, tool_content, truncate_output, subagent_config_of
+from .agent_tools import (DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, segment_messages_with_parts,
+                          tool_content, truncate_output, subagent_config_of)
 from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
 
 MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
@@ -73,6 +74,7 @@ class Agent:
         self.run_results = AgentRunResult(agent_config=agent_config, seed=seed)
         self.agent_id = uuid.uuid4().hex  # Pins the agent to one engine replica, so its prefix cache serves the next turn.
         self.lock = threading.Lock()      # Parallel subagent result appends.
+        self._env_lock = threading.Lock() # One sandbox, even when parallel tool calls reach the first use together.
         self.messages: list[dict] = []    # dialect messages of the current segment, parts inline
         self.prefix: list[int] = []       # the token prompt of the next turn (placeholder ids at part positions)
         self.spans: list[tuple[int, int]] = []   # (start, end) of every part in the prefix, in order
@@ -101,20 +103,27 @@ class Agent:
     # ----------------------------------------------------------------------------- setup
     @property
     def agent_env(self) -> AgentEnv:
-        """Created on first use, so a cached or failed-early run never starts a container."""
-        if self._env is None:
-            env = AgentEnv(self.agent_config.env_dockerfile_path, self.agent_config.env_args,
-                           default_image=self.harness.harness_config.agent_env_default_image,
-                           memory_limit_mb=self.agent_config.env_memory_limit_mb
-                           if self.agent_config.env_memory_limit_mb is not None
-                           else self.harness.harness_config.agent_env_memory_limit_mb)
-            try:
-                for name, (setup_class, kwargs) in self.agent_config.env_setups.items():     # once per env; subagents get it prepared
-                    setup_class(self.harness, self, **kwargs).setup(env)
-            except Exception:
-                env.shutdown()
-                raise
-            self._env = env
+        """
+        Created on first use, under a lock so parallel first uses share one container. The rollout manager creates it
+        eagerly before a live run starts; lazy creation serves the paths that may never need one (cache-served rows, step
+        mode, CPU probes without docker, resume) and subagents receive the parent's.
+        """
+        if self._env is not None:
+            return self._env
+        with self._env_lock:
+            if self._env is None:
+                env = AgentEnv(self.agent_config.env_dockerfile_path, self.agent_config.env_args,
+                               default_image=self.harness.harness_config.agent_env_default_image,
+                               memory_limit_mb=self.agent_config.env_memory_limit_mb
+                               if self.agent_config.env_memory_limit_mb is not None
+                               else self.harness.harness_config.agent_env_memory_limit_mb)
+                try:
+                    for name, (setup_class, kwargs) in self.agent_config.env_setups.items():     # once per env; subagents get it prepared
+                        setup_class(self.harness, self, **kwargs).setup(env)
+                except Exception:
+                    env.shutdown()
+                    raise
+                self._env = env
         return self._env
 
     def _initialize_tools(self):
@@ -147,16 +156,23 @@ class Agent:
 
     def to_activation_context(self, kind: str) -> dict:
         """
-        This agent's current segment as an activation part of `kind`: its system message first, then the segment verbatim
-        (a compaction tree rides inside the first user message), with its tool definitions as the part's `tools`. The one
-        builder of segment parts: subagent prompt and return, compaction, and the parent context nested in tool parts.
+        This agent's current segment as an activation part of `kind`: its system message first, then the segment with every
+        recorded activation part nested raw (the record's `injected_input` and `tool_results`, so a base agent's part nests
+        the same parts an AC agent's would; a compaction tree rides inside the first user message), with its tool definitions
+        as the part's `tools`. Before the first turn it is the first prompt as `begin()` will build it now: system prompt,
+        injected context so far, task. The one builder of segment parts: subagent prompt and return, compaction, and the
+        parent context nested in tool parts.
         """
-        return activation_part(kind, deepcopy(self.messages), deepcopy(self.tool_definitions or self._tool_definitions()))
+        raw = lambda parts: deepcopy(parts)
+        if self.started:
+            messages = segment_messages_with_parts(self.run_results, raw)
+        else:
+            system = self.agent_config.system_prompt or ""
+            messages = ([{"role": "system", "content": system}] if system else []) + self.first_user_messages(render=raw)
+        return activation_part(kind, messages, deepcopy(self.tool_definitions or self._tool_definitions()))
 
     def nested_in_context(self, message: dict) -> list[dict]:
-        """`message` after this agent's segment as a nested parent_context part; the message alone before the first turn."""
-        if not self.messages:
-            return [message]
+        """`message` after this agent's segment (or its first prompt, before the first turn) as a nested parent_context part."""
         return [{"role": "user", "content": [self.to_activation_context("parent_context")]}, message]
 
     def render_activation(self, parts: list[dict]) -> list[dict]:
@@ -191,16 +207,16 @@ class Agent:
         return rows
 
     # ----------------------------------------------------------------------------- segments
-    def first_user_messages(self) -> list[dict]:
+    def first_user_messages(self, render: "t.Callable[[list[dict]], list[dict]] | None" = None) -> list[dict]:
         """
-        messages_input, then the injected results (run_results.injected_input: rendered activation parts and a labelled
-        text block each), then the task text, as trailing parts of the last user message (a new one when messages_input
-        does not end with a user message).
+        messages_input, then the injected results (run_results.injected_input: their activation parts through `render`,
+        this agent's render_activation by default, and a labelled text block each), then the task text, as trailing parts
+        of the last user message (a new one when messages_input does not end with a user message).
         """
         config = self.agent_config
         messages = deepcopy(config.messages_input)
         prompt = self._offloaded_prompt(config.user_prompt)
-        lead = injected_content(self.run_results.injected_input, self.render_activation)
+        lead = injected_content(self.run_results.injected_input, self.render_activation if render is None else render)
         if not messages or messages[-1].get("role") != "user":
             messages.append({"role": "user", "content": (lead + [{"type": "text", "text": prompt or ""}]) if lead else prompt})
         elif prompt or lead:

@@ -267,6 +267,7 @@ class RolloutManager:
     def _run_one(self, config: AgentConfig, seed: int, perform_scoring: bool, reporter) -> AgentRunResult:
         agent = Agent(self.harness, config, reporter=reporter, seed=seed)
         try:
+            agent.agent_env                                                 # eagerly: a program (or parallel tool calls) finds the sandbox ready
             result = agent.run_program()                                    # the config's agentic program, or the model loop
             if perform_scoring and config.dataset_task is not None:
                 agent.score()

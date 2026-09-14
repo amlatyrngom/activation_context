@@ -55,7 +55,7 @@ Accepted in chat: subagent system prompt from the base config; parts always carr
 
 ## P4 status (2026-09-14)
 
-Implemented as planned (see the projection's P4 card for What landed / Drifts / Validation). Gate decision taken as recommended: `enable_ac_communication` removed. Probe PASS, 3b checks PASS, suite 48 passed (3 pre-existing unrelated failures in engine/harness tests). GPU: program test passed (job 15), basic agent tests passed (job 14), AC channel tests passed (job 16). P2 and P3 in Review. Not written: a record-upgrade step deriving subagent parts for old campaign rows.
+Implemented as planned (see the projection's P4 card for What landed / Drifts / Validation). Gate decision taken as recommended: `enable_ac_communication` removed. Probe PASS, 3b checks PASS, suite 48 passed (3 pre-existing unrelated failures in engine/harness tests). GPU: program test passed (job 15), basic agent tests passed (job 14), AC channel tests passed (job 16). P2 and P3 in Review. Follow-up: pre-turn parts are the first prompt (system, injected context, task); started agents' parts are rebuilt from the record with raw nested parts; sandbox creation locked and eager in the manager. Jobs 17/18 green. Not written: a record-upgrade step deriving subagent parts for old campaign rows.
 
 ## Open decisions (in the projection)
 

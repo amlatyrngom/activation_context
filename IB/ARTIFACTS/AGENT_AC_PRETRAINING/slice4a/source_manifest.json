@@ -9,11 +9,11 @@
   },
   "activation/agent/agent.py": {
     "source_sha256": "e5e3afc7224882515dc090c5f08ff863ffdca2e96d6bbf675cfb6006f404336a",
-    "staged_sha256": "324fc456d0a36fad8216655da04a9368d67f34ee55b150a95a7496faf3196fb5"
+    "staged_sha256": "eab3172665bc93c0ce841cc90cace9144e48fac55b0eaa2733b156920dd11d0f"
   },
   "activation/agent/agent_tools.py": {
     "source_sha256": "8baebd0f2c0ea966273fea677386908c569e5d300eab493029b85791ebd5ec37",
-    "staged_sha256": "82fc0bbc8a54114a74aa424f5487ee112e0bc68796ed2b8e61d8447b62816343"
+    "staged_sha256": "438cfdd8843b3b13e5a9d6c8b8c17b58d8def274a1e4c83f37d08560485fb9d8"
   },
   "activation/agent/rollout_caching.py": {
     "source_sha256": "0dcfe09d874ba67b0fa38080ab6789031e6c3bd83e3a3b078cfd62887cde96d2",
@@ -29,7 +29,7 @@
   },
   "activation/agent/rollout_manager.py": {
     "source_sha256": "6d24b2d79a21c7055363eafaf82e0ebcc7445cf85e06d6c5dd011f0f1fb965b6",
-    "staged_sha256": "30d4de920f6d3d9cb50a25081dc679ee82e850e90b1889a11952ea73ce2cae3a"
+    "staged_sha256": "cdaab42a9b1d84b10e91bd3fe1eefd7dfea25b7c04b6b17094deaf10d1340fd3"
   },
   "activation/agent_training/agent_training_teacher_study.py": {
     "source_sha256": "38a338cd38b7b37c61cde8a7767b8450014f9f55cefc381db988dcc1d4882981",
@@ -41,7 +41,7 @@
   },
   "activation/agent_training/agent_training_utils.py": {
     "source_sha256": "b1be720b1b33d39b1afbfb94aaceebae5ca5c7afe97ebdd1b92855436765dfb7",
-    "staged_sha256": "ee2d55940019bb9760a5974299ec19f90c567a7a718f7494a5142fdc80e53641"
+    "staged_sha256": "85147b6ffc317a75d83f0cc73a991e4019a8c49708b40eb89d663bfc0e41cbfa"
   },
   "activation/agent_training/agent_trainer.py": {
     "source_sha256": "5afa8d3839af14b50524a7fde10fa72431f6f92725355f1d05b0b7a0efe4c9cc",
@@ -181,11 +181,11 @@
   },
   "activation/tests/test_basic_agentic_program.py": {
     "source_sha256": null,
-    "staged_sha256": "e6df87d6eab21b93fc05568c363cee8e08bbb3bb554ea73db189b120ec57b6f1"
+    "staged_sha256": "636abc023eb7642d9459905021aa87fa18f03b71b921e7e7c3d047df11c3a3dd"
   },
   "activation/bench/agent_probes/agentic_program_probe.py": {
     "source_sha256": null,
-    "staged_sha256": "f53925e0c9ca40eb52760ba68250bb1b15b0be31851d7e2498305cd3f161136b"
+    "staged_sha256": "bf30ffb1ef88774209b4688922fb40beaa5573eab285c08d78c8b775091463ff"
   },
   "activation/common/ac_parts.py": {
     "source_sha256": "45232e31b18f75897db23e11e142cc0d542db5b0ecba84111f7a1e268edf1f07",

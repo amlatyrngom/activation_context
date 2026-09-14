@@ -103,7 +103,11 @@ class Agent:
     # ----------------------------------------------------------------------------- setup
     @property
     def agent_env(self) -> AgentEnv:
-        """Created on first use (under a lock: parallel first uses share one container), so a cached or failed-early run never starts one."""
+        """
+        Created on first use, under a lock so parallel first uses share one container. The rollout manager creates it
+        eagerly before a live run starts; lazy creation serves the paths that may never need one (cache-served rows, step
+        mode, CPU probes without docker, resume) and subagents receive the parent's.
+        """
         if self._env is not None:
             return self._env
         with self._env_lock:
