@@ -1,0 +1,773 @@
+# Agent AC pre-training (slice 4a)
+
+Slice 4a produces the teacher trajectory corpus and the first large activation-context (AC) SFT that everything downstream is a programmatic transformation of. v0.2 integrates your answers to the eight v0.1 decisions, records the multi-GPU shape settled in chat, and plans the first green-light scope in detail: the prototype changes (M0), the benchmark suite with its environments and sampled task framings (M1), and a rollout probe of about five tasks per benchmark, run uncached and cached, whose report is the artifact you asked to see before refining the interfaces (M2). Later milestones are planned to the level needed to size them; the teacher campaign and the large runs wait for their own explicit green lights. ORCD is deferred out of this slice (v0.3): every run here is on AWS, and the two-GPU training test runs on a 2x RTX PRO 6000 node. v0.4: M0 to M2 are done and in Review; the probe ran 35 oracle tasks and its report and the exact patch are in this folder.
+
+## Executive Summary
+
+**Goal.** Two products: a safely cached corpus of teacher multi-agent trajectories (oracle 27B, no AC, no LoRA, full tool set) over a benchmark suite that exercises compaction-length horizons, subagents and semantic search; and the first large AC SFT at 500M to 1B teacher tokens over four item buckets. Agent SFT items are built from the same corpus; the agent SFT run itself is out of this slice.
+
+**Green lights.** Nothing large runs without you saying so. The plan has three gates:
+
+| Gate | Scope | What you get back |
+| --- | --- | --- |
+| First green light (this pass) | M0 prototype changes, M1 suite and environments, M2 rollout probe: about 5 tasks per benchmark on the oracle 27B, run twice (uncached, then from cache) | The probe report `PROBE_REPORT.tressoir.md` in this folder plus trajectory files, so you can refine the agent/environment setup interfaces, task selection, framings and the report itself |
+| Second green light | M4 teacher campaign, sized from the probe (starting with a 50-per-benchmark probe, then 6 to 12 hours) | The cached corpus, campaign report |
+| Third green light | M6 large AC run(s) after the mini estimation runs | Paired checkpoints, training report |
+
+**Workflow.** Suite constructors sample a framing per task and attach environment setups to the task; the campaign runner turns tasks into agent configs for the oracle; rollouts are cached by config and seed; items and mini runs follow.
+
+<pre>
+benchmark loaders (HotpotQA/MuSiQue, DAPO/DeepScaleR, LongCodeArena bug localization (+RepoQA/SWE-QA), QuALITY/NarrativeQA, BRIGHT)
+   | DatasetTask: agent_prompt (sampled framing), gold answer + scorer, env_setups spec, corpus documents
+   v
+suite.py: configs_for_tasks -> AgentConfig(oracle 27B, defaults + subagent + semantic_search, env_dockerfile=default image, env_setups from task)
+   |                                    Agent.agent_env runs the setups once (files written, repo copied in); subagents share the env
+   v
+RolloutManager.perform_single_rollouts(caching_id) -> ROLLOUTS/<caching_id>/rollouts.jsonl  (keyed by config_key + seed; re-runs are free)
+   |  probe: 5 x 5 tasks, twice (M2)            campaign: 12 h, interleaved benchmarks, watch-pulled + backed up (M4)
+   v
+items_from_run_results + 3a1 generators -> four AC buckets; agent SFT items from success-filtered runs (M5)
+   v
+mini AC SFT runs 2B->4B on one and two RTX PRO 6000 via internal-spawn DDP (M3, M6) -> measured rates -> large run sizing
+</pre>
+
+**Multi-GPU training, as settled in chat.** `trainer.train()` stays the entry point. When more than one GPU is visible it spawns one worker per extra GPU from inside the training code, each pinned to its GPU before CUDA initializes. Workers rebuild a harness from a small spec, receive the trainable weights by broadcast, run the same rank-agnostic epoch loop on their shard (balanced by token count), and all-reduce LoRA and AC-module gradients before every optimizer step. Only rank 0 reports, evaluates, samples and saves, at the sites that already exist. No torchrun, no outer script, callers and tests unchanged. Costs: base weights reload per `train()` call in the workers, worker errors surface through the spawn context, FLA autotune caches must be shared through the committed presets.
+
+**Venues and constraints.**
+
+| Concern | Position |
+| --- | --- |
+| Rollouts (probe, campaign) | AWS via `sky.py`: one RTX PRO 6000 fits the 27B NVFP4 engine at 52k context plus podman sandboxes |
+| Training | AWS for everything in this slice: development, the two-GPU DDP test on 2x RTX PRO 6000, the mini runs. ORCD is deferred to a later slice; container access to it is set up (`IB/skills/orcd-access/SKILL.md`) |
+| Teacher engine | The harness caps `Qwen3.8-27B` at `max_model_len` 20,000 today (`vllm_wrapper.py`); teacher runs need 52k so compactions at the 32k threshold actually happen. M2 raises it and verifies memory |
+| Caching | Rollouts under `ROLLOUTS/<caching_id>` are pulled during the run (`--watch`) and copied to a second location after it; item files and teacher log-probs are cached by item id (D9) |
+
+**Sizing (measured 0.8B into 4B on one RTX PRO 6000; others extrapolated).**
+
+| Pair | 1x RTX PRO 6000 | 2x RTX PRO 6000 (DDP, extrapolated) | 12 h, 2 epochs on 2x RTX PRO 6000 |
+| --- | ---: | ---: | ---: |
+| 0.8B -> 4B | 32M teacher tokens/h | about 60M/h | about 360M unique tokens |
+| 2B -> 4B (first pair, D3) | about 28M/h | about 52M/h | about 310M unique tokens |
+| 2B -> 9B | about 13M/h | about 24M/h | about 145M unique tokens |
+
+The 2B -> 4B and two-GPU numbers are extrapolations; M3's DDP test and M6's mini runs replace them with measurements before any budget is fixed. Teacher rollouts have no measurement yet; M2's probe gives the first tokens-per-second and turns-per-task figures for the 27B in an agent loop.
+
+## Accepted decisions
+
+Your v0.1 answers, integrated. The decision components are replaced by these records.
+
+- **D1 Venue: AWS for this slice; ORCD deferred.** v0.1 chose a split (AWS for development and rollouts, ORCD 2x H200 for large training). On 2026-09-09 you deferred ORCD as a distraction after the compute-node probe (no sudo, no podman, Apptainer works; access from this container is set up and documented in `IB/skills/orcd-access/SKILL.md`). Every run in this slice is on AWS; the two-GPU training test uses a 2x RTX PRO 6000 node. `orcd.py`, the requeue chain and any Apptainer sandbox backend return in a later slice.
+- **D2 Multi-GPU shape: internal spawn, isolated in utils.** Settled in chat as summarized above; recorded as accepted pending your ack on the reply. The alternative you knew (outer launcher, `is_main` everywhere) is not planned.
+- **D3 Pair: 2B -> 4B, mini runs only.** This slice runs mini AC SFT runs on 2B -> 4B to get rate estimates on both venues. The large runs in this slice are the teacher rollouts, on explicit green light, starting with probes (M2, then a scaled probe inside M4).
+- **D4 Mix: four buckets.** Compaction, trajectory QA, RAG QA and run-result parts (subagent, tool output, search). Teacher-produced runs are added on top of the public sources, not instead of them. The teacher runs must be safely cached: pulled during the campaign, copied to a second location after it, and never rebuilt by a config change (the cache key is the config key plus seed; framings and setups are part of the config, so a re-run of an identical config is free).
+- **D5 Selection: everything is teacher for AC items; success-filtered for agent SFT items.** Scores are recorded on every run, so the policy can change later without new rollouts.
+- **D6 Suite: all four plus BRIGHT.** Multi-hop QA, math with tools, repository QA, long-document QA, BRIGHT (teacher-only, unscored). Each benchmark gets a meaningful share of the campaign budget (planned shares in M1) and its own semi-specialized set of guided task framings. Long-document tasks write the document to a file through the environment setup; the task description names the path and never inlines the document.
+- **D7 Framings: sampled, half minimal, half guided.** Each benchmark family has two or three guided templates; the dataset constructors sample one framing per task with a seeded RNG and record its id in the task datum, so the mix is countable in the report.
+- **D8 Agent SFT: items only.** M5 builds agent SFT items from the success-filtered scorable runs; the run is deferred to the next slice.
+
+## Requested decisions (v0.2)
+
+One question surfaced while planning the details. It can wait until the probe is in, but answering now keeps M5 from planning twice. (D10, ORCD rollouts through Apptainer, was withdrawn when ORCD was deferred.)
+
+<article class="decision" data-tressoir-decision data-decision-state="unresolved" aria-labelledby="aac.tcache-q">
+  <header class="decision-header">
+    <div>
+      <h3 class="decision-title" id="aac.tcache-q">D9 How should the self-teacher log-probs be cached across training invocations?</h3>
+      <p class="decision-context">The trainer computes teacher top-k targets with the target model plus the trained LoRA, and clears that cache at the start of every train() call (`teacher_cache.clear()`). Your D4 note assumes the teacher log-probs are a one-time cost per item. Persisting them across invocations fixes the teacher to whatever adapter state computed them.</p>
+    </div>
+    <span class="decision-state" data-decision-indicator role="status" aria-live="polite">Unresolved</span>
+  </header>
+  <fieldset class="decision-options">
+    <legend class="visually-hidden">Decision answers</legend>
+    <label class="decision-option">
+      <input type="checkbox" data-tressoir-input="aac.tcache.persist_base">
+      <span><strong>Persist targets computed with the frozen base model (LoRA disabled), top-k 64, on disk by item id and target model (recommended)</strong><small>One-time cost, identical for every run on the same target; the student still trains with its LoRA. Changes the distillation semantics from "self with adapter" to "frozen base": the drift term already anchors the adapter to the base, so this is consistent. About 128 GB per 500M tokens at top-k 64 with fp16 values, 32 GB at top-k 16</small></span>
+    </label>
+    <label class="decision-option">
+      <input type="checkbox" data-tressoir-input="aac.tcache.per_invocation">
+      <span><strong>Keep the per-invocation cache; only cache within a run</strong><small>No semantic change, no disk; a 2-epoch run computes the teacher once, a resumed 6-hour requeue recomputes for the examples it revisits (about a third of the work of those examples)</small></span>
+    </label>
+    <label class="decision-option">
+      <input type="checkbox" data-tressoir-input="aac.tcache.persist_adapter">
+      <span><strong>Persist targets computed with the adapter as it was at the start of the run</strong><small>One-time per run rather than per item; useful only if requeues dominate</small></span>
+    </label>
+  </fieldset>
+  <div class="field decision-feedback">
+    <label for="aac.tcache-response">Free Response</label>
+    <textarea id="aac.tcache-response" rows="2" data-tressoir-input="aac.tcache.feedback" data-tressoir-autogrow="2:6" placeholder="Add anything the choices miss…"></textarea>
+  </div>
+</article>
+
+
+## Milestones
+
+The first green light (M0, M1, M2) is implemented and in Review: each card leads with its completion report, the exact product delta is in [SLICE4A_ROUND.tressoir.md](SLICE4A_ROUND.tressoir.md) and the probe report is [PROBE_REPORT.tressoir.md](PROBE_REPORT.tressoir.md). M3 starts after your review.
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M0 — Prototype changes</span>
+    <span class="card-oneliner">env_setups wired in, subagent inheritance and guide, default tool, default image builder, copy_in.</span>
+    <span class="card-badge">Review</span>
+  </summary>
+
+#### What landed
+
+- `env_setups` is a real field of `AgentConfig` and `DatasetTask` (class path plus kwargs, serialized and resolved by `_class_spec` / `_resolve_class_spec`); `Agent.agent_env` creates the sandbox then runs the setups in order, shutting the environment down if one fails. Subagents receive the prepared environment and an empty setup list.
+- `AgentEnvSetup(harness, agent, **kwargs)` with a `task_datum` property, `WriteFilesSetup` (text or a datum key per path) and `CopyTreeSetup` (a local tree or a datum-keyed path into the sandbox through the new `AgentEnv.copy_in`, a `podman cp`). Image existence and build are serialized under a lock so 64 concurrent agents build the image once.
+- `SubagentTool` inherits the caller's configuration when no base config is given, with the brief format TASK / CONTEXT / TO PRODUCE / DON'T DO and a short pattern guide in its description; it is a default tool; `tools[name] = None` removes a default tool, which is how the general subagent cannot delegate again.
+- `dataset/environments/default.py` renders the richer default image (scientific Python, ripgrep, jq, sqlite) to a content-addressed `ENVIRONMENTS/<sha12>/Dockerfile`.
+- `AgentRunResult.tool_call_counts()` and `totals()` count tools (parallel members included) and tokens, turns, compactions and subagents across the tree; the reporter's stats line shows the tool counts.
+
+#### Drifts, challenges, and unplanned steps
+
+- The general subagent keeps the caller's dataset task (the plan said it would be cleared) so semantic search and any datum-based helper keep working inside a delegation; its prompt is the brief, its history empty.
+- The CONTEXT section of the brief was added at your request during implementation.
+- `copy_in` and the build lock were not in the prototype diff; both are needed by the repository benchmark and by concurrent rollouts.
+- The counters on the run result are an addition to serve the probe report, no behavior change.
+
+#### Focused actual diffs
+
+The exact per-file diffs are in [SLICE4A_ROUND.tressoir.md](SLICE4A_ROUND.tressoir.md) (files `agent_config.py`, `agent_env.py`, `agent.py`, `agent_tools.py`, `rollout_caching.py`, `rollout_reporter.py`, `dataset/environments/*`); the patch is `slice4a/changes.patch`. The planned snippets below are kept for reference; the landed code differs in the points listed above.
+
+#### Validation
+
+- `activation/tests/test_basic_agent_env_setups.py`: setups run once for the owner and not for the subagent (fake environment), the general subagent inherits tools minus delegation, a config with setups and a removed tool round-trips, the image recipe is content-addressed: 4 passed on CPU; with `--slow` on the node the real podman test built the image and verified the packages, a datum-written file and a copied tree (8 passed in 73 s in [node_smoke2.log](../../TMP/AGENT_AC_PRETRAINING/node_smoke2.log)).
+- The 3b CPU checks (channels, harvest) pass with the subagent as a default tool.
+
+#### Planning Overview (as planned)
+
+Land the prototype diff as working code. Four pieces: `env_setups` becomes a real field that runs once when an agent's environment is created (subagents share the prepared environment and never re-run setups); `AgentEnvSetup` gets a small contract plus two reusable setups (write files from the task datum, copy a local tree in); the subagent tool inherits the caller's configuration when no `base_config` is given, with the guided brief format (TASK / CONTEXT / TO PRODUCE / DON'T DO) and a concise multi-agent pattern guide in its description, and is registered as a default tool; and `dataset/environments/default.py` builds the richer default image. One environment addition supports the repository benchmark: `AgentEnv.copy_in` (podman cp), because sandboxes have no network and a checkout cannot be cloned from inside.
+
+Boundaries: no change to the rollout loop, caching or reporting beyond serializing the new field; `tools[name] = None` becomes the way to disable a default tool (needed so subagents cannot delegate again); no per-benchmark images yet (the default image plus setups cover the probe). Edge cases: a config with setups but no dataset task (setups that reference datum keys raise clearly); serialized configs from before this slice deserialize with empty setups; step-mode agents (simulation) skip setups because they never create an environment.
+
+Validation: the existing agent tests plus a new CPU test that a setup writes a file visible to `run_shell`, a subagent inherits and cannot delegate, and a config with setups round-trips through serialize and deserialize.
+
+#### Planned Changes
+
+`activation/agent/agent_config.py · AgentConfig`
+
+```diff
+@@ activation/agent/agent_config.py — AgentConfig @@
+-    env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = ... # NEW: Support setup.
++    env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = field(default_factory=dict)
++    # name -> (setup class, kwargs). Run once, in insertion order, when the agent's env is created; never for subagents.
+@@ serialize / deserialize @@
+-        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools")}
+-        data["tools"] = {name: {"class": ..., "kwargs": _jsonable(kwargs)} for name, (cls, kwargs) in self.tools.items()}
++        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools", "env_setups")}
++        data["tools"] = {name: None if spec is None else _class_spec(*spec) for name, spec in self.tools.items()}   # None disables a default tool
++        data["env_setups"] = {name: _class_spec(cls, kwargs) for name, (cls, kwargs) in self.env_setups.items()}
+ ...
++        setups = {name: _resolve_class_spec(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
+-        return AgentConfig(tools=tools, dataset_task=task, **data)
++        return AgentConfig(tools=tools, env_setups=setups, dataset_task=task, **data)
+```
+
+`activation/agent/agent_env.py · AgentEnvSetup, WriteFilesSetup, CopyTreeSetup, AgentEnv.copy_in`
+
+```diff
+@@ activation/agent/agent_env.py — AgentEnvSetup @@
+ class AgentEnvSetup:
+-    def __init__(self, harness: "HarnessRuntime", agent: "Agent"):
+-        pass
+-    def setup(self, agent_env: "AgentEnv"):
+-        pass
++    """Task-specific preparation of a fresh env: files, checkouts, small data. Libraries and large shared data belong in the image."""
++    def __init__(self, harness: "HarnessRuntime", agent: "Agent", **kwargs):
++        self.harness, self.agent, self.kwargs = harness, agent, kwargs
++    @property
++    def task_datum(self) -> dict:
++        task = self.agent.agent_config.dataset_task
++        if task is None:
++            raise ValueError(f"{type(self).__name__} needs a dataset task on the agent config")
++        return task.task_datum
++    def setup(self, agent_env: "AgentEnv") -> None:
++        raise NotImplementedError
++
++class WriteFilesSetup(AgentEnvSetup):
++    """files: env path -> {"text": literal} or {"datum_key": key}. Used by the long-document benchmark."""
++    def setup(self, agent_env):
++        for path, spec in self.kwargs["files"].items():
++            content = spec["text"] if "text" in spec else self.task_datum[spec["datum_key"]]
++            if not agent_env.write_file(path, content):
++                raise RuntimeError(f"setup could not write {path}")
++
++class CopyTreeSetup(AgentEnvSetup):
++    """local_path (or datum_key holding one) copied to env_path. Used by the repository benchmark (cached checkouts)."""
++    def setup(self, agent_env):
++        local = self.kwargs.get("local_path") or self.task_datum[self.kwargs["datum_key"]]
++        agent_env.copy_in(local, self.kwargs["env_path"])
+@@ AgentEnv @@
++    def copy_in(self, local_path: str, env_path: str) -> None:
++        """podman cp of a local file or tree into the running container (sandboxes have no network)."""
++        self._ensure_started()
++        subprocess.run(["podman", "cp", f"{local_path}/." if os.path.isdir(local_path) else local_path, f"{self.container}:{env_path}"], check=True)
+```
+
+`activation/agent/agent.py · Agent.agent_env, Agent._initialize_tools`
+
+```diff
+@@ activation/agent/agent.py — Agent.agent_env @@
+         if self._env is None:
+             self._env = AgentEnv(self.agent_config.env_dockerfile_path, self.agent_config.env_args, default_image=..., memory_limit_mb=...)
++            for name, (setup_class, kwargs) in self.agent_config.env_setups.items():
++                setup_class(self.harness, self, **kwargs).setup(self._env)     # once per env; subagents receive the prepared env
+         return self._env
+@@ Agent._initialize_tools @@
+-        specs = dict(DEFAULT_TOOLS) | dict(self.agent_config.tools)
++        specs = {name: spec for name, spec in (dict(DEFAULT_TOOLS) | dict(self.agent_config.tools)).items() if spec is not None}
+```
+
+`activation/agent/agent_tools.py · SubagentTool, DEFAULT_TOOLS`
+
+```diff
+@@ activation/agent/agent_tools.py — SubagentTool @@
++SUBAGENT_TASK_FORMAT = (
++    "A self-contained brief for the subagent, written as:\n"
++    "TASK:\n- what to do, with every fact it needs (it does not see your context)\n"
++    "TO PRODUCE:\n- the answer format, or the files/reports to write\n"
++    "DON'T DO:\n- scope to avoid, files not to touch"
++)
++SUBAGENT_GUIDE = (
++    " Patterns that work: parallel research (several subagents investigate different questions, you synthesize); "
++    "parallel solve and synthesize (several independent attempts, you compare and pick); sequential sub-solves "
++    "(each subagent gets the previous result); plan, solve, validate (one subagent solves, another checks). "
++    "Delegate self-contained work; keep integration and the final answer yourself."
++)
++SUBAGENT_SYSTEM_NOTE = "\n\nYou are a focused subagent. Do exactly the brief you were given and return only what it asks for; you cannot delegate further."
++SUBAGENT_MAX_TURNS = 12
+ ...
+     def __init__(self, harness, agent, base_config=None, extra_description="", include_full_subagent_guide=True):
+         super().__init__(harness, agent)
+         self.base_config = base_config
+-        self.description = ("Delegate a self-contained task to a subagent and returns its answer. " + extra_description).strip()
++        self.description = ("Delegate a self-contained task to a subagent and return its answer."
++                            + (SUBAGENT_GUIDE if include_full_subagent_guide else "") + " " + extra_description).strip()
++        self.parameters = {**self.parameters, "properties": {"task": {"type": "string", "description": SUBAGENT_TASK_FORMAT}}}
+
+-    def _inherit_general_config(self):
+-        pass
++    def _inherit_general_config(self) -> "AgentConfig":
++        parent = self.agent.agent_config
++        return replace(parent, agent_name="general_subagent", user_prompt="", messages_input=[], dataset_task=None,
++                       system_prompt=parent.system_prompt + SUBAGENT_SYSTEM_NOTE,
++                       tools={**parent.tools, self.name: None},     # no recursive delegation
++                       env_setups={},                               # the env is the parent's, already prepared
++                       max_turns=min(parent.max_turns, SUBAGENT_MAX_TURNS))
+
+     def execute(self, task: str) -> ToolCallResult:
+-        base = self.base_config
++        base = self.base_config if self.base_config is not None else self._inherit_general_config()
+         ...   # unchanged: deep copy, user_prompt=task, shared AC fields, agent_env = parent's
+@@ DEFAULT_TOOLS @@
+     "compact": (CompactionTool, {}),
++    "subagent": (SubagentTool, {}),        # general subagent; inherits the caller (M0); disabled inside subagents
+ }
+```
+
+`activation/dataset/environments/default.py · default_dockerfile`
+
+```python
+DEFAULT_BASE = "docker.io/library/python:3.12-slim"
+APT = ("git", "ripgrep", "jq", "build-essential")
+PIP = ("numpy", "scipy", "pandas", "sympy", "matplotlib", "networkx", "scikit-learn", "pyyaml", "lxml", "beautifulsoup4", "tqdm", "regex")
+
+def default_dockerfile(base: str = DEFAULT_BASE, apt=APT, pip=PIP, extra_lines: tuple[str, ...] = ()) -> str:
+    """Writes the Dockerfile under resolve_path("ENVIRONMENTS/<sha12>/Dockerfile") and returns its path.
+    AgentEnv builds and tags the image by content hash, so an unchanged recipe never rebuilds."""
+    text = "\n".join([f"FROM {base}", f"RUN apt-get update && apt-get install -y --no-install-recommends {' '.join(apt)} && rm -rf /var/lib/apt/lists/*",
+                       f"RUN pip install --no-cache-dir {' '.join(pip)}", "WORKDIR /workspace", *extra_lines]) + "\n"
+    ...
+```
+
+`activation/dataset/environments/__init__.py` exports `default_dockerfile`; suite constructors pass its result as `env_dockerfile_path`. The harness default image stays as it is for tests.
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M1 — Benchmark suite, environments, framings</span>
+    <span class="card-oneliner">Five benchmarks with loaders, corpora, per-task setups, sampled framings, suite registry.</span>
+    <span class="card-badge">Review</span>
+  </summary>
+
+#### What landed
+
+- Loaders `hotpotqa.py`, `musique.py`, `quality.py`, `narrativeqa.py`, `lca_bug_localization.py`, and `dapo_math.py` with seeded framing sampling. Multi-hop tasks carry their paragraphs as corpus documents for semantic search; long-document tasks write the article to `/workspace/document.txt` through `WriteFilesSetup`; bug-localization tasks copy a cached checkout of the base commit into `/workspace/repo` through `CopyTreeSetup` and are scored by exact match on any changed file path.
+- `dataset/task_framing.py`: one minimal framing plus two or three guided framings per family (multi-hop, math, repository, long document, search), an answer rule per scoring kind, and `sample_framing` with a guided share of one half; the framing id is recorded in the task datum.
+- `dataset/suite.py`: the registry with shares (hotpotqa .15, musique .10, dapo_math .20, bug localization .25, quality .12, narrativeqa .08, BRIGHT .10), `load_suite`, `configs_for_tasks` (tools, image, budgets, setups) and `framing_counts`.
+- `DatasetTask.env_setups` and the loader registry exports.
+
+#### Drifts, challenges, and unplanned steps
+
+- Math is DAPO alone: `deepscaler_preview.py` in the source is a docstring stub, not a loader.
+- RepoQA is absent (no retrievable data) and SWE-QA was not added for the probe; bug localization carries the repository family.
+- Checkouts are GitHub commit tarballs, not git clones: the node image has no git, and no history is wanted in the sandbox. Repositories with more than 3,000 files or more than 3 changed files are skipped to keep copies fast.
+- The dataset-loading test extension became a dedicated file (`test_basic_teacher_probe.py`) that also covers the probe helpers; no scorer for BRIGHT, which stays unscored.
+
+#### Focused actual diffs
+
+Exact per-file diffs in [SLICE4A_ROUND.tressoir.md](SLICE4A_ROUND.tressoir.md) (files under `dataset/`); the planned snippets below are kept for reference.
+
+#### Validation
+
+- `activation/tests/test_basic_teacher_probe.py`: seeded framing sampling is reproducible and mixes families as specified; suite configs carry the framing id, the setups and distinct cache keys; 3 passed on CPU.
+- Each loader smoke-loaded locally with 3 tasks (all sources reachable from the container); the probe loaded 5 per benchmark on the node in a few seconds after the first download (the repository tarballs took about a minute).
+
+#### Planning Overview (as planned)
+
+Five benchmarks, one registry, sampled framings, per-task environment setups. New loaders follow the `dapo_math.py` shape (stream, dedupe, `DatasetTask`, `initialize_dataset_stats`) and add corpus documents where search matters. `DatasetTask` gains an `env_setups` spec (class path plus kwargs, serializable) that the config constructor copies onto the agent config. A new `task_framing.py` holds the minimal framing and two or three guided framings per family; loaders sample with a seeded RNG and record `framing_id` in the task datum. `suite.py` names the benchmarks, their planned budget shares, scoring, tools, and builds oracle configs from tasks.
+
+| Benchmark | Source (reachable from the container) | Corpus for search | Setup | Scoring | Planned share |
+| --- | --- | --- | --- | --- | --- |
+| Multi-hop QA | `hotpotqa/hotpot_qa` (distractor, validation), `dgslibisey/MuSiQue` | the context paragraphs of the selected questions (golds and distractors) | none | F1 | 25% |
+| Math with tools | existing `dapo_math`, `deepscaler_preview` | none | none (default image) | numeric | 20% |
+| Repository QA | `JetBrains-Research/lca-bug-localization` (issue -> files to change; repo cloned at the base commit into a local cache); RepoQA needle-function tasks if its data file is retrievable; `SWE-QA/SWE-QA-Benchmark` free-form as teacher-only | the repository files | `CopyTreeSetup` of the cached checkout into `/workspace/repo` | exact match on any changed file path (aliases) | 25% |
+| Long-document QA | `emozilla/quality` (multiple choice), `deepmind/narrativeqa` (F1) | each article as one document | `WriteFilesSetup` writing the article to `/workspace/document.txt` | exact match on the option letter (aliases: option text) / F1 | 20% |
+| BRIGHT | existing loader | existing | none | unscored (teacher-only) | 10% |
+
+Shares are of generated tokens, not task counts, so a long-horizon benchmark does not crowd out the cheap ones; the campaign interleaves benchmarks in that ratio so a partial campaign keeps it. Framing families: multi-hop leans on parallel sub-question research; math on parallel attempts plus verification; repository on parallel file investigation then a sequential fix-locating pass; long-document on sequential section reading with notes and a plan-solve-validate variant. Every guided framing also states the tool-use expectations (search first, delegate self-contained work, compact when told).
+
+Boundaries: RepoQA is best effort (its dataset ids answer 401 on the Hub; the GitHub release is the fallback and may be absent); if it is missing, bug localization alone carries the repository family for the probe. No judge scorer is implemented; BRIGHT and SWE-QA stay unscored. The loaders cap examples and the repository cache at `max_examples` to keep the probe cheap (5 repos).
+
+Validation: `test_basic_dataset_loading` extended with one small load per new loader (2 examples), framing sampling counted, task serialization with setups round-tripping, and a CPU agent test that a long-document task's setup writes the file.
+
+#### Planned Changes
+
+`activation/dataset/dataset.py · DatasetTask`
+
+```diff
+@@ activation/dataset/dataset.py — DatasetTask @@
+     agent_prompt: str = ""  # What an agent is asked to do; the loader fills it.
++    env_setups: dict[str, dict] = field(default_factory=dict)
++    # name -> {"class": "module:Qualname", "kwargs": {...}}; copied onto the agent config by suite.configs_for_tasks
+```
+
+`activation/dataset/task_framing.py` (new)
+
+```python
+@dataclass(frozen=True)
+class TaskFraming:
+    framing_id: str
+    template: str          # "{task}" is the benchmark's own task text; "{answer_rule}" the scorer's submit instruction
+
+MINIMAL = TaskFraming("minimal", "{task}\n\n{answer_rule}")
+GUIDED: dict[str, tuple[TaskFraming, ...]] = {
+    "multihop": (TaskFraming("guided_parallel_research", ...), TaskFraming("guided_search_then_verify", ...)),
+    "math": (TaskFraming("guided_parallel_attempts", ...), TaskFraming("guided_plan_solve_validate", ...)),
+    "repo": (TaskFraming("guided_parallel_files", ...), TaskFraming("guided_sequential_localize", ...)),
+    "longdoc": (TaskFraming("guided_sequential_sections", ...), TaskFraming("guided_plan_solve_validate", ...), TaskFraming("guided_delegate_sections", ...)),
+}
+
+def sample_framing(rng: random.Random, family: str, guided_share: float = 0.5) -> TaskFraming:
+    return rng.choice(GUIDED[family]) if rng.random() < guided_share else MINIMAL
+
+def frame(task_text: str, answer_rule: str, framing: TaskFraming) -> str:
+    return framing.template.format(task=task_text, answer_rule=answer_rule)
+```
+
+`activation/dataset/loaders/hotpotqa.py` (new; `musique.py` has the same shape)
+
+```python
+class HotpotQADataset:
+    @classmethod
+    def load(cls, harness, max_examples: int | None, seed: int = 0, config: str = "distractor", split: str = "validation") -> LoadedDataset:
+        rng = random.Random(seed)
+        rows = load_dataset("hotpotqa/hotpot_qa", config, split=split, streaming=True)
+        dataset_id = make_dataset_id("hotpotqa", config=config, n=max_examples)
+        documents, tasks = {}, {}
+        for row in rows:
+            for title, sentences in zip(row["context"]["title"], row["context"]["sentences"]):
+                documents.setdefault(f"wiki/{title}", Document(doc_id=f"wiki/{title}", text="".join(sentences)))   # golds + distractors form the corpus
+            framing = sample_framing(rng, "multihop")
+            tasks[row["id"]] = DatasetTask(task_id=row["id"], dataset_id=dataset_id,
+                task_datum={"question": row["question"], "type": row["type"], "level": row["level"], "framing_id": framing.framing_id},
+                reference_metrics_kind=DatasetTaskMetricsKind.F1, gold_answer=row["answer"],
+                agent_prompt=frame(row["question"] + SEARCH_HINT, F1_ANSWER_RULE, framing))
+            if max_examples is not None and len(tasks) >= max_examples: break
+        loaded = LoadedDataset(dataset_id=dataset_id, documents=documents, scorable_tasks=tasks)
+        loaded.stats = initialize_dataset_stats(loaded, load_time=...)
+        return loaded
+```
+
+`activation/dataset/loaders/quality.py` (new; `narrativeqa.py` same shape with F1)
+
+```python
+DOCUMENT_PATH = "/workspace/document.txt"
+...
+            tasks[task_id] = DatasetTask(task_id=task_id, dataset_id=dataset_id,
+                task_datum={"article": row["article"], "question": row["question"], "options": row["options"], "framing_id": framing.framing_id},
+                reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH,
+                gold_answer=LETTERS[row["answer"]], gold_answer_aliases=[row["options"][row["answer"]]],
+                agent_prompt=frame(f"The document is at {DOCUMENT_PATH}. " + question_with_options, LETTER_ANSWER_RULE, framing),
+                env_setups={"document": {"class": "activation.agent.agent_env:WriteFilesSetup",
+                                         "kwargs": {"files": {DOCUMENT_PATH: {"datum_key": "article"}}}}})
+            documents[f"quality/{article_id}"] = Document(doc_id=..., text=row["article"])   # search across articles; the task's own article is among them
+```
+
+`activation/dataset/loaders/lca_bug_localization.py` (new)
+
+```python
+REPO_CACHE = "REPO_CACHE"   # resolve_path(REPO_CACHE)/<owner>__<repo>/<base_commit>, shallow clone at load time (loader side has network)
+...
+            local = ensure_checkout(row["repo_owner"], row["repo_name"], row["base_sha"])          # skipped when cached
+            files = [p for p in row["changed_files"]]
+            tasks[task_id] = DatasetTask(task_id=task_id, dataset_id=dataset_id,
+                task_datum={"issue_title": ..., "issue_body": ..., "local_path": local, "changed_files": files, "framing_id": framing.framing_id},
+                reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH, gold_answer=files[0], gold_answer_aliases=files[1:],
+                agent_prompt=frame(f"The repository is at /workspace/repo. Issue:\n{title}\n{body}\n\nName the file that must change to fix it.", PATH_ANSWER_RULE, framing),
+                env_setups={"repo": {"class": "activation.agent.agent_env:CopyTreeSetup", "kwargs": {"datum_key": "local_path", "env_path": "/workspace/repo"}}})
+            for path, text in iter_text_files(local, max_files=2000): documents[f"{task_id}/{path}"] = Document(...)
+```
+
+`activation/dataset/loaders/dapo_math.py · DapoMathDataset.load` (framing sampling added; `deepscaler_preview.py` likewise)
+
+```diff
+@@ activation/dataset/loaders/dapo_math.py — DapoMathDataset.load @@
+-    def load(cls, harness, max_examples):
++    def load(cls, harness, max_examples, seed: int = 0):
++        rng = random.Random(seed)
+ ...
+-                agent_prompt=agent_prompt_from_dapo(prompt_text),
++                task_datum={**row, "framing_id": framing.framing_id},
++                agent_prompt=frame(problem_from_dapo(prompt_text), NUMERIC_ANSWER_RULE, framing := sample_framing(rng, "math")),
+```
+
+`activation/dataset/suite.py` (new)
+
+```python
+@dataclass(frozen=True)
+class SuiteBenchmark:
+    name: str; family: str; loader: type; loader_kwargs: dict; share: float; scored: bool
+
+SUITE = (
+    SuiteBenchmark("hotpotqa", "multihop", HotpotQADataset, {}, 0.15, True),
+    SuiteBenchmark("musique", "multihop", MuSiQueDataset, {}, 0.10, True),
+    SuiteBenchmark("dapo_math", "math", DapoMathDataset, {}, 0.12, True),
+    SuiteBenchmark("deepscaler", "math", DeepScalerPreviewDataset, {}, 0.08, True),
+    SuiteBenchmark("lca_bug_localization", "repo", LcaBugLocalizationDataset, {}, 0.25, True),
+    SuiteBenchmark("quality", "longdoc", QualityDataset, {}, 0.12, True),
+    SuiteBenchmark("narrativeqa", "longdoc", NarrativeQADataset, {}, 0.08, True),
+    SuiteBenchmark("bright", "search", BrightDataset, {"tasks_from_examples": True}, 0.10, False),
+)
+
+def suite_tasks(harness, per_benchmark: int, seed: int) -> dict[str, list[DatasetTask]]:
+    """Loads each benchmark with max_examples=per_benchmark (datasets cached by id) and returns its tasks."""
+
+def configs_for_tasks(tasks: list[DatasetTask], *, model_name: str, env_dockerfile_path: str, ac_model_name: str | None = None,
+                      compaction_threshold_tokens: int = 32_768, max_turns: int = 40, max_duration: int = 1800) -> list[AgentConfig]:
+    """One AgentConfig per task: defaults + subagent + semantic_search(dataset_id), env setups from the task, the task's prompt."""
+    return [AgentConfig(agent_name=f"{task.dataset_id}/{task.task_id}", model_name=model_name, dataset_task=task, user_prompt=task.agent_prompt,
+                        tools={"semantic_search": (SemanticSearchTool, {"dataset_id": task.dataset_id})} if task.dataset_id in searchable else {},
+                        env_setups=resolve_env_setups(task.env_setups), env_dockerfile_path=env_dockerfile_path, ...) for task in tasks]
+```
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M2 — Rollout probe and report</span>
+    <span class="card-oneliner">About 5 tasks per benchmark on the oracle 27B, uncached then cached, with the report you refine the interfaces on.</span>
+    <span class="card-badge">Review</span>
+  </summary>
+
+#### What landed
+
+- `activation/agent/teacher_campaign.py`: `ProbeSpec`, `run_probe` (one rollout call for the whole suite per pass, uncached then cached under one caching id, scoring on), per-run and per-benchmark summaries, excerpt picking, `probe.json` and `PROBE_REPORT.tressoir.md` rendering, and a CLI. The 27B engines get `max_model_len` 56,000.
+- The report is [PROBE_REPORT.tressoir.md](PROBE_REPORT.tressoir.md): header, per-benchmark table, per-trajectory stats lines linking every trajectory file, three excerpts, observations and five questions.
+
+#### Drifts, challenges, and unplanned steps
+
+- The first launch ran benchmarks one after another with five agents at a time; cancelled by job id and rewritten as one concurrent call for all tasks.
+- Probe v1 died before any turn: the 50k trajectory cap plus a 4,096-token turn did not fit the planned 52k engine context. The 27B table entries now say 56k; the cap check in `Agent._check_engine_context` is what caught it.
+- `max_turns` was a per-segment budget because the turn counter restarted at compaction; runs reached 77 turns under a 40-turn cap. After your review it is the total over the run (`AgentRunResult.total_turns()`), the default budget is 100 turns, and the probe runs only the scored benchmarks unless BRIGHT is named (v0.4.1).
+- No excerpt for a subagent delegation exists because the oracle never delegated (see the report).
+- Probe v3 (v0.5, after your review): three concurrent single-GPU probes of the 30 scored tasks compare the non-thinking oracle with the countermeasures (0.54) against thinking at reasoning effort low (0.69), medium (0.76) and xhigh (0.62, slower per turn and cut by the duration cap and the 8k turn limit); thinking removes the identical-call loops and is the only mode that delegates. Details and per-task table in [PROBE_COMPARE.tressoir.md](PROBE_COMPARE.tressoir.md).
+
+#### Focused actual diffs
+
+Exact diffs for `teacher_campaign.py`, `vllm_wrapper.py` and the tests in [SLICE4A_ROUND.tressoir.md](SLICE4A_ROUND.tressoir.md).
+
+#### Validation
+
+- Node `ac-4a-probe` (one RTX PRO 6000, us-east-2), [node_probe_v2.log](../../TMP/AGENT_AC_PRETRAINING/node_probe_v2.log): 35 runs, uncached pass 696 s, 7.2M prompt tokens with 75% prefix-cache hits, 62,867 generated tokens, 779 turns, 7 compactions, 0 errors; cached pass 0.1 s with 35 of 35 from the cache. Scores hotpotqa 0.75, musique 0.51, dapo_math 0.40, bug localization 0.20, quality 0.60, narrativeqa 0.09.
+- The cache is pulled to `IB/TMP/AGENT_AC_PRETRAINING/node/ROLLOUTS/teacher_probe_v2/rollouts.jsonl`; the node is torn down.
+
+#### Planning Overview (as planned)
+
+The probe is the seed of the campaign runner, so it lives in product code: `activation/agent/teacher_campaign.py` with `run_probe` now and `run_campaign` in M4. It loads the suite at five tasks per benchmark, builds oracle configs (`unsloth/Qwen3.8-27B-NVFP4`, no AC, no LoRA, defaults plus subagent and semantic search, the default image, 32k compaction threshold), runs them once uncached and once from cache under one caching id, scores the scorable ones, and writes the report. The engine table entry for the 27B is raised to `max_model_len` 52,000; the probe records the engine's KV budget so we know the 27B fits with headroom on one RTX PRO 6000.
+
+Runs on AWS through `sky.py exec --watch` with the rollouts and report pulled while it runs. Expected node time: about 30 minutes. The 40 tasks run concurrently, so the uncached pass takes about as long as the longest trajectory (10 to 15 minutes at 40 turns), the cached pass seconds, plus the 27B engine load, the image build and the dataset downloads. Everything but the 27B pass is exercised first on CPU with the tiny fixture and scripted model replies, so the node session is a confirmation, not a debugging loop.
+
+What the report proposes to show, so you can tell me what is missing:
+
+1. Header: engine and model, node, context length, caching id, wall time per pass, generated tokens per second, sandbox time share.
+2. Per-benchmark table: tasks; finished / max turns / errors / compaction refusals; mean and max turns; mean prompt and generated tokens; compactions per run; subagent calls, search calls, shell and python calls; score where scorable; framing mix; second pass fully cached (yes/no).
+3. Per-trajectory stats lines (the existing reporter's `_stats` output) grouped by benchmark, each linking its trajectory file.
+4. Three annotated trajectory excerpts, one each for a compaction, a subagent delegation and a search-heavy run, with the tool calls and the answer.
+5. Observations and open questions for you: interface refinements for setups and task selection, framing effects, what the report should add or drop.
+
+Boundaries: one seed; no AC; no training. Failure modes to watch: setups that take longer than the sandbox timeout (repo copies), the 27B refusing the compaction protocol, and the subagent tool being ignored under minimal framings.
+
+#### Planned Changes
+
+`activation/harness/vllm_wrapper.py · engine kwargs`
+
+```diff
+@@ activation/harness/vllm_wrapper.py — model table @@
+-            "unsloth/Qwen3.8-27B-NVFP4": base | mtp,
+-            "Qwen/Qwen3.8-27B-FP8": base | mtp,
++            "unsloth/Qwen3.8-27B-NVFP4": base | mtp | {"max_model_len": 52_000},   # teacher agent loops must reach the 32k compaction threshold
++            "Qwen/Qwen3.8-27B-FP8": base | mtp | {"max_model_len": 52_000},
+```
+
+`activation/agent/teacher_campaign.py` (new)
+
+```python
+ORACLE_MODEL = "unsloth/Qwen3.8-27B-NVFP4"
+
+@dataclass
+class ProbeSpec:
+    per_benchmark: int = 5
+    seed: int = 0
+    caching_id: str = "teacher_probe_v1"
+    report_folder: str = "AGENT_AC_PRETRAINING/probe_v1"     # under the artifacts root; pulled by --watch
+
+def run_probe(harness: HarnessRuntime, spec: ProbeSpec) -> dict:
+    tasks = suite_tasks(harness, spec.per_benchmark, spec.seed)
+    configs = {name: configs_for_tasks(ts, model_name=ORACLE_MODEL, env_dockerfile_path=default_dockerfile()) for name, ts in tasks.items()}
+    manager = RolloutManager(harness)
+    passes = {}
+    for label in ("uncached", "cached"):
+        reporter = RolloutReporter(resolve_path(f"{spec.report_folder}/{label}"), title=f"Teacher probe ({label})", ...)
+        started = time.time()
+        results = {name: manager.perform_single_rollouts(cfgs, seed=spec.seed, caching_id=spec.caching_id, perform_scoring=True, reporter=reporter)
+                   for name, cfgs in configs.items()}
+        passes[label] = summarize(results, wall=time.time() - started)      # per-benchmark counters listed in the overview
+    write_probe_report(passes, resolve_path(spec.report_folder), tasks)      # PROBE_REPORT.tressoir.md + probe.json
+    return passes
+```
+
+`activation/agent/rollout_reporter.py · RolloutReporter` (counters the summary needs)
+
+```diff
+@@ activation/agent/rollout_reporter.py — trajectory_item / _stats @@
++    # tool-call counts by tool name, compaction count, sandbox seconds and finish reason are already visible in the run result;
++    # _stats gains "tools=shell:3,python:2,subagent:1,semantic_search:4" and "sandbox_s=..." so the summary can aggregate them
+```
+
+`IB/ARTIFACTS/AGENT_AC_PRETRAINING/PROBE_REPORT.tressoir.md` (generated by the probe; copied into this folder with the trajectory files) follows the five sections above.
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M3 — Two-GPU training on AWS</span>
+    <span class="card-oneliner">Internal-spawn DDP utils and trainer call sites, wall-clock checkpoints, validated on 2x RTX PRO 6000.</span>
+    <span class="card-badge">Planning</span>
+  </summary>
+
+#### Planning Overview
+
+Two-GPU training with the internal-spawn design, validated on a 2x RTX PRO 6000 AWS node. ORCD is deferred, so there is no `orcd.py`, no requeue chain and no H200 autotune in this slice; wall-clock checkpoints stay because they make any long run resumable.
+
+**Distributed utils.** `activation/common/distributed.py` owns everything multi-process: detection (world size = visible GPUs unless `ACTIVATION_DP_WORLD` overrides), worker spawn with per-worker GPU pinning, NCCL initialization through a file store in the artifacts root, sharding by cost, parameter broadcast, gradient all-reduce, barrier, and error propagation. Workers rebuild a harness from a spec (harness config, model registrations, LoRA and AC-model registrations, the training config, the items file, epoch bounds, seed), receive the trainable tensors by broadcast and never touch vLLM.
+
+**Trainer call sites.** Each trainer's epoch loop moves into a rank-agnostic method. Three insertions: shard the shuffled order (same permutation on every rank from the seed, each rank takes its share balanced by teacher tokens), all-reduce the trainable gradients before the clip and step, and gate reporting, evaluation, sampling and saving on `is_main` with a barrier after each. Statistics that feed the reports are summed across ranks with one small all-reduce per step. `checkpoint_every_seconds` saves the optimizer, the epoch, the step and the order seed so a run resumes mid-epoch.
+
+**Autotune.** The FLA kernels must not JIT-tune per rank at step time: workers use the committed RTX PRO 6000 presets, and the test asserts no autotune cache writes during training.
+
+Validation on AWS (`sky.py` node with 2 GPUs): a two-GPU AC mini run matching the single-GPU loss curve within noise at the same effective batch and seed; throughput per GPU against the single-process rate (the extrapolated 1.9x is the number to beat or explain); a kill-and-resume from a wall-clock checkpoint; the agent trainer's two-GPU path on the 3b test items. The collectives and the spawn path are developed on CPU first with the gloo backend and the tiny fixture (two workers on one machine), so the node session is about 20 minutes with the 0.8B into 4B pair: provisioning, four short runs of a few minutes each, and the throughput comparison.
+
+#### Planned Changes
+
+`activation/common/distributed.py` (new)
+
+```python
+@dataclass
+class DataParallel:
+    rank: int
+    world_size: int
+
+    @property
+    def is_main(self) -> bool: return self.rank == 0
+
+    @classmethod
+    def detect(cls) -> "DataParallel":
+        """The calling process is rank 0; world size is the number of visible GPUs (ACTIVATION_DP_WORLD overrides)."""
+
+    def spawn(self, worker: Callable[["DataParallel", dict], None], spec: dict) -> None:
+        """Start world_size-1 workers with torch.multiprocessing.spawn; each sets CUDA_VISIBLE_DEVICES to its GPU before
+        any CUDA call, joins the NCCL group through a file store, then calls worker(dp, spec). Non-blocking; join() waits."""
+
+    def init_group(self, store_path: str) -> None: ...
+    def shard(self, items: list, cost: Callable[[Any], int]) -> list:
+        """Deterministic greedy balancing by cost; every rank sees the same order and takes its own bins."""
+    def broadcast_params(self, params: Iterable[torch.Tensor], src: int = 0) -> None: ...
+    def all_reduce_grads(self, params: Iterable[torch.Tensor]) -> None:
+        """Mean of grads across ranks, flattened into a few buckets; no-op when world_size == 1."""
+    def all_reduce_sum(self, values: dict[str, float]) -> dict[str, float]: ...
+    def barrier(self) -> None: ...
+    def join(self) -> None:
+        """Waits for the workers; re-raises the first worker exception in the master."""
+```
+
+`activation/ac_model/ac_model_training.py · ActivationContextTrainer.train, _train_epochs`
+
+```diff
+@@ activation/ac_model/ac_model_training.py — ActivationContextTrainer.train @@
+     def train(self, items, config, ...):
++        dp = DataParallel.detect()
++        if dp.world_size > 1:
++            spec = self._worker_spec(items, config, start_epoch)          # harness + model registrations + items file + config + seed
++            dp.spawn(_ac_training_worker, spec)
+         examples = self._build_examples(items, ...)
+         device = ac_model.prepare()
+         ac_parameters, target_parameters = ac_model.trainable_parameters(), manager.lora_parameters(target_lora)
++        dp.broadcast_params([*ac_parameters, *target_parameters])          # workers start from the master's weights
+         optimizer = persistent_optimizer(...)
+-        ... (epoch loop inline)
++        self._train_epochs(dp, examples, ac_model, optimizer, ac_parameters, target_parameters, config, reporter)
++        dp.join()
+
++    def _train_epochs(self, dp, examples, ...):
+         for epoch in range(start_epoch, config.epochs):
+-            order = rng.sample(range(len(examples)), len(examples))
++            order = dp.shard(rng.sample(range(len(examples)), len(examples)), cost=lambda i: len(examples[i].teacher_ids))
+             for step, mini in enumerate(batches(order, per_step)):
+                 for index in mini:
+                     loss, ... = self._example_loss(ac_model, examples[index], device)
+                     loss.backward()
++                dp.all_reduce_grads([*ac_parameters, *target_parameters])
+                 clip_grad_norm_(...); set_learning_rates(...); optimizer.step(); ac_model.invalidate_encoded_rows()
+-                stats.update(...); reporter.step(...)
++                stats.update(dp.all_reduce_sum(step_stats))
++                if dp.is_main: reporter.step(...)
++                if dp.is_main and self._checkpoint_due(): self._save_checkpoint(epoch, step, order_seed)   # wall-clock cadence
++                dp.barrier()
+-            self._evaluate(...); self._save_epoch(...)
++            if dp.is_main: self._evaluate(...); self._save_epoch(...)
++            dp.barrier()
+
++def _ac_training_worker(dp: DataParallel, spec: dict) -> None:
++    """Runs in a spawned process on its own GPU: rebuild the harness, load items, receive weights, run _train_epochs."""
++    harness = HarnessRuntime.from_spec(spec["harness"]); trainer = ActivationContextTrainer(harness, reporter=None)
++    trainer.train(load_items(spec["items_path"]), spec["config"], start_epoch=spec["start_epoch"], _dp=dp)   # same code path, rank != 0
+```
+
+`activation/agent_training/agent_trainer.py · AgentTrainer.train` receives the same three insertions around `micro_batches`, `loss.backward()` and `optimizer.step()`, with `_fill_old_logprobs` computed by every rank for its own shard.
+
+`activation/cloud/sky.py` needs no change: `setup --gpus 2` already provisions a two-GPU node and the exec path exposes both GPUs.
+
+Deferred with ORCD: `activation/cloud/orcd.py` (the `sky.py` subcommand surface over SSH and Slurm with a requeue chain), H200 autotune profiles, an Apptainer backend for `AgentEnv`.
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M4 — Teacher campaign</span>
+    <span class="card-oneliner">The 12 h run and the redo pass are done: 4,279 oracle trajectories cached, pulled and reported.</span>
+    <span class="card-badge">Review</span>
+  </summary>
+
+#### What landed (2026-09-11)
+
+**The 12 h run** (`ac-4a-camp`, job 8, 2026-09-10 23:23 to 2026-09-11 11:35 UTC, 2x RTX PRO 6000, saved tuning `campaign_27b_medium_v2`, 20,000 draws requested, 17,359 in the pool): 4,341 runs finished in the window, 4,279 rows cached (62 deadline-clipped runs are not cached by design), zero errors. Finish reasons: submitted 3,758, 30 min cut 514, no tool call 31, tool errors 20, max turns 16, trajectory cap 2. 332 compactions, 7,627 subagent runs, mean score 0.605. The reporter's finished counter includes subagent runs, so the true rate was about 316 trajectories an hour, not the 800 assumed from the base-only tuning runs.
+
+**The redo pass** (job 10, 12:05 to 20:18 UTC): the 429 cut sequential and parallel rows again under the same draw, 60 min and 250 turns, 16 agents per GPU. 329 submitted (77%), 60 cut again, mean score 0.448 where they scored 0; subagent generation 24.5 tokens/s against about 11 during the campaign.
+
+**Final corpus**: 4,708 file rows, 4,279 unique keys (the last row per key wins), submitted 4,087, cut 99, no tool call 54, tool errors 35, trajectory cap 4. Submitted-row mean score by teacher kind: base 0.709, sequential 0.696, parallel 0.685. Local copy `IB/TMP/AGENT_AC_PRETRAINING/node_camp/ROLLOUTS/teacher_campaign_12h/` (5.0 GB with the redo history) plus `draw_tasks.jsonl`; reports `node_camp/campaign_12h/` and `node_camp/redo_12h/`.
+
+| Teacher kind | Submitted rows | Mean score | Cut at 30 min (campaign) |
+| --- | --- | --- | --- |
+| base | 750 | 0.709 | 3% |
+| sequential | 1,524 | 0.696 | 10% |
+| parallel | 1,616 | 0.685 | 14% |
+
+#### Drifts, challenges, and unplanned steps
+
+- **LCA loading** fetched GitHub tarballs one at a time; the first launch (job 7) was stopped after 30 min and the loader now prefetches in parallel with a per-checkout lock and skips tar links to absolute paths instead of failing the checkout.
+- **Throughput expectation** was off by the subagent multiplier (see above); the 20,000 draw still left the pool far from exhausted.
+- **Cuts are contention**: about 11 output tokens/s per live sequence at 125 live sequences (subagents run outside the 66-slot pool), so 30 min is about 20k output tokens; cuts concentrate in LCA, DeepMath and MuSiQue. The redo at half the concurrency confirmed it.
+- **Redo support** added mid-run: `RedoPolicy` (cut rows read as absent, new rows supersede, redo-only skips uncached tasks), `--agents-per-gpu` over the saved tuning, and a draw guard.
+- **The draw was not reproducible**: a transient GitHub failure that recovered gave the Python LCA loader 3 more tasks, which reordered the shuffle so the first redo attempt matched 1,341 of 4,279 rows. The draw is now recorded next to the cache (`draw_tasks.jsonl`) and replayed; an existing cache seeds the record.
+- **Operations**: stopping a job over ssh must also kill the vLLM engine subprocesses, else Sky keeps the GPU reservation (job 10 waited 30 min). The work tree is a git repository; branch `campaign-stable` and tag `redo-launch-2026-09-11` mark the redo tree.
+- The 12 h continuation is on hold by decision; the node is kept for the agentic-program smoke run (`AGENTIC_PROGRAMS.tressoir.md`).
+
+#### Validation
+
+Tests: 44 passed, 1 skipped across scoring, LOFT/Loong loaders, study, tool shapes, deadline, tuning, env setups and redo; 3b CPU checks pass; round rebuilt (43 files). Node checks: zero tracebacks in both job logs, disk 289 GB free at the end, cache row counts equal on the node and locally.
+
+#### Implementation status (2026-09-10, kept as reference)
+
+**Reorganized to your data model.** The campaign code now follows the reorganization you made in the source: `DatasetTask.task_kind` (`DatasetTaskKind`: general, semantic_search, math, code_search, file_search, code_impl) replaces the framing families and `suite.py`; every loader emits a bare prompt (task text plus its answer rule from `ANSWER_RULES`); the teacher prompt lives in `META_AGENT_PROMPT_TEMPLATES[(task_kind, teacher_kind)]` with `AgentTeacherKind` base, sequential multi-agent and parallel multi-agent (weights 0.2 / 0.4 / 0.4 per kind); `AgentTrainingStudy` (in `agent_training/`) owns the benchmark table, the weighted task draw and the rollout call, and `bench/canonical_training/generate_agent_teacher_trajectories.py` is the canonical entry point. Each config carries `metadata` labels (benchmark, task kind, teacher kind, template id) that the reporter's per-benchmark summary and the item builder read. `teacher_campaign.py`, `task_framing.py` and `suite.py` are gone; nothing of the probe's evidence depends on them.
+
+**Throughput.** The tuning subplan is at v0.3 (`ROLLOUT_TUNING.tressoir.md`, T0 to T2 in Review): the manager is a continuous queue with a probe on the first N finished tasks, in-place pool resize, deferred engine reload and a wall-clock deadline; BM25 indexes are built once before the pool; repositories are not indexed (the code agents use `rg`); the saved configuration `campaign_27b_medium_v2` is applied by the 12 h run. Long documents are offloaded to `/workspace/task_full.txt` when the prompt exceeds 20k characters.
+
+**Campaign mix (settled in chat, 2026-09-10 evening).** HotpotQA and QuALITY out (QuALITY's passages are 5k tokens); DeepMath-103K at difficulty 6 and above in, scored by math-verify; LOFT's text RAG sets (nq, hotpotqa, musique, qampari, quest at 128k and 1m passages) and Loong's English multi-document sets in as file-search tasks, Loong unscored (no judge runs in the rollout pipeline: `DatasetTask.score()` returns None for the `UNSCORED` kind); LCA runs Python, Java and Kotlin.
+
+| Benchmark | Kind | Available | Weight | Draws at 12,000 | Scoring |
+| --- | --- | --- | --- | --- | --- |
+| musique | semantic search | 2,417 | 0.20 | 2,400 | F1 |
+| deepmath (difficulty 6+) | math | 57,630 | 0.19 | 2,280 | math-verify |
+| dapo_math | math | 17,917 | 0.08 | 960 | numeric exact |
+| lca_bug_localization (py) | code search | about 3,800 | 0.14 | 1,680 | file path |
+| lca_bug_localization_java | code search | 2,522 | 0.08 | 960 | file path |
+| lca_bug_localization_kt | code search | 618 | 0.03 | 360 | file path |
+| narrativeqa | file search | 3,461 | 0.12 | 1,440 | F1 (rough) |
+| loft | file search | 1,100 | 0.09 | 1,080 | F1 / list F1 |
+| loong (English) | file search | 695 | 0.06 | exhausts at 695 | unscored |
+| bright | semantic search | 103 | 0.01 | exhausts at 103 | unscored |
+
+**Probe of the mix** (`ac-4a-camp`, job 5, 150 draws, saved configuration, 24 min deadline): every benchmark loaded on the node in 121 s (DeepMath's shards, LOFT's zips and Loong's archive fetched once into the synced folder), 150 started, 139 cached rows, 11 cut by the deadline, zero agent errors; scores musique 0.88, deepmath 0.76, dapo 1.0, lca py 0.92, java 0.83, kt 1.0, loft 0.73, narrativeqa 0.36, loong unscored. Report `node_camp/probe_v3/`, log `node_probe_v3.log`.
+
+**Next.** Resume test (same command again: the cached rows replay, the cut tail is redone), then the 12 h run.
+
+#### Planning Overview
+
+After the probe report and your second green light: the rollout throughput tuning run planned in [ROLLOUT_TUNING.tressoir.md](ROLLOUT_TUNING.tressoir.md) (static autotune from a 200-task-per-GPU probe phase at medium effort, cached under the campaign id) replaces the scaled probe and fixes the task counts for the budget shares, then the campaign of 6 to 12 hours on AWS (one or two GPUs, each with its own engine and sandbox pool; the engine-per-GPU rollout path exists, session stickiness is verified in the scaled probe). `run_campaign` interleaves benchmarks by the planned shares, uses `perform_single_rollouts` with one caching id per campaign, records scores for every scorable run, and can be stopped and resumed at any time because the cache is the state. Safety of the corpus: pulled every few minutes through `--watch`, copied after the run to the local sync root and to a second location (S3 or ORCD pool), with a manifest of config keys and seeds so any later run of the same suite finds every trajectory in the cache. Deliverable: the campaign report (the probe report's sections at campaign scale plus the budget actually spent per benchmark).
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M5 — Item construction</span>
+    <span class="card-oneliner">Four AC buckets from public sources plus teacher runs; agent SFT items only.</span>
+    <span class="card-badge">TBD</span>
+  </summary>
+
+#### Planning Overview
+
+Programmatic transformations only. Four AC buckets with planned weights: compaction 30%, trajectory QA 25%, RAG QA 25%, run-result parts 20% (subagent transcripts, full tool outputs, search extras). Public sources (`s1_deep_research`, `open_swe_traces`, `nemotron_math`, the retrieval corpora) fill the buckets first; teacher runs are added on top through `items_from_run_results` and the cut generator. Agent SFT items come from success-filtered scorable teacher runs (D5, D8) as a separate item file; no agent SFT run in this slice. Items and, per D9, teacher log-probs are cached by item id under the artifacts root. Item lengths bias toward 16k to 48k teacher tokens where the sources allow it. Deliverable: item files with per-bucket counts and token totals, and a sample sheet of 20 items per bucket for your review.
+
+</details>
+
+<details class="card" data-tressoir-markdown>
+  <summary>
+    <span class="card-title">M6 — Mini AC SFT estimation runs</span>
+    <span class="card-oneliner">2B -> 4B mini runs on one and two GPUs; measured rates and the large-run sizing proposal.</span>
+    <span class="card-badge">TBD</span>
+  </summary>
+
+#### Planning Overview
+
+Mini runs on 2B -> 4B (D3) to replace the extrapolated rates: about 2,000 items, one epoch, on one and on two RTX PRO 6000 through the M3 path. Output: a rate table (teacher tokens per hour per GPU count and per bucket), the effective batch and learning-rate checks from the DDP validation, and a sizing proposal for the large run (unique tokens, epochs, hours) that you green-light separately. The large run itself and the 2B -> 9B follow-up are outside this slice's first green light.
+
+</details>
+
+## Status log
+
+- 2026-09-10 v0.7: campaign mix settled and implemented (DeepMath with math-verify, LOFT, Loong unscored, LCA Java and Kotlin; HotpotQA and QuALITY at weight 0); `UNSCORED` and `MATH_VERIFY` scoring kinds; probe of the mix on the node clean (150 draws, zero errors).
+- 2026-09-10 v0.6.2: teacher kinds folded into the prompts module, templates as editable full texts without the tools note; cache keys by task and template label under the caching id (prompt rewording keeps the rows); parallel-only smoke run to check delegation under the parallel templates.
+- 2026-09-10 v0.6.1: campaign duration cap 1,800 s per rollout (chat), tuning subplan v0.3.1.
+- 2026-09-10 v0.6: M4 Implementing. Campaign code reorganized to your source's data model (task kinds, teacher kinds, prompt templates, `AgentTrainingStudy`, canonical script); throughput subplan at v0.3 with two tuning runs measured and the manager turned into a continuous queue; long-document offloading; round rebuilt with the reorganized delta (36 files).
+- 2026-09-09 v0.1: intent, facts, sizing and eight decisions; milestones TBD.
+- 2026-09-10 v0.5.2: oracle mode fixed at medium; rollout throughput tuning planned as a subplan (`ROLLOUT_TUNING.tressoir.md`, five decisions) and folded into M4.
+- 2026-09-10 v0.5.1: xhigh probe added to the comparison (0.62 in 3418 s; the duration cap and the 8k turn limit bind); medium stays the recommendation.
+- 2026-09-10 v0.5: countermeasures (repeated-call note, empty submission refused, argument aliasing), reasoning-effort probe variants, 64k engine context, call kwargs in the cache key; probe v3 on three nodes compared non-thinking, low and medium effort (PROBE_COMPARE).
+- 2026-09-10 v0.4.1: from your probe review: `max_turns` counts every compaction segment, budgets raised to 100 turns, BRIGHT out of the probe passes unless named; the loop analysis of the probe answered in chat.
+- 2026-09-10 v0.4: M0, M1, M2 implemented and validated, moved to Review with completion reports; probe v2 done (35 runs, report in this folder); round document and exact patch staged; node torn down.
+- 2026-09-09 v0.3.1: green light given for M0 to M2 (implemented directly); M0, M1, M2 marked Implementing. The subagent brief format gained a CONTEXT section after TASK at your request.
+- 2026-09-09 v0.3: ORCD deferred out of the slice at your request; D1 re-recorded, D10 withdrawn, M3 reduced to the AWS two-GPU test, sizing restated for 2x RTX PRO 6000.
+- 2026-09-09 v0.2.1: ORCD compute-node probe (no sudo, no podman, Apptainer works) folded into D10 and the venue table.
+- 2026-09-09 v0.2: D1 to D8 integrated from your interactions and the DDP chat answer; milestones renumbered around the first green light (M0 to M2 with Moderate diffs, M3 planned, M4 to M6 overviews); D9 and D10 requested; the 27B context cap and the per-invocation teacher cache surfaced as facts.

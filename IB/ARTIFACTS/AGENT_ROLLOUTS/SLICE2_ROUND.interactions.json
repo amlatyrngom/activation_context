@@ -1,0 +1,3 @@
+{
+  "SLICE2_ROUND-free_form_feedback": "Remove lora_name from AgentRunResult if AgentConfig already has it."
+}

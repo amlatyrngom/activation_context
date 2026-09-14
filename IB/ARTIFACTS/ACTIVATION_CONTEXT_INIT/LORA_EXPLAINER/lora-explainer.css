@@ -1,0 +1,46 @@
+.routing-diagram {
+  min-width: 42rem;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+}
+
+.diagram-node {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--accent) 62%, var(--line));
+  stroke-width: 2;
+}
+
+.diagram-node.strong {
+  fill: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  stroke: var(--accent);
+}
+
+.diagram-node.route {
+  fill: color-mix(in srgb, var(--positive) 8%, var(--surface));
+  stroke: color-mix(in srgb, var(--positive) 72%, var(--line));
+}
+
+.diagram-title,
+.diagram-copy {
+  fill: var(--ink);
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.diagram-title {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.diagram-copy {
+  fill: var(--muted);
+  font-size: 13px;
+}
+
+.diagram-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.arrow-head {
+  fill: var(--accent);
+}

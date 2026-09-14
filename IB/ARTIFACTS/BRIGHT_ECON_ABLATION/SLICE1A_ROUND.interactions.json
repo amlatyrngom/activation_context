@@ -1,0 +1,3 @@
+{
+  "SLICE1A_ROUND-free_form_feedback": "Let's now start the review phase. The past few slices have introduced code that will probably stand in the way of what we ultimately want: to make the various aspects of the system programmable. (See my draft in TASK.md). If you see me removing things, that's why.\n\n- Since many documents are junked, the q/a schema and prompt should gain a `has_no_valuable_insights` point.\n-  make_label_prompt is human-editing unfriendly. Just make the two branches"
+}

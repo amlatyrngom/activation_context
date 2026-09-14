@@ -1,0 +1,190 @@
+{
+  "activation/ac_model/__init__.py": {
+    "source_sha256": "7de7d4ad39bdcc719735327f19a1aa10829a529470db0f9b8bb0e123172e45ed",
+    "staged_sha256": "28b72f7e3889a72aea8cc40f39c50b96c53b96fbba34d47513d03e8490e2c07d"
+  },
+  "activation/ac_model/ac_model.py": {
+    "source_sha256": "c768f5d7494dec15481cd9765f3e0c2be5b7306288c84f3402b96d2a8841bc7f",
+    "staged_sha256": "1f3c69227def577ef366ccc301af2c53a45ce8254ea470a1b5d9ecafe56077b7"
+  },
+  "activation/ac_model/ac_model_reporter.py": {
+    "source_sha256": "57663282d651e499bfa695954b89625905c30a7bf6f4fffde2757e59425e2015",
+    "staged_sha256": "fdec56d449dd08174e1b33745cfdaea32399cf60893cc3f1863663817ff3e07e"
+  },
+  "activation/ac_model/ac_model_study.py": {
+    "source_sha256": "bdcb003aa2021f0433d014567ff2236bddfacbeeba94cdd7cbef9e0dc82d4b47",
+    "staged_sha256": "4c33dfdbcd3f6a7fe633113cee166ea82e0338dcaa92733021d61883854522f0"
+  },
+  "activation/ac_model/ac_model_training.py": {
+    "source_sha256": "305d7c456623b2f7985cfcae58438f95756d02efdf902fd665e71f74114a2cef",
+    "staged_sha256": "ca301e494782786e0691f8eeac1c1aa9b46062ac1707767912a2bb6d1fafc147"
+  },
+  "activation/ac_model/ac_model_utils.py": {
+    "source_sha256": "1824ab03726ccee671540d38aff0c1660023f3c21159f7634808a087cd45402c",
+    "staged_sha256": "f74df6e4e625d2583ea154e65f25c8ceb3ff77b3c3c3a46e4cab1f82aaff17d5"
+  },
+  "activation/agent_training/agent_trainer.py": {
+    "source_sha256": "bbf938f18674857948e54b50fe000f031f7861f3bc4cabce54328d7e59392457",
+    "staged_sha256": "5c25a75c9341a4b766dfc5622a211d6100fa404606dbe6d8845f6cf7cfd793c9"
+  },
+  "activation/agent_training/agent_training_config.py": {
+    "source_sha256": "66d98c4d59185bd8cfdfd70fa7185c57941b12c938795f7540746c1efcda960b",
+    "staged_sha256": "0077929b6e356aa8d146e503d9836fa98fa520daa39bbaa7dd5428821bca1a4a"
+  },
+  "activation/agent_training/agent_training_utils.py": {
+    "source_sha256": "b020f91a36fcdf3e0c9ad825a26f90e119b85dd020c4f8f9b487df0336dd8538",
+    "staged_sha256": "51ef2ce5646a0eed60fa149d61d5fe5872f185f4d75083355b32bc34fef4fe9f"
+  },
+  "activation/agent_training/fla_cache.py": {
+    "source_sha256": "5d6ad3f2aefca625508abacfbb6c942c1f522c0c29180b22b8a664f220634650",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_bwd_kernel_dqkwg.json": {
+    "source_sha256": "176624cd2ccb30f86f11d60ea4e95e0da8c0783fbcfcd9b6cc47d8e5c47fa4f2",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_bwd_kernel_dv_local.json": {
+    "source_sha256": "6da7142f2447540867b17d53faf8d3c6bbed234c1202786309d6dd41b7693309",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_fwd_kernel_o.json": {
+    "source_sha256": "b085aae1faa073855c4e665d55dfb4d1b7fbed0bd192cc4cfb0238756f4b90f2",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64.json": {
+    "source_sha256": "97f45839cc5d18dfe0c596a515cf7d7b1af43c5465c3c77df96747449acb36d6",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_fwd_kernel_h_blockdim64.json": {
+    "source_sha256": "06db6e5003175bf87e6332b501ee8ba77b6701157f0e91a60804d6cac0c85ae0",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_fwd_kkt_solve_kernel.json": {
+    "source_sha256": "934a2f3fb7f6e71b584099ed0637514f0c9c68b9561b4c0aa94e2c1f8c738df0",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_local_cumsum_scalar_kernel.json": {
+    "source_sha256": "64dca3a127652ae8ce97f21e622a1536c78011f5670e4de83f5821599be425a7",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/l2norm_bwd_kernel.json": {
+    "source_sha256": "fa859b3616c437b7513bccddd4830819882ecc4754e07ad99ef9d74ec9598e6a",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/l2norm_fwd_kernel.json": {
+    "source_sha256": "e68e765136be52be72c59a704df6575d7c10f4b8f1b39a085fb3444394f932f6",
+    "staged_sha256": null
+  },
+  "activation/agent_training/fla_configs/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/recompute_w_u_fwd_kernel.json": {
+    "source_sha256": "9ebecf1a05f1dda285988572b77ff9c54c1a18f185044c8e2d8a52dae37477ff",
+    "staged_sha256": null
+  },
+  "activation/autotuners/__init__.py": {
+    "source_sha256": "143a07f856add40f25c3a6466937135504af064ae2f9f6057d6889732ae1c191",
+    "staged_sha256": "ab0504685cb07475cddce418342c75d1b9ad47af7c3f5dd4c5b919c37df282d4"
+  },
+  "activation/autotuners/__main__.py": {
+    "source_sha256": null,
+    "staged_sha256": "0d54c2516eb9a572f536223f6c5d5e980750a653d7acf1f3dafc3876e25ba459"
+  },
+  "activation/autotuners/configs/5486919eb89a24875d3faaf74c906cdbb61440c041d6c332a5482d485e45ef90-36c91c34021b9964a5522eba154452f2bdef7ac8e45129472751213cf6cb08e4.json": {
+    "source_sha256": null,
+    "staged_sha256": "59c63f4c05638994d58afdc78bd76b35ced995e9cc80f3e108681661fb90bb8f"
+  },
+  "activation/autotuners/configs/aea730dfde286f1bebc7598eeb6b0aafe72b505628648330775304cda57a2cfa-534f4d702fdde980f3f03cbcbdb56a90b9f73916a3f7a498046645d270a61904.json": {
+    "source_sha256": null,
+    "staged_sha256": "c6e12deca9e14952c865f680610c19d617ee17ebebc8ebafa7fa1d2d8f76f3f8"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_bwd_kernel_dqkwg.json": {
+    "source_sha256": null,
+    "staged_sha256": "176624cd2ccb30f86f11d60ea4e95e0da8c0783fbcfcd9b6cc47d8e5c47fa4f2"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_bwd_kernel_dv_local.json": {
+    "source_sha256": null,
+    "staged_sha256": "6da7142f2447540867b17d53faf8d3c6bbed234c1202786309d6dd41b7693309"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_fwd_kernel_o.json": {
+    "source_sha256": null,
+    "staged_sha256": "b085aae1faa073855c4e665d55dfb4d1b7fbed0bd192cc4cfb0238756f4b90f2"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_bwd_kernel_dhu_blockdim64.json": {
+    "source_sha256": null,
+    "staged_sha256": "97f45839cc5d18dfe0c596a515cf7d7b1af43c5465c3c77df96747449acb36d6"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_fwd_kernel_h_blockdim64.json": {
+    "source_sha256": null,
+    "staged_sha256": "06db6e5003175bf87e6332b501ee8ba77b6701157f0e91a60804d6cac0c85ae0"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_gated_delta_rule_fwd_kkt_solve_kernel.json": {
+    "source_sha256": null,
+    "staged_sha256": "934a2f3fb7f6e71b584099ed0637514f0c9c68b9561b4c0aa94e2c1f8c738df0"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/chunk_local_cumsum_scalar_kernel.json": {
+    "source_sha256": null,
+    "staged_sha256": "64dca3a127652ae8ce97f21e622a1536c78011f5670e4de83f5821599be425a7"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/l2norm_bwd_kernel.json": {
+    "source_sha256": null,
+    "staged_sha256": "fa859b3616c437b7513bccddd4830819882ecc4754e07ad99ef9d74ec9598e6a"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/l2norm_fwd_kernel.json": {
+    "source_sha256": null,
+    "staged_sha256": "e68e765136be52be72c59a704df6575d7c10f4b8f1b39a085fb3444394f932f6"
+  },
+  "activation/autotuners/configs/legacy/NVIDIA_RTX_PRO_6000_Blackwell_Server_Edition/recompute_w_u_fwd_kernel.json": {
+    "source_sha256": null,
+    "staged_sha256": "9ebecf1a05f1dda285988572b77ff9c54c1a18f185044c8e2d8a52dae37477ff"
+  },
+  "activation/autotuners/core.py": {
+    "source_sha256": null,
+    "staged_sha256": "a52afeee3451f55834f55d4b7323ac5bb8825800922dbb706fac2bb69a2e7f08"
+  },
+  "activation/autotuners/fla.py": {
+    "source_sha256": null,
+    "staged_sha256": "b35dd05ee12df9ef1b0aa9691b353fcf5a0c7fce36cf587b9d541c37c42008ce"
+  },
+  "activation/autotuners/worker.py": {
+    "source_sha256": null,
+    "staged_sha256": "5d385c139ce5677a00bc7e5fbc91a373721da1dc1ab6561fa25a667f62908bcb"
+  },
+  "activation/cloud/sky.py": {
+    "source_sha256": "a295f0f02a7ecb3df6a3bb1e499100807f4b46a3aec36c0c5ec8c017b0851c69",
+    "staged_sha256": "8e7db51a17755abbd1242574a0d9248d984354b2ad20e7ba1b99e94d5500bd92"
+  },
+  "activation/common/data_syncing.py": {
+    "source_sha256": "e0836c97ee9c9c21dd0778a2bd0ca12c57c3afa6efd7becc1e9b20f3d6e0493a",
+    "staged_sha256": "2f09ed5df933b7c9cbaf9f26bbade145df7561f9818f827d20a30f6071a5523a"
+  },
+  "activation/dataset/dataset.py": {
+    "source_sha256": "205ad1ffdc1adcd82018cc1282010a8bfbd64ec257adb999d5e488062bd6bb21",
+    "staged_sha256": "4074552adbb2e8f816d36d1c2b3f9f64dc99f886ee3f13231a180dc765dfd5f6"
+  },
+  "activation/dataset/dataset_index.py": {
+    "source_sha256": "f869c1160992d49cc722a09d3ffafc957a8af1be2bfbda07c3b1d77c0e3c6c65",
+    "staged_sha256": "c60896ec977b5b640ddbf5840e935ac2c6818b3d97a1debe03a8082d5b9461c4"
+  },
+  "activation/dataset/loaders/nemotron_math.py": {
+    "source_sha256": "27ea9dcbb5a25a254d5bfb0b483bd1cad51348bce98aa525a1d68cd334428a78",
+    "staged_sha256": "022fbf36db41899d1ac69c2cb48cce7b6aa59f85cf408233950484437d4b4ed8"
+  },
+  "activation/dataset/loaders/s1_deep_research.py": {
+    "source_sha256": "7c9066fbdb7ffa0d420140810cc976f0db8ba1ce8e244b8eab99abab6b58e589",
+    "staged_sha256": "c69ea83820de196fb54aded97f96c5aee33e10c177318cbc1069a479c296813a"
+  },
+  "activation/dataset/loaders/trajectory_utils.py": {
+    "source_sha256": "04ec1e536f65067e38254c723e44dcf66e4372b9419efdab1bd62db5d211016a",
+    "staged_sha256": "019ca898fd99568de84a4c7850ce22e57d734638f22098fedb545040bfdc8e84"
+  },
+  "activation/harness/module_manager.py": {
+    "source_sha256": "b55cc1b37f815e8eabf05c33b0f0e3db7ad67e5ab2b07f03629e2650f6b8f311",
+    "staged_sha256": "93a29c368deb409f2865cdc5cc7f1c14bff1f594457320054bbb48a0b86c3642"
+  },
+  "activation/harness/vllm_wrapper.py": {
+    "source_sha256": "ad59ae653ab9bac584504eaf47ee67c6b60b12ee3c0d94471f0f864b421fa427",
+    "staged_sha256": "6069617985edec537868d2b316a6536a5f534c2a945018f25b5eb396d2a02ea7"
+  },
+  "activation/tests/test_basic_agent_ac_training.py": {
+    "source_sha256": "5a6fb034393430efe0ad5a3b586859486fffb72e6a198de761db57ce47c25b35",
+    "staged_sha256": "ce7a36b5d2a5cb0316ebefa71f28cb752ae32554cf7a626c0b41f39cfb809d4e"
+  }
+}

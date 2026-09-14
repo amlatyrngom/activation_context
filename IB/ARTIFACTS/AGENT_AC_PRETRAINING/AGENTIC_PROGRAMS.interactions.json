@@ -1,0 +1,4 @@
+{
+  "programs.serde.placeholder": true,
+  "AGENTIC_PROGRAMS-free_form_feedback": "Put missing class in common/utils.py (create if not exists). And reuse for other classes.\n\nThe simple test looks good.  Put the deserialization test in an agent probe though."
+}

@@ -1,0 +1,9 @@
+# Disposable working data
+TMP/
+
+# Local caches generated from declared remote resources
+vendor/
+
+# Local secrets and operating-system metadata
+.env
+.DS_Store

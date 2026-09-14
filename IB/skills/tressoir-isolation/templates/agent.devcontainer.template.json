@@ -1,0 +1,36 @@
+{
+  "name": "Agent Workspace",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "24"
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/source,type=bind,readonly",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder}/IB,target=/workspace/IB,type=bind"
+  ],
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "containerEnv": {
+    "TRESSOIR_AGENT_TARGETS": "__TRESSOIR_AGENT_TARGETS__",
+    "XDG_CACHE_HOME": "/home/vscode/.cache",
+    "XDG_CONFIG_HOME": "/home/vscode/.config",
+    "XDG_DATA_HOME": "/home/vscode/.local/share",
+    "XDG_STATE_HOME": "/home/vscode/.local/state"
+  },
+  "postCreateCommand": [
+    "bash",
+    "/workspace/IB/isolation/agent-setup.sh",
+    "--agent"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": ["__TRESSOIR_VSCODE_EXTENSIONS__"],
+      "settings": {
+        "window.title": "${localWorkspaceFolderBasename} [Dev Container: Agent Workspace]"
+      }
+    }
+  }
+}

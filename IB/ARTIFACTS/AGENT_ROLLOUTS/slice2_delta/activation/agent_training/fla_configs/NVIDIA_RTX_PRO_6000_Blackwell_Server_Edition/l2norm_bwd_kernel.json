@@ -1,0 +1,148 @@
+{
+ "kernel_name": "l2norm_bwd_kernel",
+ "triton_version": "3.7.1",
+ "autotune_entries": {
+  "13858f794373d549cc9ef7dd75a45db6": {
+   "autotune_key": [
+    128,
+    15,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 32
+    },
+    "num_warps": 4,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "5c34ec7b3f524f58078b174c2d23fb72": {
+   "autotune_key": [
+    128,
+    6,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 32
+    },
+    "num_warps": 4,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "38fdcf8c8bc09948a1268b8b07304ba5": {
+   "autotune_key": [
+    128,
+    5,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 8
+    },
+    "num_warps": 1,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "d2ff71cc186336cd5227eeaa7f30112a": {
+   "autotune_key": [
+    128,
+    4,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 128
+    },
+    "num_warps": 16,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "91066d2a16befd08369d04d718d2524c": {
+   "autotune_key": [
+    128,
+    3,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 8
+    },
+    "num_warps": 1,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "47d20e6a5aa5eb1c9cbd876af914e32a": {
+   "autotune_key": [
+    128,
+    2,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 16
+    },
+    "num_warps": 1,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  },
+  "40253e568a666d1be391af61ca409346": {
+   "autotune_key": [
+    128,
+    26,
+    "torch.bfloat16",
+    "torch.float32",
+    "torch.bfloat16",
+    "torch.bfloat16"
+   ],
+   "config": {
+    "kwargs": {
+     "BT": 8
+    },
+    "num_warps": 1,
+    "num_stages": 3,
+    "num_ctas": 1,
+    "maxnreg": null
+   }
+  }
+ },
+ "default_config": {
+  "kwargs": {
+   "BT": 8
+  },
+  "num_warps": 1,
+  "num_stages": 3,
+  "num_ctas": 1,
+  "maxnreg": null
+ }
+}

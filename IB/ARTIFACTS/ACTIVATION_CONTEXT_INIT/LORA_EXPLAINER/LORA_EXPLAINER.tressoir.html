@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How base models and LoRA adapters should be routed through the Activation Context rollout engine">
+  <title>LoRA routing in the rollout engine</title>
+  <link rel="stylesheet" href="./vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="./vendor/prism/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="./vendor/codemirror/codemirror.css">
+  <link rel="stylesheet" href="./tressoir-linear.css">
+  <link rel="stylesheet" href="./lora-explainer.css">
+</head>
+<body>
+  <main class="tressoir-document">
+    <header class="document-header">
+      <p class="eyebrow">Engine explainer · recommended boundary</p>
+      <h1>One ensured base model can serve the base and several LoRAs</h1>
+      <p class="lede">Do not replace the base vLLM object when selecting an adapter. Keep a stable adapter registry and attach one LoRA request to each chat. The current synchronous MVP should serialize lifecycle changes; real concurrent chats come with the later async engine.</p>
+      <ul class="meta" aria-label="Artifact metadata">
+        <li>Updated 26 Aug 2026</li>
+        <li>vLLM 0.28 API</li>
+        <li>LoRA implementation deferred</li>
+      </ul>
+    </header>
+
+    <section class="section" aria-labelledby="answers">
+      <h2 id="answers">Direct answers</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>MVP consequence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Can I ensure a model, then set or change a LoRA?</td>
+            <td>Yes. Keep the base engine alive and register a <code>LoRARequest</code> containing a stable name, unique integer ID, and adapter path.</td>
+            <td>Treat an adapter identity as immutable while requests use it. A changed path gets a new ID, then the old entry can retire.</td>
+          </tr>
+          <tr>
+            <td>Can I chat to a specific LoRA?</td>
+            <td>Yes. Pass that adapter's request as <code>lora_request</code>. Pass <code>None</code> for the base model.</td>
+            <td><code>Engine.chat(..., lora_name=None)</code> remains the base-model path; named routing is the next slice.</td>
+          </tr>
+          <tr>
+            <td>Can concurrent chats use different LoRAs?</td>
+            <td>vLLM can batch prompts with different per-request LoRAs, subject to its adapter limits.</td>
+            <td>The present blocking wrapper uses one re-entrant lifecycle lock, so separate calls are serialized. Use <code>AsyncLLM</code> or a serving process for true overlap.</td>
+          </tr>
+          <tr>
+            <td>Can a model be freed during chat?</td>
+            <td>No lifecycle transition should race an in-flight request.</td>
+            <td>The synchronous MVP holds the model lock through completion. A later async design needs admission control and an in-flight counter before sleep or teardown.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" aria-labelledby="shape">
+      <h2 id="shape">The useful mental model</h2>
+      <p>The base weights belong to one vLLM engine. LoRAs are request-scoped routes into that engine, not alternate base-model objects.</p>
+      <svg class="routing-diagram" viewBox="0 0 780 330" role="img" aria-labelledby="routing-title routing-desc">
+        <title id="routing-title">One base vLLM engine routes requests to base weights or two LoRA adapters</title>
+        <desc id="routing-desc">Engine chat selects no adapter for base inference, adapter A for one request, or adapter B for another. All share one ensured base model.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" class="arrow-head"></path>
+          </marker>
+        </defs>
+        <rect class="diagram-node strong" x="40" y="118" width="190" height="92" rx="8"></rect>
+        <text class="diagram-title" x="135" y="151" text-anchor="middle">Engine.chat</text>
+        <text class="diagram-copy" x="135" y="177" text-anchor="middle">model_name + messages</text>
+        <text class="diagram-copy" x="135" y="198" text-anchor="middle">optional lora_name</text>
+
+        <rect class="diagram-node" x="325" y="118" width="190" height="92" rx="8"></rect>
+        <text class="diagram-title" x="420" y="151" text-anchor="middle">One vLLM engine</text>
+        <text class="diagram-copy" x="420" y="177" text-anchor="middle">ensured base weights</text>
+        <text class="diagram-copy" x="420" y="198" text-anchor="middle">adapter cache</text>
+
+        <rect class="diagram-node route" x="610" y="26" width="140" height="66" rx="8"></rect>
+        <text class="diagram-title" x="680" y="54" text-anchor="middle">Base route</text>
+        <text class="diagram-copy" x="680" y="77" text-anchor="middle">None</text>
+
+        <rect class="diagram-node route" x="610" y="132" width="140" height="66" rx="8"></rect>
+        <text class="diagram-title" x="680" y="160" text-anchor="middle">LoRA A</text>
+        <text class="diagram-copy" x="680" y="183" text-anchor="middle">LoRARequest A</text>
+
+        <rect class="diagram-node route" x="610" y="238" width="140" height="66" rx="8"></rect>
+        <text class="diagram-title" x="680" y="266" text-anchor="middle">LoRA B</text>
+        <text class="diagram-copy" x="680" y="289" text-anchor="middle">LoRARequest B</text>
+
+        <path class="diagram-line" d="M230 164 H325" marker-end="url(#arrow)"></path>
+        <path class="diagram-line" d="M515 150 C555 150 560 59 610 59" marker-end="url(#arrow)"></path>
+        <path class="diagram-line" d="M515 164 H610" marker-end="url(#arrow)"></path>
+        <path class="diagram-line" d="M515 178 C555 178 560 271 610 271" marker-end="url(#arrow)"></path>
+      </svg>
+    </section>
+
+    <section class="section" aria-labelledby="mvp">
+      <h2 id="mvp">What belongs in this MVP</h2>
+      <p><strong>The current slice should prove the base route only.</strong> It should create vLLM lazily, accept OpenAI-style message dictionaries, disable thinking for the Qwen smoke test, return generated text, and park the model safely after the blocking call completes.</p>
+      <pre class="code-block"><code class="language-python">response = engine.chat(
+    model_name="Qwen/Qwen3.5-0.8B",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant"},
+        {"role": "user", "content": "Say: 'Hello, World!'"},
+    ],
+    lora_name=None,
+)</code></pre>
+      <p>Passing a non-null <code>lora_name</code> should fail clearly until registry and routing semantics are implemented. Silently falling back to the base model would make experimental results untrustworthy.</p>
+    </section>
+
+    <section class="section" aria-labelledby="next">
+      <h2 id="next">The next LoRA slice</h2>
+      <ol>
+        <li><strong>Register:</strong> map <code>(model_name, lora_name)</code> to an immutable <code>LoRARequest</code> with a unique numeric ID and normalized path.</li>
+        <li><strong>Route:</strong> resolve <code>lora_name</code> inside <code>chat()</code> and pass the request to vLLM.</li>
+        <li><strong>Replace safely:</strong> a new adapter revision receives a new ID. Stop admitting the old identity, wait for its in-flight count to reach zero, then retire it.</li>
+        <li><strong>Batch or go async:</strong> accept multiple conversations and matching LoRA requests in one vLLM call, or move the public engine to <code>AsyncLLM</code>.</li>
+      </ol>
+      <pre class="code-block"><code class="language-python"># Later shape, not part of this implementation.
+engine.ensure_lora("base", "experiment-a", "/adapters/run-42")
+engine.chat("base", messages, lora_name="experiment-a")
+engine.chat("base", messages, lora_name=None)  # Same engine, base route.</code></pre>
+    </section>
+
+    <section class="section" aria-labelledby="limits">
+      <h2 id="limits">Limits that matter</h2>
+      <ul>
+        <li><code>max_loras</code> limits how many adapters may be active in one batch; it is not a promise that every registered adapter stays on the accelerator.</li>
+        <li><code>max_lora_rank</code> must cover the largest adapter rank the engine will accept.</li>
+        <li>Level-1 sleep is parking: weights move to CPU memory and the key-value cache is discarded. Wake restores the same engine.</li>
+        <li>Multiple independent blocking <code>LLM.chat()</code> calls are not the concurrency abstraction to build around. Batch them or use the async API.</li>
+      </ul>
+      <p>Primary references: <a href="https://docs.vllm.ai/en/v0.28.0/api/vllm/">vLLM 0.28 offline API</a>, <a href="https://docs.vllm.ai/en/stable/features/lora/">LoRA adapters</a>, and <a href="https://docs.vllm.ai/en/stable/features/sleep_mode/">sleep mode</a>.</p>
+      <p><a href="./SIBLING.md" data-tressoir-open-file>Open implementation boundary notes</a></p>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="lora-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="lora-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="lora-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="lora-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="lora-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="./vendor/katex/katex.min.js"></script>
+  <script defer src="./vendor/katex/auto-render.min.js"></script>
+  <script defer data-manual src="./vendor/prism/components/prism-core.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-markup.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-css.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-clike.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-javascript.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-typescript.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-jsx.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-tsx.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-json.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-yaml.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-markdown.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-bash.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-python.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-rust.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-sql.min.js"></script>
+  <script defer src="./vendor/prism/components/prism-diff.min.js"></script>
+  <script defer src="./vendor/prism/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="./vendor/codemirror/codemirror.js"></script>
+  <script defer src="./vendor/codemirror/mode/xml.js"></script>
+  <script defer src="./vendor/codemirror/mode/meta.js"></script>
+  <script defer src="./vendor/codemirror/mode/markdown.js"></script>
+  <script defer src="./tressoir-linear.js"></script>
+</body>
+</html>
