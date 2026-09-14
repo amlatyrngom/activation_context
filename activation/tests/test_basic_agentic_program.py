@@ -123,12 +123,15 @@ def test_basic_agentic_program_solve_then_verify():
     _print_rollout("main", result)
 
     # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s; the parent's
-    # note is its injected input (the parent had no segment yet, so its part holds only the system message).
+    # note is its injected input, its part the parent's first prompt as it stood (system prompt, task).
     assert solver.agent_config.agentic_program is None and solver.agent_config.tools.get("subagent", None) is None   # delegation removed
     assert solver.agent_config.max_duration <= 120.0
     assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
     assert [item["tool"] for item in solver.injected_input] == ["parent"]
-    assert solver.injected_input[0]["activation_content"][0]["kind"] == "subagent_prompt"
+    parent_part = solver.injected_input[0]["activation_content"][0]
+    assert parent_part["kind"] == "subagent_prompt" and parent_part["tools"]
+    assert parent_part["messages"][0]["role"] == "system" and parent_part["messages"][1]["role"] == "user"
+    assert parent_part["messages"][1]["content"].startswith(QUESTION)                     # the parent's first prompt: system, task (nothing injected yet)
 
     # The main agent: the solver's result and the program's note are recorded as injected input, and their text blocks
     # sit ahead of the task text in the first user message; no part is rendered (no AC model on this config).
