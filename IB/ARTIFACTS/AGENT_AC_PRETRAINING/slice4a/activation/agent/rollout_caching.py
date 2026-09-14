@@ -14,7 +14,7 @@ from dataclasses import dataclass
 
 from activation.common.data_syncing import resolve_path
 
-from .agent_config import AgentConfig, AgentRunResult
+from .agent_config import AgentConfig, AgentRunResult, _class_spec
 
 CACHE_FILENAME = "rollouts.jsonl"
 
@@ -42,17 +42,21 @@ class RedoPolicy:
 
 def config_key(config: AgentConfig) -> str:
     """
-    A labelled dataset task (`metadata["template"]`, set by the teacher study) is keyed "<dataset_id>/<task_id>/<template>":
+    A labelled dataset task (`metadata["template"]`, set by the teacher study) is keyed "<dataset_id>/<task_id>/<template>"
+    (plus "/<program>" when `metadata["program"]` names an agentic program):
     the caching id is the version of the run, so rewording a prompt, changing the model or the sampling does not
     invalidate its rows (like an autotune id). An unlabelled dataset task is keyed by a digest of its prompts, model,
     adapter and call kwargs; a free-form config hashes the same.
     """
     task = config.dataset_task
     label = config.metadata.get("template") if config.metadata else None
+    program = config.metadata.get("program") if config.metadata else None
     if task is not None and label:
-        return f"{task.dataset_id}/{task.task_id}/{label}"
+        return f"{task.dataset_id}/{task.task_id}/{label}" + (f"/{program}" if program else "")   # a programmed variant never collides with the plain one
+    program_spec = None if config.agentic_program is None else _class_spec(*config.agentic_program)
     digest = hashlib.sha256(json.dumps([config.system_prompt, config.user_prompt, config.model_name, config.lora_name,
-                                        config.messages_input, config.ac_model_name, config.call_kwargs], default=repr, sort_keys=True).encode()).hexdigest()
+                                        config.messages_input, config.ac_model_name, config.call_kwargs, program_spec],
+                                       default=repr, sort_keys=True).encode()).hexdigest()
     if task is not None:
         return f"{task.dataset_id}/{task.task_id}/{digest[:12]}"
     return f"prompt/{digest[:16]}"

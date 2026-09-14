@@ -1,15 +1,24 @@
 diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 --- a/activation/agent/agent_config.py
 +++ b/activation/agent/agent_config.py
-@@ -11,6 +11,7 @@
+@@ -4,13 +4,15 @@
+ """
+ from __future__ import annotations
  
+-import importlib
+ import json
+ import typing as t
+ from dataclasses import dataclass, field, replace
+ 
++from activation.common.utils import class_spec_name, resolve_class_name
++
  if t.TYPE_CHECKING:
      from .agent_tools import AgentTool
 +    from .agent_env import AgentEnvSetup
      from activation.harness import HarnessRuntime
      from activation.dataset import DatasetTask
  
-@@ -25,6 +26,7 @@
+@@ -25,6 +27,7 @@
                                                                # text part of the last user message; empty = today's prompt.
      dataset_task: "DatasetTask | None" = None                 # Set if this corresponds to a specific dataset task.
      agent_name: str = "main" # Used to tag trajectories with their subagent.
@@ -17,7 +26,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
  
      # Model calls.
      model_name: str | None = None                             # A harness model name; its engine serves the rollout.
-@@ -37,12 +39,14 @@
+@@ -37,12 +40,15 @@
      env_dockerfile_path: str | None = None                    # None: the harness default image.
      env_args: dict[str, str] | None = None                    # Extra `podman run` flags, e.g. {"--env": "PYTHONHASHSEED=0"}.
      env_memory_limit_mb: int | None = None                    # Sandbox memory; None = the harness default (agent_env_memory_limit_mb). Hard container limit where cgroups exist, ulimit -v at 85% per process always.
@@ -26,6 +35,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 +    tools: dict[str, tuple[type["AgentTool"], dict] | None] = field(default_factory=dict)  # name -> (class, constructor kwargs), added to the
 +                                                              # defaults; None removes a default tool (subagents lose `subagent` this way).
 +    env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = field(default_factory=dict)  # name -> (setup class, constructor kwargs). Run once,
++    agentic_program: tuple[type["AgenticProgram"], dict] | None = None   # the program that owns the rollout (Agent.run_program); None: the model loop
 +                                                              # in order, when this agent's env is created; never for subagents (they share the env).
      enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
  
@@ -35,7 +45,7 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
      max_tool_errors: int = 5
      max_duration: float = 600                                 # seconds
      compaction_threshold_tokens: int = 32768                  # soft delta over the segment's start length (system, first messages, tree); exceeded by at most one turn, then compaction is due
-@@ -54,11 +58,9 @@
+@@ -54,11 +60,10 @@
      ac_search_ratio: float = 1.0 / 20.0                       # semantic search passages beyond top_k
  
      def serialize(self) -> dict:
@@ -44,13 +54,26 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 -            name: {"class": f"{cls.__module__}:{cls.__qualname__}", "kwargs": _jsonable(kwargs)}
 -            for name, (cls, kwargs) in self.tools.items()
 -        }
-+        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools", "env_setups")}
++        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools", "env_setups", "agentic_program")}
 +        data["tools"] = {name: None if spec is None else _class_spec(*spec) for name, spec in self.tools.items()}
 +        data["env_setups"] = {name: _class_spec(cls, kwargs) for name, (cls, kwargs) in self.env_setups.items()}
++        data["agentic_program"] = None if self.agentic_program is None else _class_spec(*self.agentic_program)
          data["messages_input"] = _jsonable(self.messages_input)
          task = self.dataset_task
          data["dataset_task"] = None if task is None else {
-@@ -73,13 +75,8 @@
+@@ -68,18 +73,21 @@
+         return data
+ 
+     @staticmethod
+-    def deserialize(data: dict, harness: "HarnessRuntime | None" = None) -> "AgentConfig":
+-        """The dataset task is looked up in the harness when it holds the dataset, else rebuilt from the stored fields."""
++    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, strict: bool = False) -> "AgentConfig":
++        """
++        The dataset task is looked up in the harness when it holds the dataset, else rebuilt from the stored fields.
++        Class specs (tools, env setups, the program) resolve leniently by default: a class that is not importable here
++        becomes a MissingClass placeholder that keeps the spec and errs on construction, so records can be read for
++        training without the classes present. Callers that will run the config pass `strict=True`.
++        """
          from activation.dataset import DatasetTask, DatasetTaskMetricsKind
          data = dict(data)
          data.pop("ac_inputs", None)                                                   # rows written before slice 3b
@@ -61,34 +84,37 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 -            for part in qualname.split("."):
 -                cls = getattr(cls, part)
 -            tools[name] = (cls, dict(spec.get("kwargs") or {}))
-+        tools = {name: None if spec is None else _resolve_class_spec(spec) for name, spec in (data.pop("tools", None) or {}).items()}
-+        setups = {name: _resolve_class_spec(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
++        resolve = lambda spec: _resolve_class_spec(spec, strict=strict)
++        tools = {name: None if spec is None else resolve(spec) for name, spec in (data.pop("tools", None) or {}).items()}
++        setups = {name: resolve(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
++        program_spec = data.pop("agentic_program", None)
++        program = None if program_spec is None else resolve(program_spec)
          task_data = data.pop("dataset_task", None)
          task = None
          if task_data is not None:
-@@ -92,7 +89,20 @@
+@@ -92,7 +100,20 @@
                      gold_answer=task_data["gold_answer"], gold_answer_aliases=list(task_data["gold_answer_aliases"]),
                      agent_prompt=task_data.get("agent_prompt", ""),
                  )
 -        return AgentConfig(tools=tools, dataset_task=task, **data)
-+        return AgentConfig(tools=tools, env_setups=setups, dataset_task=task, **data)
++        return AgentConfig(tools=tools, env_setups=setups, agentic_program=program, dataset_task=task, **data)
 +
 +
 +def _class_spec(cls: type, kwargs: dict) -> dict:
-+    return {"class": f"{cls.__module__}:{cls.__qualname__}", "kwargs": _jsonable(kwargs)}
++    """{"class": "module:Qualname", "kwargs": {...}}; a MissingClass placeholder re-serializes to the names it was read with."""
++    return {"class": class_spec_name(cls), "kwargs": _jsonable(kwargs)}
 +
 +
-+def _resolve_class_spec(spec: dict) -> tuple[type, dict]:
-+    """{"class": "module:Qualname", "kwargs": {...}} back to (class, kwargs); the loaders write task setups in this form."""
-+    module_name, _, qualname = spec["class"].partition(":")
-+    cls: t.Any = importlib.import_module(module_name)
-+    for part in qualname.split("."):
-+        cls = getattr(cls, part)
-+    return cls, dict(spec.get("kwargs") or {})
++def _resolve_class_spec(spec: dict, strict: bool = True) -> tuple[type, dict]:
++    """
++    {"class": "module:Qualname", "kwargs": {...}} back to (class, kwargs); the loaders write task setups in this form.
++    Without `strict`, an unimportable class becomes a MissingClass placeholder (see activation.common.utils).
++    """
++    return resolve_class_name(spec["class"], strict=strict), dict(spec.get("kwargs") or {})
  
  
  @dataclass
-@@ -110,6 +120,9 @@
+@@ -110,6 +131,9 @@
      # Token segment (slice 2): the prompt the model read is AgentRunResult.prompt_token_ids + every step's token_ids in order.
      token_ids: list[int] = field(default_factory=list)         # assistant: the sampled tokens verbatim; tool/user: the template's wrapper up to the next generation prompt
      logprobs: list[float] = field(default_factory=list)        # assistant only: the engine's log-prob of each sampled token (pi_old); empty when not recorded
@@ -98,16 +124,16 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
  
  
  @dataclass
-@@ -124,7 +137,7 @@
+@@ -124,7 +148,7 @@
      num_ac_rows: int = 0                                       # rows those parts occupy in the prompts
      duration: float = 0.0
      trajectory: list[dict] = field(default_factory=list)       # TrajectoryStep dicts of the current segment, in order
 -    score: float = 0.0
-+    score: float | None = 0.0                            # None: the task has no programmatic score (unscored teacher task)
++    score: float | None = None                           # None: unscored (no programmatic metric, UNSCORED datasets, never scored)
      score_feedback: str | None = None
      subagent_results: list["AgentRunResult"] = field(default_factory=list)
      compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
-@@ -144,6 +157,35 @@
+@@ -144,6 +168,35 @@
          # Assistant steps only: the tool step that follows repeats the same calls next to their results.
          return sum(len(step.get("tool_calls", [])) for step in self.trajectory if step.get("role") == "assistant")
  
@@ -143,6 +169,27 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
      def serialize(self) -> dict:
          data = {key: value for key, value in self.__dict__.items()
                  if key not in ("agent_config", "subagent_results", "compactions", "trajectory", "answer")}
+@@ -155,14 +208,15 @@
+         return data
+ 
+     @staticmethod
+-    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, agent_config: AgentConfig | None = None) -> "AgentRunResult":
+-        """With agent_config given (the caller's live config), the stored config is not rebuilt."""
++    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, agent_config: AgentConfig | None = None,
++                    strict: bool = False) -> "AgentRunResult":
++        """With agent_config given (the caller's live config), the stored config is not rebuilt. `strict`: see AgentConfig.deserialize."""
+         fields = {field_.name for field_ in AgentRunResult.__dataclass_fields__.values()}
+         data = {key: value for key, value in data.items() if key in fields}          # cache rows carry extra keys
+         config_data = data.pop("agent_config")
+-        config = agent_config if agent_config is not None else AgentConfig.deserialize(config_data, harness)
+-        children = [AgentRunResult.deserialize(child, harness) for child in data.pop("subagent_results", [])]
+-        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config) for segment in data.pop("compactions", [])]
++        config = agent_config if agent_config is not None else AgentConfig.deserialize(config_data, harness, strict=strict)
++        children = [AgentRunResult.deserialize(child, harness, strict=strict) for child in data.pop("subagent_results", [])]
++        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config, strict=strict) for segment in data.pop("compactions", [])]
+         return AgentRunResult(agent_config=config, subagent_results=children, compactions=segments, **data)
+ 
+ 
 diff --git a/activation/agent/agent_env.py b/activation/agent/agent_env.py
 --- a/activation/agent/agent_env.py
 +++ b/activation/agent/agent_env.py
@@ -299,7 +346,13 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  import threading
  import time
  import traceback
-@@ -39,6 +40,10 @@
+@@ -34,11 +35,15 @@
+ 
+ from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
+ from .agent_env import AgentEnv
+-from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output
++from .agent_tools import DEFAULT_TOOLS, AgentTool, CompactionTool, ToolCallResult, tool_content, truncate_output, subagent_config_of
+ from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
  
  MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
  MAX_COMPACTION_REFUSALS = 5         # turns that ignore a due compaction before the run ends with compaction_refused
@@ -310,7 +363,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
  if t.TYPE_CHECKING:
      from activation.harness import HarnessRuntime
-@@ -77,6 +82,10 @@
+@@ -77,6 +82,12 @@
          self.compaction_refusals = 0
          self.no_tool_turns = 0
          self.errors = 0
@@ -318,10 +371,12 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
 +        self._think_end_id: int | None = None
 +        self._last_turn_timing: dict | None = None
 +        self.last_calls_signature: str | None = None   # the previous turn's calls; an identical turn is not run
++        self.program_content: list[dict] = []          # placed ahead of the task by an agentic program; consumed once by first_user_messages()
++        self.reported = False                          # report_agent_start done (run_program reports before its solvers start)
          self.last_sampled: list[int] = [] # the previous assistant turn's tokens, for join_continuation
          self.step_mode = False            # simulation: subagents do not run, nothing is submitted
          self.started = False
-@@ -93,15 +102,22 @@
+@@ -93,15 +104,22 @@
      def agent_env(self) -> AgentEnv:
          """Created on first use, so a cached or failed-early run never starts a container."""
          if self._env is None:
@@ -350,7 +405,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          for name, (tool_class, kwargs) in specs.items():
              tool = tool_class(self.harness, self, **kwargs)
              if not tool.name:
-@@ -164,17 +180,30 @@
+@@ -164,17 +182,31 @@
      # ----------------------------------------------------------------------------- segments
      def first_user_messages(self) -> list[dict]:
          """messages_input with the task appended as a trailing text part of the last user message (today's prompt when empty)."""
@@ -359,15 +414,16 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          config = self.agent_config
          messages = deepcopy(config.messages_input)
 +        prompt = self._offloaded_prompt(config.user_prompt)
++        lead = list(self.program_content)                                       # a program's content goes ahead of the task text
          if not messages or messages[-1].get("role") != "user":
 -            messages.append({"role": "user", "content": config.user_prompt})
 -        elif config.user_prompt:
-+            messages.append({"role": "user", "content": prompt})
-+        elif prompt:
++            messages.append({"role": "user", "content": (lead + [{"type": "text", "text": prompt or ""}]) if lead else prompt})
++        elif prompt or lead:
              content = messages[-1]["content"]
              content = [{"type": "text", "text": content}] if isinstance(content, str) else list(content)
 -            messages[-1]["content"] = content + [{"type": "text", "text": config.user_prompt}]
-+            messages[-1]["content"] = content + [{"type": "text", "text": prompt}]
++            messages[-1]["content"] = content + lead + ([{"type": "text", "text": prompt}] if prompt else [])
          return messages
 +
 +    def _offloaded_prompt(self, prompt: str | None) -> str | None:
@@ -386,7 +442,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
      def begin(self) -> None:
          """Dialect, tool schemas and the first segment; templated once. Safe without an engine (tokenizer only)."""
-@@ -183,6 +212,10 @@
+@@ -183,6 +215,10 @@
          config, results = self.agent_config, self.run_results
          self.dialect = ModelDialect.for_tokenizer(self.loaded_model.tokenizer)
          self._prepare_tools()
@@ -397,7 +453,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          results.ac_model_name = config.ac_model_name
          results.ac_model_version = self.ac_model.version if self.ac_model is not None else None
          system = self.dialect.rendering.system_prompt(config.system_prompt or "", self.tool_definitions)
-@@ -233,12 +266,17 @@
+@@ -233,12 +269,17 @@
          system = [message for message in self.messages if message.get("role") == "system"]
          self._begin_segment(system + self.first_user_messages() + [after])
          self.compaction_due, self.compaction_refusals = False, 0
@@ -416,7 +472,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          self.messages.append(message)
          self.prefix += list(token_ids)
          self.last_sampled = list(token_ids)
-@@ -249,12 +287,13 @@
+@@ -249,12 +290,13 @@
          wrapper, spans = self._continuation([message])
          self._append_step(TrajectoryStep(role="user", content=text, messages=[message], token_ids=wrapper), [message], spans, [])
  
@@ -432,7 +488,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          self._append_step(step, tool_messages, spans, rows)
  
      def _continuation(self, new_messages: list[dict]) -> tuple[list[int], list[tuple[int, int]]]:
-@@ -300,10 +339,12 @@
+@@ -300,10 +342,12 @@
      def _submit(self, chat_kwargs: dict | None = None):
          config = self.agent_config
          prefix, embeds, mask = self.prepare_request()
@@ -447,7 +503,79 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          )
  
      def submit_probe(self, max_tokens: int | None = None):
-@@ -341,13 +382,17 @@
+@@ -325,6 +369,63 @@
+             f"absolute_trajectory_cap {self.agent_config.absolute_trajectory_cap} + max_tokens {max_tokens} exceeds max_model_len {max_len}")
+ 
+     # ----------------------------------------------------------------------------- run
++    # ----------------------------------------------------------------------------- agentic programs
++    def run_program(self) -> AgentRunResult:
++        """
++        What the rollout manager calls: the config's agentic program when there is one, else run(). The program's
++        execute() must return this agent's own run_results; its duration covers the whole program (solvers included).
++        A program failure ends the run with finish_reason "error" and the traceback in score_feedback, like a tool failure.
++        """
++        program = self.agent_config.agentic_program
++        if program is None:
++            return self.run()
++        program_class, kwargs = program
++        results, start = self.run_results, time.time()
++        if self.reporter is not None and not self.reported:
++            self.reporter.report_agent_start(self)                              # before the solvers, so they show under a known parent
++            self.reported = True
++        try:
++            returned = program_class(self, **kwargs).execute()
++            if returned is not results:
++                raise TypeError(f"{getattr(program_class, '__name__', program_class)}.execute must return the main agent's own run_results")
++        except Exception:
++            results.finish_reason = "error"
++            results.score_feedback = traceback.format_exc()
++            print(f"Agent {self.agent_id[:8]} - program error:\n{results.score_feedback}", flush=True)
++        finally:
++            results.duration = time.time() - start
++            if not self.finished:                                               # a program that never ran the model loop
++                self.finished = True
++                if self.reporter is not None:
++                    self.reporter.report_agent_finish(self)
++        return results
++
++    def augment_context(self, content: list[dict]) -> None:
++        """Content items (text and activation parts) placed ahead of the task in the first user message; before the first turn only."""
++        assert not self.started, "augment_context runs before the first turn"
++        self.program_content.extend(deepcopy(content))
++
++    def run_subagent(self, brief: str, max_duration: float | None = None, agent_name: str = "program_subagent") -> AgentRunResult:
++        """A solver on `brief` in this agent's sandbox: no delegation tools, no program; its result joins subagent_results."""
++        config = subagent_config_of(self, brief, agent_name=agent_name)
++        if max_duration is not None:
++            config.max_duration = min(float(config.max_duration), float(max_duration))
++        child = Agent(self.harness, config, agent_env=self.agent_env, parent_agent=self, reporter=self.reporter, seed=self.seed)
++        try:
++            result = child.run()
++        finally:
++            child.shutdown()                                                    # the env is this agent's; the child releases only its own state
++        with self.lock:
++            self.run_results.subagent_results.append(result)
++        return result
++
++    def set_final_answer(self, answer: t.Any) -> None:
++        """A program's answer without a model turn: the run finishes as "programmed"."""
++        if answer is None or (isinstance(answer, str) and not answer.strip()):
++            raise ValueError("set_final_answer needs a non-empty answer")
++        self.run_results.answer = answer
++        self.run_results.finish_reason = "programmed"
++
+     def run(self) -> AgentRunResult:
+         """
+         Simple in/out run. Populates run_results. Never raises for a model or tool failure: the run
+@@ -335,19 +436,24 @@
+         start = time.time()
+         try:
+             self.begin()
+-            if self.reporter is not None:
++            if self.reporter is not None and not self.reported:
+                 self.reporter.report_agent_start(self)
++                self.reported = True
+             self._check_engine_context()
              while True:
                  if results.finish_reason:                                                        # trajectory_cap, set by an append
                      break
@@ -466,7 +594,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  if results.num_turns == 0:
                      results.lora_name = output.lora_name
                  results.num_turns += 1
-@@ -374,12 +419,21 @@
+@@ -374,12 +480,21 @@
                          break
                      self._report_step()
                      continue
@@ -490,7 +618,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
                  self._report_step()
                  if any(result.is_final for result in call_results):
                      results.finish_reason = "submitted"
-@@ -402,6 +456,12 @@
+@@ -402,6 +517,12 @@
              if self.reporter is not None:
                  self.reporter.report_agent_finish(self)
          return results
@@ -503,7 +631,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
  
      @staticmethod
      def _is_lone_compact(calls: list[dict]) -> bool:
-@@ -505,7 +565,7 @@
+@@ -505,7 +626,7 @@
              result = ToolCallResult(output=f"Unknown tool {name!r}. Available: {', '.join(self.tools)}.", is_error=True)
          else:
              try:
@@ -512,7 +640,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
              except TypeError as error:
                  result = ToolCallResult(output=f"Bad arguments for {name}: {error}", is_error=True)
              except Exception as error:
-@@ -528,12 +588,14 @@
+@@ -528,12 +649,14 @@
          return [self.execute_tool_call(call) for call in calls]
  
      # ----------------------------------------------------------------------------- scoring and teardown
@@ -529,7 +657,7 @@ diff --git a/activation/agent/agent.py b/activation/agent/agent.py
          except Exception as error:
              self.run_results.score = 0.0
              self.run_results.score_feedback = f"scoring failed: {type(error).__name__}: {error}"
-@@ -550,6 +612,7 @@
+@@ -550,6 +673,7 @@
          except Exception:
              pass
  
@@ -687,15 +815,29 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      parameters = {
          "type": "object",
          "properties": {
-@@ -229,6 +295,7 @@
+@@ -228,7 +294,21 @@
+         return ToolCallResult(output=output, content=content)
  
  
++def subagent_config_of(parent: "Agent", task: str = "", agent_name: str = "general_subagent") -> "AgentConfig":
++    """
++    The caller's config as a focused subagent: same model, tools, env image, budgets and dataset task; the subagent note
++    appended to the system prompt; every delegation tool removed and no agentic program (no recursion); no env setups
++    (the env is the parent's, already prepared). Shared by the subagent tool and Agent.run_subagent.
++    """
++    parent_config = parent.agent_config
++    delegation = {name: None for name, tool in parent.tools.items() if isinstance(tool, SubagentTool)}
++    return replace(parent_config, agent_name=agent_name, user_prompt=task, messages_input=[], agentic_program=None,
++                   system_prompt=(parent_config.system_prompt or "") + SUBAGENT_SYSTEM_NOTE,
++                   tools={**parent_config.tools, **delegation}, env_setups={})
++
++
  class SubagentTool(AgentTool):
 +    aliases = {'prompt': 'task', 'brief': 'task', 'instructions': 'task', 'description': 'task', 'query': 'task'}
      """
      Simple in/out without a persistent handle. Runs in the same env as the caller. With AC
      communication the child's first user message carries the parent's current segment as a part
-@@ -245,36 +312,40 @@
+@@ -245,36 +325,31 @@
      }
      SHARED_FIELDS = ("ac_model_name", "enable_ac_communication", "ac_compaction_ratio", "ac_subagent_ratio", "ac_tool_output_ratio", "ac_search_ratio")
  
@@ -732,37 +874,27 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
 -        pass
 -
 -    def execute(self, task: str) -> ToolCallResult:
--        from .agent import Agent
 +        self.description = ("Delegate a self-contained task to a subagent and return its answer."
 +                            + (SUBAGENT_GUIDE if include_full_subagent_guide else "") + " " + extra_description).strip()
 +        task_description = SUBAGENT_TASK_FORMAT if include_full_subagent_guide else self.parameters["properties"]["task"]["description"]
 +        self.parameters = {**self.parameters, "properties": {"task": {"type": "string", "description": task_description}}}
 +
 +    def _inherit_general_config(self) -> "AgentConfig":
-+        """
-+        The caller's config as a focused subagent: same model, tools, env image, budgets and dataset task; a note appended
-+        to the system prompt; every delegation tool removed (no recursive subagents); no env setups (the env is the
-+        parent's, already prepared). The task and AC fields are filled by execute.
-+        """
++        """The caller's config as a focused subagent (`subagent_config_of`); the task and AC fields are filled by execute."""
++        return subagent_config_of(self.agent)
++
++    def execute(self, task: str | None = None) -> ToolCallResult:
+         from .agent import Agent
++        if not isinstance(task, str) or not task.strip():
++            return ToolCallResult(output="Error: the subagent needs a brief in `task` (a string that states the task, the context, what to produce and what not to do); nothing was delegated.", is_error=True)
          parent = self.agent
          parent_config = parent.agent_config
 -        subagent_config = deepcopy(self.base_config)
-+        delegation = {name: None for name, tool in parent.tools.items() if isinstance(tool, SubagentTool)}
-+        return replace(parent_config, agent_name="general_subagent", user_prompt="", messages_input=[],
-+                       system_prompt=(parent_config.system_prompt or "") + SUBAGENT_SYSTEM_NOTE,
-+                       tools={**parent_config.tools, **delegation}, env_setups={})
-+
-+    def execute(self, task: str | None = None) -> ToolCallResult:
-+        from .agent import Agent
-+        if not isinstance(task, str) or not task.strip():
-+            return ToolCallResult(output="Error: the subagent needs a brief in `task` (a string that states the task, the context, what to produce and what not to do); nothing was delegated.", is_error=True)
-+        parent = self.agent
-+        parent_config = parent.agent_config
 +        subagent_config = deepcopy(self.base_config) if self.base_config is not None else self._inherit_general_config()
          if subagent_config.agent_name == "main":
              subagent_config.agent_name = "general_subagent"
          subagent_config.user_prompt = task
-@@ -309,6 +380,7 @@
+@@ -309,6 +384,7 @@
  
  
  class CompactionTool(AgentTool):
@@ -770,7 +902,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
      """
      Compacts the conversation into a new segment. With an AC model the finished segment becomes the
      recursive tree part of the new prompt and the summary follows it as text; without one only the
-@@ -336,4 +408,5 @@
+@@ -336,4 +412,5 @@
      ParallelCallTool.name: (ParallelCallTool, {}),
      SubmitAnswerTool.name: (SubmitAnswerTool, {}),
      CompactionTool.name: (CompactionTool, {}),
@@ -779,7 +911,7 @@ diff --git a/activation/agent/agent_tools.py b/activation/agent/agent_tools.py
 diff --git a/activation/agent/rollout_caching.py b/activation/agent/rollout_caching.py
 --- a/activation/agent/rollout_caching.py
 +++ b/activation/agent/rollout_caching.py
-@@ -10,6 +10,7 @@
+@@ -10,27 +10,64 @@
  import hashlib
  import json
  import threading
@@ -787,7 +919,9 @@ diff --git a/activation/agent/rollout_caching.py b/activation/agent/rollout_cach
  
  from activation.common.data_syncing import resolve_path
  
-@@ -18,19 +19,51 @@
+-from .agent_config import AgentConfig, AgentRunResult
++from .agent_config import AgentConfig, AgentRunResult, _class_spec
+ 
  CACHE_FILENAME = "rollouts.jsonl"
  
  
@@ -814,17 +948,21 @@ diff --git a/activation/agent/rollout_caching.py b/activation/agent/rollout_cach
 +
  def config_key(config: AgentConfig) -> str:
 +    """
-+    A labelled dataset task (`metadata["template"]`, set by the teacher study) is keyed "<dataset_id>/<task_id>/<template>":
++    A labelled dataset task (`metadata["template"]`, set by the teacher study) is keyed "<dataset_id>/<task_id>/<template>"
++    (plus "/<program>" when `metadata["program"]` names an agentic program):
 +    the caching id is the version of the run, so rewording a prompt, changing the model or the sampling does not
 +    invalidate its rows (like an autotune id). An unlabelled dataset task is keyed by a digest of its prompts, model,
 +    adapter and call kwargs; a free-form config hashes the same.
 +    """
      task = config.dataset_task
 +    label = config.metadata.get("template") if config.metadata else None
++    program = config.metadata.get("program") if config.metadata else None
 +    if task is not None and label:
-+        return f"{task.dataset_id}/{task.task_id}/{label}"
++        return f"{task.dataset_id}/{task.task_id}/{label}" + (f"/{program}" if program else "")   # a programmed variant never collides with the plain one
++    program_spec = None if config.agentic_program is None else _class_spec(*config.agentic_program)
 +    digest = hashlib.sha256(json.dumps([config.system_prompt, config.user_prompt, config.model_name, config.lora_name,
-+                                        config.messages_input, config.ac_model_name, config.call_kwargs], default=repr, sort_keys=True).encode()).hexdigest()
++                                        config.messages_input, config.ac_model_name, config.call_kwargs, program_spec],
++                                       default=repr, sort_keys=True).encode()).hexdigest()
      if task is not None:
 -        return f"{task.dataset_id}/{task.task_id}"
 -    digest = hashlib.sha256(json.dumps([config.system_prompt, config.user_prompt, config.model_name, config.lora_name,
@@ -844,7 +982,7 @@ diff --git a/activation/agent/rollout_caching.py b/activation/agent/rollout_cach
          self.path = None if caching_id is None else resolve_path(f"ROLLOUTS/{caching_id}", create=False) / CACHE_FILENAME
          if self.path is not None:
              self.path.parent.mkdir(parents=True, exist_ok=True)   # resolve_path would take a dotted id for a file name
-@@ -48,10 +81,17 @@
+@@ -48,10 +85,17 @@
                          break                                                      # a torn last line from a killed run
                      self.rows[(row["config_key"], int(row["seed"]))] = row
              if self.rows:
@@ -1361,7 +1499,7 @@ diff --git a/activation/agent/rollout_manager.py b/activation/agent/rollout_mana
  
      def perform_grouped_rollouts(
          self,
-@@ -51,28 +83,186 @@
+@@ -51,33 +83,191 @@
          return [flat[index:index + group_count] for index in range(0, len(flat), group_count)]
  
      # ----------------------------------------------------------------------------- internals
@@ -1438,7 +1576,7 @@ diff --git a/activation/agent/rollout_manager.py b/activation/agent/rollout_mana
          if reporter is not None:
              reporter.finish()
          return t.cast(list[AgentRunResult], results)
-+
+ 
 +    def _run_pending(self, indices: list[int], jobs, results, cache, perform_scoring, reporter, label: str,
 +                     probe_count: int | None = None, on_probe: "t.Callable[[ProbeMetrics], int] | None" = None,
 +                     max_wall_seconds: float | None = None) -> list[dict]:
@@ -1555,9 +1693,15 @@ diff --git a/activation/agent/rollout_manager.py b/activation/agent/rollout_mana
 +                                                  chat_kwargs=chat_kwargs, replica=replica)
 +        except Exception as error:                                              # a warm-up must never fail a pass
 +            print(f"RolloutManager - warm-up skipped: {type(error).__name__}: {error}", flush=True)
- 
++
      def _run_one(self, config: AgentConfig, seed: int, perform_scoring: bool, reporter) -> AgentRunResult:
          agent = Agent(self.harness, config, reporter=reporter, seed=seed)
+         try:
+-            result = agent.run()
++            result = agent.run_program()                                    # the config's agentic program, or the model loop
+             if perform_scoring and config.dataset_task is not None:
+                 agent.score()
+                 if reporter is not None:
 @@ -85,3 +275,79 @@
          finally:
              agent.shutdown()
@@ -4941,6 +5085,427 @@ new file mode 100644
 +    assert client.exists("folder/a.txt") is True and client.exists("absent") is False
 +    assert fake.calls == [("upload_file", str(local), "bucket-from-env", "folder/a.txt"),
 +                          ("head_object", "bucket-from-env", "folder/a.txt"), ("head_object", "bucket-from-env", "absent")]
+diff --git a/activation/agent/__init__.py b/activation/agent/__init__.py
+--- a/activation/agent/__init__.py
++++ b/activation/agent/__init__.py
+@@ -12,6 +12,7 @@
+     CompactionTool,
+ )
+ from .agent import Agent
++from .agentic_program import AgenticProgram
+ from .agent_utils import SyntheticTurn, synthesize_agent
+ from .rollout_caching import RolloutCache
+ from .rollout_manager import RolloutManager
+diff --git a/activation/agent/agentic_program.py b/activation/agent/agentic_program.py
+new file mode 100644
+--- /dev/null
++++ b/activation/agent/agentic_program.py
+@@ -0,0 +1,36 @@
++"""
++Agentic programs: harness-written workflows that own one rollout in code. Where a prompt can only ask the model to
++delegate, verify or synthesize, a program does the coordination itself and leaves the model the leaf work.
++
++A program is configuration: `AgentConfig.agentic_program = (ProgramClass, kwargs)`, serialized like a tool spec.
++`Agent.run_program()` (what the rollout manager calls) constructs it with the initialized, unstarted agent and calls
++`execute()`, which returns the main agent's own `AgentRunResult`. Inside `execute` a program may, before the first turn:
++
++- `agent.augment_context(content)`: text and activation parts placed ahead of the task in the first user message;
++- `agent.run_subagent(brief, max_duration=None)`: a solver in the same sandbox (delegation tools and program removed),
++  its result appended to `subagent_results`;
++- `agent.set_final_answer(answer)`: finish without a model turn (finish reason "programmed");
++- `agent.run()`: the model loop on the (augmented) task.
++
++A program that runs the main agent through `run()` and solvers through `run_subagent()` gets every trajectory recorded
++for SFT/RL. A program that drives agents any other way must populate the run results itself. Programs never mutate the
++config (the cache key is computed from it before and after the run) and never touch a started segment.
++"""
++from __future__ import annotations
++
++import typing as t
++
++if t.TYPE_CHECKING:
++    from .agent import Agent
++    from .agent_config import AgentRunResult
++
++
++class AgenticProgram:
++    name: str = ""
++
++    def __init__(self, agent: "Agent", **kwargs):
++        self.agent = agent
++
++    def execute(self) -> "AgentRunResult":
++        """Run the workflow; return `self.agent.run_results` (the main agent's own result object)."""
++        raise NotImplementedError
+diff --git a/activation/common/utils.py b/activation/common/utils.py
+new file mode 100644
+--- /dev/null
++++ b/activation/common/utils.py
+@@ -0,0 +1,64 @@
++"""
++Small shared helpers with no dependencies on the rest of the package.
++"""
++from __future__ import annotations
++
++import importlib
++import sys
++import typing as t
++
++
++class MissingClassError(RuntimeError):
++    """A class named by a record (a tool, an env setup, an agentic program) is not importable here."""
++
++
++class MissingClass:
++    """
++    Stands in for a class spec that did not resolve when a record was read leniently: it keeps the module and qualified
++    name the record named (so re-serializing the record leaves the spec unchanged), and it refuses construction with a
++    MissingClassError that names the class. Training and analysis read such records as usual; anything that would run
++    them fails at the point of construction.
++    """
++
++    def __init__(self, module: str, qualname: str, error: str):
++        self.__module__ = module
++        self.__qualname__ = qualname
++        self.__name__ = qualname.rsplit(".", 1)[-1]
++        self.error = error
++
++    def __call__(self, *args, **kwargs):
++        raise MissingClassError(f"{self.__module__}:{self.__qualname__} is not importable here ({self.error}); "
++                                "the record can be read and trained on, not run")
++
++    def __repr__(self) -> str:
++        return f"MissingClass({self.__module__}:{self.__qualname__})"
++
++
++def class_spec_name(cls: t.Any) -> str:
++    """
++    "module:Qualname" for a class (or a MissingClass). A class defined in a script run as `python -m pkg.script` reports
++    module `__main__`; that is mapped to the script's real module name, so records written by study scripts stay importable.
++    """
++    module = cls.__module__
++    if module == "__main__":
++        spec = getattr(sys.modules.get("__main__"), "__spec__", None)
++        if spec is not None and getattr(spec, "name", None):
++            module = spec.name
++    return f"{module}:{cls.__qualname__}"
++
++
++def resolve_class_name(name: str, strict: bool = True) -> t.Any:
++    """
++    The class named "module:Qualname". With `strict`, an import or attribute failure raises; without, it returns a
++    MissingClass placeholder carrying the name and the failure, for records read without the class present.
++    """
++    module_name, _, qualname = name.partition(":")
++    try:
++        cls: t.Any = importlib.import_module(module_name)
++        for part in qualname.split("."):
++            cls = getattr(cls, part)
++        return cls
++    except Exception as error:
++        if strict:
++            raise
++        return MissingClass(module_name, qualname, f"{type(error).__name__}: {error}")
+diff --git a/activation/tests/test_basic_agentic_program.py b/activation/tests/test_basic_agentic_program.py
+new file mode 100644
+--- /dev/null
++++ b/activation/tests/test_basic_agentic_program.py
+@@ -0,0 +1,150 @@
++"""
++One end-to-end agentic-program rollout on a GPU node, in the style of test_basic_agent.py: a program written in this
++file runs a solver subagent on a simple DeepMath problem, puts the solver's answer ahead of the task, and runs the main
++agent to verify and submit. Then the same request from the cache. (The lenient-deserialization and runtime checks that
++need no GPU live in activation/bench/agent_probes/agentic_program_probe.py.)
++
++    uv run sky exec --sync <node> -- uv run pytest activation/tests/test_basic_agentic_program.py --gpu --slow -s
++"""
++import json
++import os
++from dataclasses import replace
++
++import pytest
++
++from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult, RolloutReporter
++from activation.common.data_syncing import resolve_path
++from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
++from activation.harness import FREE_DEVICE, HarnessRuntime, HarnessRuntimeConfig, ModelConfig
++
++MODEL_NAME = "qwen3.5-9b"
++MODEL_ID = "Qwen/Qwen3.5-9B"
++
++# DeepMath-103K (zwhe99/DeepMath-103K, train shard 0), difficulty 2.0, topic Number Theory -> Factorization.
++QUESTION = "How many trailing zeroes are there in 100!?"
++TRAILING_ZEROES = DatasetTask(
++    task_id="trailing-zeroes-100", dataset_id="deepmath___fixture",
++    task_datum={"question": QUESTION, "final_answer": "24", "difficulty": 2.0},
++    reference_metrics_kind=DatasetTaskMetricsKind.MATH_VERIFY, gold_answer="24",
++    agent_prompt=bare_prompt(QUESTION, ANSWER_RULES["math"]), task_kind=DatasetTaskKind.MATH,
++)
++
++BASE_AGENT_CONFIG = AgentConfig(
++    # Default tools only (shell, python, parallel_tool_call, submit_answer). Thinking is off by the harness default.
++    system_prompt=(
++        "You are a careful problem solver working in a sandbox. Use the python or shell tools to compute "
++        "rather than guessing. When you are done, call submit_answer exactly once with the final answer."
++    ),
++    user_prompt=TRAILING_ZEROES.agent_prompt,
++    dataset_task=TRAILING_ZEROES,
++    model_name=MODEL_NAME,
++    call_kwargs={"sampling_params": {"max_tokens": 2048, "temperature": 0.7}},
++    max_turns=10,
++    max_tool_errors=3,
++    max_duration=300,
++)
++
++
++class SolveThenVerifyProgram(AgenticProgram):
++    """A solver subagent answers first; the main agent sees that answer ahead of the task, checks it and submits."""
++    name = "solve_then_verify"
++
++    def __init__(self, agent: Agent, solver_max_duration: float = 120.0):
++        super().__init__(agent)
++        self.solver_max_duration = solver_max_duration
++
++    def execute(self) -> AgentRunResult:
++        task = self.agent.agent_config.dataset_task
++        solver = self.agent.run_subagent(task.agent_prompt, max_duration=self.solver_max_duration)
++        self.agent.augment_context([{
++            "type": "text",
++            "text": (f"A first solver finished ({solver.finish_reason}, {solver.num_turns} turns) with the answer "
++                     f"{solver.answer!r}. Check it with the python tool before you submit, and submit the correct value."),
++        }])
++        return self.agent.run()
++
++
++PROGRAM_CONFIG = replace(
++    BASE_AGENT_CONFIG,
++    agentic_program=(SolveThenVerifyProgram, {"solver_max_duration": 120.0}),
++    metadata={"program": SolveThenVerifyProgram.name},
++)
++
++
++def _make_harness() -> HarnessRuntime:
++    return HarnessRuntime(HarnessRuntimeConfig(
++        model_configs={MODEL_NAME: ModelConfig(MODEL_NAME, MODEL_ID)},
++        agent_max_concurrent=4,
++    ))
++
++
++def _print_rollout(label: str, result: AgentRunResult) -> None:
++    print(
++        f"\n=== {label} seed={result.seed} finish={result.finish_reason} turns={result.num_turns} "
++        f"tokens in/cached/out={result.num_input_tokens}/{result.num_cached_input_tokens}/{result.num_output_tokens} "
++        f"duration={result.duration:.1f}s score={result.score} answer={result.answer!r}"
++    )
++    for step in result.trajectory:
++        if step["role"] == "assistant":
++            calls = ", ".join(f"{call['name']}({json.dumps(call['arguments'])[:80]})" for call in step["tool_calls"])
++            print(f"  assistant: {step['content'][:200]!r} -> {calls}")
++        else:
++            for output in step["tool_call_results"]:
++                print(f"  tool: {output[:200]!r}")
++
++
++@pytest.mark.gpu
++@pytest.mark.slow
++def test_basic_agentic_program_solve_then_verify():
++    """The program runs a solver, injects its answer, runs the main agent; scored; then the same call from the cache."""
++    harness = _make_harness()
++    reporter = RolloutReporter(
++        str(resolve_path("AGENT_TEST/program")),
++        title="Agent test: agentic program",
++        description=f"{MODEL_ID}, solve-then-verify program on a DeepMath difficulty-2 problem, {PROGRAM_CONFIG.max_turns} turns max.",
++    )
++    try:
++        results = harness.rollout_manager.perform_single_rollouts(
++            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program", reporter=reporter,
++        )
++        loads_before = len(harness.harness_stats.model_loading_times)
++        cached = harness.rollout_manager.perform_single_rollouts(
++            [PROGRAM_CONFIG], seed=0, perform_scoring=True, caching_id="agent_test_program",
++        )
++    finally:
++        harness.loaded_models[MODEL_NAME].engine_to_device(FREE_DEVICE)
++
++    assert len(results) == 1
++    result = results[0]
++    assert len(result.subagent_results) == 1, "the program runs exactly one solver"
++    solver = result.subagent_results[0]
++    _print_rollout("solver", solver)
++    _print_rollout("main", result)
++
++    # The solver: a plain run in the same sandbox, no program and no delegation tools, bounded to 120 s.
++    assert solver.agent_config.agentic_program is None
++    assert solver.agent_config.max_duration <= 120.0
++    assert solver.finish_reason in ("submitted", "max_turns", "max_tool_errors", "max_duration", "no_tool_call")
++
++    # The main agent: the solver's line sits ahead of the task text in the first user message.
++    first_user = next(message for message in result.prompt_messages if message["role"] == "user")
++    content = first_user["content"]
++    assert isinstance(content, list) and len(content) >= 2, content
++    assert "A first solver finished" in content[0]["text"]
++    assert content[-1]["text"].startswith(QUESTION)
++    assert result.finish_reason == "submitted", result.finish_reason
++    assert any(
++        call["name"] in ("python", "shell", "parallel_tool_call")
++        for step in result.trajectory for call in step.get("tool_calls", [])
++    ), "the main agent did not check with a tool"
++    assert result.score == 1.0, (result.answer, result.score)
++    assert result.duration >= solver.duration, "run_program measures the whole program"
++
++    # The cache: the same call replays the row without touching the engine; the live program class is restored.
++    assert len(harness.harness_stats.model_loading_times) == loads_before
++    assert cached[0].answer == result.answer and cached[0].score == result.score
++    assert cached[0].agent_config.agentic_program[0] is SolveThenVerifyProgram
++    assert len(cached[0].subagent_results) == 1
++    assert os.path.exists(os.path.join(reporter.report_folder, "report.tressoir.html"))
++    print("\n=== harness stats ===")
++    print(json.dumps(harness.harness_stats.summarize(), indent=2))
+diff --git a/activation/bench/agent_probes/agentic_program_probe.py b/activation/bench/agent_probes/agentic_program_probe.py
+new file mode 100644
+--- /dev/null
++++ b/activation/bench/agent_probes/agentic_program_probe.py
+@@ -0,0 +1,140 @@
++"""
++CPU probe of the agentic-program plumbing (no engine, no sandbox): a record deserializes without the program class
++present (MissingClass placeholder that errs on construction and re-serializes unchanged), the cache key separates the
++programmed and plain variants, `__main__` classes serialize under the script's module name, and the runtime API
++(augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny fixture.
++
++    uv run python -m activation.bench.agent_probes.agentic_program_probe
++"""
++from __future__ import annotations
++
++import os
++from dataclasses import replace
++
++from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult
++from activation.agent.agent_config import _class_spec
++from activation.agent.rollout_caching import config_key
++from activation.common.utils import MissingClass, MissingClassError
++from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
++from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
++
++TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
++QUESTION = "How many trailing zeroes are there in 100!?"
++TASK = DatasetTask(
++    task_id="trailing-zeroes-100", dataset_id="deepmath___fixture", task_datum={"question": QUESTION},
++    reference_metrics_kind=DatasetTaskMetricsKind.MATH_VERIFY, gold_answer="24",
++    agent_prompt=bare_prompt(QUESTION, ANSWER_RULES["math"]), task_kind=DatasetTaskKind.MATH,
++)
++
++
++class AnswerFromKwargs(AgenticProgram):
++    """Finishes without a model turn: the answer comes from the config."""
++    name = "answer_from_kwargs"
++
++    def __init__(self, agent: Agent, answer: str = "24"):
++        super().__init__(agent)
++        self.answer = answer
++
++    def execute(self) -> AgentRunResult:
++        self.agent.augment_context([{"type": "text", "text": "Programmed context ahead of the task."}])
++        self.agent.set_final_answer(self.answer)
++        return self.agent.run_results
++
++
++class Broken(AgenticProgram):
++    def execute(self) -> AgentRunResult:
++        raise RuntimeError("boom")
++
++
++class WrongReturn(AgenticProgram):
++    def execute(self) -> AgentRunResult:
++        return AgentRunResult(agent_config=self.agent.agent_config)
++
++
++def check_serde() -> None:
++    config = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny",
++                         agentic_program=(AnswerFromKwargs, {"answer": "24"}), metadata={"program": AnswerFromKwargs.name})
++    row = AgentRunResult(agent_config=config, seed=0, finish_reason="programmed", answer="24", score=1.0).serialize()
++    spec = row["agent_config"]["agentic_program"]
++    assert spec["class"] == f"{AnswerFromKwargs.__module__}:AnswerFromKwargs".replace("__main__", __spec__.name if __spec__ else "__main__"), spec
++    assert spec["kwargs"] == {"answer": "24"}
++    live = AgentRunResult.deserialize(row)
++    live_class = live.agent_config.agentic_program[0]                                  # importable here: the real class (a second module
++    assert not isinstance(live_class, MissingClass) and live_class.__qualname__ == "AnswerFromKwargs"   # object when run as __main__)
++
++    row["agent_config"]["agentic_program"]["class"] = "activation.bench.agent_probes.nowhere:AnswerFromKwargs"
++    row["agent_config"]["tools"] = {"custom": {"class": "activation.extensions.nowhere:CustomTool", "kwargs": {"k": 1}}}
++    restored = AgentRunResult.deserialize(row)                                         # lenient by default
++    placeholder, kwargs = restored.agent_config.agentic_program
++    assert isinstance(placeholder, MissingClass) and kwargs == {"answer": "24"}, (placeholder, kwargs)
++    tool_placeholder, tool_kwargs = restored.agent_config.tools["custom"]
++    assert isinstance(tool_placeholder, MissingClass) and tool_kwargs == {"k": 1}
++    try:
++        placeholder(None)
++        raise AssertionError("a MissingClass must refuse construction")
++    except MissingClassError as error:
++        assert "activation.bench.agent_probes.nowhere:AnswerFromKwargs" in str(error)
++    assert _class_spec(placeholder, kwargs)["class"] == "activation.bench.agent_probes.nowhere:AnswerFromKwargs"   # unchanged on rewrite
++    assert restored.serialize()["agent_config"]["tools"]["custom"]["class"] == "activation.extensions.nowhere:CustomTool"
++    assert restored.answer == "24" and restored.score == 1.0
++    try:
++        AgentRunResult.deserialize(row, strict=True)
++        raise AssertionError("strict deserialization must raise")
++    except (ImportError, AttributeError, ModuleNotFoundError):
++        pass
++    plain = replace(config, agentic_program=None, metadata={})
++    assert config_key(config) != config_key(plain)
++    labelled = replace(config, metadata={"template": "math/base/0", "program": "answer_from_kwargs"})
++    assert config_key(labelled) == "deepmath___fixture/trailing-zeroes-100/math/base/0/answer_from_kwargs"
++    assert config_key(replace(labelled, metadata={"template": "math/base/0"})) == "deepmath___fixture/trailing-zeroes-100/math/base/0"
++    print("serde: placeholder, strict, key and __main__ mapping OK", flush=True)
++
++
++def check_runtime(harness: HarnessRuntime) -> None:
++    base = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny", max_duration=30)
++    agent = Agent(harness, replace(base, agentic_program=(AnswerFromKwargs, {"answer": "24"})), seed=0)
++    result = agent.run_program()
++    assert result is agent.run_results and result.finish_reason == "programmed" and result.answer == "24", result.finish_reason
++    assert result.num_turns == 0 and result.duration >= 0
++    assert agent.score() == 1.0
++    agent.begin()                                                                       # tokenizer only: the recorded prompt
++    first_user = next(message for message in agent.run_results.prompt_messages if message["role"] == "user")
++    content = first_user["content"]
++    assert isinstance(content, list) and content[0]["text"] == "Programmed context ahead of the task." and content[-1]["text"].startswith(QUESTION), content
++    try:
++        agent.augment_context([{"type": "text", "text": "late"}])
++        raise AssertionError("augment_context after begin must be refused")
++    except AssertionError as error:
++        assert "before the first turn" in str(error)
++    agent.shutdown()
++
++    broken = Agent(harness, replace(base, agentic_program=(Broken, {})), seed=0)
++    result = broken.run_program()
++    assert result.finish_reason == "error" and "boom" in (result.score_feedback or ""), result.finish_reason
++    broken.shutdown()
++
++    wrong = Agent(harness, replace(base, agentic_program=(WrongReturn, {})), seed=0)
++    result = wrong.run_program()
++    assert result.finish_reason == "error" and "own run_results" in (result.score_feedback or "")
++    wrong.shutdown()
++
++    missing = Agent(harness, replace(base, agentic_program=(MissingClass("x.y", "Z", "ModuleNotFoundError"), {})), seed=0)
++    result = missing.run_program()
++    assert result.finish_reason == "error" and "x.y:Z is not importable" in (result.score_feedback or "")
++    missing.shutdown()
++    print("runtime: programmed finish, context ahead of the task, error handling OK", flush=True)
++
++
++def main() -> int:
++    check_serde()
++    if not os.path.isdir(TINY):
++        print(f"tiny fixture missing ({TINY}); runtime checks skipped", flush=True)
++        return 0
++    harness = HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
++    check_runtime(harness)
++    print("AGENTIC PROGRAM PROBE PASS", flush=True)
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
 diff --git a/activation/tests/test_basic_rollout_redo.py b/activation/tests/test_basic_rollout_redo.py
 new file mode 100644
 --- /dev/null

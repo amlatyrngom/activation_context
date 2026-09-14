@@ -4,10 +4,11 @@ rollout can be cached and read back without the engine.
 """
 from __future__ import annotations
 
-import importlib
 import json
 import typing as t
 from dataclasses import dataclass, field, replace
+
+from activation.common.utils import class_spec_name, resolve_class_name
 
 if t.TYPE_CHECKING:
     from .agent_tools import AgentTool
@@ -42,6 +43,7 @@ class AgentConfig:
     tools: dict[str, tuple[type["AgentTool"], dict] | None] = field(default_factory=dict)  # name -> (class, constructor kwargs), added to the
                                                               # defaults; None removes a default tool (subagents lose `subagent` this way).
     env_setups: dict[str, tuple[type["AgentEnvSetup"], dict]] = field(default_factory=dict)  # name -> (setup class, constructor kwargs). Run once,
+    agentic_program: tuple[type["AgenticProgram"], dict] | None = None   # the program that owns the rollout (Agent.run_program); None: the model loop
                                                               # in order, when this agent's env is created; never for subagents (they share the env).
     enable_ac_communication: bool = False                     # Subagents exchange segments as activation context (needs ac_model_name).
 
@@ -58,9 +60,10 @@ class AgentConfig:
     ac_search_ratio: float = 1.0 / 20.0                       # semantic search passages beyond top_k
 
     def serialize(self) -> dict:
-        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools", "env_setups")}
+        data = {key: value for key, value in self.__dict__.items() if key not in ("dataset_task", "tools", "env_setups", "agentic_program")}
         data["tools"] = {name: None if spec is None else _class_spec(*spec) for name, spec in self.tools.items()}
         data["env_setups"] = {name: _class_spec(cls, kwargs) for name, (cls, kwargs) in self.env_setups.items()}
+        data["agentic_program"] = None if self.agentic_program is None else _class_spec(*self.agentic_program)
         data["messages_input"] = _jsonable(self.messages_input)
         task = self.dataset_task
         data["dataset_task"] = None if task is None else {
@@ -70,13 +73,21 @@ class AgentConfig:
         return data
 
     @staticmethod
-    def deserialize(data: dict, harness: "HarnessRuntime | None" = None) -> "AgentConfig":
-        """The dataset task is looked up in the harness when it holds the dataset, else rebuilt from the stored fields."""
+    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, strict: bool = False) -> "AgentConfig":
+        """
+        The dataset task is looked up in the harness when it holds the dataset, else rebuilt from the stored fields.
+        Class specs (tools, env setups, the program) resolve leniently by default: a class that is not importable here
+        becomes a MissingClass placeholder that keeps the spec and errs on construction, so records can be read for
+        training without the classes present. Callers that will run the config pass `strict=True`.
+        """
         from activation.dataset import DatasetTask, DatasetTaskMetricsKind
         data = dict(data)
         data.pop("ac_inputs", None)                                                   # rows written before slice 3b
-        tools = {name: None if spec is None else _resolve_class_spec(spec) for name, spec in (data.pop("tools", None) or {}).items()}
-        setups = {name: _resolve_class_spec(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
+        resolve = lambda spec: _resolve_class_spec(spec, strict=strict)
+        tools = {name: None if spec is None else resolve(spec) for name, spec in (data.pop("tools", None) or {}).items()}
+        setups = {name: resolve(spec) for name, spec in (data.pop("env_setups", None) or {}).items()}
+        program_spec = data.pop("agentic_program", None)
+        program = None if program_spec is None else resolve(program_spec)
         task_data = data.pop("dataset_task", None)
         task = None
         if task_data is not None:
@@ -89,20 +100,20 @@ class AgentConfig:
                     gold_answer=task_data["gold_answer"], gold_answer_aliases=list(task_data["gold_answer_aliases"]),
                     agent_prompt=task_data.get("agent_prompt", ""),
                 )
-        return AgentConfig(tools=tools, env_setups=setups, dataset_task=task, **data)
+        return AgentConfig(tools=tools, env_setups=setups, agentic_program=program, dataset_task=task, **data)
 
 
 def _class_spec(cls: type, kwargs: dict) -> dict:
-    return {"class": f"{cls.__module__}:{cls.__qualname__}", "kwargs": _jsonable(kwargs)}
+    """{"class": "module:Qualname", "kwargs": {...}}; a MissingClass placeholder re-serializes to the names it was read with."""
+    return {"class": class_spec_name(cls), "kwargs": _jsonable(kwargs)}
 
 
-def _resolve_class_spec(spec: dict) -> tuple[type, dict]:
-    """{"class": "module:Qualname", "kwargs": {...}} back to (class, kwargs); the loaders write task setups in this form."""
-    module_name, _, qualname = spec["class"].partition(":")
-    cls: t.Any = importlib.import_module(module_name)
-    for part in qualname.split("."):
-        cls = getattr(cls, part)
-    return cls, dict(spec.get("kwargs") or {})
+def _resolve_class_spec(spec: dict, strict: bool = True) -> tuple[type, dict]:
+    """
+    {"class": "module:Qualname", "kwargs": {...}} back to (class, kwargs); the loaders write task setups in this form.
+    Without `strict`, an unimportable class becomes a MissingClass placeholder (see activation.common.utils).
+    """
+    return resolve_class_name(spec["class"], strict=strict), dict(spec.get("kwargs") or {})
 
 
 @dataclass
@@ -137,7 +148,7 @@ class AgentRunResult:
     num_ac_rows: int = 0                                       # rows those parts occupy in the prompts
     duration: float = 0.0
     trajectory: list[dict] = field(default_factory=list)       # TrajectoryStep dicts of the current segment, in order
-    score: float | None = 0.0                            # None: the task has no programmatic score (unscored teacher task)
+    score: float | None = None                           # None: unscored (no programmatic metric, UNSCORED datasets, never scored)
     score_feedback: str | None = None
     subagent_results: list["AgentRunResult"] = field(default_factory=list)
     compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
@@ -197,14 +208,15 @@ class AgentRunResult:
         return data
 
     @staticmethod
-    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, agent_config: AgentConfig | None = None) -> "AgentRunResult":
-        """With agent_config given (the caller's live config), the stored config is not rebuilt."""
+    def deserialize(data: dict, harness: "HarnessRuntime | None" = None, agent_config: AgentConfig | None = None,
+                    strict: bool = False) -> "AgentRunResult":
+        """With agent_config given (the caller's live config), the stored config is not rebuilt. `strict`: see AgentConfig.deserialize."""
         fields = {field_.name for field_ in AgentRunResult.__dataclass_fields__.values()}
         data = {key: value for key, value in data.items() if key in fields}          # cache rows carry extra keys
         config_data = data.pop("agent_config")
-        config = agent_config if agent_config is not None else AgentConfig.deserialize(config_data, harness)
-        children = [AgentRunResult.deserialize(child, harness) for child in data.pop("subagent_results", [])]
-        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config) for segment in data.pop("compactions", [])]
+        config = agent_config if agent_config is not None else AgentConfig.deserialize(config_data, harness, strict=strict)
+        children = [AgentRunResult.deserialize(child, harness, strict=strict) for child in data.pop("subagent_results", [])]
+        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config, strict=strict) for segment in data.pop("compactions", [])]
         return AgentRunResult(agent_config=config, subagent_results=children, compactions=segments, **data)
 
 
