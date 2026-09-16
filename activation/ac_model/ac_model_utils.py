@@ -22,6 +22,7 @@ if t.TYPE_CHECKING:
     from transformers import PreTrainedTokenizerBase
 
 from activation.common.ac_parts import (   # the part schema and the sentinel split live in common; re-exported here
+    template_takes_tools, tools_in_system_text,
     AC_PART_TYPE, PART_SENTINEL, direct_parts, encode_with_part_sentinels, flatten_with_sentinels, is_ac_part,
 )
 
@@ -38,9 +39,10 @@ def canonical_json(value: object) -> str:
     return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
-def row_cache_key(messages: list[dict], compression_ratio: float, is_recursive: bool, version: int) -> str:
-    """sha256 of the canonical part: the same messages, ratio, kind and model version hit the same rows."""
-    payload = canonical_json({"messages": messages, "ratio": round(float(compression_ratio), 8), "recursive": bool(is_recursive), "version": int(version)})
+def row_cache_key(messages: list[dict], compression_ratio: float, is_recursive: bool, version: int, tools: list[dict] | None = None) -> str:
+    """sha256 of the canonical part: the same messages, tools, ratio, kind and model version hit the same rows."""
+    payload = canonical_json({"messages": messages, "ratio": round(float(compression_ratio), 8), "recursive": bool(is_recursive), "version": int(version),
+                              **({"tools": tools} if tools else {})})
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -63,6 +65,8 @@ def tokenize_with_parts(
     flat = flatten_with_sentinels(messages, parts="sentinel")
     index = sum(1 for _ in direct_parts(messages))
     assert index == len(part_lengths), f"{index} parts in the messages, {len(part_lengths)} lengths given"
+    if tools and not template_takes_tools(tokenizer):
+        flat, tools = tools_in_system_text(flat, tools), None                     # the definitions ride in the system text instead
     if not any(message.get("role") == "user" and not str(message.get("content") or "").strip().startswith("<tool_response>") for message in flat):
         flat.insert(0, {"role": "user", "content": ""})                    # Qwen templates refuse a conversation without a user query (a mid-trajectory segment)
     text = tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
@@ -293,6 +297,7 @@ class EncodeRequest(t.NamedTuple):
     messages: list[dict]
     compression_ratio: float
     is_recursive: bool
+    tools: list[dict] | None = None            # the definitions the compressed segment ran with (part["tools"]); templated on the side
 
 
 class EncodeQueue:

@@ -180,11 +180,12 @@ class ActivationContextModel:
         ratio = self.config.default_compression_ratio if compression_ratio is None else compression_ratio
         return int(min(self.config.max_view_rows, max(self.config.min_view_rows, math.ceil(num_side_tokens * ratio))))
 
-    def part_view_rows(self, messages: list[dict], compression_ratio: float | None = None) -> int:
+    def part_view_rows(self, messages: list[dict], compression_ratio: float | None = None, tools: list[dict] | None = None) -> int:
         """V of a part before encoding it: its side tokenization (children's rows counted recursively) times the ratio."""
         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
-        child_lengths = [self.part_view_rows(*self._child_request(part, ratio)[:2]) for part in direct_parts(messages)]
-        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id)
+        child_lengths = [self.part_view_rows(child.messages, child.compression_ratio, child.tools)
+                         for child in (self._child_request(part, ratio) for part in direct_parts(messages))]
+        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)
         return self.num_view_rows(len(ids), ratio)
 
     def set_mode(self, mode: str) -> None:
@@ -253,18 +254,20 @@ class ActivationContextModel:
         return self.parameters() + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
 
     # ------------------------------------------------------------------------------------------ encoding
-    def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False) -> torch.Tensor:
+    def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
+               tools: list[dict] | None = None) -> torch.Tensor:
         """Rows [V, d_target] of one part (or [V, d_side] after the recursive adapter when is_recursive)."""
         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
-        return self.encode_batch([EncodeRequest(normalize_messages(messages), ratio, is_recursive)])[0]
+        return self.encode_batch([EncodeRequest(normalize_messages(messages), ratio, is_recursive, tools or None)])[0]
 
-    def encode_async(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False) -> Future:
+    def encode_async(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
+                     tools: list[dict] | None = None) -> Future:
         """Rollout mode: the rows through the encode queue (concurrent callers share batches)."""
         assert self.mode == ROLLOUT, "the encode queue serves rollout mode only"
         if self.queue is None:
             self.queue = EncodeQueue(self.encode_batch)
         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
-        return self.queue.submit(EncodeRequest(normalize_messages(messages), ratio, is_recursive))
+        return self.queue.submit(EncodeRequest(normalize_messages(messages), ratio, is_recursive, tools or None))
 
     def encode_batch(self, requests: list[EncodeRequest]) -> list[torch.Tensor]:
         """The rows of every request, cache first in rollout mode, the rest encoded together (children first)."""
@@ -273,7 +276,7 @@ class ActivationContextModel:
         results: list[torch.Tensor | None] = [None] * len(requests)
         pending: list[int] = []
         for index, request in enumerate(requests):
-            cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version)) if self.mode == ROLLOUT else None
+            cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools)) if self.mode == ROLLOUT else None
             if cached is not None:
                 self.stats.cache_hits += 1
                 results[index] = cached
@@ -291,7 +294,7 @@ class ActivationContextModel:
                 results[index] = part_rows
                 if self.mode == ROLLOUT:
                     request = requests[index]
-                    self.cache.put(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version), part_rows)
+                    self.cache.put(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools), part_rows)
         if self.queue is not None:
             self.stats.queue_batches, self.stats.queue_requests = self.queue.batches, self.queue.requests
         device = self.device
@@ -301,7 +304,8 @@ class ActivationContextModel:
         ac_name = part.get("ac_name") or self.name
         assert ac_name == self.name, f"a part of AC model {ac_name!r} inside {self.name!r} (routing between AC models is not supported)"
         ratio = part.get("compression_target")
-        return EncodeRequest(normalize_messages(part.get("messages") or []), float(ratio) if ratio is not None else parent_ratio, True)
+        return EncodeRequest(normalize_messages(part.get("messages") or []), float(ratio) if ratio is not None else parent_ratio, True,
+                             part.get("tools") or None)
 
     def _encode_requests(self, requests: list[EncodeRequest]) -> list[torch.Tensor]:
         """Children of every request (one recursive batch), then the requests in token-budgeted padded batches."""
@@ -316,7 +320,7 @@ class ActivationContextModel:
         prepared: list[PreparedPart] = []
         for request, (start, end) in zip(requests, child_slices):
             rows = child_rows[start:end]
-            ids, spans = tokenize_with_parts(self.side.tokenizer, request.messages, [r.shape[0] for r in rows], self.pad_id)
+            ids, spans = tokenize_with_parts(self.side.tokenizer, request.messages, [r.shape[0] for r in rows], self.pad_id, tools=request.tools)
             prepared.append((ids, spans, rows, self.num_view_rows(len(ids), request.compression_ratio), request.is_recursive))
         order = sorted(range(len(prepared)), key=lambda index: len(prepared[index][0]))
         results: list[torch.Tensor | None] = [None] * len(prepared)

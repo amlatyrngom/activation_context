@@ -292,8 +292,8 @@ class ActivationContextTrainer:
             teacher_prefix += tokenizer.encode(item.teacher_partial_text, add_special_tokens=False)
         parts = direct_parts(item.ac_prefix)
         requests = [ac_model._child_request(part, ac_model.config.default_compression_ratio) for part in parts]
-        requests = [EncodeRequest(request.messages, request.compression_ratio, False) for request in requests]   # top-level parts: target rows
-        lengths = [ac_model.part_view_rows(request.messages, request.compression_ratio) for request in requests]
+        requests = [EncodeRequest(request.messages, request.compression_ratio, False, request.tools) for request in requests]   # top-level parts: target rows
+        lengths = [ac_model.part_view_rows(request.messages, request.compression_ratio, request.tools) for request in requests]
         pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else (tokenizer.eos_token_id or 0)
         student_prefix, spans = tokenize_with_parts(tokenizer, item.ac_prefix, lengths, pad_id, tools=item.tools, add_generation_prompt=True)
         if not completion_ids or not teacher_prefix or not student_prefix:

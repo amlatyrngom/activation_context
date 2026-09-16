@@ -29,8 +29,7 @@ ENGINE_CACHE_BLOCK_TOKENS = 1056   # prefix-cache block of the hybrid 4B engine 
 SYSTEM = ("You are a careful problem solver working in a sandbox. Use the python or shell tools to compute rather than "
           "guessing. When you are done, call submit_answer exactly once with the final answer.")
 PRIMES = "Compute the sum of the 140th, 141st and 142nd prime numbers (2 is the 1st prime)."
-BASE = AgentConfig(system_prompt=SYSTEM, model_name=MODEL_NAME, ac_model_name=AC_NAME, enable_ac_communication=True,
-                   call_kwargs={"sampling_params": {"max_tokens": 1024, "temperature": 0.7}}, max_turns=12, max_tool_errors=3, max_duration=300)
+BASE = AgentConfig(system_prompt=SYSTEM, model_name=MODEL_NAME, ac_model_name=AC_NAME,                    call_kwargs={"sampling_params": {"max_tokens": 1024, "temperature": 0.7}}, max_turns=12, max_tool_errors=3, max_duration=300)
 LONG = "0123456789" * 120   # 1,200 chars per synthetic tool output
 
 
@@ -107,10 +106,11 @@ def test_ac_agent_channels_simulated():
         assert results.trajectory == [] and not agent.compaction_due and agent.segment_start == len(agent.prefix)
         assert [m["role"] for m in results.prompt_messages] == ["system", "user", "user"]
         tree = direct_parts(results.prompt_messages)[0]
-        assert tree["compression_target"] == config.ac_compaction_ratio and tree["messages"][0]["content"] == config.user_prompt
-        assert len(tree["messages"]) == 1 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
+        assert tree["compression_target"] == config.ac_compaction_ratio and tree["messages"][0]["role"] == "system" and tree["tools"]
+        assert tree["messages"][1]["content"] == config.user_prompt
+        assert len(tree["messages"]) == 2 + 9 and tree["messages"][-1]["tool_calls"][0]["function"]["name"] == "compact"
         assert results.prompt_messages[2]["content"][1]["text"].endswith("Printed 0..3; next sum the primes.")
-        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"])
+        assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"], tree.get("tools"))
         assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
         _probe_engine(agent, "compaction")
         # A second compaction nests the first tree verbatim.
@@ -129,12 +129,18 @@ def test_ac_agent_channels_simulated():
         child = agent.run_results.subagent_results[0]
         assert child.finish_reason == "simulated" and child.answer.endswith("simulated run")
         child_user = child.prompt_messages[1]
-        assert [p.get("type") for p in child_user["content"]] == ["text", "activation_context", "text"]
-        assert child_user["content"][2]["text"] == "Find the 140th prime." and child_user["content"][1]["messages"][0]["content"] == config.user_prompt
-        assert child.prompt_ac_spans and child.prompt_ac_spans[0]["length"] == ac_model.part_view_rows(child_user["content"][1]["messages"], BASE.ac_subagent_ratio)
+        assert [p.get("type") for p in child_user["content"]] == ["activation_context", "text", "text"]      # the parent's part, the intro block, the brief
+        part = child_user["content"][0]
+        assert child_user["content"][2]["text"] == "Find the 140th prime." and part["kind"] == "subagent_prompt"
+        assert part["messages"][0]["role"] == "system" and part["messages"][1]["content"] == config.user_prompt and part["tools"]
+        assert child.prompt_ac_spans and child.prompt_ac_spans[0]["length"] == ac_model.part_view_rows(part["messages"], BASE.ac_subagent_ratio, part["tools"])
+        assert child.injected_input and child.injected_input[0]["tool"] == "parent"
         tool_step = agent.run_results.trajectory[-1]
         assert [p.get("type") for p in tool_step["messages"][0]["content"]] == ["activation_context", "text"]
-        assert tool_step["messages"][0]["content"][0]["messages"][0]["content"][1]["type"] == "activation_context"   # the child's segment starts with its part
+        returned = tool_step["messages"][0]["content"][0]
+        assert returned["kind"] == "subagent_return" and returned["messages"][0]["role"] == "system"
+        assert returned["messages"][1]["content"][0]["type"] == "activation_context"                          # the child's segment starts with the parent's part
+        assert tool_step["tool_results"][0]["subagent_index"] == 0
         assert len(tool_step["ac_spans"]) == 1 and len(agent.spans) == 1
         _probe_engine(agent, "subagent")
 
@@ -143,12 +149,16 @@ def test_ac_agent_channels_simulated():
         agent = synthesize_agent(harness, config, [SyntheticTurn("Printing.", [("python", {"code": "print('x' * 100000)"})])])
         state = agent.simulate_step()
         result = state["results"][0]
-        assert len(result.output) < 21_000 and "truncated" in result.output and result.content is not None
-        part, text = result.content
+        assert len(result.output) < 21_000 and "truncated" in result.output and result.content == [{"type": "text", "text": result.output}]
+        raw = result.activation_content[0]                                                     # produced without encoder settings
+        assert raw["kind"] == "tool_output" and "compression_target" not in raw and raw["messages"][1]["role"] == "tool"
+        step = agent.run_results.trajectory[-1]
+        part, text = step["messages"][0]["content"]                                             # rendered ahead of the text on the step
         assert part["type"] == "activation_context" and text["text"] == result.output
         assert part["compression_target"] == BASE.ac_tool_output_ratio and part["messages"][1]["role"] == "tool"
-        assert len(part["messages"][1]["content"]) >= 80_000 and direct_parts(part["messages"])[0]["messages"][0]["content"] == config.user_prompt
-        assert agent.run_results.trajectory[-1]["ac_spans"][0]["length"] == agent.rows[0].shape[0]
+        nested = direct_parts(part["messages"])[0]
+        assert len(part["messages"][1]["content"]) >= 80_000 and nested["messages"][0]["role"] == "system" and nested["messages"][1]["content"] == config.user_prompt
+        assert step["ac_spans"][0]["length"] == agent.rows[0].shape[0] and step["tool_results"][0]["activation_content"] == [raw]
         _probe_engine(agent, "tool output")
         agent.shutdown()
 
@@ -157,9 +167,11 @@ def test_ac_agent_channels_simulated():
         agent = synthesize_agent(harness, config, [SyntheticTurn("Searching.", [("semantic_search", {"query": example.query[:200]})])])
         state = agent.simulate_step()
         result = state["results"][0]
-        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content[0]["type"] == "text" and result.content[1]["type"] == "activation_context"
-        extra = result.content[1]["messages"][1]["content"]
-        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6) and result.content[1]["compression_target"] == BASE.ac_search_ratio
+        assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content is None and result.activation_content[0]["kind"] == "search"
+        extra = result.activation_content[0]["messages"][1]["content"]
+        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6)
+        rendered = direct_parts(agent.run_results.trajectory[-1]["messages"])[0]
+        assert rendered["compression_target"] == BASE.ac_search_ratio and rendered["messages"][0]["content"][0]["compression_target"] == BASE.ac_subagent_ratio
         _probe_engine(agent, "search")
 
         # --- resume: the serialized record rebuilds the same prefix, spans and rows.
@@ -205,7 +217,7 @@ def test_ac_agent_rollout_with_ac():
 def test_agent_compaction_text_only():
     """No AC model: the same protocol with the summary alone; at least one rollout compacts. Finish reasons are printed, not asserted beyond the allowed set."""
     harness = _harness(with_ac=False)
-    config = replace(BASE, ac_model_name=None, enable_ac_communication=False, compaction_threshold_tokens=300, user_prompt=PRIMES)
+    config = replace(BASE, ac_model_name=None, compaction_threshold_tokens=300, user_prompt=PRIMES)
     reporter = RolloutReporter(str(resolve_path("AGENT_AC_TEST/text_only")), title="Agent AC test: text-only compaction")
     try:
         results = harness.rollout_manager.perform_grouped_rollouts([config], group_count=2, base_seed=0, perform_scoring=False, reporter=reporter)[0]

@@ -32,6 +32,7 @@ BASE_AGENT_CONFIG = AgentConfig(
     max_turns=10,
     max_tool_errors=3,
     max_duration=300,
+    absolute_trajectory_cap=40_000,                                # the 9B engine holds 52k tokens: cap + max_tokens must fit
 )
 
 
@@ -46,7 +47,7 @@ def _print_rollout(result) -> None:
     print(
         f"\n=== rollout seed={result.seed} finish={result.finish_reason} turns={result.num_turns} "
         f"tokens in/cached/out={result.num_input_tokens}/{result.num_cached_input_tokens}/{result.num_output_tokens} "
-        f"duration={result.duration:.1f}s score={result.score:.2f} answer={result.answer!r}"
+        f"duration={result.duration:.1f}s score={result.score} answer={result.answer!r}"
     )
     for step in result.trajectory:
         if step["role"] == "assistant":

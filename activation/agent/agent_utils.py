@@ -194,9 +194,9 @@ class MessageRendering:
             ]
         return message
 
-    def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
-        from .agent_tools import tool_content
-        return [{"role": "tool", "content": tool_content(result)} for result in results]     # content lists: parts in order
+    def tool_messages(self, calls: list[dict], contents: list[list[dict]]) -> list[dict]:
+        """One tool message per result; `contents` are the per-result content lists (rendered parts, then text), in call order."""
+        return [{"role": "tool", "content": content} for content in contents]
 
 
 class InlineRendering(MessageRendering):
@@ -220,12 +220,11 @@ class InlineRendering(MessageRendering):
         blocks = [self.format.render(call["name"], call["arguments"]) for call in calls]
         return {"role": "assistant", "content": "\n\n".join([content] + blocks if content else blocks)}
 
-    def tool_messages(self, calls: list[dict], results: list["ToolCallResult"]) -> list[dict]:
-        from .agent_tools import tool_content
+    def tool_messages(self, calls: list[dict], contents: list[list[dict]]) -> list[dict]:
         content: list[dict] = []
-        for index, result in enumerate(results):
+        for index, result_content in enumerate(contents):
             content.append({"type": "text", "text": ("\n" if index else "") + "<tool_response>\n"})
-            content.extend(tool_content(result))
+            content.extend(result_content)
             content.append({"type": "text", "text": "\n</tool_response>"})
         return [{"role": "user", "content": content}]
 

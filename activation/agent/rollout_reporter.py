@@ -24,17 +24,20 @@ PROMPT_CHARS = 1500       # per trajectory
 CONTENT_CHARS = 1200      # per assistant step
 ARGUMENT_CHARS = 1500     # per tool call
 RESULT_CHARS = 1000       # per tool result
+ROLLOUT_ROWS_SHOWN = 1000          # rows kept in the live table (oldest dropped); report_data.json is re-fetched by the page on every poll
 ROLLOUT_COLUMNS = ["agent", "task", "seed", "finish", "turns", "tool calls", "tokens in", "cached", "tokens out", "duration", "score"]
+SUMMARY_COLUMNS = ["benchmark", "teacher kind", "tasks", "finish reasons", "turns mean", "generated mean", "compactions", "subagents", "search", "shell", "python", "score"]
 
 
 class RolloutReporter(HtmlReporter):
     def __init__(self, report_folder: str, title: str, description: str = "", finished_trajectories_shown: int = 100):
-        super().__init__(report_folder, title, description, eyebrow="Rollouts", refresh_seconds=10, min_render_interval_seconds=2.0)
+        super().__init__(report_folder, title, description, eyebrow="Rollouts", refresh_seconds=10, min_render_interval_seconds=10.0)
         self.lock = threading.Lock()
         self.started_at = time.time()
         self.total = 0
         self.cached = 0
         self.running: dict[str, "Agent"] = {}
+        self.running_items: dict[str, dict] = {}
         self.finished_items: deque[dict] = deque(maxlen=max(1, min(finished_trajectories_shown, 100)))
         self.finished_count = 0
         self.scores: list[float] = []
@@ -44,6 +47,8 @@ class RolloutReporter(HtmlReporter):
             "Finished rollouts and the running mean score (scored rollouts only) against wall-clock seconds.",
             "seconds", "value", ["finished", "mean score"],
         )
+        self.initialize_table("summary", "Per benchmark and teacher kind", "Top-level agents only, grouped by the config labels (metadata); subagents counts delegations; scores are means over scored tasks.", SUMMARY_COLUMNS)
+        self.summary_stats: dict[tuple[str, str], dict] = {}
         self.initialize_table("rollouts", "Finished rollouts", "One row per finished agent (subagents included).", ROLLOUT_COLUMNS)
         self.set_trajectories(
             "trajectories", "Trajectories",
@@ -68,13 +73,15 @@ class RolloutReporter(HtmlReporter):
     def report_agent_start(self, agent: "Agent") -> None:
         with self.lock:
             self.running[agent.agent_id] = agent
-            self._update_trajectories()
+            self.running_items[agent.agent_id] = trajectory_item(agent, "running", self.folder)
+            self._update_trajectories(rebuild=False)
             self._update_status()
         self.render()
 
     def report_agent_step(self, agent: "Agent") -> None:
         with self.lock:
-            self._update_trajectories()
+            self.running_items[agent.agent_id] = trajectory_item(agent, "running", self.folder)   # only this agent's item and file
+            self._update_trajectories(rebuild=False)
             self._update_status()
         self.render()
 
@@ -82,6 +89,7 @@ class RolloutReporter(HtmlReporter):
         results = agent.run_results
         with self.lock:
             self.running.pop(agent.agent_id, None)
+            self.running_items.pop(agent.agent_id, None)
             self.finished_items.appendleft(trajectory_item(agent, "finished", self.folder))
             self.finished_count += 1
             self.output_tokens += results.num_output_tokens
@@ -91,10 +99,15 @@ class RolloutReporter(HtmlReporter):
                 "task": task.task_id[:12] if task is not None else "-", "seed": results.seed, "finish": results.finish_reason,
                 "turns": results.num_turns, "tool calls": results.num_tool_calls, "tokens in": results.num_input_tokens,
                 "cached": results.num_cached_input_tokens, "tokens out": results.num_output_tokens,
-                "duration": format_seconds(results.duration), "score": "" if task is None else f"{results.score:.2f}",
+                "duration": format_seconds(results.duration), "score": "" if task is None or results.score is None else f"{results.score:.2f}",
             })
+            rows = self.widgets["rollouts"]["rows"]
+            if len(rows) > ROLLOUT_ROWS_SHOWN:                                   # the page stays light on long campaigns; the cache and summary.json keep everything
+                del rows[:len(rows) - ROLLOUT_ROWS_SHOWN]
             self._add_progress_point()
-            self._update_trajectories()
+            if agent.parent_agent is None:
+                self._record_summary(agent)
+            self._update_trajectories(rebuild=False)
             self._update_status()
         self.render(force=True)
 
@@ -102,25 +115,61 @@ class RolloutReporter(HtmlReporter):
         """Scoring happens after finish; the table row, the trajectory header and the mean are updated."""
         results = agent.run_results
         with self.lock:
-            self.scores.append(results.score)
+            if results.score is not None:
+                self.scores.append(results.score)
             label = _agent_label(agent)
             for row in reversed(self.widgets["rollouts"]["rows"]):
                 if row["agent"] == label:
-                    row["score"] = f"{results.score:.2f}"
+                    row["score"] = "-" if results.score is None else f"{results.score:.2f}"
                     break
             for item in self.finished_items:
                 if item["id"] == agent.agent_id:
                     item["stats"] = _stats(agent)
                     break
             self._add_progress_point()
-            self._update_trajectories()
+            if agent.parent_agent is None:
+                self._record_summary(agent, scored=True)
+            self._update_trajectories(rebuild=False)
             self._update_status()
         self.render(force=True)
 
+    def finish(self) -> None:
+        """The summary rows also go to summary.json next to the page, for offline reports."""
+        super().finish()
+        rows = [{"benchmark": b, "teacher_kind": k, **stats} for (b, k), stats in sorted(self.summary_stats.items())]
+        _write_atomic(self.folder / "summary.json", json.dumps(rows, indent=1, default=str))
+
     # ----------------------------------------------------------------------------- internals
-    def _update_trajectories(self) -> None:
-        items = [trajectory_item(agent, "running", self.folder) for agent in self.running.values()] + list(self.finished_items)
-        self.widgets["trajectories"]["items"] = items
+    def _record_summary(self, agent: "Agent", scored: bool = False) -> None:
+        """Accumulate one finished top-level agent into its (benchmark, teacher kind) row; called again with scored=True after scoring."""
+        results = agent.run_results
+        meta = agent.agent_config.metadata or {}
+        task = agent.agent_config.dataset_task
+        key = (meta.get("benchmark") or (task.dataset_id.split("___")[0] if task is not None else "-"), meta.get("teacher_kind", "-"))
+        stats = self.summary_stats.setdefault(key, {"tasks": 0, "finish": {}, "turns": 0, "generated": 0, "compactions": 0, "subagents": 0, "search": 0, "shell": 0, "python": 0, "scores": []})
+        counts = results.tool_call_counts()
+        if not scored:
+            stats["tasks"] += 1
+            stats["finish"][results.finish_reason] = stats["finish"].get(results.finish_reason, 0) + 1
+            stats["turns"] += results.totals()["turns"]; stats["generated"] += results.totals()["output_tokens"]
+            stats["compactions"] += len(results.compactions); stats["subagents"] += counts.get("subagent", 0)
+            stats["search"] += counts.get("semantic_search", 0); stats["shell"] += counts.get("shell", 0); stats["python"] += counts.get("python", 0)
+        elif task is not None and results.score is not None:
+            stats["scores"].append(float(results.score))
+        rows = []
+        for (benchmark, kind), s in sorted(self.summary_stats.items()):
+            n = max(1, s["tasks"])
+            rows.append({"benchmark": benchmark, "teacher kind": kind, "tasks": s["tasks"], "finish reasons": ", ".join(f"{r} {c}" for r, c in sorted(s["finish"].items())),
+                         "turns mean": f"{s['turns'] / n:.1f}", "generated mean": f"{s['generated'] / n:,.0f}", "compactions": s["compactions"], "subagents": s["subagents"],
+                         "search": s["search"], "shell": s["shell"], "python": s["python"], "score": f"{sum(s['scores']) / len(s['scores']):.2f}" if s["scores"] else "-"})
+        self.widgets["summary"]["rows"] = rows
+
+    def _update_trajectories(self, rebuild: bool = True) -> None:
+        if rebuild:
+            self.running_items = {agent_id: trajectory_item(agent, "running", self.folder) for agent_id, agent in self.running.items()}
+        else:
+            self.running_items = {agent_id: item for agent_id, item in self.running_items.items() if agent_id in self.running}
+        self.widgets["trajectories"]["items"] = list(self.running_items.values()) + list(self.finished_items)
 
     def _add_progress_point(self) -> None:
         point = {"x": round(time.time() - self.started_at, 1), "finished": self.finished_count}
@@ -199,11 +248,14 @@ def _stats(agent: "Agent") -> str:
         parts.append(f"{len(results.compactions)} compactions")
     if results.num_ac_parts:
         parts.append(f"{results.num_ac_parts} AC parts / {results.num_ac_rows} rows")
+    counts = results.tool_call_counts()
+    if counts:
+        parts.append("tools " + ",".join(f"{name}:{count}" for name, count in sorted(counts.items(), key=lambda item: -item[1])))
     if agent.finished:
         parts.append(results.finish_reason)
         parts.append(f"answer {str(results.answer)[:40]!r}")
         if agent.agent_config.dataset_task is not None and results.score_feedback != "" or results.score:
-            parts.append(f"score {results.score:.2f}")
+            parts.append("unscored" if results.score is None else f"score {results.score:.2f}")
     return " · ".join(parts)
 
 

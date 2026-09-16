@@ -13,6 +13,7 @@ import asyncio
 import concurrent.futures
 import os
 import threading
+import time
 import uuid
 import zlib
 
@@ -22,11 +23,53 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.inputs import EmbedsPrompt
 from vllm.sampling_params import RequestOutputKind
 from vllm.v1.engine.async_llm import AsyncLLM
+from vllm.v1.metrics.loggers import StatLoggerBase
 
 WORLD_SIZE = max(1, torch.cuda.device_count())
 ENGINE_MAX_NUM_SEQS = 128
 ENGINE_CONCURRENCY = WORLD_SIZE * ENGINE_MAX_NUM_SEQS
 RECOMMENDED_BATCH_SIZE = 4 * ENGINE_CONCURRENCY # Decode-heavy passes (study): backlog amortizes the tail.
+
+
+class RolloutStatLogger(StatLoggerBase):
+    """
+    The scheduler's view of one replica as a time series (vLLM 0.28 stat-logger hook): KV cache usage, prefix cache
+    queries and hits, running and waiting requests, prompt and generated tokens of the interval. `record` is called
+    by the engine's output loop; samples are thinned to one per `interval` seconds. `kv_tokens` is the cache capacity.
+    """
+    interval = 2.0
+
+    def __init__(self, vllm_config, engine_index: int = 0):
+        self.engine_index = engine_index
+        self.samples: list[dict] = []
+        self._last = 0.0
+        self._config = vllm_config
+        self.kv_tokens: int | None = None
+
+    def record(self, scheduler_stats, iteration_stats, mm_cache_stats=None, engine_idx=0):
+        if scheduler_stats is None:
+            return
+        if self.kv_tokens is None:
+            cache = getattr(self._config, "cache_config", None)
+            blocks, block_size = getattr(cache, "num_gpu_blocks", None), getattr(cache, "block_size", None)
+            if blocks and block_size:
+                self.kv_tokens = int(blocks) * int(block_size)
+        now = time.time()
+        if now - self._last < self.interval:
+            return
+        self._last = now
+        prefix = scheduler_stats.prefix_cache_stats
+        self.samples.append({
+            "t": now, "kv_usage": float(scheduler_stats.kv_cache_usage),
+            "running": int(scheduler_stats.num_running_reqs), "waiting": int(scheduler_stats.num_waiting_reqs),
+            "prefix_queries": int(getattr(prefix, "queries", 0)), "prefix_hits": int(getattr(prefix, "hits", 0)),
+            "preempted": int(getattr(prefix, "preempted_requests", 0)),
+            "prompt_tokens": int(getattr(iteration_stats, "num_prompt_tokens", 0) or 0) if iteration_stats is not None else 0,
+            "generation_tokens": int(getattr(iteration_stats, "num_generation_tokens", 0) or 0) if iteration_stats is not None else 0,
+        })
+
+    def log_engine_initialized(self):
+        pass
 
 
 class _Replica:
@@ -37,9 +80,15 @@ class _Replica:
         self.thread = threading.Thread(target=self.loop.run_forever, name="vllm-replica-loop", daemon=True)
         self.thread.start()
 
+        self.stats: RolloutStatLogger | None = None
+
+        def logger_factory(vllm_config, engine_index: int = 0):
+            self.stats = RolloutStatLogger(vllm_config, engine_index)
+            return self.stats
+
         async def construct():
             # Constructed inside the loop so anything AsyncLLM binds to "the running loop" binds to this one.
-            return AsyncLLM.from_engine_args(AsyncEngineArgs(**engine_kwargs))
+            return AsyncLLM.from_engine_args(AsyncEngineArgs(**engine_kwargs), stat_loggers=[logger_factory])
 
         self.engine: AsyncLLM = asyncio.run_coroutine_threadsafe(construct(), self.loop).result()
 
@@ -105,6 +154,19 @@ class VLLMWrapper:
             else:
                 os.environ["CUDA_VISIBLE_DEVICES"] = visible
         self.tokenizer = tokenizer if tokenizer is not None else self.replicas[0].engine.get_tokenizer()
+        self._assign_lock = threading.Lock()
+        self._next_replica = -1
+
+    def assign_replica(self) -> int:
+        """Round-robin at agent start; the agent keeps the replica for its life so its prefix cache serves every turn."""
+        with self._assign_lock:
+            self._next_replica = (self._next_replica + 1) % len(self.replicas)
+            return self._next_replica
+
+    def metrics(self) -> list[dict]:
+        """Per replica: the stat logger's samples and the KV capacity in tokens (None until the engine profiled)."""
+        return [{"replica": index, "kv_tokens": replica.stats.kv_tokens if replica.stats else None,
+                 "samples": list(replica.stats.samples) if replica.stats else []} for index, replica in enumerate(self.replicas)]
 
     @property
     def world_size(self) -> int:
@@ -122,9 +184,9 @@ class VLLMWrapper:
         }   # LoRA support and sleep mode come from LoadedModel.engine_to_device (agents need both)
         mtp = {"speculative_config": {"method": "mtp", "num_speculative_tokens": 2}}
         known = {
-            # Dense generator: MTP helps decode.
-            "unsloth/Qwen3.8-27B-NVFP4": base | mtp,
-            "Qwen/Qwen3.8-27B-FP8": base | mtp,
+            # Dense generator: MTP helps decode. Teacher agent loops: the 50k trajectory cap plus a 4k turn must fit (Agent._check_engine_context).
+            "unsloth/Qwen3.8-27B-NVFP4": base | mtp | {"max_model_len": 64_000},
+            "Qwen/Qwen3.8-27B-FP8": base | mtp | {"max_model_len": 64_000},
             # A3B MoE labeler: MTP taxes prefill, and labeling is prefill-bound.
             "nvidia/Qwen3.6-35B-A3B-NVFP4": base,
             "Qwen/Qwen3.6-35B-A3B-FP8": base,

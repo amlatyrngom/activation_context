@@ -12,6 +12,7 @@ from .agent_tools import (
     CompactionTool,
 )
 from .agent import Agent
+from .agentic_program import AgenticProgram
 from .agent_utils import SyntheticTurn, synthesize_agent
 from .rollout_caching import RolloutCache
 from .rollout_manager import RolloutManager

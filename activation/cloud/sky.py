@@ -821,15 +821,15 @@ def exec_cmd(
     cmd: str | list[str],
     *,
     sync: bool = False,
-    watch_paths: tuple[str, str] | None = None,
+    watch_paths: list[tuple[str, str]] | tuple[str, str] | None = None,
     interval_seconds: float = SYNC_INTERVAL_SECONDS,
 ) -> int:
     """
     Upload the mirror and run the command. With sync, IB/TMP/SYNC is pushed to the node first
     (update-only), pulled back every interval while the command runs and once more when it ends,
     and the command sees ACTIVATION_SYNC_ROOT so `data_syncing.resolve_path` lands in that folder.
-    watch_paths (remote folder under ~/activation_artifacts, local folder under IB/TMP) adds one
-    more pulled pair, replacing a separate `watch` session.
+    watch_paths (one pair or a list of pairs: remote folder under ~/activation_artifacts, local folder
+    under IB/TMP) adds one pulled pair each, replacing separate `watch` sessions.
     """
     command = [cmd] if isinstance(cmd, str) else cmd.copy()
     if command[:1] == ["--"]:
@@ -844,11 +844,12 @@ def exec_cmd(
     if sync:
         _push_sync(record)
         pairs.append((f"{REMOTE_SYNC_ROOT}/", LOCAL_SYNC_ROOT))
-    if watch_paths:
-        remote_folder = _remote_artifact_path(watch_paths[0])
+    watch_pairs = [watch_paths] if watch_paths and isinstance(watch_paths[0], str) else [*(watch_paths or [])]   # `list` is the ls command here
+    for remote_path, local_path in watch_pairs:
+        remote_folder = _remote_artifact_path(remote_path)
         if not remote_folder.endswith("/"):
             raise ValueError("watch needs a remote folder (end the remote path with '/')")
-        pairs.append((remote_folder, _local_download_path(watch_paths[1])))
+        pairs.append((remote_folder, _local_download_path(local_path)))
 
     remote_command = shlex.join(
         [
@@ -944,8 +945,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     exec_parser.add_argument("--sync", action="store_true",
                              help="mirror IB/TMP/SYNC to the node before, during and after the command (flags go before the name)")
-    exec_parser.add_argument("--watch", nargs=2, metavar=("REMOTE_FOLDER", "LOCAL_FOLDER"), default=None,
-                             help="also pull a ~/activation_artifacts folder to a local IB/TMP folder while the command runs")
+    exec_parser.add_argument("--watch", nargs=2, action="append", metavar=("REMOTE_FOLDER", "LOCAL_FOLDER"), default=None,
+                             help="also pull a ~/activation_artifacts folder to a local IB/TMP folder while the command runs (repeatable)")
     exec_parser.add_argument("--interval", type=float, default=SYNC_INTERVAL_SECONDS, help="seconds between pulls (default 60)")
     exec_parser.add_argument("name", help="cluster name")
     exec_parser.add_argument("command", nargs=argparse.REMAINDER)
@@ -1027,7 +1028,7 @@ def main() -> int:
                 rebuild_image=not args.no_image_rebuild,
             )
         if args.action == "exec":
-            return exec_cmd(args.name, args.command, sync=args.sync, watch_paths=tuple(args.watch) if args.watch else None,
+            return exec_cmd(args.name, args.command, sync=args.sync, watch_paths=[tuple(pair) for pair in args.watch] if args.watch else None,
                             interval_seconds=args.interval)
         if args.action == "sync":
             return sync(args.name)

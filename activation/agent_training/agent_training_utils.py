@@ -31,11 +31,27 @@ class TrainingExample:
         return sum(self.loss_mask)
 
 
-def build_example(item: "AgentTrainingItem", item_index: int) -> TrainingExample | None:
+def think_replacement_ids(tokenizer) -> list[int] | None:
+    """
+    The tokens that stand in for a stripped reasoning block: a newline and `</think>`. The generation prompt already
+    holds `<think>` and a newline, so the sequence reads `<think>\n\n</think>` followed by the sampled visible text
+    (which starts with its own blank line): exactly the non-thinking template's empty block. None when the tokenizer has no `</think>`.
+    """
+    think_end = tokenizer.convert_tokens_to_ids("</think>")
+    if not isinstance(think_end, int) or think_end < 0 or think_end == tokenizer.unk_token_id:
+        return None
+    newline = tokenizer.encode("\n", add_special_tokens=False)
+    return list(newline) + [think_end]
+
+
+def build_example(item: "AgentTrainingItem", item_index: int, think_replacement: list[int] | None = None) -> TrainingExample | None:
     """
     The run's prompt_token_ids followed by each trajectory step's token_ids; assistant segments carry
     loss on their sampled tokens (the ones with a recorded log-prob; all of them for ignore_logprobs
     items). None when the run has no token segments or no sampled tokens.
+    Thinking spans (`step["think_end"]`, recorded by the agent): kept and trained on for a thinking student
+    (`item.thinking == "keep"`); for a non-thinking student (`"strip"`) the span is removed from the sequence and
+    replaced by `think_replacement` (no loss on it), so the student never conditions on reasoning it will not have.
     """
     run = item.run_results
     if run.prompt_ac_spans or any(step.get("ac_spans") for step in run.trajectory):
@@ -52,6 +68,17 @@ def build_example(item: "AgentTrainingItem", item_index: int) -> TrainingExample
         segment = list(step.get("token_ids") or [])
         if step.get("role") == "assistant":
             logprobs = [float(value) for value in (step.get("logprobs") or [])]
+            think_end = step.get("think_end")
+            if item.thinking == "strip" and think_end:
+                if think_replacement is None:
+                    raise ValueError("stripping thinking spans needs think_replacement ids (think_replacement_ids(tokenizer))")
+                segment = list(think_replacement) + segment[think_end:]
+                logprobs = [0.0] * len(think_replacement) + logprobs[think_end:] if logprobs else []
+                token_ids += segment[:len(think_replacement)]
+                loss_mask += [False] * len(think_replacement)
+                old_logprobs += [0.0] * len(think_replacement)
+                segment = segment[len(think_replacement):]
+                logprobs = logprobs[len(think_replacement):]
             recorded = min(len(logprobs), len(segment))
             any_recorded = any_recorded or recorded > 0
             sampled = len(segment) if item.ignore_logprobs or recorded == 0 else recorded
@@ -410,3 +437,19 @@ def disable_dropout(module: torch.nn.Module) -> int:
             child.eval()
             count += 1
     return count
+
+
+def activation_messages_of(run: "AgentRunResult", config: "AgentConfig") -> list[dict]:
+    """
+    The run's current segment as messages with every recorded activation part rendered for `config` (its ac_model_name and
+    ratios; a config without an AC model renders nothing): the first user message rebuilt from `injected_input`, each tool
+    step's message from its `tool_results` (segment_messages_with_parts). A base run (no parts rendered at run time) comes
+    out AC-bearing; an AC run comes out as recorded. Token ids are not produced here.
+    """
+    from activation.common.ac_parts import resolve_activation_part
+    from activation.agent.agent_tools import segment_messages_with_parts
+
+    def render(parts: list[dict]) -> list[dict]:
+        return [resolve_activation_part(part, config) for part in parts] if config.ac_model_name and parts else []
+
+    return segment_messages_with_parts(run, render)

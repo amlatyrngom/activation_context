@@ -269,7 +269,9 @@ class ActivationContextStudyGenerator:
         nested: dict | None = None
         for segment in segments:
             inner = [{"role": "user", "content": [nested]}] if nested is not None else [task]   # the innermost segment carries the task: what the reader is after
-            nested = ac_part(inner + segment, self.ac_name, ratio)
+            nested = ac_part(deepcopy(system) + inner + segment, self.ac_name, ratio)           # a segment part carries its system message first
+            if tools:
+                nested["tools"] = deepcopy(tools)
         ac_user = {"role": "user", "content": [nested, {"type": "text", "text": "\n\n" + COMPACTION_INSTRUCTIONS}]}
         item = ActivationContextTrainingItem(
             item_id=f"compaction:{dataset_id}:{seed}:{index}",
@@ -471,7 +473,7 @@ class ActivationContextStudyGenerator:
 
     def _expand_tree(self, tree: dict) -> list[dict]:
         """The history a compaction tree holds, as text: its first user message (recursively) then the segment through the compact call."""
-        inner = list(tree.get("messages") or [])
+        inner = [message for message in tree.get("messages") or [] if message.get("role") != "system"]   # the frame is the reader's own
         if not inner:
             return []
         expanded = self._expand_parts([inner[0]]) + self._expand_parts(inner[1:])
@@ -642,13 +644,18 @@ class ActivationContextStudyGenerator:
             ratio = self._sample_ratio(rng, ratios_range)
             depth = rng.randint(min(depth_range), max(depth_range))
             question = example.query
-            def part_for(messages: list[dict]) -> dict:
-                part = ac_part(messages, self.ac_name, ratio)
+            def part_for(source: DatasetDocument, messages: list[dict]) -> dict:
+                kwargs = source.trajectory_kwargs or {}                              # the frame the trajectory ran with, when the loader kept it
+                frame = [{"role": "system", "content": kwargs["system_prompt"]}] if kwargs.get("system_prompt") else []
+                part = ac_part(frame + messages, self.ac_name, ratio)
                 if depth >= 2:
-                    part = ac_part([messages[0], {"role": "user", "content": [part]}], self.ac_name, ratio)
+                    part = ac_part(frame + [messages[0], {"role": "user", "content": [part]}], self.ac_name, ratio)
+                if kwargs.get("tools"):
+                    part["tools"] = deepcopy(kwargs["tools"])
                 return part
 
-            parts = [("gold", part_for(window))] + [("distractor", part_for(messages)) for messages in distractors]
+            parts = [("gold", part_for(document, window))] + [("distractor", part_for(candidate, messages))
+                                                                for candidate, messages in zip(candidates[:num_distractors], distractors)]
             rng.shuffle(parts)
             content = [{"type": "text", "text": f"Task: {question}\n\n"}]
             for number, (_, part) in enumerate(parts, start=1):
@@ -753,7 +760,7 @@ class ActivationContextStudyGenerator:
                         pieces.append(part.get("text", ""))
                         continue
                     if kind == "recent_text":
-                        rows = self.ac_model.part_view_rows(part["messages"], part.get("compression_target"))
+                        rows = self.ac_model.part_view_rows(part["messages"], part.get("compression_target"), part.get("tools"))
                         if item.kind == "compaction":
                             text = render_messages(_expand_parts(part["messages"]))
                             ids = self.tokenizer.encode(text, add_special_tokens=False)[-rows:]

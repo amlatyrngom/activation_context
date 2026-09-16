@@ -164,6 +164,41 @@ def finqa_match(pred, golds, rel_tol: float = 0.01) -> float:
 
 
 
+def _math_normalize(text) -> str:
+    value = str(text or "").strip().strip("$").strip()
+    value = re.sub(r"^(answer|final answer)\s*[:=]\s*", "", value, flags=re.I)
+    value = value.replace("\\left", "").replace("\\right", "").replace("\\,", "").replace("\\!", "").replace(" ", "")
+    value = re.sub(r"\\(d|t)frac", r"\\frac", value).replace("\\text{", "{").rstrip(".")
+    return value.lower()
+
+
+def math_verify_match(pred, golds) -> float:
+    """
+    One when math-verify finds the prediction equivalent to any gold (LaTeX or plain expressions, numbers, sets,
+    intervals), else when a light normalization makes the strings equal (covers Yes/No and plain words); zero otherwise.
+    math-verify is optional: without it only the normalized comparison runs.
+    """
+    pred_text = str(pred or "").strip()
+    if not pred_text:
+        return 0.0
+    candidates = [str(g) for g in golds if g is not None and str(g).strip()]
+    if any(_math_normalize(pred_text) == _math_normalize(g) for g in candidates):
+        return 1.0
+    try:
+        from math_verify import parse, verify
+    except Exception:
+        return 0.0
+    try:
+        parsed_pred = parse(pred_text if "\\boxed" in pred_text else f"${pred_text}$") or parse(pred_text)
+        for gold in candidates:
+            parsed_gold = parse(f"${gold}$") or parse(gold)
+            if parsed_pred and parsed_gold and verify(parsed_gold, parsed_pred):
+                return 1.0
+    except Exception:
+        return 0.0
+    return 0.0
+
+
 def wrap_submit_answer(gold) -> dict:
     """
     Return a native assistant submit_answer tool-call message.

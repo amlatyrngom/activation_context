@@ -4,6 +4,9 @@ from .dataset import (
     DatasetDocumentChunk,
     DatasetTask,
     DatasetTaskMetricsKind,
+    DatasetTaskKind,
+    ANSWER_RULES,
+    bare_prompt,
 )
 
 from .dataset_index import (

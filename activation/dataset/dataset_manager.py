@@ -1,3 +1,4 @@
+import threading
 import typing as t
 from .dataset import LoadedDataset, DatasetQAExample, DataModality
 from .dataset_index import DatasetIndex
@@ -22,12 +23,16 @@ class DatasetManager:
         self.loaded_datasets[loaded_dataset.dataset_id] = loaded_dataset
         return
 
+    _index_lock = threading.Lock()
+
     def _get_or_create_index(self, dataset_id: str) -> DatasetIndex:
-        """Chunk a dataset once; the bm25 index is built on top explicitly."""
+        """Chunk a dataset once (under a lock: rollout threads ask concurrently); the bm25 index is built on top explicitly."""
         if dataset_id not in self.dataset_indexes:
-            self.dataset_indexes[dataset_id] = DatasetIndex(
-                self.harness, self.loaded_datasets[dataset_id],
-            )
+            with self._index_lock:
+                if dataset_id not in self.dataset_indexes:
+                    self.dataset_indexes[dataset_id] = DatasetIndex(
+                        self.harness, self.loaded_datasets[dataset_id],
+                    )
         return self.dataset_indexes[dataset_id]
 
     def _get_or_create_study_generator(self, dataset_id: str) -> DatasetStudyGenerator:

@@ -37,7 +37,8 @@ class HarnessRuntimeConfig:
     dataset_study_label_model_name: str|None = None
 
     # Agents
-    agent_max_concurrent: int = 64 # Thread pool bound for rollouts; the engine batches across them.
+    agent_max_concurrent_per_gpu: int = 40 # Rollout pool bound per engine replica (KV budget: ~1.2M fp8 tokens per RTX PRO 6000 over a ~25k live prefix, with headroom).
+    agent_max_concurrent: int | None = None # Explicit total pool bound; None = per_gpu x replicas.
     agent_env_default_image: str = "docker.io/library/python:3.12-slim" # Sandbox image when a config names no dockerfile.
     agent_env_memory_limit_mb: int | None = 8192 # Address space per sandboxed process (ulimit -v); None = unlimited.
 

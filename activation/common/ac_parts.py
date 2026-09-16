@@ -27,6 +27,79 @@ def ac_part(messages: list[dict], ac_name: str, compression_target: float, kind:
     return part
 
 
+RATIO_FIELD_BY_KIND = {                    # the AgentConfig field that sets a part's compression target, by channel
+    "compaction": "ac_compaction_ratio", "tool_output": "ac_tool_output_ratio", "search": "ac_search_ratio",
+    "subagent_prompt": "ac_subagent_ratio", "subagent_return": "ac_subagent_ratio", "parent_context": "ac_subagent_ratio",
+}
+
+
+def activation_part(kind: str, messages: list[dict], tools: list[dict] | None = None) -> dict:
+    """
+    A part without encoder settings: what a tool or an agent produces (`ToolCallResult.activation_content`). The reader's
+    `render_activation` / `resolve_activation_part` fills `ac_name` and `compression_target` by kind. `tools` are the
+    definitions the compressed segment ran with; the encoder templates them natively when the side template takes tools.
+    """
+    part = {"type": AC_PART_TYPE, "kind": kind, "messages": messages}
+    if tools:
+        part["tools"] = tools
+    return part
+
+
+def resolve_activation_part(part: dict, config, ac_name: str | None = None) -> dict:
+    """
+    A deep copy of `part` with `ac_name` and `compression_target` filled from `config` (an AgentConfig: its
+    ac_model_name and the ratio field of the part's kind), recursively for the parts nested in its messages.
+    Parts that already carry both keep them.
+    """
+    from copy import deepcopy
+    ac_name = ac_name or getattr(config, "ac_model_name", None)
+    assert ac_name, "resolving a part needs the reader's ac_model_name"
+
+    def resolve(item: dict) -> dict:
+        out = deepcopy(item)
+        out.setdefault("ac_name", ac_name)
+        if out.get("compression_target") is None:
+            field = RATIO_FIELD_BY_KIND.get(out.get("kind") or "", "ac_subagent_ratio")
+            out["compression_target"] = float(getattr(config, field))
+        out["messages"] = [resolve_in_message(message) for message in out.get("messages") or []]
+        return out
+
+    def resolve_in_message(message: dict) -> dict:
+        content = message.get("content")
+        if not isinstance(content, list):
+            return message
+        return dict(message, content=[resolve(piece) if is_ac_part(piece) else piece for piece in content])
+
+    return resolve(part)
+
+
+def tools_in_system_text(messages: list[dict], tools: list[dict] | None) -> list[dict]:
+    """
+    For a chat template without tool support: the tool definitions appended to the system message (one is inserted
+    when the messages have none). With `tools` empty the messages come back unchanged.
+    """
+    if not tools:
+        return list(messages)
+    import json
+    listing = "\n".join(json.dumps(definition) for definition in tools)
+    block = f"\n\n# Tools\n\nThe functions available in this conversation:\n<tools>\n{listing}\n</tools>"
+    out = [dict(message) for message in messages]
+    for message in out:
+        if message.get("role") == "system":
+            content = message.get("content")
+            text = content if isinstance(content, str) else "".join(
+                piece.get("text", "") if isinstance(piece, dict) else str(piece) for piece in content or [])
+            message["content"] = text + block
+            return out
+    return [{"role": "system", "content": block.strip()}] + out
+
+
+def template_takes_tools(tokenizer: "PreTrainedTokenizerBase") -> bool:
+    """Whether the tokenizer's chat template renders a `tools` argument (Qwen's do)."""
+    template = getattr(tokenizer, "chat_template", None)
+    return isinstance(template, str) and "tools" in template
+
+
 def is_ac_part(part: object) -> bool:
     return isinstance(part, dict) and part.get("type") == AC_PART_TYPE
 

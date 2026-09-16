@@ -4,6 +4,7 @@ trajectories by messages) and a bm25 index over their renderings. Dense retrieva
 index were archived with the retrieval trainer (IB/ARTIFACTS/RETRIEVAL_TRAINING/archive_slice3).
 """
 
+import threading
 import time
 import typing as t
 import numpy as np
@@ -35,6 +36,7 @@ class DatasetIndex:
         self.chunk_ids: list[str] = list() # cached computation of list(self.chunks.keys())
         self.chunk_id_indexes: dict[str, int] = dict() # map from chunk id to int index.
         self.bm25_index: BM25Index|None = None
+        self._bm25_lock = threading.Lock()   # one build, however many rollout threads ask at once
         self._chunk_documents()
 
 
@@ -131,14 +133,18 @@ class DatasetIndex:
         return
 
     def build_bm25_index(self):
-        """Build a bm25 index."""
+        """Build the bm25 index once; concurrent callers wait for the one build instead of each building their own."""
         if self.bm25_index is not None:
             return
-        stats = self.loaded_dataset.stats
-        print(f"{self.dataset_id} - Building bm25.")
-        self.bm25_index = BM25Index([chunk.chunk_text for chunk in self.chunks.values()])
-        stats.bm25_build_latency = self.bm25_index.build_time
-        print(f"{self.dataset_id} - Built bm25 in {stats.bm25_build_latency:.2f}s.")
+        with self._bm25_lock:
+            if self.bm25_index is not None:
+                return
+            stats = self.loaded_dataset.stats
+            print(f"{self.dataset_id} - Building bm25.")
+            index = BM25Index([chunk.chunk_text for chunk in self.chunks.values()])
+            stats.bm25_build_latency = index.build_time
+            print(f"{self.dataset_id} - Built bm25 in {stats.bm25_build_latency:.2f}s.")
+            self.bm25_index = index
 
 
     def estimate_extra_fetches(self, all_excluded_sets: list[set]) -> int:

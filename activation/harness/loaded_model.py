@@ -406,6 +406,7 @@ class LoadedModel:
         record_sampling: bool = False,
         prompt_embeds: "torch.Tensor | None" = None,
         prompt_is_token_ids: list[bool] | None = None,
+        replica: int | None = None,
     ) -> EngineChatOutput:
         """
         One request whose prompt the caller owns as token ids (the agent loop keeps its own prefix).
@@ -423,10 +424,26 @@ class LoadedModel:
             sampling_params.logprobs = 0
         lora_request = self.harness.module_manager.engine_lora_request(lora_name) if lora_name else None
         engine = self.vllm_model
-        future = engine.submit(list(prompt_token_ids), sampling_params, replica=VLLMWrapper.replica_for(agent_id, engine.world_size),
+        future = engine.submit(list(prompt_token_ids), sampling_params,
+                               replica=VLLMWrapper.replica_for(agent_id, engine.world_size) if replica is None else replica % engine.world_size,
                                lora_request=lora_request, prompt_embeds=prompt_embeds, prompt_is_token_ids=prompt_is_token_ids)
         return EngineChatOutput.from_request_output(future.result(), lora_name=lora_name if lora_request is not None else None)
 
+
+    def reload_engine(self) -> None:
+        """Shut the resident engine down and build it again from `model_config.engine_kwargs` (tuning changed an engine argument)."""
+        if self.vllm_model is not None:
+            self.engine_to_device(FREE_DEVICE)
+        self.engine_to_device(TARGET_DEVICE)
+
+    def assign_replica(self) -> int:
+        """A replica for a new agent (round-robin over the engine's replicas); loads the engine if needed."""
+        self.ensure_engine_loaded()
+        return self.vllm_model.assign_replica()
+
+    def engine_metrics(self) -> list[dict]:
+        """The engine's per-replica stat series (empty when no engine is resident)."""
+        return self.vllm_model.metrics() if self.vllm_model is not None else []
 
     def simple_chat(self, user_msg: str) -> str:
         """Simple function to test the direct chat."""

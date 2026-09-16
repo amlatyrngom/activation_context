@@ -6,6 +6,7 @@ the loader streams and dedupes on `extra_info.index` until `max_examples` unique
 """
 from __future__ import annotations
 
+import random
 import re
 import time
 import typing as t
@@ -13,7 +14,8 @@ import typing as t
 from datasets import load_dataset
 
 from ..dataset import DatasetTask, DatasetTaskMetricsKind, LoadedDataset
-from ..dataset_utils import initialize_dataset_stats
+from ..dataset_utils import initialize_dataset_stats, make_dataset_id
+from ..dataset import ANSWER_RULES, DatasetTaskKind, bare_prompt
 
 if t.TYPE_CHECKING:
     from activation.harness import HarnessRuntime
@@ -33,10 +35,14 @@ AGENT_HEAD = ("Solve the following math problem. Use the python tool for any com
 AGENT_TAIL = "\n\nWhen you are done, call submit_answer with only the final number."
 
 
+def problem_from_dapo(prompt_text: str) -> str:
+    """The bare problem: the dataset's "Answer:" instructions removed."""
+    return _TAIL_INSTRUCTION.sub("", _HEAD_INSTRUCTION.sub("", prompt_text)).strip()
+
+
 def agent_prompt_from_dapo(prompt_text: str) -> str:
     """The problem with the dataset's "Answer:" instructions pattern-replaced by submit_answer instructions."""
-    problem = _TAIL_INSTRUCTION.sub("", _HEAD_INSTRUCTION.sub("", prompt_text)).strip()
-    return AGENT_HEAD + problem + AGENT_TAIL
+    return AGENT_HEAD + problem_from_dapo(prompt_text) + AGENT_TAIL
 
 
 class DapoMathDataset:
@@ -45,23 +51,33 @@ class DapoMathDataset:
     """
 
     @classmethod
-    def load(cls, harness: "HarnessRuntime", max_examples: int | None) -> LoadedDataset:
+    def load(cls, harness: "HarnessRuntime", max_examples: int | None, seed: int | None = None) -> LoadedDataset:
+        """With a seed, tasks get the bare study prompt (problem plus the numeric answer rule) and the dataset id carries the seed; without one, the original fixed prompt."""
         start = time.time()
         rows = load_dataset(HF_DATASET, split="train", streaming=True)
-        dataset_id = f"{DATASET_ID}_{max_examples if max_examples is not None else 'all'}"
+        if seed is None:
+            dataset_id = f"{DATASET_ID}_{max_examples if max_examples is not None else 'all'}"
+        else:
+            dataset_id = make_dataset_id(DATASET_ID, n=max_examples, seed=seed)
+        rng = random.Random(seed)
         tasks: dict[str, DatasetTask] = {}
         for row in rows:
             index = row["extra_info"]["index"]
             if index in tasks:
                 continue
             prompt_text = row["prompt"][0]["content"]
+            if seed is None:
+                agent_prompt, datum = agent_prompt_from_dapo(prompt_text), row
+            else:
+                agent_prompt = bare_prompt("Solve the following math problem.\n\n" + problem_from_dapo(prompt_text), ANSWER_RULES["numeric"])
+                datum = dict(row)
             tasks[index] = DatasetTask(
                 task_id=index,
                 dataset_id=dataset_id,
-                task_datum=row,
+                task_datum=datum,
                 reference_metrics_kind=DatasetTaskMetricsKind.NUMERIC_EXACT,
                 gold_answer=str(row["reward_model"]["ground_truth"]),
-                agent_prompt=agent_prompt_from_dapo(prompt_text),
+                agent_prompt=agent_prompt, task_kind=DatasetTaskKind.MATH,
             )
             if max_examples is not None and len(tasks) >= max_examples:
                 break

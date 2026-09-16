@@ -38,6 +38,7 @@ from .agent_training_config import AgentTrainingConfig, AgentTrainingStats
 from .agent_training_reporter import AgentTrainingReporter
 from ..autotuners import get_agent_training_autotuning_variables, configure_fla_runtime
 from .agent_training_utils import (
+    think_replacement_ids,
     Collated,
     TrainingExample,
     build_example,
@@ -67,6 +68,7 @@ class AgentTrainingItem:
     lora_name: str                       # the adapter this item trains
     weight: float                        # the advantage A: sign = direction, magnitude = strength; never 0
     ignore_logprobs: bool = False        # teacher / hinted data: pi_old := the current policy at round start
+    thinking: str = "keep"               # "keep": train on the teacher's reasoning spans (thinking student); "strip": remove them (non-thinking student)
     group_key: str = field(default_factory=lambda: uuid.uuid4().hex[:8])   # select_agent_runs stamps one key per group
 
 
@@ -131,8 +133,9 @@ class AgentTrainer:
 
         # Examples: one sequence per trajectory.
         examples: list[TrainingExample] = []
+        think_replacement = think_replacement_ids(loaded_model.tokenizer)
         for index, item in enumerate(training_data):
-            example = build_example(item, index)
+            example = build_example(item, index, think_replacement)
             if example is None:
                 stats.dropped_empty += 1
             elif len(example.token_ids) > config.max_example_tokens:
@@ -145,7 +148,7 @@ class AgentTrainer:
         stats.assistant_tokens = sum(example.num_loss_tokens for example in examples)
         stats.positive_weight_sum = sum(example.weight for example in examples if example.weight > 0)
         stats.negative_weight_sum = sum(example.weight for example in examples if example.weight < 0)
-        reporting_examples = [example for example in (build_example(item, index) for index, item in enumerate(reporting_data))
+        reporting_examples = [example for example in (build_example(item, index, think_replacement) for index, item in enumerate(reporting_data))
                               if example is not None and len(example.token_ids) <= config.max_example_tokens]
         if reporter is not None:
             reporter.initialize_round(round_index, config, len(training_data), len(examples), stats.dropped_too_long + stats.dropped_empty, stats.total_tokens)

@@ -20,6 +20,34 @@ class DataSplit(StrEnum):
     TEST = auto()
 
 
+class DatasetTaskKind(StrEnum):
+    """What a task asks the agent to do; the teacher study keys its meta-agent prompt templates by it."""
+    GENERAL = auto()
+    SEMANTIC_SEARCH = auto()     # find and combine passages of a corpus behind semantic_search
+    MATH = auto()                # compute a value (python at hand)
+    CODE_SEARCH = auto()         # locate something in a repository checkout with ripgrep and reading
+    FILE_SEARCH = auto()         # answer from a long document written to a file
+    CODE_IMPL = auto()           # change code (unused today)
+
+
+ANSWER_RULES = {
+    "f1": "When you are done, call submit_answer with the answer only: a short phrase, no explanation.",
+    "letter": "When you are done, call submit_answer with the letter of the correct option only (A, B, C or D).",
+    "numeric": "When you are done, call submit_answer with the final number only.",
+    "path": "When you are done, call submit_answer with the repository-relative path of the one file that must change, nothing else.",
+    "search": "When you are done, call submit_answer with your answer followed by the ids of the passages you relied on.",
+    "math": ("When you are done, call submit_answer with the final answer only, in the form the problem asks for: a number, "
+             "a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No. No explanation."),
+    "list": "When you are done, call submit_answer with every answer, separated by semicolons, nothing else.",
+    "free": "When you are done, call submit_answer with your complete answer.",
+}
+
+
+def bare_prompt(task_text: str, answer_rule: str) -> str:
+    """The loader-side task prompt: the task and the scorer's submission rule, nothing about how to work (the study adds that)."""
+    return task_text.strip() + "\n\n" + answer_rule.strip()
+
+
 class DatasetTaskMetricsKind(StrEnum):
     """
     Built-in scoring policies for corpus tasks.
@@ -30,6 +58,8 @@ class DatasetTaskMetricsKind(StrEnum):
     NUMERIC_EXACT = auto()
     FINQA = auto() # custom.
     JUDGE = auto()
+    MATH_VERIFY = auto()   # math-verify equivalence (LaTeX, numbers, sets, intervals), then normalized string match
+    UNSCORED = auto()      # teacher-only tasks: score() returns None and the reporters leave the score blank
 
 
 @dataclass
@@ -108,14 +138,20 @@ class DatasetTask:
     reference_metrics_kind: DatasetTaskMetricsKind
     gold_answer: str = ""
     gold_answer_aliases: list[str] = field(default_factory=list)
-    agent_prompt: str = "" # What an agent is asked to do; the loader fills it.
+    agent_prompt: str = "" # What the top-level agent is asked to do: the loader fills it directly (task text plus answer rule, see bare_prompt).
+    task_kind: DatasetTaskKind | None = None # The kind of work; the teacher study keys its prompt templates by it.
+    env_setups: dict[str, dict] = field(default_factory=dict)
+    """name -> {"class": "module:Qualname", "kwargs": {...}} of AgentEnvSetup subclasses the task needs (the suite copies them onto the config)."""
 
-    def score(self, run_result: t.Any, force_metric: DatasetTaskMetricsKind | None = None) -> float:
+    def score(self, run_result: t.Any, force_metric: DatasetTaskMetricsKind | None = None) -> float | None:
         """
-        Unwrap an agent result and dispatch to the configured shared metric.
+        Unwrap an agent result and dispatch to the configured shared metric. None for the kinds that have no
+        programmatic score (UNSCORED teacher-only tasks; JUDGE, since no judge runs in the rollout pipeline).
         """
         from . import scoring
         metric = force_metric or self.reference_metrics_kind
+        if metric in (DatasetTaskMetricsKind.UNSCORED, DatasetTaskMetricsKind.JUDGE):
+            return None
         answer = scoring.unwrap_submit_answer(run_result)
         golds = [self.gold_answer, *self.gold_answer_aliases]
         if metric == DatasetTaskMetricsKind.EXACT_MATCH:
@@ -128,9 +164,13 @@ class DatasetTask:
             return scoring.numeric_exact(answer, golds)
         if metric == DatasetTaskMetricsKind.FINQA:
             return scoring.finqa_match(answer, golds)
-        if metric == DatasetTaskMetricsKind.JUDGE:
-            raise NotImplementedError("LLM-as-judge not yet implemented!")
+        if metric == DatasetTaskMetricsKind.MATH_VERIFY:
+            return scoring.math_verify_match(answer, golds)
+        raise ValueError(f"unknown metrics kind {metric!r}")
 
+    @property
+    def is_scored(self) -> bool:
+        return self.reference_metrics_kind not in (DatasetTaskMetricsKind.UNSCORED, DatasetTaskMetricsKind.JUDGE)
 
 
 @dataclass

@@ -12,6 +12,7 @@ dependencies = [
     "datasets",
     "bm25s",
     "peft>=0.20.0",
+    "math-verify>=0.9.0",       # programmatic grading of math answers (LaTeX, numbers, sets)
     "flash-linear-attention",   # Triton gated-delta-net kernels for Qwen3.5 training (transformers imports `fla` when present)
 ]
 
