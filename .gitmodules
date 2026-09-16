@@ -1,0 +1,3 @@
+[submodule "IB/REPOS/vllm"]
+	path = IB/REPOS/vllm
+	url = https://github.com/amlatyrngom/vllm.git
