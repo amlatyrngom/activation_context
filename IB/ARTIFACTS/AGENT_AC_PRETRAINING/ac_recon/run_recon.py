@@ -5,6 +5,7 @@ Commands: `prepare` (chunk pools: train / held novel / Wikipedia panel), `run --
 """
 from __future__ import annotations
 import argparse
+import collections
 from contextlib import contextmanager
 from dataclasses import asdict, replace
 import difflib
@@ -32,7 +33,10 @@ DEFAULT_ARM = dict(ratio=1 / 16, encoder_lr=1e-4, reader_lr=2e-5, penalty_weight
                    train_items=None, epochs=2, reporting_interval=0.125, completion_samples=8, completion_tokens=320, budget_seconds=BUDGET_SECONDS,
                    final_train_subset=512, micro_batch=3, ckpt_min_tokens=1700, material='material.json', seed=None, warmup=50, ckpt_every=None, mixer_layers=None,
                    interventions=0, last_layer_intervention=True, intervention_layers=None, deltas_off=True,
+                   side_model=MODEL, reader_model=MODEL, reader_rank=64, held_per_source=None,
                    init_ac=None, init_reader=None, note='')
+# side_model / reader_model: Hub ids of the encoder base and the reader base (equal ids share one loaded base); reader_rank: the reader LoRA rank
+# (the side LoRA rank is the AC config's default, 128); held_per_source: cap on held passages per source label (None = the material's whole panel).
 # interventions: deep inputs (interior reader layers receiving a residual delta per row; 0 = the embedding channel only; -1 = every full-attention layer);
 # intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); deltas_off: the extra panel without the deltas (deep arms only);
 # init_ac / init_reader: start from another run's adapters (the AC modules are ratio-free); seed: the fresh modules' init and the data order (None = SEED).
@@ -82,7 +86,11 @@ def phase(reporter, name, **values):
     reporter.set_status(phase=name, **values); reporter.render(force=True)
 
 
-def harness(with_ac=False, ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, interventions=0, last_layer_intervention=True, intervention_layers=None):
+SIDE_BASE = 'side_base'   # the registered name of a separate encoder base (when side_model differs from reader_model)
+
+
+def harness(with_ac=False, ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, interventions=0, last_layer_intervention=True, intervention_layers=None,
+            side_model=MODEL, reader_model=MODEL, reader_rank=64):
     # interventions: 0 = input channel only; N = N interior layers (+ last); -1 = every full-attention layer of the reader
     # intervention_layers: an explicit list of reader layers (the config's intervention_layers; needs interventions 0, the frequency rule is replaced)
     # seed: the fresh modules' initialization (replicate arms with their own seed differ in init and data order, not data order only)
@@ -93,12 +101,15 @@ def harness(with_ac=False, ac_path=None, reader_path=None, seed=SEED, mixer_laye
     if intervention_layers is not None and interventions != 0:
         raise ValueError(f'intervention_layers {intervention_layers} replace the frequency rule: set interventions 0 (got {interventions})')
     torch.set_num_threads(4); torch.manual_seed(seed)
-    h = HarnessRuntime(HarnessRuntimeConfig(
-        model_configs={NAME: ModelConfig(NAME, MODEL, engine_kwargs={'max_model_len': 4096, 'gpu_memory_utilization': .75})},
-        doc_chunk_size_chars=2048, doc_chunk_overlap_chars=0))
+    engine = {'max_model_len': 4096, 'gpu_memory_utilization': .75}
+    models = {NAME: ModelConfig(NAME, reader_model, engine_kwargs=engine)}
+    side_base = NAME
+    if side_model != reader_model:
+        side_base = SIDE_BASE; models[SIDE_BASE] = ModelConfig(SIDE_BASE, side_model, engine_kwargs=engine)
+    h = HarnessRuntime(HarnessRuntimeConfig(model_configs=models, doc_chunk_size_chars=2048, doc_chunk_overlap_chars=0))
     if with_ac:
-        h.module_manager.register_lora(READER, NAME, rank=64, dropout=0, checkpoint_path=str(reader_path) if reader_path else None)
-        h.module_manager.register_ac_model(ActivationContextModelConfig(AC, NAME, SIDE, NAME, READER, min_view_rows=2, default_compression_ratio=1 / 16,
+        h.module_manager.register_lora(READER, NAME, rank=reader_rank, dropout=0, checkpoint_path=str(reader_path) if reader_path else None)
+        h.module_manager.register_ac_model(ActivationContextModelConfig(AC, side_base, SIDE, NAME, READER, min_view_rows=2, default_compression_ratio=1 / 16,
                                                                         checkpoint_path=str(ac_path) if ac_path else None,
                                                                         intervention_frequency=interventions, add_last_layer_intervention=last_layer_intervention,
                                                                         intervention_layers=list(intervention_layers) if intervention_layers is not None else None,
@@ -200,6 +211,17 @@ def config(arm, **overrides):
     return ActivationContextTrainingConfig(**values)
 
 
+def novel_summary(summary):
+    """The held panel without wiki: the single-source 'reconstruct' kind, or the token-weighted blend of every non-wiki kind of a mixed material."""
+    by_kind = summary.get('by_kind') or {}
+    if 'reconstruct' in by_kind: return by_kind['reconstruct']
+    rows = [row for row in summary.get('per_item') or [] if row.get('kind') != 'wiki' and row.get('gold_nll') is not None]
+    if not rows: return None
+    weights = [max(1, row.get('positions') or 1) for row in rows]; total = sum(weights)
+    return {'items': len(rows), 'gold_nll': sum(row['gold_nll'] * w for row, w in zip(rows, weights)) / total,
+            'token_accuracy': sum((row.get('token_accuracy') or 0.0) * w for row, w in zip(rows, weights)) / total, 'loss': sum((row.get('loss') or 0.0) * w for row, w in zip(rows, weights)) / total}
+
+
 def similarity(a, b):
     return difflib.SequenceMatcher(None, a.split(), b.split(), autojunk=False).ratio()
 
@@ -227,7 +249,7 @@ class RunReporter:
                 super().report_eval(progress, name, summary)
                 if not summary['items'] or name not in ('reporting', 'deltas_off'): return
                 for kind, values in summary['by_kind'].items():
-                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, kind) + (' (deltas off)' if name == 'deltas_off' else '')
+                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, 'novel ' + kind) + (' (deltas off)' if name == 'deltas_off' else '')
                     for widget, key in (('gold_nll', 'gold_nll'), ('token_accuracy', 'token_accuracy')):
                         if values.get(key) is not None and widget in self.widgets:
                             self._ensure_series(widget, label); self.add_data_point(widget, {'x': self.epoch_x, label: values[key]})
@@ -276,8 +298,9 @@ def run(label):
     boot = plain_report(folder, f'AC reconstruction — {label} (starting)')
     material = json.loads((prep / arm['material']).read_text())
     if arm['train_items'] is None:
-        calibration = prep / 'calibration.json'
-        if not calibration.exists(): raise RuntimeError('Run the smoke run (S) and `budget` before an anchor arm, or set train_items')
+        calibration = prep / f'calibration_{label}.json'
+        if not calibration.exists(): calibration = prep / 'calibration.json'
+        if not calibration.exists(): raise RuntimeError('Run a smoke run and `budget` before this arm, or set train_items')
         arm = dict(arm, train_items=json.loads(calibration.read_text())['train_items'])
     if len(material['train']) < arm['train_items']:
         raise RuntimeError(f"{arm['train_items']} training passages requested, {len(material['train'])} prepared")
@@ -287,7 +310,8 @@ def run(label):
         if resume: phase(boot, f"resuming after epoch {resume['epochs_done']} (attempt {resume['attempt']})")
         h = harness(True, ac_path=resume['ac'] if resume else (Path(arm['init_ac']) if arm['init_ac'] else None),
                     reader_path=resume['reader'] if resume else (Path(arm['init_reader']) if arm['init_reader'] else None), seed=SEED if arm['seed'] is None else arm['seed'],
-                    mixer_layers=arm['mixer_layers'], interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], intervention_layers=arm['intervention_layers'])
+                    mixer_layers=arm['mixer_layers'], interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], intervention_layers=arm['intervention_layers'],
+                    side_model=arm['side_model'], reader_model=arm['reader_model'], reader_rank=arm['reader_rank'])
         ac = h.module_manager.get_ac_model(AC); ac.prepare(); h.module_manager.ensure_lora(READER)
         initial_hash = parameter_hash(ac, h)
         deep_hash = parameter_hash(ac, h, deep=True) if ac.is_deep else None
@@ -300,10 +324,19 @@ def run(label):
         train = (study.generate_reconstruction_samples([p for i, p in enumerate(passages) if i not in continue_set], ratio=arm['ratio'], variant='reconstruct', seed=SEED)
                  + study.generate_reconstruction_samples([p for i, p in enumerate(passages) if i in continue_set], ratio=arm['ratio'], variant='continue', seed=SEED))
         rng.shuffle(train)
-        held = study.generate_reconstruction_samples(material['held'], ratio=arm['ratio'], variant='reconstruct', seed=SEED + 1)
+        held_passages = material['held']
+        if arm['held_per_source']:
+            counts = {}; held_passages = []
+            for passage in material['held']:
+                if counts.get(passage['source'], 0) < arm['held_per_source']:
+                    counts[passage['source']] = counts.get(passage['source'], 0) + 1; held_passages.append(passage)
+        held = study.generate_reconstruction_samples(held_passages, ratio=arm['ratio'], variant='reconstruct', seed=SEED + 1)
+        sources = sorted({passage['source'] for passage in held_passages})
+        if len(sources) > 1:      # mixed material: one panel line per source label ('reconstruct' stays the kind of single-source material)
+            held = [replace(item, kind=passage['source']) for item, passage in zip(held, held_passages)]
         held.sort(key=lambda item: item.info['passage_tokens'] > arm['completion_tokens'] - 32)   # stable: the fixed completion samples (first items) fit the generation budget
         wiki = [replace(item, kind='wiki') for item in study.generate_reconstruction_samples(material['wiki'], ratio=arm['ratio'], variant='reconstruct', seed=SEED + 2)]
-        no_context = [replace(item, item_id=item.item_id + ':no_context', ac_messages=strip_ac_parts(item.ac_messages)) for item in held]
+        no_context = [replace(item, item_id=item.item_id + ':no_context', kind='reconstruct', ac_messages=strip_ac_parts(item.ac_messages)) for item in held]
         reporting = held + wiki
         r = RunReporter(folder, f'AC reconstruction — {label}: ratio 1/{round(1 / arm["ratio"])}, penalty {arm["penalty_weight"]:g}×{arm["penalty_fraction"]:g}, reader LR {arm["reader_lr"]:g}', arm, start)
         r.set_text('summary', 'Run summary', '\n'.join([
@@ -353,9 +386,9 @@ def run(label):
                   'updates': trainer.updates_done.get(AC, 0), 'initial_hash': initial_hash, 'final_hash': parameter_hash(ac, h), 'deep_hash': deep_hash, 'checkpoint': stats.checkpoint_path,
                   'interventions': ac.intervention_summary() or None, 'payload_bytes': stats.payload_bytes,
                   'deltas_off': {k: v for k, v in (stats.deltas_off or {}).items() if k != 'per_item'} if stats.deltas_off else None,
-                  'deltas_off_novel': ((stats.deltas_off or {}).get('by_kind') or {}).get('reconstruct'), 'deltas_off_wiki': ((stats.deltas_off or {}).get('by_kind') or {}).get('wiki'),
+                  'deltas_off_novel': novel_summary(stats.deltas_off or {}), 'deltas_off_wiki': ((stats.deltas_off or {}).get('by_kind') or {}).get('wiki'),
                   'held': {k: v for k, v in last.items() if k not in ('per_item',)},   # blend of both panels; per panel below
-                  'held_novel': (last.get('by_kind') or {}).get('reconstruct'), 'held_wiki': (last.get('by_kind') or {}).get('wiki'), 'no_context': {k: v for k, v in (stats.epochs[-1].validation or {}).items() if k != 'per_item'} if stats.epochs and stats.epochs[-1].validation else None,
+                  'held_novel': novel_summary(last), 'held_wiki': (last.get('by_kind') or {}).get('wiki'), 'held_by_source': {k: v for k, v in (last.get('by_kind') or {}).items() if k != 'wiki'}, 'no_context': {k: v for k, v in (stats.epochs[-1].validation or {}).items() if k != 'per_item'} if stats.epochs and stats.epochs[-1].validation else None,
                   'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor,
                   'penalty_last': stats.penalty[-1] if stats.penalty else None,
                   'duration_seconds': time.monotonic() - start}
@@ -364,10 +397,11 @@ def run(label):
         phase(r, 'complete', run_elapsed=f'{result["duration_seconds"] / 60:.1f} min'); r.finish()
 
 
-def budget():
-    """From the smoke run's rates, the anchor size (multiple of 64) whose epochs fit the anchors' budget."""
-    prep = REPORT_ROOT / 'preparation'; smoke = REPORT_ROOT / 'S'
-    stats = json.loads((smoke / 'training_stats.json').read_text()); result = json.loads((smoke / 'result.json').read_text())
+def budget(smoke='S', target='A16', hours=None):
+    """From a smoke run's rates, the size of `target` (a multiple of 64) whose epochs fit its budget (or `hours`); written to
+    preparation/calibration_<target>.json (calibration.json for the A16 anchor, as before)."""
+    prep = REPORT_ROOT / 'preparation'; run_folder = REPORT_ROOT / smoke
+    stats = json.loads((run_folder / 'training_stats.json').read_text()); result = json.loads((run_folder / 'result.json').read_text())
     arm_s = result['arm']; items = result['train_items']; held = result['held_items'] + result['wiki_items']; epochs = stats['epochs']
     panels = round(1 / arm_s['reporting_interval'])
     train_s = sum(e['training_seconds'] for e in epochs) / (items * len(epochs))
@@ -378,19 +412,22 @@ def budget():
     reference = result.get('no_context_reference') or {}
     reference_s = reference.get('seconds', 0) / max(1, reference.get('examples', 1))
     baseline_s = stats['baseline_seconds']; load_s = result['duration_seconds'] - stats['duration_s'] - 60
-    available = len(json.loads((prep / 'material.json').read_text())['train'])
-    anchor = ARMS['A16']; panels_a = round(1 / anchor['reporting_interval'])
+    anchor = arms()[target]; panels_a = round(1 / anchor['reporting_interval'])
+    material = json.loads((prep / anchor['material']).read_text())
+    available = len(material['train'])
+    held_a = len(material['held']) if not anchor['held_per_source'] else sum(min(anchor['held_per_source'], n) for n in collections.Counter(p['source'] for p in material['held']).values())
+    wiki_a = len(material['wiki']); budget_seconds = int(hours * 3600) if hours else anchor['budget_seconds']
     def total(n):
         prep_s = load_s + n * reference_s + baseline_s
-        epoch_s = n * train_s + panels_a * held * panel_s + panels_a * result['held_items'] * validation_s + anchor['completion_samples'] * sample_s + checkpoint_s
+        epoch_s = n * train_s + panels_a * (held_a + wiki_a) * panel_s + panels_a * held_a * validation_s + anchor['completion_samples'] * sample_s + checkpoint_s
         return 1.15 * (prep_s + anchor['epochs'] * epoch_s + anchor['final_train_subset'] * panel_s + 120)
-    fitting = [n for n in range(64, min(available, 200000) + 1, 64) if total(n) <= anchor['budget_seconds']]
-    if not fitting: raise RuntimeError(f'No size fits {anchor["budget_seconds"]} s: 64 items would take {total(64):.0f} s')
+    fitting = [n for n in range(64, min(available, 400000) + 1, 64) if total(n) <= budget_seconds]
+    if not fitting: raise RuntimeError(f'No size fits {budget_seconds} s: 64 items would take {total(64):.0f} s')
     size = fitting[-1]
-    record = {'train_items': size, 'prepared_items': available, 'estimated_seconds': round(total(size)), 'budget_seconds': anchor['budget_seconds'],
+    record = {'train_items': size, 'prepared_items': available, 'estimated_seconds': round(total(size)), 'budget_seconds': budget_seconds, 'smoke': smoke, 'target': target,
               'rates': {'train_s_per_item': train_s, 'panel_s_per_item': panel_s, 'validation_s_per_item': validation_s, 'sample_s_per_item': sample_s,
                         'reference_s_per_item': reference_s, 'checkpoint_s': checkpoint_s, 'load_s': load_s, 'baseline_s': baseline_s}}
-    write_json(prep / 'calibration.json', record); print(json.dumps(record, indent=2))
+    write_json(prep / ('calibration.json' if target == 'A16' else f'calibration_{target}.json'), record); print(json.dumps(record, indent=2))
 
 
 def overview():
@@ -406,9 +443,11 @@ def overview():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('command', choices=['prepare', 'run', 'budget', 'overview']); parser.add_argument('--run')
+    parser.add_argument('--smoke', default='S'); parser.add_argument('--target', default='A16'); parser.add_argument('--hours', type=float, default=None)
     args = parser.parse_args()
     try:
         if args.command == 'run': run(args.run)
+        elif args.command == 'budget': budget(args.smoke, args.target, args.hours)
         else: globals()[args.command]()
     except BaseException as error:
         folder = REPORT_ROOT / (args.run if args.command == 'run' else 'preparation')

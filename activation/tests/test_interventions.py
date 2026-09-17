@@ -8,6 +8,7 @@ Reference data under `data/`: a tiny Qwen3 reader, and outputs, keys and a `modu
 before deep inputs existed (tag ac-recon-20260916T132825Z), so zero mode is checked against what it replaced.
 """
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -34,19 +35,19 @@ torch.set_num_threads(2)
 
 
 # --------------------------------------------------------------------------------------------------- fixtures
-def tiny_hybrid(folder: Path) -> Path:
+def tiny_hybrid(folder: Path, hidden: int = 32, seed: int = 111) -> Path:
     """A 6-layer Qwen3.5 text model (full attention every third block: layers 2 and 5) with the tiny Qwen3 tokenizer."""
     from transformers import AutoTokenizer, Qwen3_5ForCausalLM, Qwen3_5TextConfig
     if (folder / "model.safetensors").is_file():
         return folder
     tokenizer = AutoTokenizer.from_pretrained(str(TINY_QWEN3))
-    config = Qwen3_5TextConfig(vocab_size=len(tokenizer), num_hidden_layers=6, full_attention_interval=3, hidden_size=32, intermediate_size=64,
+    config = Qwen3_5TextConfig(vocab_size=len(tokenizer), num_hidden_layers=6, full_attention_interval=3, hidden_size=hidden, intermediate_size=2 * hidden,
                                num_attention_heads=4, num_key_value_heads=2, head_dim=8, linear_num_value_heads=4, linear_num_key_heads=2,
                                linear_key_head_dim=8, linear_value_head_dim=8, linear_conv_kernel_dim=4, max_position_embeddings=512,
                                pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id, tie_word_embeddings=False)
     config._attn_implementation = "sdpa"
     with torch.random.fork_rng(devices=[]):
-        torch.manual_seed(111)
+        torch.manual_seed(seed)
         model = Qwen3_5ForCausalLM(config)
     folder.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(folder)
@@ -55,15 +56,18 @@ def tiny_hybrid(folder: Path) -> Path:
 
 
 def build(tmp_path: Path, model_dir: Path, *, frequency: int = 0, add_last: bool = True, seed: int = 1234,
-          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None, layers: list[int] | None = None):
+          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None, layers: list[int] | None = None, side_dir: Path | None = None):
     """The shared/reader base with a rank-4 adapter and a tiny AC model on top, in the same construction order every time
-    (seeded: the AC modules draw first, the adapters draw at injection)."""
+    (seeded: the AC modules draw first, the adapters draw at injection). `side_dir`: a separate (narrower) encoder base."""
     os.environ["ACTIVATION_SYNC_ROOT"] = str(tmp_path)
     torch.manual_seed(seed)
-    h = HarnessRuntime(HarnessRuntimeConfig(model_configs={"reader": ModelConfig("reader", str(model_dir))}))
+    models = {"reader": ModelConfig("reader", str(model_dir))}
+    if side_dir is not None:
+        models["side"] = ModelConfig("side", str(side_dir))
+    h = HarnessRuntime(HarnessRuntimeConfig(model_configs=models))
     h.module_manager.register_lora("reader_lora", "reader", rank=4, dropout=0.0, checkpoint_path=reader_checkpoint)
     ac = h.module_manager.register_ac_model(ActivationContextModelConfig(
-        "ac_private", "reader", "side_lora", "reader", "reader_lora", mixer_heads=4, mixer_window=4, side_lora_rank=4, max_view_rows=8,
+        "ac_private", "side" if side_dir is not None else "reader", "side_lora", "reader", "reader_lora", mixer_heads=4, mixer_window=4, side_lora_rank=4, max_view_rows=8,
         encode_batch_max_tokens=2048, checkpoint_path=ac_checkpoint, intervention_frequency=frequency, add_last_layer_intervention=add_last,
         intervention_layers=layers))
     h.module_manager.ensure_lora("reader_lora")
@@ -577,3 +581,30 @@ def test_reporter_takes_deep_trace_entries(tmp_path):
     assert set(delta_series) == {"layer 7"} and delta_series["layer 7"]["y"] == [0.01] * 4, "None values are skipped, the ratio is plotted"
     attention_series = {series["name"]: series for series in reporter.widgets["intervention_attention"]["series"]}
     assert set(attention_series) == {"layer 7", "layer 31"} and attention_series["layer 31"]["y"] == [0.01] * 4
+
+
+def test_unequal_widths_separate_encoder_base(tmp_path):
+    """A narrower encoder base (16 wide) feeding a 32-wide reader: the row head has no identity skip, the deep path trains,
+    the checkpoint round-trips, and a checkpoint of the shared-base model refuses to load (different bases and widths)."""
+    reader_dir = tiny_hybrid(tmp_path / "reader_model"); side_dir = tiny_hybrid(tmp_path / "side_model", hidden=16, seed=222)
+    h, ac = build(tmp_path / "run", reader_dir, frequency=-1, side_dir=side_dir)
+    assert (ac.d_side, ac.d_target) == (16, 32) and not ac.modules.target_head.skip and ac.intervention_layers == [2, 5]
+    assert ac.side.model is not ac.target.model
+    output = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
+    assert output.input_embeds.shape[-1] == 32 and all(delta.shape[-1] == 32 for delta in output.layer_inputs.values()) and set(output.layer_inputs) == {2, 5}
+    trainer, items, examples, device = trainer_and_examples(h, ac)
+    open_heads(ac); open_attention(ac)
+    before = intervention_state(ac); shared_before = shared_state(ac)
+    stats = trainer.train("ac_private", items, reporting_data=items[:1])
+    assert stats.epochs and all(math.isfinite(value) for value in stats.loss)
+    after = intervention_state(ac)
+    assert any(not torch.equal(before[name], after[name]) for name in before), "the intervention modules trained"
+    assert any(not torch.equal(shared_before[name], shared_state(ac)[name]) for name in shared_before), "the shared modules trained"
+    folder = ac.save(str(tmp_path / "ckpt"))
+    h2, twin = build(tmp_path / "twin", reader_dir, frequency=-1, side_dir=side_dir, seed=99)
+    twin.load(folder)
+    assert all(torch.equal(tensor, twin.modules.state_dict()[name]) for name, tensor in ac.modules.state_dict().items())
+    assert torch.allclose(twin.encode_batch([fixed_request(twin)], with_layers=True)[0].input_embeds, ac.encode_batch([fixed_request(ac)], with_layers=True)[0].input_embeds, atol=1e-5)
+    h3, shared = build(tmp_path / "shared", reader_dir, frequency=-1)
+    with pytest.raises(ValueError, match="identities or widths"):
+        shared.load(folder)
