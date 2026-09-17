@@ -44,8 +44,8 @@ def validate_catalog(profile: dict) -> bool:
     tuners = inventory()
     try:
         records = profile["records"]
-        if {record["kernel"] for record in records} != set(tuners):
-            return False
+        if {record["kernel"] for record in records} != set(tuners) - set(profile.get("unused_kernels", [])):
+            return False        # every Triton tuner this platform runs has records; TileLang-routed ones (Hopper) are listed as unused
         return all(record["config"] in [config_values(c) for c in tuners[record["kernel"]].configs]
                    and record["semantic"] and record["key"] == digest(record["semantic"]) for record in records)
     except (KeyError, TypeError, ValueError):

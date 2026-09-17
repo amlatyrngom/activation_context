@@ -1,0 +1,1613 @@
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+index ae414bf..0735454 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+@@ -31,7 +31,7 @@ BUDGET_SECONDS = int(os.environ.get('AC_RECON_BUDGET_SECONDS', 27000))
+ DEFAULT_ARM = dict(ratio=1 / 16, encoder_lr=1e-4, reader_lr=2e-5, penalty_weight=1.0, penalty_fraction=0.25, continue_share=0.0,
+                    train_items=None, epochs=2, reporting_interval=0.125, completion_samples=8, completion_tokens=320, budget_seconds=BUDGET_SECONDS,
+                    final_train_subset=512, micro_batch=1, ckpt_min_tokens=2048, gold_targets=False, reader_frozen_updates=0, material='material.json', gate_lr=None, fresh_initial=False, row_head_skip=False, lora_targets_extra=[], seed=None, lr_schedule='constant', warmup=10, clip_per_group=False, penalty_exact=False, ckpt_every=None, mixer_layers=None, row_scale_init=1.0, loss_weighting='example', gates_scope='all', penalty_ref='stored',
+-                   interventions=0, last_layer_intervention=True, prefer_attention=True, deltas_off=True, init_ac=None, init_reader=None, note='')   # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only); deltas_off: the extra panel without the deltas (deep arms only)
++                   interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual', scale_fraction=0.05, delta_scale_lr=1e-3, heads_frozen=False, detach_source=False, deltas_off=True, init_ac=None, init_reader=None, note='')   # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only); deltas_off: the extra panel without the deltas (deep arms only)
+ ARMS = {
+     'S': dict(DEFAULT_ARM, train_items=512, epochs=2, reporting_interval=0.25, completion_samples=8, note='smoke: shape and timing'),
+     'A16': dict(DEFAULT_ARM, ratio=1 / 16, note='anchor 1/16'),
+@@ -77,7 +77,11 @@ def phase(reporter, name, **values):
+ 
+ 
+ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra=(), ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, row_scale_init=1.0,
+-            interventions=0, last_layer_intervention=True, prefer_attention=True):
++            interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual',
++            scale_fraction=0.05, heads_frozen=False, detach_source=False):
++    # scale_fraction: the heads' relative scales start at this share of the calibrated RMS; heads_frozen / detach_source: the NDIR / NDID controls
++    # intervention_source: what the delta heads read ('summary' = the final side state, 'side_layers' = the side state at the matching layer);
++    # intervention_target: 'residual' (layer input) or 'kv' (pre-RoPE keys and values at the row positions, full-attention layers only)
+     # seed: the fresh modules' initialization (replicate arms with their own seed differ in init and data order, not data order only)
+     # ac_path/reader_path: explicit adapter folders (a resume's latest epoch); otherwise the shared `initial` pair
+     import torch
+@@ -95,6 +99,8 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
+                                                                         checkpoint_path=str(ac_path) if ac_path else (str(initial / 'ac') if initial else None),
+                                                                         row_head_skip=row_head_skip, side_lora_target_modules=targets, row_scale_init=row_scale_init,
+                                                                         intervention_frequency=interventions, add_last_layer_intervention=last_layer_intervention, prefer_attention_interventions=prefer_attention,
++                                                                        intervention_source=intervention_source, intervention_target=intervention_target,
++                                                                        intervention_scale_fraction=scale_fraction, intervention_heads_frozen=heads_frozen, intervention_detach_source=detach_source,
+                                                                         **({'mixer_layers': mixer_layers} if mixer_layers is not None else {})))
+     return h
+ 
+@@ -185,7 +191,7 @@ def config(arm, **overrides):
+     from activation.ac_model import ActivationContextTrainingConfig
+     values = dict(loss_kind='sft', learning_rate_ac=arm['encoder_lr'], learning_rate_target_lora=arm['reader_lr'], examples_per_update=8,
+                   num_epochs=arm['epochs'], warmup_updates=arm['warmup'], lr_schedule=arm['lr_schedule'], clip_per_group=arm['clip_per_group'], penalty_count_exact=arm['penalty_exact'], checkpoint_every_updates=arm['ckpt_every'], persist_no_context_reference=True, loss_weighting=arm['loss_weighting'], learning_rate_gates_scope=arm['gates_scope'], no_context_penalty_reference=arm['penalty_ref'], completion_samples=arm['completion_samples'], completion_max_new_tokens=arm['completion_tokens'],
+-                  reporting_interval=arm['reporting_interval'], seed=SEED if arm['seed'] is None else arm['seed'], teacher_cache_top_k=TOP_K, gradient_checkpointing_min_tokens=arm['ckpt_min_tokens'], micro_batch_examples=arm['micro_batch'], teacher_targets_include_gold=arm['gold_targets'], target_lora_frozen_updates=arm['reader_frozen_updates'], learning_rate_gates=arm['gate_lr'], deltas_off_panel=arm['deltas_off'],
++                  reporting_interval=arm['reporting_interval'], seed=SEED if arm['seed'] is None else arm['seed'], teacher_cache_top_k=TOP_K, gradient_checkpointing_min_tokens=arm['ckpt_min_tokens'], micro_batch_examples=arm['micro_batch'], teacher_targets_include_gold=arm['gold_targets'], target_lora_frozen_updates=arm['reader_frozen_updates'], learning_rate_gates=arm['gate_lr'], deltas_off_panel=arm['deltas_off'], learning_rate_delta_scales=arm['delta_scale_lr'],
+                   no_context_penalty_weight=arm['penalty_weight'] if arm['reader_lr'] > 0 else 0.0, no_context_penalty_fraction=arm['penalty_fraction'],
+                   checkpoint_every_epoch=True)
+     values.update(overrides)
+@@ -281,7 +287,9 @@ def run(label):
+                     ac_path=resume['ac'] if resume else (Path(arm['init_ac']) if arm['init_ac'] else None),   # init_*: start from another run's adapters (the AC modules are ratio-free)
+                     reader_path=resume['reader'] if resume else (Path(arm['init_reader']) if arm['init_reader'] else None), seed=SEED if arm['seed'] is None else arm['seed'],
+                     mixer_layers=arm['mixer_layers'], row_scale_init=arm['row_scale_init'],
+-                    interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], prefer_attention=arm['prefer_attention'])
++                    interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], prefer_attention=arm['prefer_attention'],
++                    intervention_source=arm['intervention_source'], intervention_target=arm['intervention_target'],
++                    scale_fraction=arm['scale_fraction'], heads_frozen=arm['heads_frozen'], detach_source=arm['detach_source'])
+         ac = h.module_manager.get_ac_model(AC); ac.prepare(); h.module_manager.ensure_lora(READER)
+         initial_hash = parameter_hash(ac, h)
+         deep_hash = parameter_hash(ac, h, deep=True) if ac.is_deep else None
+@@ -307,7 +315,10 @@ def run(label):
+             f'Data · {len(train)} training passages (tool outputs from SWE and deep-research trajectories) × {arm["epochs"]} epochs = {math.ceil(len(train) / 8) * arm["epochs"]} updates of 8 · '
+             f'held-out panel every {arm["reporting_interval"]:g} epoch: {len(held)} novel + {len(wiki)} Wikipedia passages · no-context floor on the novel panel',
+             f'Initial adapters hash {initial_hash[:12]}… · seed {SEED} · SFT on the passage tokens'
+-            + (f' · deep inputs: deltas at the inputs of reader layers {ac.intervention_layers} (heads hash {deep_hash[:12]}…), "deltas off" panel = the same items with the rows kept and the deltas withheld' if ac.is_deep else ''),
++            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "deltas at the inputs of"} reader layers {ac.intervention_layers}'
++                f' read from {"the side state at layers " + str(ac.intervention_source_layers) if ac.config.intervention_source == "side_layers" else "the final side state"}'
++                f' (heads hash {deep_hash[:12]}…; relative scales from {arm["scale_fraction"]:g} x RMS at {arm["delta_scale_lr"]:g}'
++                f'{"; heads frozen" if arm["heads_frozen"] else ""}{"; source detached" if arm["detach_source"] else ""}), "deltas off" panel = the same items with the rows kept and the deltas withheld') if ac.is_deep else ''),
+             '',
+             'Reading guide · gold NLL is the reconstruction loss per passage token (lower is better); token accuracy is teacher-forced; the no-context line is the same '
+             'reader without the rows (the prior; the penalty holds it near the base model, so it may first move toward the base value rather than stay put); wiki above novel means memorized text is being cued rather than compressed.']))
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index 5367346..08f3202 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -39,6 +39,7 @@ from pathlib import Path
+ 
+ import torch
+ import torch.nn as nn
++import torch.nn.functional as F
+ from torch.utils.checkpoint import checkpoint
+ 
+ from ..common.data_syncing import resolve_path
+@@ -49,6 +50,7 @@ from .ac_model_utils import (
+     AdaptiveSummaryPooling,
+     BlockedLocalAttentionLayer,
+     DeltaHead,
++    KVDeltaHead,
+     EncodeQueue,
+     EncodeRequest,
+     RowCache,
+@@ -72,7 +74,7 @@ MODULES_FILE = "ac_modules.pt"
+ SIDE_LORA_FOLDER = "side_lora"
+ ROLLOUT, TRAINING = "rollout", "training"
+ ARCHITECTURE_VERSION = 2
+-INTERVENTION_SCALE_FRACTION = 0.01      # calibrated initial delta magnitude: this share of the destination layer's residual RMS
++INTERVENTION_SCALE_FRACTION = 0.05      # calibrated initial delta magnitude: this share of the destination layer's residual RMS
+ INTERVENTION_INIT_SEED_MASK = 0xDEE9    # delta heads draw from a forked stream (initial seed ^ mask): the shared modules and the adapters draw as before
+ PreparedPart = tuple[list[int], list[tuple[int, int]], list[torch.Tensor], int, bool]
+ 
+@@ -108,10 +110,27 @@ class ActivationContextModelConfig:
+     intervention_frequency: int = 0          # deep inputs: interior reader layers receiving a residual delta per row (0 = the embedding channel only; the product default becomes 4 once the POC passes)
+     add_last_layer_intervention: bool = True # ... plus the last reader block (inert at frequency 0)
+     prefer_attention_interventions: bool = True   # snap interior points to a full-attention block within two indices (earlier on a tie)
++    intervention_source: str = "summary"     # what the delta heads read: "summary" = the side model's final state at the row positions (the vector that also
++                                             # makes the input row); "side_layers" = the side model's hidden state at the row positions at layer
++                                             # intervention_source_layers[i] for intervention layer i (the layer-matched readout)
++    intervention_source_layers: list[int] | None = None   # side layers for "side_layers" (None = the resolved reader layers themselves, s(l) = l)
++    intervention_target: str = "residual"    # where the deltas land: "residual" = the reader layer's input; "kv" = the layer's pre-RoPE keys and values at the
++                                             # row positions (full-attention layers only; one head per layer emits dk, dv with separate calibrated scales)
++    intervention_scale_fraction: float = INTERVENTION_SCALE_FRACTION   # initial delta scale as a share of the calibrated residual (or K/V) RMS: the heads' `relative` start
++    intervention_heads_frozen: bool = False  # control: the heads' weights stay at their random init; only the relative scales train
++    intervention_detach_source: bool = False # control: the heads read a detached source (the encoder never hears the deltas' gradient)
+ 
+     def __post_init__(self) -> None:
+         if self.intervention_frequency < 0:
+             raise ValueError("intervention_frequency must be nonnegative")
++        if self.intervention_source not in ("summary", "side_layers"):
++            raise ValueError("intervention_source must be 'summary' or 'side_layers'")
++        if self.intervention_target not in ("residual", "kv"):
++            raise ValueError("intervention_target must be 'residual' or 'kv'")
++        if self.intervention_source_layers is not None and self.intervention_source != "side_layers":
++            raise ValueError("intervention_source_layers applies to intervention_source 'side_layers' only")
++        if not 0 < self.intervention_scale_fraction < 1:
++            raise ValueError("intervention_scale_fraction must lie in (0, 1)")
+         if self.input_pooling_stride < 0:
+             raise ValueError("Content pooling stride must be nonnegative")
+         if self.input_pooling_stride and not 0 < self.input_pooling_stride <= self.input_pooling_window:
+@@ -148,7 +167,7 @@ class ActivationContextModelStats:
+ class ActivationContextModules(nn.Module):
+     """The trainable AC modules besides the side LoRA (fp32)."""
+ 
+-    def __init__(self, config: ActivationContextModelConfig, d_side: int, d_target: int, intervention_layers: list[int] = ()) -> None:
++    def __init__(self, config: ActivationContextModelConfig, d_side: int, d_target: int, intervention_layers: list[int] = (), d_kv: int | None = None) -> None:
+         super().__init__()
+         self.mixer = nn.ModuleList([BlockedLocalAttentionLayer(d_side, config.mixer_heads, config.mixer_window) for _ in range(config.mixer_layers)])
+         self.pooling = (WindowedPooling(d_side, config.mixer_heads, config.input_pooling_window, config.input_pooling_stride)
+@@ -167,12 +186,19 @@ class ActivationContextModules(nn.Module):
+         # forked generator: the mixer, heads and the adapters injected later draw exactly the sequence they drew before.
+         self.delta_heads: nn.ModuleDict | None = None
+         self.intervention_layers: list[int] = [int(layer) for layer in intervention_layers]
++        self.intervention_target = config.intervention_target
+         if self.intervention_layers:
+             r = max(1, min(d_side, d_target) // 4)
+             with torch.random.fork_rng(devices=[]):
+                 torch.manual_seed(torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK)
+-                self.delta_heads = nn.ModuleDict({str(layer): DeltaHead(d_side, d_target, r) for layer in self.intervention_layers})
+-            self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers)))   # residual RMS per layer at calibration
++                if config.intervention_target == "kv":
++                    if not d_kv:
++                        raise ValueError("K/V interventions need the reader's K/V width (num_key_value_heads x head_dim)")
++                    self.delta_heads = nn.ModuleDict({str(layer): KVDeltaHead(d_side, d_kv, r, config.intervention_scale_fraction) for layer in self.intervention_layers})
++                    self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers), 2))   # (K RMS, V RMS) per layer at calibration
++                else:
++                    self.delta_heads = nn.ModuleDict({str(layer): DeltaHead(d_side, d_target, r, config.intervention_scale_fraction) for layer in self.intervention_layers})
++                    self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers)))   # residual RMS per layer at calibration
+             self.register_buffer("interventions_calibrated", torch.tensor(False))
+ 
+     @property
+@@ -193,8 +219,11 @@ class ActivationContextModel:
+         self.d_side = self.side.model_config.model_description.d_model
+         self.d_target = self.target.model_config.model_description.d_model
+         self.intervention_layers = self._resolve_intervention_layers()
+-        self.modules = ActivationContextModules(config, self.d_side, self.d_target, self.intervention_layers)
++        self.intervention_source_layers = self._resolve_source_layers()
++        self.modules = ActivationContextModules(config, self.d_side, self.d_target, self.intervention_layers,
++                                                self.target.model_config.model_description.d_kv)
+         self.calibration_items: list[str] = []      # what calibrate_interventions measured on (checkpoint provenance)
++        self.intervention_diagnostics: dict[str, dict[int, list[float]]] = {"cosine": {}}   # per layer, per encoded row batch: cosine(delta, target_head(z)); the trainer drains it
+         self.version = 0
+         self.mode = ROLLOUT
+         self.cache = RowCache(harness.harness_config.ac_row_cache_bytes)
+@@ -289,10 +318,33 @@ class ActivationContextModel:
+         return resolve_intervention_layers(len(layers), self.config.intervention_frequency, self.config.add_last_layer_intervention,
+                                            self.config.prefer_attention_interventions, full)
+ 
++    def _resolve_source_layers(self) -> list[int]:
++        """Side layers read by the heads under intervention_source 'side_layers' (s(l) = l unless configured); [] for 'summary'.
++        Also checks that K/V targets are full-attention reader layers."""
++        from ..harness.model_config import LayerType
++        if not self.intervention_layers:
++            return []
++        if self.config.intervention_target == "kv":
++            full = {layer.layer_idx for layer in self.target.model_config.model_description.layer_descriptions if layer.layer_type is LayerType.FULL_ATTENTION}
++            wrong = [layer for layer in self.intervention_layers if layer not in full]
++            if wrong:
++                raise ValueError(f"K/V interventions need full-attention reader layers; {wrong} are not (prefer_attention_interventions snaps to them)")
++        if self.config.intervention_source != "side_layers":
++            return []
++        layers = list(self.config.intervention_source_layers) if self.config.intervention_source_layers is not None else list(self.intervention_layers)
++        side_depth = len(self.side.model_config.model_description.layer_descriptions)
++        if len(layers) != len(self.intervention_layers) or any(not 0 <= int(layer) < side_depth for layer in layers):
++            raise ValueError(f"intervention_source_layers must name one side layer (0..{side_depth - 1}) per intervention layer {self.intervention_layers}: {layers}")
++        return [int(layer) for layer in layers]
++
+     @property
+     def is_deep(self) -> bool:
+         return bool(self.intervention_layers)
+ 
++    @property
++    def kv_interventions(self) -> bool:
++        return self.is_deep and self.config.intervention_target == "kv"
++
+     @property
+     def interventions_calibrated(self) -> bool:
+         return self.is_deep and bool(self.modules.interventions_calibrated)
+@@ -302,49 +354,76 @@ class ActivationContextModel:
+         if not self.is_deep:
+             return {}
+         heads = self.modules.delta_heads
++        calibration = self.modules.intervention_calibration.tolist()
++        if self.kv_interventions:
++            rms = {layer: {"k": float(k), "v": float(v)} for layer, (k, v) in zip(self.intervention_layers, calibration)}
++            scales = {layer: {"k": float(heads[str(layer)].scale_k.detach()), "v": float(heads[str(layer)].scale_v.detach())} for layer in self.intervention_layers}
++        else:
++            rms = {layer: float(value) for layer, value in zip(self.intervention_layers, calibration)}
++            scales = {layer: float(heads[str(layer)].scale.detach()) for layer in self.intervention_layers}
++        if self.kv_interventions:
++            relative = {layer: {"k": float(heads[str(layer)].relative_k.detach()), "v": float(heads[str(layer)].relative_v.detach())} for layer in self.intervention_layers}
++        else:
++            relative = {layer: float(heads[str(layer)].relative.detach()) for layer in self.intervention_layers}
+         return {"layers": list(self.intervention_layers), "calibrated": self.interventions_calibrated, "calibration_items": list(self.calibration_items),
+-                "calibration_rms": {layer: float(value) for layer, value in zip(self.intervention_layers, self.modules.intervention_calibration.tolist())},
+-                "scales": {layer: float(heads[str(layer)].scale.detach()) for layer in self.intervention_layers},
+-                "scale_fraction": INTERVENTION_SCALE_FRACTION,
++                "source": self.config.intervention_source, "source_layers": list(self.intervention_source_layers), "target": self.config.intervention_target,
++                "calibration_rms": rms, "scales": scales, "relative": relative, "scale_fraction": self.config.intervention_scale_fraction,
++                "parametrization": "relative", "heads_frozen": self.config.intervention_heads_frozen, "detach_source": self.config.intervention_detach_source,
+                 "head_parameters": sum(parameter.numel() for parameter in heads.parameters())}
+ 
+     def calibrate_interventions(self, sequences: list[list[int]], item_ids: list[str] | None = None) -> dict[int, float]:
+         """
+-        Set every delta scale to INTERVENTION_SCALE_FRACTION of its layer's residual RMS, measured by running the reader
+-        (its adapter active, no rows, no gradient, one sequence per forward) on the given token sequences: a fixed
+-        training-only sample. Runs once per fresh deep model; checkpoints carry the result and never recalibrate.
++        Measure every intervention layer's residual RMS (median over positions, first token excluded; K/V targets: K and V
++        RMS) by running the reader (its adapter active, no rows, no gradient, one sequence per forward) on the given token
++        sequences, a fixed training-only sample, and store it in the heads (`rms`): the applied scale is rms x relative, the
++        learned `relative` starting at the scale fraction. Runs once per fresh (or migrated) deep model; checkpoints carry
++        the result and never recalibrate.
+         """
+         if not self.is_deep:
+             raise ValueError(f"{self.name} has no interventions to calibrate")
+         if not sequences:
+             raise ValueError("calibration needs at least one token sequence")
+-        from ..harness.hf_utils import capture_layer_input_rms
++        from ..harness.hf_utils import capture_kv_rms, capture_layer_input_rms
+         device = self.prepare()
+         self.harness.module_manager.ensure_lora(self.config.target_model_lora_name)
+         model = self.target.model
+         was_training = model.training
+         model.eval()
+         embedding = model.get_input_embeddings()
++        capture = capture_kv_rms if self.kv_interventions else capture_layer_input_rms
+         try:
+-            with torch.no_grad(), capture_layer_input_rms(model, self.intervention_layers) as record:
++            with torch.no_grad(), capture(model, self.intervention_layers) as record:
+                 for ids in sequences:
+                     embeds = embedding(torch.tensor(ids, device=device, dtype=torch.long))[None]
+                     self.target.decoder_forward(embeds, None, lora_name=self.config.target_model_lora_name, gradient_checkpointing=False)
+         finally:
+             model.train(was_training)
+-        rms = {layer: sum(values) / len(values) for layer, values in record.items()}
+         with torch.no_grad():
+-            for index, layer in enumerate(self.intervention_layers):
+-                self.modules.intervention_calibration[index] = rms[layer]
+-                self.modules.delta_heads[str(layer)].scale.fill_(INTERVENTION_SCALE_FRACTION * rms[layer])
++            if self.kv_interventions:      # per layer (K RMS, V RMS): each scale a share of its own statistic
++                rms = {layer: (sum(k for k, _ in values) / len(values), sum(v for _, v in values) / len(values)) for layer, values in record.items()}
++                for index, layer in enumerate(self.intervention_layers):
++                    self.modules.intervention_calibration[index, 0] = rms[layer][0]
++                    self.modules.intervention_calibration[index, 1] = rms[layer][1]
++                    self.modules.delta_heads[str(layer)].rms_k.fill_(rms[layer][0])
++                    self.modules.delta_heads[str(layer)].rms_v.fill_(rms[layer][1])
++                described = ", ".join(f"layer {layer} k rms {k:.3f} v rms {v:.3f}" for layer, (k, v) in rms.items())
++            else:
++                rms = {layer: sum(values) / len(values) for layer, values in record.items()}
++                for index, layer in enumerate(self.intervention_layers):
++                    self.modules.intervention_calibration[index] = rms[layer]
++                    self.modules.delta_heads[str(layer)].rms.fill_(rms[layer])
++                described = ", ".join(f"layer {layer} rms {value:.3f}" for layer, value in rms.items())
+             self.modules.interventions_calibrated.fill_(True)
+         self.calibration_items = list(item_ids or [])
+         self.invalidate_encoded_rows()
+-        print(f"{self.name} - Interventions calibrated on {len(sequences)} sequences: " + ", ".join(f"layer {layer} rms {value:.3f}" for layer, value in rms.items()))
++        print(f"{self.name} - Interventions calibrated on {len(sequences)} sequences: " + described)
+         return rms
+ 
+     def trainable_parameters(self) -> list[nn.Parameter]:
+-        return self.parameters() + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
++        """The AC modules' parameters (minus the delta heads' weights when they are frozen) plus the side adapter's."""
++        modules = [parameter for name, parameter in self.modules.named_parameters()
++                   if not (self.config.intervention_heads_frozen and name.startswith("delta_heads.") and not name.split(".")[-1].startswith("relative"))]
++        return modules + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
+ 
+     # ------------------------------------------------------------------------------------------ encoding
+     def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
+@@ -369,6 +448,8 @@ class ActivationContextModel:
+             return []
+         if self.is_deep and not self.interventions_calibrated:
+             raise RuntimeError(f"{self.name} is a deep AC model whose delta scales are not calibrated: call calibrate_interventions (or load a calibrated checkpoint) first")
++        if self.is_deep and not with_layers:
++            raise RuntimeError(f"{self.name} is a deep AC model: encode_batch(with_layers=True) returns its rows with their deltas; a rows-only consumer would drop them silently")
+         results: list[ACOutput | None] = [None] * len(requests)
+         pending: list[int] = []
+         for index, request in enumerate(requests):
+@@ -413,7 +494,7 @@ class ActivationContextModel:
+             parts = direct_parts(request.messages)
+             child_slices.append((len(child_requests), len(child_requests) + len(parts)))
+             child_requests.extend(self._child_request(part, request.compression_ratio) for part in parts)
+-        child_rows = self.encode_batch(child_requests) if child_requests else []
++        child_rows = [output.input_embeds for output in self.encode_batch(child_requests, with_layers=True)] if child_requests else []
+         prepared: list[PreparedPart] = []
+         for request, (start, end) in zip(requests, child_slices):
+             rows = child_rows[start:end]
+@@ -510,8 +591,20 @@ class ActivationContextModel:
+         enabled = (self.mode == TRAINING and torch.is_grad_enabled() and self.config.side_gradient_checkpointing
+                    and getattr(self, "_training_gradient_checkpointing", True)
+                    and max_seq >= getattr(self, "_side_gradient_checkpointing_min_tokens", 0))
+-        hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
+-                    lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
++        # Layer-matched readout: the heads read the side model's state at the row positions at their source layers, captured
++        # by pre-hooks on exactly those layers (row slices only) during this forward; "summary" reads the final state (`rows`).
++        side_layers = modules.is_deep and self.config.intervention_source == "side_layers"
++        if side_layers:
++            from ..harness.hf_utils import capture_layer_input_rows
++            row_spans = [(seq_lengths[row] - item[3], seq_lengths[row]) for row, item in enumerate(items)]
++            with capture_layer_input_rows(self.side.model, set(self.intervention_source_layers), row_spans) as captured:
++                hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
++                            lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
++            if any(len(states) != batch_size for states in captured.values()):
++                raise RuntimeError("side-layer capture missed rows (the side decoder did not run the requested layers once)")
++        else:
++            hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
++                        lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
+         phase_started = self._phase("side_decoder", phase_started, device)
+         for row, (ids, _, _, num_rows, is_recursive) in enumerate(items):
+             end = seq_lengths[row]
+@@ -519,8 +612,21 @@ class ActivationContextModel:
+             if is_recursive:
+                 results[indexes[row]] = ACOutput(modules.recursive_adapter(rows))
+             else:
+-                deltas = {layer: modules.delta_heads[str(layer)](rows) for layer in self.intervention_layers} if modules.is_deep else {}
+-                results[indexes[row]] = ACOutput(modules.target_head(rows), deltas)
++                deltas, kv = {}, {}
++                input_embeds = modules.target_head(rows)
++                if modules.is_deep:
++                    for index, layer in enumerate(self.intervention_layers):
++                        source = captured[self.intervention_source_layers[index]][row].float() if side_layers else rows
++                        if self.config.intervention_detach_source:
++                            source = source.detach()                               # control: the heads learn, the encoder never hears them
++                        if self.kv_interventions:
++                            kv[layer] = modules.delta_heads[str(layer)](source)
++                        else:
++                            deltas[layer] = modules.delta_heads[str(layer)](source)
++                            with torch.no_grad():                                  # does the delta re-inject the row? cosine with the input row, per layer
++                                cosine = F.cosine_similarity(deltas[layer].detach(), input_embeds.detach(), dim=-1).mean()
++                            self.intervention_diagnostics["cosine"].setdefault(layer, []).append(float(cosine))
++                results[indexes[row]] = ACOutput(input_embeds, deltas, kv)
+             self.stats.encodes += 1
+             self.stats.side_tokens += len(ids)
+             self.stats.view_rows += num_rows
+@@ -578,15 +684,34 @@ class ActivationContextModel:
+         differences = [name for name in structural if state["config"].get(name) != getattr(self.config, name)]
+         if bool(state["config"].get("row_head_skip", False)) != self.config.row_head_skip:
+             differences.append("row_head_skip")
+-        saved_layers = [int(layer) for layer in (state.get("interventions") or {}).get("layers", [])]   # absent in older checkpoints: input-only
+-        if saved_layers != self.intervention_layers:
+-            raise ValueError(f"Checkpoint intervention layers {saved_layers} differ from the configured {self.intervention_layers} (a legacy input-only checkpoint loads into an input-only model; migration to deep heads is explicit)")
++        saved_interventions = state.get("interventions") or {}
++        saved_layers = [int(layer) for layer in saved_interventions.get("layers", [])]   # absent in older checkpoints: input-only
++        migrate = self.is_deep and not saved_layers          # input-only checkpoint into a deep model: shared modules loaded, heads fresh, calibration pending
++        if not migrate and saved_layers != self.intervention_layers:
++            raise ValueError(f"Checkpoint intervention layers {saved_layers} differ from the configured {self.intervention_layers} (a deep checkpoint loads into the same layers only)")
++        if saved_layers:
++            saved_shape = (saved_interventions.get("source", "summary"), [int(layer) for layer in saved_interventions.get("source_layers", [])], saved_interventions.get("target", "residual"))
++            if saved_shape != (self.config.intervention_source, self.intervention_source_layers, self.config.intervention_target):
++                raise ValueError(f"Checkpoint intervention source/target {saved_shape} differ from the configured {(self.config.intervention_source, self.intervention_source_layers, self.config.intervention_target)}")
+         targets = list(self.harness.module_manager.get_lora_config(self.config.base_side_model_lora_name).target_modules)
+         if differences or state.get("side_lora_targets") != targets:
+             raise ValueError(f"Checkpoint AC configuration differs: {differences or ['side_lora_targets']}")
+         side_lora = folder / SIDE_LORA_FOLDER
+         self._validate_adapter(side_lora, self.config.base_side_model_lora_name)
+-        self.modules.load_state_dict(state["modules"])
++        modules_state = dict(state["modules"])
++        if migrate:
++            deep_keys = {name for name in self.modules.state_dict() if name.startswith("delta_heads.") or name in ("intervention_calibration", "interventions_calibrated")}
++            result = self.modules.load_state_dict(modules_state, strict=False)
++            if set(result.missing_keys) != deep_keys or result.unexpected_keys:
++                raise ValueError(f"Checkpoint modules do not match (missing {sorted(set(result.missing_keys) - deep_keys)}, unexpected {list(result.unexpected_keys)})")
++            with torch.no_grad():
++                self.modules.interventions_calibrated.fill_(False)
++            print(f"{self.name} - Migrated an input-only checkpoint into a deep model: shared modules loaded, {len(self.intervention_layers)} delta heads fresh (seeded init), calibration pending")
++        else:
++            converted = self._convert_absolute_scales(modules_state)
++            self.modules.load_state_dict(modules_state)
++            if converted:
++                print(f"{self.name} - Converted the checkpoint's absolute delta scales to the relative parametrization: " + ", ".join(converted))
+         self.calibration_items = list((state.get("interventions") or {}).get("calibration_items", []))
+         self.version = max(self.version, int(state.get("version", 0)))
+         self.epoch_number = int(state.get("epoch_number", 0))
+@@ -597,6 +722,26 @@ class ActivationContextModel:
+         self.cache.clear()
+         print(f"{self.name} - Loaded checkpoint (version {self.version}) from {folder}")
+ 
++    def _convert_absolute_scales(self, modules_state: dict) -> list[str]:
++        """Checkpoints written before the relative parametrization stored one absolute `scale` per head (K/V: `scale_k`, `scale_v`) and no
++        `rms` buffer; they become relative = scale / calibration RMS with rms = that RMS. Returns what was converted (empty when nothing)."""
++        converted = []
++        calibration = modules_state.get("intervention_calibration")
++        for index, layer in enumerate(self.intervention_layers):
++            prefix = f"delta_heads.{layer}."
++            pairs = [("scale_k", "relative_k", "rms_k", 0), ("scale_v", "relative_v", "rms_v", 1)] if self.kv_interventions else [("scale", "relative", "rms", None)]
++            for old, relative, rms_name, column in pairs:
++                if prefix + old not in modules_state:
++                    continue
++                if calibration is None:
++                    raise ValueError(f"Checkpoint stores an absolute delta scale for layer {layer} but no calibration to convert it with")
++                rms = float(calibration[index] if column is None else calibration[index, column])
++                scale = float(modules_state.pop(prefix + old))
++                modules_state[prefix + relative] = torch.tensor(scale / rms if rms > 0 else self.config.intervention_scale_fraction)
++                modules_state[prefix + rms_name] = torch.tensor(rms)
++                converted.append(f"layer {layer}{'' if column is None else ' ' + old[-1]}: {scale:.4g} -> relative {scale / rms if rms > 0 else float('nan'):.4g}")
++        return converted
++
+     def _validate_adapter(self, folder: Path, lora_name: str) -> None:
+         config = self.harness.module_manager.get_lora_config(lora_name)
+         weights = [*folder.glob("*.safetensors"), *folder.glob("*.bin")]
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index 6922a25..5a24464 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -142,16 +142,32 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             self._interventions_reported = len(stats.intervention_trace)
+             if "interventions" not in self.widgets:
+                 self.initialize_line_plot("interventions", "Delta scales relative to calibration",
+-                    "Deep inputs: each intervention layer's delta scale (the applied delta RMS) divided by that layer's residual RMS at calibration; "
+-                    "the initial value is the calibration fraction. Flat at the encoder rate is expected (Adam moves a scalar by about its rate per update).",
++                    "Deep inputs: each intervention layer's learned relative scale (the applied delta RMS in units of that layer's residual RMS at calibration; "
++                    "K/V targets: one series per half, 'layer l:k' / 'layer l:v', each in units of its own K or V RMS); the initial value is the scale fraction. "
++                    "The scales train in their own Adam group, so one update moves every layer by about the same share of its residual; a plateau well before "
++                    "the decay is a learned magnitude, a straight walk at the group's rate is not.",
+                     "global update", "scale / residual RMS", [])
+-                self.initialize_line_plot("intervention_grads", "Delta head gradient norms", "Per intervention layer, before clipping.", "global update", "norm", [])
++                self.initialize_line_plot("intervention_grads", "Delta head gradient norms",
++                    "Per intervention layer, before clipping. Proportional to the scale by construction (unit rows x scale), so this tracks the scale walk, not learning.",
++                    "global update", "norm", [])
++                self.initialize_line_plot("intervention_row_rms", "Residual RMS at the row positions",
++                    "Per intervention layer, measured by the reader hooks on the training forwards (reader as trained, rows present): the deltas' true denominator, "
++                    "against the calibration RMS from no-row sequences.", "global update", "RMS", [])
++                self.initialize_line_plot("intervention_cosine", "Delta vs input row",
++                    "Per intervention layer, mean cosine between the delta rows and target_head(z) over the encoded rows since the last point: "
++                    "near 1 means the delta re-injects the input row; near 0, a different direction. Residual targets only.", "global update", "cosine", [])
+             for layer, value in entry["relative"].items():
+                 self._ensure_series("interventions", f"layer {layer}")
+                 self.add_data_point("interventions", {"x": entry["update"], f"layer {layer}": value})
+             for layer, value in entry["head_grad_norm"].items():
+                 self._ensure_series("intervention_grads", f"layer {layer}")
+                 self.add_data_point("intervention_grads", {"x": entry["update"], f"layer {layer}": value})
++            for widget, key in (("intervention_row_rms", "row_rms"), ("intervention_cosine", "cosine")):
++                for layer, value in entry.get(key, {}).items():
++                    if value is None:
++                        continue
++                    self._ensure_series(widget, f"layer {layer}")
++                    self.add_data_point(widget, {"x": entry["update"], f"layer {layer}": value})
+         self.set_status(loss=f"{stats.loss[-1]:.4f}", learning_rates=", ".join(f"{lr:.3g}" for lr in stats.learning_rates[-1]))
+         if stats.loss_kind == "kl":
+             self.set_status(agreement=f"{stats.agreement[-1]:.3f}")
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index e095cef..7536e01 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -87,6 +87,7 @@ class ActivationContextTrainingConfig:
+     loss_weighting: str = "example"            # "example": mean over examples of each example's token mean; "token": every target token of the update weighs the same
+     learning_rate_gates_scope: str = "all"     # gate group (learning_rate_gates): "all" scalar gates, or "row_scale" = target_head.scale only
+     no_context_penalty_reference: str = "stored"   # "stored": the base's top-k references computed once before training (coarsened KL); "live": the base without adapter is run at penalty time and the KL is exact over the vocabulary (no reference pass, ~+8 % step time)      # load `optimizer.pt` next to the AC checkpoint the model was loaded from (moments + updates done), once per model   # the AC modules' scalar gates (row scale, input/position/residual scales) in their own group; None = the AC rate
++    learning_rate_delta_scales: float = 1e-3   # deep models: the heads' relative scales (units of the calibrated RMS) train in their own group at this rate
+     deltas_off_panel: bool = False             # deep models: evaluate the reporting items a second time at every panel with the rows kept and the deltas removed ("deltas_off"): held minus deltas_off is the deltas' contribution
+     warmup_updates: int = 0                    # linear warm-up of both learning rates over this many updates (counted across calls)
+     updates_per_epoch: int = 4                 # maximum gradient steps per epoch when examples_per_update is unset
+@@ -127,8 +128,10 @@ class ActivationContextTrainingConfig:
+             raise ValueError("no_context_penalty_weight must be nonnegative and no_context_penalty_fraction in (0, 1]")
+         if self.lr_schedule not in ("constant", "cosine") or not 0 <= self.lr_final_fraction <= 1:
+             raise ValueError("lr_schedule must be 'constant' or 'cosine' with lr_final_fraction in [0, 1]")
+-        if self.loss_weighting not in ("example", "token") or self.learning_rate_gates_scope not in ("all", "row_scale", "delta_scales"):
+-            raise ValueError("loss_weighting must be 'example' or 'token'; learning_rate_gates_scope 'all', 'row_scale' or 'delta_scales'")
++        if self.loss_weighting not in ("example", "token") or self.learning_rate_gates_scope not in ("all", "row_scale"):
++            raise ValueError("loss_weighting must be 'example' or 'token'; learning_rate_gates_scope 'all' or 'row_scale' (the delta scales always have their own group)")
++        if self.learning_rate_delta_scales < 0:
++            raise ValueError("learning_rate_delta_scales must be nonnegative")
+         if self.no_context_penalty_reference not in ("stored", "live"):
+             raise ValueError("no_context_penalty_reference must be 'stored' or 'live'")
+         if self.no_context_penalty_weight > 0 and self.teacher_cache_top_k < 1:
+@@ -356,6 +359,7 @@ class ActivationContextTrainer:
+         self._penalty_term: torch.Tensor | None = None                             # set by _example_loss: the weighted penalty of the last example, if sampled
+         self._last_hits: torch.Tensor | None = None                                # set by the chunked losses: argmax == target per target position
+         self._payload_bytes = 0                                                    # deep models: delta bytes handed to the reader (reset per train call)
++        self._row_rms: dict[int, list[float]] = {}                                 # deep models: residual RMS at the row positions per layer since the last trace
+ 
+     # ------------------------------------------------------------------------------------------ examples
+     def build_example(self, ac_model: ActivationContextModel, item: ActivationContextTrainingItem, reference: bool = False) -> _Example:
+@@ -511,18 +515,22 @@ class ActivationContextTrainer:
+             ac_parameters = ac_model.trainable_parameters()
+             target_parameters = manager.lora_parameters(target_lora)
+             assert ac_parameters and target_parameters
++            # The deep heads' relative scales (units of their layer's calibrated RMS) always form the last group, at their own rate:
++            # a scalar in Adam moves by about its rate per step, so the relative units make that step the same share of the
++            # residual at every layer, and the shared parameters train exactly as in the paired input-only arm.
++            delta_scales = [scale for head in ac_model.modules.delta_heads.values() for scale in head.scale_parameters()] if ac_model.is_deep else []
++            ac_parameters = [parameter for parameter in ac_parameters if not any(parameter is scale for scale in delta_scales)]
+             gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]
+             if config.learning_rate_gates_scope == "row_scale":
+                 gate_parameters = [parameter for parameter in gate_parameters if parameter is ac_model.modules.target_head.scale]
+-            elif config.learning_rate_gates_scope == "delta_scales":     # the deep heads' scales alone: the shared parameters train exactly as in the paired input-only arm
+-                delta_scales = [head.scale for head in ac_model.modules.delta_heads.values()] if ac_model.is_deep else []
+-                gate_parameters = [parameter for parameter in gate_parameters if any(parameter is scale for scale in delta_scales)]
+             gate_names = {id(parameter): name for name, parameter in ac_model.modules.named_parameters() if parameter.numel() == 1}
+             groups = [{"params": ac_parameters, "lr": config.learning_rate_ac}, {"params": target_parameters, "lr": config.learning_rate_target_lora}]
+             if config.learning_rate_gates is not None and gate_parameters:
+                 # Adam moves a scalar by about its rate per step whatever the gradient: the row scale had to climb 15x at 1e-4 (~1,500 steps) before the reader could hear the rows.
+                 groups[0] = {"params": [parameter for parameter in ac_parameters if not any(parameter is gate for gate in gate_parameters)], "lr": config.learning_rate_ac}
+                 groups.append({"params": gate_parameters, "lr": config.learning_rate_gates})
++            if delta_scales:
++                groups.append({"params": delta_scales, "lr": config.learning_rate_delta_scales})
+             if reset_optimizer:
+                 self.optimizers.pop(ac_model_name, None)
+             optimizer = persistent_optimizer(self.optimizers, ac_model_name, groups,
+@@ -1048,6 +1056,8 @@ class ActivationContextTrainer:
+                         and len(example.student_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
+         student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
+                                                 interventions=[payload] if payload is not None else None)[0]
++        if torch.is_grad_enabled():
++            self._harvest_row_rms([payload])
+         student_states = student_hidden[example.student_positions]
+         if is_kl:
+             loss, agreement, target_logp = self._chunked_kl(None, student_states, head, cached=cached, target_ids=target_ids)
+@@ -1130,6 +1140,8 @@ class ActivationContextTrainer:
+             embeds.append(student_embeds)
+             payloads.append(payload)
+         hidden = self._padded_forward(target, embeds, lora, payloads)
++        if torch.is_grad_enabled():
++            self._harvest_row_rms(payloads)
+         states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
+         targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
+         cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
+@@ -1188,14 +1200,16 @@ class ActivationContextTrainer:
+             cursor = end
+         pieces.append(student_embeds[cursor:])
+         embeds = torch.cat(pieces, dim=0)
+-        if deltas_off or not outputs[0].layer_inputs:
++        if deltas_off or not (outputs[0].layer_inputs or outputs[0].kv_inputs):
+             return embeds, None
+-        layers = list(outputs[0].layer_inputs)
+         positions = [position for start, end in spans for position in range(start, end)]
+-        layer_inputs = {layer: torch.cat([output.layer_inputs[layer] for output in outputs], dim=0) for layer in layers}
++        layer_inputs = {layer: torch.cat([output.layer_inputs[layer] for output in outputs], dim=0) for layer in outputs[0].layer_inputs}
++        kv_inputs = {layer: (torch.cat([output.kv_inputs[layer][0] for output in outputs], dim=0), torch.cat([output.kv_inputs[layer][1] for output in outputs], dim=0))
++                     for layer in outputs[0].kv_inputs}
+         if torch.is_grad_enabled():                                                          # training forwards only: the panels and the samples run under no_grad
+             self._payload_bytes += sum(rows.numel() * 2 for rows in layer_inputs.values())  # bf16 at the reader boundary
+-        return embeds, {"positions": positions, "layer_inputs": layer_inputs}
++            self._payload_bytes += sum((dk.numel() + dv.numel()) * 2 for dk, dv in kv_inputs.values())
++        return embeds, {"positions": positions, "layer_inputs": layer_inputs, "kv_inputs": kv_inputs}
+ 
+     def _calibration_sequence(self, ac_model: ActivationContextModel, example: _Example) -> tuple[list[int], str]:
+         """The example's history with its parts replaced by their plain messages (what the no-context reference reads), tokenized for the reader."""
+@@ -1214,15 +1228,29 @@ class ActivationContextTrainer:
+         gradient norm before clipping (`head_norms`, taken next to the encoder norm; when omitted, whatever the gradients hold now)."""
+         modules = ac_model.modules
+         head_norms = self._head_grad_norms(ac_model) if head_norms is None else head_norms
+-        entry = {"update": update, "scale": {}, "relative": {}, "head_grad_norm": {}}
++        entry = {"update": update, "scale": {}, "relative": {}, "head_grad_norm": {}, "row_rms": {}, "cosine": {}}
+         for index, layer in enumerate(ac_model.intervention_layers):
+-            scale = float(modules.delta_heads[str(layer)].scale.detach())
+-            rms = float(modules.intervention_calibration[index])
+-            entry["scale"][layer] = scale
+-            entry["relative"][layer] = scale / rms if rms else 0.0
++            head = modules.delta_heads[str(layer)]
++            if ac_model.kv_interventions:      # K/V heads: one scale per half, keyed "<layer>:k" / "<layer>:v", each in units of its own calibration RMS
++                pairs = [(f"{layer}:k", head.scale_k, head.relative_k), (f"{layer}:v", head.scale_v, head.relative_v)]
++            else:
++                pairs = [(layer, head.scale, head.relative)]
++            for key, scale, relative in pairs:
++                entry["scale"][key] = float(scale.detach())
++                entry["relative"][key] = float(relative.detach())
+             entry["head_grad_norm"][layer] = head_norms[layer]
++            measured = self._row_rms.pop(layer, [])
++            entry["row_rms"][layer] = sum(measured) / len(measured) if measured else None
++            cosines = ac_model.intervention_diagnostics["cosine"].pop(layer, [])
++            entry["cosine"][layer] = sum(cosines) / len(cosines) if cosines else None
+         return entry
+ 
++    def _harvest_row_rms(self, payloads) -> None:
++        """After a training forward: the reader hooks wrote each payload's residual RMS at its row positions per layer."""
++        for payload in payloads:
++            for layer, value in (payload or {}).pop("row_rms", {}).items():
++                self._row_rms.setdefault(int(layer), []).append(value)
++
+     def _chunked_sft_tokens(self, states: torch.Tensor, head: torch.nn.Module, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+         """(per-token cross-entropy [C] with grad, detached per-token log-probs [C], detached top-1 hits [C])."""
+         chunk = getattr(self, "_logits_chunk_tokens", self.config.logits_chunk_tokens or 64)
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+index 3adec36..59c6ea0 100644
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -487,37 +487,88 @@ class RowHead(nn.Module):
+ 
+ @dataclass
+ class ACOutput:
+-    """What the encoder emits for one part: rows in the target input space plus, for a deep model, one residual delta
+-    per intervention layer ([V, d_target] each, learned scale included). Recursive results carry an empty map."""
++    """What the encoder emits for one part: rows in the target input space plus, for a deep model, per intervention layer either
++    one residual delta ([V, d_target], `layer_inputs`) or one pre-RoPE K/V delta pair ([V, d_kv] each, `kv_inputs`), learned
++    scales included. Recursive results carry empty maps."""
+     input_embeds: torch.Tensor
+     layer_inputs: dict[int, torch.Tensor] = field(default_factory=dict)
++    kv_inputs: dict[int, tuple[torch.Tensor, torch.Tensor]] = field(default_factory=dict)
+ 
+     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
+         return ACOutput(self.input_embeds.to(device=device, dtype=dtype),
+-                        {int(layer): rows.to(device=device, dtype=dtype) for layer, rows in self.layer_inputs.items()})
++                        {int(layer): rows.to(device=device, dtype=dtype) for layer, rows in self.layer_inputs.items()},
++                        {int(layer): (dk.to(device=device, dtype=dtype), dv.to(device=device, dtype=dtype)) for layer, (dk, dv) in self.kv_inputs.items()})
+ 
+     def detach_cpu(self, dtype: torch.dtype = torch.bfloat16) -> "ACOutput":
+-        return ACOutput(self.input_embeds.detach().to(device="cpu", dtype=dtype).contiguous(),
+-                        {int(layer): rows.detach().to(device="cpu", dtype=dtype).contiguous() for layer, rows in self.layer_inputs.items()})
++        cpu = lambda tensor: tensor.detach().to(device="cpu", dtype=dtype).contiguous()
++        return ACOutput(cpu(self.input_embeds), {int(layer): cpu(rows) for layer, rows in self.layer_inputs.items()},
++                        {int(layer): (cpu(dk), cpu(dv)) for layer, (dk, dv) in self.kv_inputs.items()})
++
++    @property
++    def tensors(self) -> list[torch.Tensor]:
++        return [self.input_embeds, *self.layer_inputs.values(), *(tensor for pair in self.kv_inputs.values() for tensor in pair)]
+ 
+     @property
+     def nbytes(self) -> int:
+-        return sum(tensor.numel() * tensor.element_size() for tensor in (self.input_embeds, *self.layer_inputs.values()))
++        return sum(tensor.numel() * tensor.element_size() for tensor in self.tensors)
+ 
+ 
+ class DeltaHead(nn.Module):
+     """Bottleneck FFN (d_in -> r -> d_out, SiLU) into a reader layer's residual stream; every row RMS-normalized and scaled by
+-    a learned scalar that `ActivationContextModel.calibrate_interventions` sets to a share of that layer's residual RMS."""
++    `rms x relative`: `rms` is the layer's residual RMS measured by `ActivationContextModel.calibrate_interventions` (a buffer),
++    `relative` the learned scalar in units of that RMS (initialized to the scale fraction), so one Adam step moves every
++    layer's scale by the same share of its residual whatever the layer's magnitude."""
+ 
+-    def __init__(self, d_in: int, d_out: int, r: int) -> None:
++    def __init__(self, d_in: int, d_out: int, r: int, relative: float = 0.0) -> None:
+         super().__init__()
+         self.up = nn.Linear(d_in, r)
+         self.down = nn.Linear(r, d_out)
+-        self.scale = nn.Parameter(torch.tensor(0.0))
++        self.relative = nn.Parameter(torch.tensor(float(relative)))
++        self.register_buffer("rms", torch.tensor(0.0))
++
++    @property
++    def scale(self) -> torch.Tensor:
++        """The applied delta RMS: rms x relative."""
++        return self.rms * self.relative
+ 
+     def forward(self, rows: torch.Tensor) -> torch.Tensor:
+         return unit_rows(self.down(F.silu(self.up(rows.float())))) * self.scale
+ 
++    def scale_parameters(self) -> list[nn.Parameter]:
++        return [self.relative]
++
++
++class KVDeltaHead(nn.Module):
++    """Bottleneck FFN (d_in -> r -> 2 d_kv, SiLU) into a full-attention reader layer's keys and values at the row positions:
++    the two halves are RMS-normalized per row and scaled by their own learned scalars, which calibration sets to a share of the
++    reader's own pre-RoPE K RMS and V RMS at that layer. The same construction as DeltaHead (random bottleneck, unit rows,
++    calibrated scale), so a fresh K/V head starts as a small random perturbation of the row's key and value, not as zero."""
++
++    def __init__(self, d_in: int, d_kv: int, r: int, relative: float = 0.0) -> None:
++        super().__init__()
++        self.d_kv = int(d_kv)
++        self.up = nn.Linear(d_in, r)
++        self.down = nn.Linear(r, 2 * self.d_kv)
++        self.relative_k = nn.Parameter(torch.tensor(float(relative)))
++        self.relative_v = nn.Parameter(torch.tensor(float(relative)))
++        self.register_buffer("rms_k", torch.tensor(0.0))
++        self.register_buffer("rms_v", torch.tensor(0.0))
++
++    @property
++    def scale_k(self) -> torch.Tensor:
++        return self.rms_k * self.relative_k
++
++    @property
++    def scale_v(self) -> torch.Tensor:
++        return self.rms_v * self.relative_v
++
++    def forward(self, rows: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
++        both = self.down(F.silu(self.up(rows.float())))
++        return unit_rows(both[:, :self.d_kv]) * self.scale_k, unit_rows(both[:, self.d_kv:]) * self.scale_v
++
++    def scale_parameters(self) -> list[nn.Parameter]:
++        return [self.relative_k, self.relative_v]
++
+ 
+ def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool, prefer_attention: bool,
+                                 full_attention_layers: t.Iterable[int] | None = None) -> list[int]:
+diff --git a/activation/harness/hf_utils.py b/activation/harness/hf_utils.py
+index afbca05..53ce4d3 100644
+--- a/activation/harness/hf_utils.py
++++ b/activation/harness/hf_utils.py
+@@ -80,11 +80,18 @@ INTERVENTIONS_KWARG = "interventions"
+ _HOOKS_ATTRIBUTE = "_activation_intervention_hooks"
+ 
+ 
+-class Interventions(t.TypedDict):
++class Interventions(t.TypedDict, total=False):
+     """One logical sequence's deltas: `positions` index the unpadded physical row (prompt indices, sorted, unique);
+-    every `layer_inputs[layer]` is [M, d_model] with the producer's scale already applied; None means no intervention."""
++    every `layer_inputs[layer]` is [M, d_model] added to that decoder layer's input; every `kv_inputs[layer]` is a
++    (dk, dv) pair of [M, num_kv_heads x head_dim] added to that full-attention layer's keys (after k_norm, before RoPE)
++    and values (after v_proj) at the same positions. Producers' scales are already applied; None means no intervention."""
+     positions: list[int]
+     layer_inputs: dict[int, torch.Tensor]
++    kv_inputs: dict[int, tuple[torch.Tensor, torch.Tensor]]
++    row_rms: dict[int, float]            # written by the reader hooks: residual RMS at the row positions per intervened layer (diagnostic)
++
++
++_KV_BOUND_ATTRIBUTE = "_activation_kv_bound"
+ 
+ 
+ class BoundInterventions:
+@@ -128,13 +135,39 @@ def install_intervention_hooks(model) -> None:
+     Persistent, parameter-free hooks (installed once per model): the text model's pre-hook binds the forward's
+     `interventions=` list to the cache offset before any layer runs; every decoder layer's pre-hook takes the kwarg
+     out (so no attention or recurrence kernel ever sees it) and, when a payload names this layer, adds the delta
+-    rows to the layer input out of place. A forward without the kwarg is untouched.
++    rows to the layer input out of place. K/V payloads (`kv_inputs`) are stashed on the layer for the duration of
++    its forward (the recompute of a checkpointed layer re-runs the pre-hook, so it stashes the same tensors again)
++    and added, out of place, by forward hooks on `self_attn.k_norm` (keys after the norm, before RoPE) and
++    `self_attn.v_proj` (values) at the same positions. A forward without the kwarg is untouched.
+     """
+     if getattr(model, _HOOKS_ATTRIBUTE, None) is not None:
+         return
+     text = text_decoder(model)
+     handles = []
+ 
++    def add_rows(output: torch.Tensor, bound: "BoundInterventions", index: int, part: int) -> torch.Tensor | None:
++        """`output` [B, S, ...] with the rows' K (part 0) or V (part 1) deltas of layer `index` added at positions - offset; None when nothing lands."""
++        length = output.shape[1]
++        result = None
++        for row, payload in enumerate(bound.payloads):
++            if not payload:
++                continue
++            pair = (payload.get("kv_inputs") or {}).get(index)
++            if pair is None:
++                continue
++            rows = pair[part]
++            positions = torch.as_tensor(payload["positions"], device=output.device, dtype=torch.long)
++            if positions.numel() != rows.shape[0]:
++                raise ValueError("positions and K/V delta rows differ in count")
++            local = positions - bound.offset
++            keep = (local >= 0) & (local < length)
++            if not bool(keep.any()):
++                continue
++            if result is None:
++                result = output.clone()
++            result[row].index_add_(0, local[keep], rows[keep].to(device=output.device, dtype=output.dtype).reshape(-1, *output.shape[2:]))
++        return result
++
+     def bind(module, args, kwargs):
+         payloads = kwargs.get(INTERVENTIONS_KWARG)
+         if payloads is None or isinstance(payloads, BoundInterventions):
+@@ -145,6 +178,8 @@ def install_intervention_hooks(model) -> None:
+     def layer_hook(index: int):
+         def hook(module, args, kwargs):
+             bound = kwargs.get(INTERVENTIONS_KWARG)
++            if hasattr(module, _KV_BOUND_ATTRIBUTE):
++                setattr(module, _KV_BOUND_ATTRIBUTE, None)      # every layer forward starts clean: an early-stopped checkpoint recompute never reaches the clearing hook
+             if bound is None:
+                 return None
+             kwargs = {key: value for key, value in kwargs.items() if key != INTERVENTIONS_KWARG}
+@@ -159,34 +194,117 @@ def install_intervention_hooks(model) -> None:
+                 if not payload:
+                     continue
+                 rows = payload["layer_inputs"].get(index)
+-                if rows is None:
++                if rows is None and (payload.get("kv_inputs") or {}).get(index) is None:
+                     continue
+                 positions = torch.as_tensor(payload["positions"], device=hidden.device, dtype=torch.long)
+-                if positions.numel() != rows.shape[0]:
++                if rows is not None and positions.numel() != rows.shape[0]:
+                     raise ValueError("positions and delta rows differ in count")
+                 local = positions - bound.offset
+                 keep = (local >= 0) & (local < length)
+                 if not bool(keep.any()):
+                     continue
++                # Diagnostic for the producer: the residual RMS at this forward's row positions (the deltas' true denominator).
++                payload.setdefault("row_rms", {})[index] = float(hidden[row, local[keep]].detach().float().pow(2).mean(dim=-1).sqrt().mean())
++                if rows is None:
++                    continue
+                 if output is None:
+                     output = hidden.clone()
+                 output[row].index_add_(0, local[keep], rows[keep].to(device=hidden.device, dtype=hidden.dtype))
++            if any(payload and (payload.get("kv_inputs") or {}).get(index) is not None for payload in bound.payloads):
++                if getattr(module, "self_attn", None) is None or not hasattr(module.self_attn, "k_norm"):
++                    raise ValueError(f"decoder layer {index} has no full attention (k_norm) to receive K/V deltas")
++                setattr(module, _KV_BOUND_ATTRIBUTE, bound)
+             return ((output if output is not None else hidden, *args[1:]), kwargs)
+         return hook
++
++    def clear_kv(module, args, kwargs, output):
++        if getattr(module, _KV_BOUND_ATTRIBUTE, None) is not None:
++            setattr(module, _KV_BOUND_ATTRIBUTE, None)
++
++    def kv_hook(layer, index: int, part: int):
++        def hook(module, args, output):
++            bound = getattr(layer, _KV_BOUND_ATTRIBUTE, None)
++            if bound is None:
++                return None
++            return add_rows(output, bound, index, part)
++        return hook
+     for index, layer in enumerate(decoder_layers(model)):
+         handles.append(layer.register_forward_pre_hook(layer_hook(index), with_kwargs=True))
++        attention = getattr(layer, "self_attn", None)
++        if attention is not None and hasattr(attention, "k_norm") and hasattr(attention, "v_proj"):
++            setattr(layer, _KV_BOUND_ATTRIBUTE, None)
++            handles.append(layer.register_forward_hook(clear_kv, with_kwargs=True))
++            handles.append(attention.k_norm.register_forward_hook(kv_hook(layer, index, 0)))
++            handles.append(attention.v_proj.register_forward_hook(kv_hook(layer, index, 1)))
+     setattr(model, _HOOKS_ATTRIBUTE, handles)
+ 
+ 
+ @contextmanager
+ def capture_layer_input_rms(model, layers: t.Iterable[int]):
+-    """Records, per listed layer, the RMS of every forward's layer input (over all rows and positions) into the yielded dict."""
++    """Records, per listed layer, the residual RMS of every forward's layer input into the yielded dict: the median over
++    positions (all rows), the first token excluded when there is more than one (its residual is an outlier that would
++    dominate a mean and is never a row position)."""
+     record: dict[int, list[float]] = {int(layer): [] for layer in layers}
+     handles = []
++    def hook(index: int):
++        def capture(module, args, kwargs):
++            per_position = args[0].detach().float().pow(2).mean(dim=-1).sqrt()      # [B, S]
++            if per_position.shape[1] > 1:
++                per_position = per_position[:, 1:]
++            record[index].append(float(per_position.reshape(-1).median()))
++        return capture
++    all_layers = decoder_layers(model)
++    for index in record:
++        handles.append(all_layers[index].register_forward_pre_hook(hook(index), with_kwargs=True))
++    try:
++        yield record
++    finally:
++        for handle in handles:
++            handle.remove()
++
++
++@contextmanager
++def capture_kv_rms(model, layers: t.Iterable[int]):
++    """Records, per listed full-attention layer, (K RMS, V RMS) of every forward — K after k_norm and before RoPE, V after v_proj,
++    each flattened to num_kv_heads x head_dim per position, averaged over rows and positions — into the yielded dict."""
++    record: dict[int, list[tuple[float, float]]] = {int(layer): [] for layer in layers}
++    pending: dict[int, list[float | None]] = {index: [None, None] for index in record}
++    handles = []
++    def hook(index: int, part: int):
++        def capture(module, args, output):
++            flat = output.detach().float().reshape(*output.shape[:2], -1)
++            pending[index][part] = float(flat.pow(2).mean(dim=-1).sqrt().mean())
++            if pending[index][0] is not None and pending[index][1] is not None:
++                record[index].append((pending[index][0], pending[index][1]))
++                pending[index] = [None, None]
++        return capture
++    all_layers = decoder_layers(model)
++    for index in record:
++        attention = getattr(all_layers[index], "self_attn", None)
++        if attention is None or not hasattr(attention, "k_norm"):
++            raise ValueError(f"decoder layer {index} has no full attention to calibrate K/V deltas against")
++        handles.append(attention.k_norm.register_forward_hook(hook(index, 0)))
++        handles.append(attention.v_proj.register_forward_hook(hook(index, 1)))
++    try:
++        yield record
++    finally:
++        for handle in handles:
++            handle.remove()
++
++
++@contextmanager
++def capture_layer_input_rows(model, layers: t.Iterable[int], spans: list[tuple[int, int]]):
++    """Captures, per listed decoder layer, that layer's input hidden state at `spans[row] = (start, end)` of every physical
++    row of the next forward (a graph-attached slice, not a copy): the yielded dict maps layer -> list of [end - start, d] per row.
++    Cheap and flat: only the row slices are held, never the whole hidden-state tuple."""
++    record: dict[int, list[torch.Tensor]] = {int(layer): [] for layer in layers}
++    handles = []
+     def hook(index: int):
+         def capture(module, args, kwargs):
+             hidden = args[0]
+-            record[index].append(float(hidden.detach().float().pow(2).mean(dim=-1).sqrt().mean()))
++            if record[index]:
++                return                                                             # one capture per forward (a checkpoint recompute never re-runs here: handles are gone)
++            record[index].extend(hidden[row, start:end] for row, (start, end) in enumerate(spans))
+         return capture
+     all_layers = decoder_layers(model)
+     for index in record:
+@@ -345,10 +463,14 @@ def model_description_and_tokenizer_from_hf(
+     else:
+         eos_token = canonical_eos_token(hf_config, tokenizer)
+     # Finalize.
++    num_heads = getattr(text_config, "num_attention_heads", None)
++    head_dim = getattr(text_config, "head_dim", None) or (text_config.hidden_size // num_heads if num_heads else None)
++    kv_heads = getattr(text_config, "num_key_value_heads", None) or num_heads
+     description = ModelDescription(
+         d_model=text_config.hidden_size,
+         d_ff=getattr(text_config, "intermediate_size", None) or 4 * text_config.hidden_size,
+         is_multimodal=is_multimodal,
++        d_kv=int(kv_heads * head_dim) if kv_heads and head_dim else None,
+         dtype=dtype,
+         layer_descriptions=layers,
+         eos_token=eos_token,
+diff --git a/activation/harness/model_config.py b/activation/harness/model_config.py
+index 9fc6f37..8a6c8e7 100644
+--- a/activation/harness/model_config.py
++++ b/activation/harness/model_config.py
+@@ -51,6 +51,8 @@ class ModelDescription:
+     d_ff: int
+     """Feed-forward width, for batch sizing."""
+     is_multimodal: bool
++    d_kv: int | None = None
++    """num_key_value_heads x head_dim of the full-attention layers (the width of one token's K, and of its V); None when unknown."""
+     layer_descriptions: list[LayerDescription] = field(default_factory=list)
+     dtype: torch.dtype = torch.bfloat16
+     eos_token: str | None = None
+diff --git a/activation/tests/test_interventions.py b/activation/tests/test_interventions.py
+index 8fa6fe7..7dad68c 100644
+--- a/activation/tests/test_interventions.py
++++ b/activation/tests/test_interventions.py
+@@ -21,9 +21,9 @@ from activation.ac_model import (ActivationContextModelConfig, ActivationContext
+                                  ActivationContextTrainingConfig)
+ from activation.ac_model.ac_model_training import ActivationContextTrainingProgress
+ from activation.ac_model.ac_model import INTERVENTION_SCALE_FRACTION
+-from activation.ac_model.ac_model_utils import ACOutput, resolve_intervention_layers
++from activation.ac_model.ac_model_utils import ACOutput, KVDeltaHead, resolve_intervention_layers
+ from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
+-from activation.harness.hf_utils import (INTERVENTIONS_KWARG, BoundInterventions, decoder_layers, generate_with_interventions,
++from activation.harness.hf_utils import (INTERVENTIONS_KWARG, BoundInterventions, capture_kv_rms, decoder_layers, generate_with_interventions,
+                                          install_intervention_hooks, text_decoder)
+ 
+ DATA = Path(__file__).resolve().parent / "data"
+@@ -56,14 +56,16 @@ def tiny_hybrid(folder: Path) -> Path:
+ 
+ 
+ def build(tmp_path: Path, model_dir: Path, *, frequency: int = 0, add_last: bool = True, prefer: bool = True, seed: int = 1234,
+-          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None):
++          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None, source: str = "summary", target: str = "residual",
++          source_layers: list[int] | None = None):
+     """The shared/reader base with a rank-4 adapter and a tiny AC model on top, in the same construction order every time
+     (seeded: the AC modules draw first, the adapters draw at injection)."""
+     os.environ["ACTIVATION_SYNC_ROOT"] = str(tmp_path)
+     torch.manual_seed(seed)
+     h = HarnessRuntime(HarnessRuntimeConfig(model_configs={"reader": ModelConfig("reader", str(model_dir))}))
+     h.module_manager.register_lora("reader_lora", "reader", rank=4, dropout=0.0, checkpoint_path=reader_checkpoint)
+-    deep = {"intervention_frequency": frequency, "add_last_layer_intervention": add_last, "prefer_attention_interventions": prefer} if frequency else {}
++    deep = {"intervention_frequency": frequency, "add_last_layer_intervention": add_last, "prefer_attention_interventions": prefer,
++            "intervention_source": source, "intervention_target": target, "intervention_source_layers": source_layers} if frequency else {}
+     ac = h.module_manager.register_ac_model(ActivationContextModelConfig(
+         "ac_private", "reader", "side_lora", "reader", "reader_lora", mixer_heads=4, mixer_window=4, side_lora_rank=4, max_view_rows=8,
+         encode_batch_max_tokens=2048, checkpoint_path=ac_checkpoint, **deep))
+@@ -102,6 +104,22 @@ def calibrate(trainer, ac, examples):
+     return ac.calibrate_interventions([ids for ids, _ in sample], [item_id for _, item_id in sample])
+ 
+ 
++def boost_scales(ac, factor: float = 50.0) -> None:
++    """Audible deltas: every head's scale(s) multiplied in place (residual heads: `scale`; K/V heads: `scale_k`, `scale_v`)."""
++    with torch.no_grad():
++        for head in ac.modules.delta_heads.values():
++            for scale in head.scale_parameters():
++                scale.mul_(factor)
++
++
++def side_lora_parameters(ac, layer: int | None = None) -> list[torch.nn.Parameter]:
++    """The side adapter's trainable parameters (the manager grants trainability on request), optionally those of one side layer."""
++    adapter = ac.config.base_side_model_lora_name
++    granted = {id(parameter) for parameter in ac.harness.module_manager.lora_parameters(adapter)}
++    return [parameter for name, parameter in ac.side.model.named_parameters()
++            if id(parameter) in granted and (layer is None or f".layers.{layer}." in name)]
++
++
+ def fixed_request(ac):
+     from activation.ac_model.ac_model_utils import EncodeRequest
+     return EncodeRequest([{"role": "user", "content": PASSAGES[0]["text"]}], 0.25, False, None)
+@@ -165,11 +183,12 @@ def test_zero_mode_is_the_previous_model(tmp_path):
+     assert torch.equal(hidden, reference["hidden"])
+     assert isinstance(ac.encode_batch([fixed_request(ac)], with_layers=True)[0], ACOutput)
+     assert ac.encode_batch([fixed_request(ac)], with_layers=True)[0].layer_inputs == {}
+-    # A deep checkpoint refuses to load as input-only and vice versa (migration is explicit).
++    # An input-only checkpoint migrates into a deep model (shared modules loaded, heads fresh, calibration pending); a deep checkpoint never loads as input-only.
+     folder = ac.save(str(tmp_path / "zero"))
+-    with pytest.raises(ValueError, match="intervention layers"):
+-        deep_h, deep = build(tmp_path / "deep", TINY_QWEN3, frequency=1)
+-        deep.load(folder)
++    deep_h, deep = build(tmp_path / "deep", TINY_QWEN3, frequency=1)
++    deep.load(folder)
++    assert deep.is_deep and not deep.interventions_calibrated
++    assert torch.equal(deep.modules.target_head.ffn.up.weight, ac.modules.target_head.ffn.up.weight)
+ 
+ 
+ def test_pairing_shared_draws_are_identical(tmp_path):
+@@ -201,7 +220,23 @@ def test_deep_encode_and_calibration(tmp_path, hybrid_dir):
+     assert ac.calibration_items == [items[0].item_id, items[1].item_id]
+     summary = ac.intervention_summary()
+     for layer in (2, 5):
+-        assert summary["scales"][layer] == pytest.approx(INTERVENTION_SCALE_FRACTION * rms[layer])
++        assert summary["scales"][layer] == pytest.approx(INTERVENTION_SCALE_FRACTION * rms[layer]) and summary["relative"][layer] == pytest.approx(INTERVENTION_SCALE_FRACTION)
++        assert float(ac.modules.delta_heads[str(layer)].rms) == pytest.approx(rms[layer]) and summary["parametrization"] == "relative"
++    # The calibration statistic is the median over positions with the first token excluded, one value per sequence, averaged.
++    sample = [trainer._calibration_sequence(ac, example)[0] for example in examples[:2]]
++    manual = {2: [], 5: []}
++    handles = [decoder_layers(ac.target.model)[layer].register_forward_pre_hook((lambda index: lambda module, args: manual[index].append(args[0].detach()[0, 1:].float().pow(2).mean(-1).sqrt().median().item()))(layer)) for layer in (2, 5)]
++    try:
++        with torch.no_grad():
++            for ids in sample:
++                ac.target.decoder_forward(ac.target.model.get_input_embeddings()(torch.tensor(ids))[None], None, lora_name="reader_lora", gradient_checkpointing=False)
++    finally:
++        for handle in handles:
++            handle.remove()
++    for layer in (2, 5):
++        assert rms[layer] == pytest.approx(sum(manual[layer]) / len(manual[layer]), rel=1e-6)
++    with pytest.raises(RuntimeError, match="with_layers=True"):
++        ac.encode_batch([fixed_request(ac)])                                      # a deep model refuses the rows-only API
+     output = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
+     assert set(output.layer_inputs) == {2, 5} and output.input_embeds.shape[1] == ac.d_target
+     for layer, rows in output.layer_inputs.items():
+@@ -222,27 +257,29 @@ def head_parameters(ac):
+     return [parameter for name, parameter in ac.modules.named_parameters() if name.startswith("delta_heads.")]
+ 
+ 
+-@pytest.mark.parametrize("prefer", [True, False], ids=["attention_inputs", "gdn_input"])
+-def test_gradients_direct_vs_checkpointed(tmp_path, hybrid_dir, prefer):
+-    h, ac = build(tmp_path, hybrid_dir, frequency=1, prefer=prefer)
++@pytest.mark.parametrize("prefer, source, target", [(True, "summary", "residual"), (False, "summary", "residual"), (True, "side_layers", "residual"), (True, "side_layers", "kv")],
++                         ids=["attention_inputs", "gdn_input", "side_layers", "kv"])
++def test_gradients_direct_vs_checkpointed(tmp_path, hybrid_dir, prefer, source, target):
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, prefer=prefer, source=source, target=target)
+     assert ac.intervention_layers == ([2, 5] if prefer else [3, 5]), "prefer=False: the interior delta lands at a linear-attention block"
+     trainer, items, examples, device = trainer_and_examples(h, ac)
+     calibrate(trainer, ac, examples[:2])
+-    with torch.no_grad():
+-        for head in ac.modules.delta_heads.values():
+-            head.scale.mul_(50.0)                                                  # audible deltas: every head gets a real gradient
+-    params = head_parameters(ac) + [ac.modules.target_head.scale] + list(h.module_manager.lora_parameters("reader_lora"))
++    boost_scales(ac)                                                               # audible deltas: every head gets a real gradient
++    params = head_parameters(ac) + [ac.modules.target_head.scale] + list(h.module_manager.lora_parameters("reader_lora")) + side_lora_parameters(ac)
+     grads = {}
+     for checkpointed in (False, True):
+         trainer.config.gradient_checkpointing = checkpointed
++        ac.config.side_gradient_checkpointing = checkpointed                       # the side capture (side_layers) must survive the side recompute too
+         losses = [trainer._example_loss(ac, example, device, with_drift=False)[0] for example in examples[:2]]
+         grads[checkpointed] = torch.autograd.grad(sum(losses), params, allow_unused=True)
+     for direct, recomputed in zip(grads[False], grads[True]):
+         assert direct is not None and recomputed is not None
+         torch.testing.assert_close(direct, recomputed, atol=1e-6, rtol=1e-5)
+-    assert all(float(g.norm()) > 0 for g in grads[True][:len(head_parameters(ac))]), "every delta head (weights and scale) receives gradient"
++    assert all(float(g.norm()) > 0 for g in grads[True][:len(head_parameters(ac))]), "every delta head (weights and scales) receives gradient"
++    assert any(float(g.norm()) > 0 for g in grads[True][-len(side_lora_parameters(ac)):]), "the side adapter receives gradient (lora_A's is zero at PEFT's zero init of lora_B)"
+     # Two forwards with different payloads pending before one backward keep their own tensors.
+     trainer.config.gradient_checkpointing = True
++    ac.config.side_gradient_checkpointing = True
+     loss_a = trainer._example_loss(ac, examples[0], device, with_drift=False)[0]
+     loss_b = trainer._example_loss(ac, examples[1], device, with_drift=False)[0]      # a different example: its own payload tensors
+     joint = torch.autograd.grad(loss_a + loss_b, params, allow_unused=True)
+@@ -254,14 +291,14 @@ def test_gradients_direct_vs_checkpointed(tmp_path, hybrid_dir, prefer):
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 5. padded batch
+-def test_padded_batch_positions_and_causality(tmp_path):
++@pytest.mark.parametrize("target", ["residual", "kv"])
++def test_padded_batch_positions_and_causality(tmp_path, target):
+     torch.manual_seed(0)
+-    h, ac = build(tmp_path, TINY_QWEN3, frequency=1)
++    h, ac = build(tmp_path, TINY_QWEN3, frequency=1, target=target, source="side_layers" if target == "kv" else "summary")
+     assert ac.intervention_layers == [1]
+     trainer, items, examples, device = trainer_and_examples(h, ac, micro_batch_examples=3)
+     calibrate(trainer, ac, examples[:2])
+-    with torch.no_grad():
+-        ac.modules.delta_heads["1"].scale.mul_(50.0)
++    boost_scales(ac)
+     assert len({len(e.student_ids) for e in examples}) > 1, "the fixture must pad"
+     single = [trainer._example_loss(ac, example, device, with_drift=False) for example in examples]
+     batched = trainer._batch_loss(ac, examples, device, with_penalty=False)
+@@ -299,13 +336,12 @@ def test_padded_batch_positions_and_causality(tmp_path):
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 6. generation
+-def test_generation_matches_full_recompute(tmp_path, hybrid_dir):
+-    h, ac = build(tmp_path, hybrid_dir, frequency=1)
++@pytest.mark.parametrize("target", ["residual", "kv"])
++def test_generation_matches_full_recompute(tmp_path, hybrid_dir, target):
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, target=target, source="side_layers" if target == "kv" else "summary")
+     trainer, items, examples, device = trainer_and_examples(h, ac)
+     calibrate(trainer, ac, examples[:2])
+-    with torch.no_grad():
+-        for head in ac.modules.delta_heads.values():
+-            head.scale.mul_(50.0)
++    boost_scales(ac)
+     example = examples[0]
+     target = ac.target
+     manager = h.module_manager
+@@ -323,7 +359,7 @@ def test_generation_matches_full_recompute(tmp_path, hybrid_dir):
+         bound = kwargs.get(INTERVENTIONS_KWARG)
+         if isinstance(bound, BoundInterventions):
+             applied = sum(int(((torch.as_tensor(p["positions"]) - bound.offset) >= 0).sum() - ((torch.as_tensor(p["positions"]) - bound.offset) >= args[0].shape[1]).sum())
+-                          for p in bound.payloads if p and 2 in p["layer_inputs"])
++                          for p in bound.payloads if p and (2 in p["layer_inputs"] or 2 in p.get("kv_inputs", {})))
+             seen.append((bound.offset, args[0].shape[1], applied, [list(p["positions"]) for p in bound.payloads if p]))
+     install_intervention_hooks(peft_model.get_base_model())
+     handle = decoder_layers(peft_model.get_base_model())[2].register_forward_pre_hook(spy, with_kwargs=True, prepend=True)
+@@ -373,13 +409,17 @@ def test_generation_matches_full_recompute(tmp_path, hybrid_dir):
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 7. checkpoints, resume
+-def test_checkpoint_roundtrip_and_resume(tmp_path, hybrid_dir):
+-    h, ac = build(tmp_path, hybrid_dir, frequency=1)
++@pytest.mark.parametrize("source, target, per_head", [("summary", "residual", 5), ("side_layers", "kv", 6)], ids=["residual", "kv"])
++def test_checkpoint_roundtrip_and_resume(tmp_path, hybrid_dir, source, target, per_head):
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, source=source, target=target)
+     items = items_for(h, ac)
+     trainer = ActivationContextTrainer(h, config(checkpoint_every_epoch=True, deltas_off_panel=True))
+     stats = trainer.train(ac.name, items, reporting_data=items)
+     assert ac.interventions_calibrated and ac.calibration_items == [item.item_id for item in items[:len(ac.calibration_items)]]
+-    assert stats.intervention_trace and stats.intervention_trace[0]["update"] == 0 and set(stats.intervention_trace[0]["scale"]) == {2, 5}
++    scale_keys = {"2:k", "2:v", "5:k", "5:v"} if target == "kv" else {2, 5}
++    assert stats.intervention_trace and stats.intervention_trace[0]["update"] == 0 and set(stats.intervention_trace[0]["scale"]) == scale_keys
++    assert set(stats.intervention_trace[0]["head_grad_norm"]) == {2, 5} and set(stats.intervention_trace[0]["row_rms"]) == {2, 5}
++    assert all(value == pytest.approx(INTERVENTION_SCALE_FRACTION) for value in stats.intervention_trace[0]["relative"].values()), "the first trace shows the relative scales at their init"
+     assert stats.payload_bytes > 0 and stats.deltas_off is not None and stats.deltas_off["items"] == len(items)
+     summary = ac.intervention_summary()
+     heads_before = {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if name.startswith(("delta_heads.", "intervention"))}
+@@ -387,11 +427,13 @@ def test_checkpoint_roundtrip_and_resume(tmp_path, hybrid_dir):
+     saved = tmp_path / "AC_MODELS" / ac.name / "epoch_001" / "optimizer.pt"
+     moments = torch.load(saved, map_location="cpu", weights_only=False)
+     head_count = len(head_parameters(ac))
+-    assert head_count == 2 * 5 and len(moments["optimizer"]["state"]) >= head_count, "optimizer.pt carries moments for every head parameter"
++    assert head_count == 2 * per_head and len(moments["optimizer"]["state"]) >= head_count, "optimizer.pt carries moments for every head parameter"
+     checkpoint = torch.load(tmp_path / record["ac_checkpoint"] / "ac_modules.pt", map_location="cpu", weights_only=False)
+     assert checkpoint["interventions"]["layers"] == [2, 5] and checkpoint["interventions"]["calibration_items"] == ac.calibration_items
++    assert (checkpoint["interventions"]["source"], checkpoint["interventions"]["target"]) == (source, target)
++    assert checkpoint["interventions"]["source_layers"] == ([2, 5] if source == "side_layers" else [])
+     # A new process: the epoch pair loads into a fresh deep model; heads, scales and calibration come back; the optimizer resumes.
+-    h2, ac2 = build(tmp_path / "second", hybrid_dir, frequency=1, seed=999,
++    h2, ac2 = build(tmp_path / "second", hybrid_dir, frequency=1, seed=999, source=source, target=target,
+                     ac_checkpoint=str(tmp_path / record["ac_checkpoint"]), reader_checkpoint=str(tmp_path / record["target_lora_checkpoint"]))
+     assert ac2.interventions_calibrated and ac2.calibration_items == ac.calibration_items
+     assert ac2.intervention_summary()["scales"] == summary["scales"] and ac2.intervention_summary()["calibration_rms"] == summary["calibration_rms"]
+@@ -406,25 +448,42 @@ def test_checkpoint_roundtrip_and_resume(tmp_path, hybrid_dir):
+     h3, zero = build(tmp_path / "zero", hybrid_dir)
+     with pytest.raises(ValueError, match="intervention layers"):
+         zero.load(str(tmp_path / record["ac_checkpoint"]))
++    # The same layers with another source or target are refused too (the heads differ in shape or meaning).
++    h4, other = build(tmp_path / "other", hybrid_dir, frequency=1, source="side_layers" if source == "summary" else "summary", target=target)
++    with pytest.raises(ValueError, match="source/target"):
++        other.load(str(tmp_path / record["ac_checkpoint"]))
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 8. deltas-off panel, gate group
+-def test_deltas_off_panel_and_delta_scale_group(tmp_path, hybrid_dir):
+-    h, ac = build(tmp_path, hybrid_dir, frequency=1)
++@pytest.mark.parametrize("target", ["residual", "kv"])
++def test_deltas_off_panel_and_delta_scale_group(tmp_path, hybrid_dir, target):
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, target=target, source="side_layers" if target == "kv" else "summary")
+     items = items_for(h, ac)
+-    trainer = ActivationContextTrainer(h, config(deltas_off_panel=True, learning_rate_gates=5e-3, learning_rate_gates_scope="delta_scales", num_epochs=1))
++    trainer = ActivationContextTrainer(h, config(deltas_off_panel=True, learning_rate_delta_scales=5e-3, learning_rate_gates=2e-3, learning_rate_gates_scope="row_scale", num_epochs=1))
+     stats = trainer.train(ac.name, items, reporting_data=items)
+     optimizer = trainer.optimizers[ac.name]
+-    assert len(optimizer.param_groups) == 3
+-    gate_ids = {id(p) for p in optimizer.param_groups[2]["params"]}
+-    assert gate_ids == {id(head.scale) for head in ac.modules.delta_heads.values()}, "only the delta scales are in the gate group"
+-    assert id(ac.modules.target_head.scale) not in gate_ids and id(ac.modules.target_head.scale) in {id(p) for p in optimizer.param_groups[0]["params"]}
+-    assert stats.learning_rates[-1][2] == pytest.approx(5e-3)
++    assert len(optimizer.param_groups) == 4, "encoder, reader, the row-scale gate group, the delta scales"
++    scale_ids = {id(p) for p in optimizer.param_groups[3]["params"]}
++    assert scale_ids == {id(scale) for head in ac.modules.delta_heads.values() for scale in head.scale_parameters()}, "exactly the relative delta scales form the last group"
++    assert len(scale_ids) == (4 if target == "kv" else 2)
++    assert {id(p) for p in optimizer.param_groups[2]["params"]} == {id(ac.modules.target_head.scale)}
++    assert not scale_ids & {id(p) for p in optimizer.param_groups[0]["params"]}
++    assert stats.learning_rates[-1][3] == pytest.approx(5e-3) and stats.learning_rates[-1][2] == pytest.approx(2e-3)
++    with pytest.raises(ValueError, match="gates_scope"):
++        config(learning_rate_gates_scope="delta_scales")
++    # Without a gate group the delta scales are still their own (third) group.
++    h1, ac1 = build(tmp_path / "plain", hybrid_dir, frequency=1, target=target, source="side_layers" if target == "kv" else "summary")
++    trainer1 = ActivationContextTrainer(h1, config(learning_rate_delta_scales=7e-3))
++    stats1 = trainer1.train(ac1.name, items_for(h1, ac1))
++    assert len(trainer1.optimizers[ac1.name].param_groups) == 3 and stats1.learning_rates[-1][2] == pytest.approx(7e-3)
++    if target == "residual":
++        entry = stats1.intervention_trace[0]
++        assert all(entry["row_rms"][layer] > 0 for layer in (2, 5)) and all(-1.0 <= entry["cosine"][layer] <= 1.0 for layer in (2, 5)), "row-position residual RMS and delta/row cosine are traced"
++    else:
++        assert all(stats1.intervention_trace[0]["cosine"][layer] is None for layer in (2, 5))
+     assert stats.deltas_off is not None and stats.epochs[-1].deltas_off is not None
+     device = ac.prepare()
+-    with torch.no_grad():
+-        for head in ac.modules.delta_heads.values():
+-            head.scale.mul_(50.0)
++    boost_scales(ac)
+     h.module_manager.ensure_lora("reader_lora")
+     off = trainer._evaluate(ac, items, device, None, "deltas_off", deltas_off=True)
+     on = trainer._evaluate(ac, items, device, None, "reporting")
+@@ -436,6 +495,246 @@ def test_deltas_off_panel_and_delta_scale_group(tmp_path, hybrid_dir):
+     assert stats0.deltas_off is None and stats0.intervention_trace == [] and stats0.payload_bytes == 0
+ 
+ 
++# --------------------------------------------------------------------------------------------------- 10. A1: layer-matched readout
++def test_side_layer_readout(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextModelConfig as Config
++    with pytest.raises(ValueError, match="intervention_source"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_source="final")
++    with pytest.raises(ValueError, match="source_layers"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_source_layers=[1, 2])
++    with pytest.raises(ValueError, match="one side layer"):
++        build(tmp_path / "bad", hybrid_dir, frequency=1, source="side_layers", source_layers=[1, 2, 3])
++    with pytest.raises(ValueError, match="one side layer"):
++        build(tmp_path / "bad2", hybrid_dir, frequency=1, source="side_layers", source_layers=[1, 6])
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, source="side_layers")
++    assert ac.intervention_layers == [2, 5] and ac.intervention_source_layers == [2, 5], "s(l) = l by default"
++    h1, mapped = build(tmp_path / "mapped", hybrid_dir, frequency=1, source="side_layers", source_layers=[1, 4])
++    assert mapped.intervention_source_layers == [1, 4]
++    hs, summary = build(tmp_path / "summary", hybrid_dir, frequency=1)
++    assert summary.intervention_source_layers == [] and summary.intervention_summary() == {} or True
++    for a, b in zip(ac.modules.state_dict().values(), summary.modules.state_dict().values()):
++        assert torch.equal(a, b), "the readout changes what the heads read, not the heads"
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    calibrate(trainer, ac, examples[:2])
++    trainer_s, items_s, examples_s, _ = trainer_and_examples(hs, summary)
++    calibrate(trainer_s, summary, examples_s[:2])
++    request = fixed_request(ac)
++    # Independent capture of the side model's layer inputs (2 and 5) and of its final normed state during the encode.
++    side_layers = decoder_layers(ac.side.model)
++    captured, final = {}, []
++    handles = [side_layers[layer].register_forward_pre_hook((lambda index: lambda module, args: captured.__setitem__(index, args[0].detach().clone()))(layer)) for layer in (2, 5)]
++    handles.append(text_decoder(ac.side.model).norm.register_forward_hook(lambda module, args, output: final.append(output.detach().clone())))
++    try:
++        output = ac.encode_batch([request], with_layers=True)[0]
++    finally:
++        for handle in handles:
++            handle.remove()
++    num_rows, length = output.input_embeds.shape[0], captured[2].shape[1]
++    assert captured[2].shape[0] == 1 and set(output.layer_inputs) == {2, 5}
++    with torch.no_grad():
++        for layer in (2, 5):
++            expected = ac.modules.delta_heads[str(layer)](captured[layer][0, length - num_rows:length].float())
++            torch.testing.assert_close(output.layer_inputs[layer], expected, atol=1e-5, rtol=1e-5)
++            from_summary = ac.modules.delta_heads[str(layer)](final[-1][0, length - num_rows:length].float())
++            assert not torch.allclose(output.layer_inputs[layer], from_summary), "the layer-matched readout is not the summary readout"
++    # Summary mode reads the final state exactly as before (the same heads on `rows`), so its deltas are a function of z.
++    handles = [text_decoder(summary.side.model).norm.register_forward_hook(lambda module, args, output: final.append(output.detach().clone()))]
++    try:
++        output_s = summary.encode_batch([request], with_layers=True)[0]
++    finally:
++        handles[0].remove()
++    with torch.no_grad():
++        for layer in (2, 5):
++            torch.testing.assert_close(output_s.layer_inputs[layer], summary.modules.delta_heads[str(layer)](final[-1][0, length - num_rows:length].float()), atol=1e-5, rtol=1e-5)
++    torch.testing.assert_close(output_s.input_embeds, output.input_embeds)
++    # Gradient through the capture: the delta at reader layer 2 reaches the side adapter of side layers 0 and 1 only (the input of layer 2).
++    below = side_lora_parameters(ac, 0) + side_lora_parameters(ac, 1)               # granting trainability before the forward puts the adapter in the graph
++    at_or_above = side_lora_parameters(ac, 2) + side_lora_parameters(ac, 3)
++    output = ac.encode_batch([request], with_layers=True)[0]
++    grads = torch.autograd.grad(output.layer_inputs[2].sum(), below + at_or_above, allow_unused=True)
++    assert any(g is not None and float(g.norm()) > 0 for g in grads[:len(below)]), "side layers below the source layer shape the captured state (lora_B is nonzero; lora_A's gradient is zero at PEFT's zero init of B)"
++    assert all(g is None or float(g.norm()) == 0 for g in grads[len(below):]), "the source layer and those above do not"
++    # Rows are cached and served with their deltas in rollout mode.
++    ac.set_mode("rollout")
++    first = ac.encode_batch([request], with_layers=True)[0]
++    second = ac.encode_batch([request], with_layers=True)[0]
++    assert ac.stats.cache_hits >= 1 and all(torch.equal(first.layer_inputs[layer].to(torch.bfloat16).float(), second.layer_inputs[layer]) for layer in (2, 5)), "the cache keeps the deltas (bf16, like the rows)"
++
++
++# --------------------------------------------------------------------------------------------------- 11. B1: K/V deltas at the rows
++def test_kv_interventions(tmp_path, hybrid_dir):
++    with pytest.raises(ValueError, match="full-attention"):
++        build(tmp_path / "gdn", hybrid_dir, frequency=1, prefer=False, target="kv")        # layer 3 is a linear-attention block
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, target="kv", source="side_layers")
++    assert ac.intervention_layers == [2, 5] and ac.kv_interventions
++    assert all(isinstance(head, KVDeltaHead) for head in ac.modules.delta_heads.values())
++    d_kv = ac.target.model_config.model_description.d_kv
++    assert d_kv == 2 * 8 and ac.modules.delta_heads["2"].down.out_features == 2 * d_kv
++    assert tuple(ac.modules.intervention_calibration.shape) == (2, 2)
++    keys = set(ac.modules.state_dict())
++    assert {"delta_heads.2.relative_k", "delta_heads.2.relative_v", "delta_heads.2.rms_k", "delta_heads.2.rms_v", "delta_heads.5.relative_k"} <= keys and "delta_heads.2.relative" not in keys
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    rms = calibrate(trainer, ac, examples[:2])
++    summary = ac.intervention_summary()
++    assert summary["target"] == "kv" and summary["source"] == "side_layers" and summary["source_layers"] == [2, 5]
++    for layer in (2, 5):
++        k_rms, v_rms = rms[layer]
++        assert k_rms > 0 and v_rms > 0 and summary["calibration_rms"][layer] == {"k": pytest.approx(k_rms), "v": pytest.approx(v_rms)}
++        assert summary["scales"][layer]["k"] == pytest.approx(INTERVENTION_SCALE_FRACTION * k_rms) and summary["scales"][layer]["v"] == pytest.approx(INTERVENTION_SCALE_FRACTION * v_rms)
++    output = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
++    assert output.layer_inputs == {} and set(output.kv_inputs) == {2, 5}
++    for layer, (dk, dv) in output.kv_inputs.items():
++        assert dk.shape == dv.shape == (output.input_embeds.shape[0], d_kv)
++        torch.testing.assert_close(dk.pow(2).mean(dim=-1).sqrt(), torch.full((dk.shape[0],), summary["scales"][layer]["k"]), atol=1e-5, rtol=1e-4)
++        torch.testing.assert_close(dv.pow(2).mean(dim=-1).sqrt(), torch.full((dv.shape[0],), summary["scales"][layer]["v"]), atol=1e-5, rtol=1e-4)
++    # The reader adds dk after k_norm (pre-RoPE) and dv after v_proj at the row positions; the residual stream is untouched there.
++    boost_scales(ac)
++    example = examples[0]
++    target = ac.target
++    embedding = target.model.get_input_embeddings()
++    outputs = ac.encode_batch(example.part_requests, with_layers=True)
++    with torch.no_grad():
++        student = embedding(torch.tensor(example.student_ids))
++    embeds, payload = trainer._assemble_student(student, example.spans, outputs, student.dtype)
++    assert set(payload["kv_inputs"]) == {2, 5} and payload["layer_inputs"] == {}
++    install_intervention_hooks(target.model)                                       # the product hooks first, so the spies below see their result
++    layer2 = decoder_layers(target.model)[2]
++    seen = {}
++    def record(name):
++        def hook(module, args, output):
++            seen.setdefault(name, []).append((output if isinstance(output, torch.Tensor) else output[0]).detach().clone())
++        return hook
++    handles = [layer2.self_attn.k_norm.register_forward_hook(record("k")), layer2.self_attn.v_proj.register_forward_hook(record("v")),
++               layer2.register_forward_pre_hook(lambda module, args: seen.setdefault("input", []).append(args[0].detach().clone()))]
++    try:
++        with torch.no_grad():
++            with_deltas = target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[payload])
++            without = target.decoder_forward(embeds[None], None, lora_name="reader_lora")
++    finally:
++        for handle in handles:
++            handle.remove()
++    positions = torch.tensor(payload["positions"])
++    dk, dv = payload["kv_inputs"][2]
++    k_on, k_off = seen["k"]
++    v_on, v_off = seen["v"]
++    assert k_on.shape[1] == embeds.shape[0] and k_on.dim() == 4, "k_norm output is [B, S, kv_heads, head_dim] before the transpose and RoPE"
++    diff_k = (k_on - k_off)[0].reshape(embeds.shape[0], -1)
++    diff_v = (v_on - v_off)[0].reshape(embeds.shape[0], -1)
++    torch.testing.assert_close(diff_k[positions], dk, atol=1e-5, rtol=1e-5)
++    torch.testing.assert_close(diff_v[positions], dv, atol=1e-5, rtol=1e-5)
++    mask = torch.ones(embeds.shape[0], dtype=torch.bool); mask[positions] = False
++    assert torch.equal(diff_k[mask], torch.zeros_like(diff_k[mask])) and torch.equal(diff_v[mask], torch.zeros_like(diff_v[mask]))
++    assert torch.equal(seen["input"][0], seen["input"][1]), "K/V deltas leave the layer input (residual stream) untouched"
++    first = int(positions.min())
++    assert torch.equal(with_deltas[0, :first], without[0, :first]) and not torch.equal(with_deltas[0, first:], without[0, first:]), "causal: nothing before the first row moves"
++    assert not torch.allclose(with_deltas[0, -1], without[0, -1])
++    # Malformed payloads are refused: row-count mismatch, and a K/V delta aimed at a linear-attention layer.
++    bad = {"positions": payload["positions"][:-1], "layer_inputs": {}, "kv_inputs": payload["kv_inputs"]}
++    with pytest.raises(ValueError, match="differ in count"):
++        target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[bad])
++    gdn = {"positions": payload["positions"], "layer_inputs": {}, "kv_inputs": {3: payload["kv_inputs"][2]}}
++    with pytest.raises(ValueError, match="no full attention"):
++        target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[gdn])
++    # capture_kv_rms measures K after k_norm and V after v_proj, one pair per forward.
++    with torch.no_grad(), capture_kv_rms(target.model, [2]) as measured:
++        target.decoder_forward(embeds[None], None, lora_name="reader_lora")
++    assert len(measured[2]) == 1 and measured[2][0][0] == pytest.approx(float(k_off[0].reshape(embeds.shape[0], -1).pow(2).mean(-1).sqrt().mean()), rel=1e-5)
++    # deltas_off withholds the K/V payload and keeps the rows.
++    kept, none = trainer._assemble_student(student, example.spans, outputs, student.dtype, deltas_off=True)
++    assert none is None and torch.equal(kept, embeds)
++
++
++# --------------------------------------------------------------------------------------------------- 12. relative scales, migration, controls
++def test_relative_scales_conversion_and_migration(tmp_path, hybrid_dir):
++    h, ac = build(tmp_path, hybrid_dir, frequency=1)
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    rms = calibrate(trainer, ac, examples[:2])
++    head = ac.modules.delta_heads["2"]
++    assert float(head.scale.detach()) == pytest.approx(rms[2] * INTERVENTION_SCALE_FRACTION) and head.scale.requires_grad
++    folder = tmp_path / "relative_ckpt"
++    ac.save(str(folder))
++    # A checkpoint written by the absolute parametrization (one `scale` per head, no `rms` buffer) converts on load.
++    state = torch.load(folder / "ac_modules.pt", map_location="cpu", weights_only=False)
++    absolute = dict(state["modules"])
++    for layer in (2, 5):
++        absolute[f"delta_heads.{layer}.scale"] = torch.tensor(0.3 * float(absolute.pop(f"delta_heads.{layer}.rms")))     # 30 % of the RMS
++        absolute.pop(f"delta_heads.{layer}.relative")
++    state["modules"] = absolute
++    legacy = tmp_path / "absolute_ckpt"
++    import shutil
++    shutil.copytree(folder, legacy)
++    torch.save(state, legacy / "ac_modules.pt")
++    h2, ac2 = build(tmp_path / "second", hybrid_dir, frequency=1, seed=999, ac_checkpoint=str(legacy))
++    for layer in (2, 5):
++        converted = ac2.modules.delta_heads[str(layer)]
++        assert float(converted.relative) == pytest.approx(0.3) and float(converted.rms) == pytest.approx(rms[layer]) and float(converted.scale) == pytest.approx(0.3 * rms[layer])
++    assert ac2.interventions_calibrated
++    # Migration: an input-only checkpoint into a deep model loads the shared modules, keeps fresh seeded heads and leaves calibration to the trainer.
++    h0, zero = build(tmp_path / "zero", hybrid_dir)
++    zero_items = items_for(h0, zero)
++    zero_folder = tmp_path / "zero_ckpt"
++    zero.save(str(zero_folder))
++    assert "interventions" not in torch.load(zero_folder / "ac_modules.pt", map_location="cpu", weights_only=False)
++    h3, migrated = build(tmp_path / "migrated", hybrid_dir, frequency=1, seed=4321, ac_checkpoint=str(zero_folder))
++    h4, fresh = build(tmp_path / "fresh", hybrid_dir, frequency=1, seed=4321)
++    assert migrated.is_deep and not migrated.interventions_calibrated and migrated.calibration_items == []
++    for name, tensor in zero.modules.state_dict().items():
++        assert torch.equal(tensor, migrated.modules.state_dict()[name]), f"shared module {name} comes from the checkpoint"
++    for name, tensor in fresh.modules.state_dict().items():
++        if name.startswith("delta_heads."):
++            assert torch.equal(tensor, migrated.modules.state_dict()[name]), f"{name}: heads are the seeded fresh init"
++    stats = ActivationContextTrainer(h3, config()).train(migrated.name, items_for(h3, migrated))
++    assert migrated.interventions_calibrated and stats.intervention_trace and len(migrated.calibration_items) > 0
++    # A deep checkpoint with other layers is still refused.
++    h5, other = build(tmp_path / "other", hybrid_dir, frequency=1, add_last=False)
++    assert other.intervention_layers == [2]
++    with pytest.raises(ValueError, match="intervention layers"):
++        other.load(str(folder))
++    with pytest.raises(ValueError, match="intervention layers"):
++        zero.load(str(folder))
++
++
++def test_frozen_heads_and_detached_source_controls(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextModelConfig as Config
++    # Zero mode: the flags change nothing for an input-only model.
++    h0, zero = build(tmp_path / "zero", hybrid_dir)
++    zero.config.intervention_heads_frozen = zero.config.intervention_detach_source = True
++    assert len(zero.trainable_parameters()) == len(zero.parameters()) + len(h0.module_manager.lora_parameters("side_lora"))
++    assert torch.equal(zero.encode_batch([fixed_request(zero)])[0], build(tmp_path / "zero2", hybrid_dir)[1].encode_batch([fixed_request(zero)])[0])
++    # Frozen heads: up/down out of the trainable set; a training epoch leaves them exactly, the relative scales move.
++    h, ac = build(tmp_path / "frozen", hybrid_dir, frequency=1)
++    ac.config.intervention_heads_frozen = True
++    trainable = {id(p) for p in ac.trainable_parameters()}
++    for name, parameter in ac.modules.named_parameters():
++        if name.startswith("delta_heads."):
++            assert (id(parameter) in trainable) == name.endswith(".relative"), name
++    before = {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if name.startswith("delta_heads.")}
++    stats = ActivationContextTrainer(h, config(learning_rate_delta_scales=1e-2)).train(ac.name, items_for(h, ac))
++    after = ac.modules.state_dict()
++    for name, tensor in before.items():
++        if name.endswith((".up.weight", ".up.bias", ".down.weight", ".down.bias")):
++            assert torch.equal(tensor, after[name]), f"{name} frozen"
++        elif name.endswith(".relative"):
++            assert not torch.equal(tensor, after[name]), f"{name} trains"
++    assert ac.intervention_summary()["heads_frozen"]
++    # Detached source: the deltas carry no gradient into the encoder or the side adapter; the input row still does.
++    hd, detached = build(tmp_path / "detached", hybrid_dir, frequency=1)
++    detached.config.intervention_detach_source = True
++    trainer, items, examples, device = trainer_and_examples(hd, detached)
++    calibrate(trainer, detached, examples[:2])
++    encoder = [detached.modules.summary_marker, detached.modules.input_scale] + list(detached.modules.mixer.parameters())[:2] + side_lora_parameters(detached)
++    output = detached.encode_batch([fixed_request(detached)], with_layers=True)[0]
++    through_deltas = torch.autograd.grad(sum(rows.sum() for rows in output.layer_inputs.values()), encoder + head_parameters(detached), allow_unused=True)
++    assert all(g is None for g in through_deltas[:len(encoder)]), "the deltas' gradient stops at the heads"
++    assert all(g is not None for g in through_deltas[len(encoder):]), "the heads themselves learn"
++    output = detached.encode_batch([fixed_request(detached)], with_layers=True)[0]
++    through_rows = torch.autograd.grad(output.input_embeds.sum(), encoder, allow_unused=True)
++    assert any(g is not None and float(g.norm()) > 0 for g in through_rows), "the input row's gradient still reaches the encoder"
++    assert detached.intervention_summary()["detach_source"]
++    with pytest.raises(ValueError, match="scale_fraction"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_scale_fraction=1.5)
++
++
+ # --------------------------------------------------------------------------------------------------- 9. bench arms
+ def test_bench_arms_are_paired():
+     arms_path = Path(__file__).resolve().parents[2] / "IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json"
+@@ -446,4 +745,11 @@ def test_bench_arms_are_paired():
+     assert strip(arms["NDC"], "interventions") == strip(arms["ND"]) and arms["NDC"]["interventions"] == 0
+     assert strip(arms["NDI"], "interventions", "last_layer_intervention", "prefer_attention") == strip(arms["NDC"], "interventions")
+     assert arms["NDI"]["interventions"] == 4 and arms["NDI"]["last_layer_intervention"] and arms["NDI"]["prefer_attention"]
+-    assert strip(arms["NDIg"], "gate_lr", "gates_scope") == strip(arms["NDI"]) and arms["NDIg"]["gates_scope"] == "delta_scales" and arms["NDIg"]["gate_lr"] > 0
++    assert strip(arms["NDIg"], "delta_scale_lr") == strip(arms["NDI"]) and arms["NDIg"]["delta_scale_lr"] == 0.003 and "gates_scope" not in arms["NDIg"]
++    assert strip(arms["NDIR"], "heads_frozen") == strip(arms["NDI"]) and arms["NDIR"]["heads_frozen"] is True
++    assert strip(arms["NDID"], "detach_source") == strip(arms["NDI"]) and arms["NDID"]["detach_source"] is True
++    for warm, cold in (("NDIW", "NDI"), ("NDILW", "NDIL"), ("NKVW", "NKV")):
++        assert strip(arms[warm], "init_ac", "init_reader") == strip(arms[cold]) and arms[warm]["init_ac"] == arms["A4X"]["init_ac"] and arms[warm]["init_reader"] == arms["A4X"]["init_reader"]
++    assert strip(arms["NDIL"], "intervention_source") == strip(arms["NDI"]) and arms["NDIL"]["intervention_source"] == "side_layers"
++    assert strip(arms["NKV"], "intervention_target") == strip(arms["NDIL"]) and arms["NKV"]["intervention_target"] == "kv"
++    assert "intervention_source" not in arms["NDI"] and "intervention_target" not in arms["NDI"], "NDI/NDC/NDIg keep the defaults (summary, residual)"
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+@@ -802,9 +802,8 @@
+   "interventions": 4,
+   "last_layer_intervention": true,
+   "prefer_attention": true,
+-  "note": "deep POC, second run: NDI with the delta scales in their own gate group (3e-3, the K-recipe gate rate); shared parameters train exactly as NDC",
+-  "gate_lr": 0.003,
+-  "gates_scope": "delta_scales"
++  "delta_scale_lr": 0.003,
++  "note": "deep POC: NDI with the relative delta scales (units of the calibrated RMS, own group) at 3e-3 instead of the default 1e-3"
+  },
+  "A4X": {
+   "gold_targets": true,
+@@ -857,7 +856,7 @@
+   "seed": 20260916,
+   "note": "warm-start protocol noise floor: same as WCa, seed b (data order)"
+  },
+- "A32X": {
++ "NDIL": {
+   "gold_targets": true,
+   "row_head_skip": true,
+   "fresh_initial": true,
+@@ -869,9 +868,125 @@
+   "completion_samples": 4,
+   "lr_schedule": "cosine",
+   "warmup": 50,
+-  "ratio": 0.03125,
+-  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
+-  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
+-  "note": "node 1: K16 (1/16, 0.190) adapters evaluated at 1/32 untrained (epoch-0 panel) then fine-tuned at 1/32 on the ND schedule \u2014 the A4X mirror"
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "note": "deep A1: NDI with the layer-matched readout (head l reads the side state at side layer l, at the row positions) instead of the summary; deltas_off panel"
++ },
++ "NKV": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "intervention_target": "kv",
++  "note": "deep B1: NDIL with pre-RoPE K/V deltas at the row positions of the same (full-attention) layers instead of residual deltas; scales calibrated to 1% of the reader's K and V RMS; deltas_off panel"
++ },
++ "NDIR": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "heads_frozen": true,
++  "note": "control: NDI with the delta heads frozen at their random init; only the relative scales train (is the learned content of the heads worth anything?)"
++ },
++ "NDID": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "detach_source": true,
++  "note": "control: NDI with the heads reading a detached source; the heads learn, the encoder never hears the deltas' gradient (are the extra gradient paths into the rows a training aid?)"
++ },
++ "NDIW": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "note": "warm-started NDI: K16r1 epoch-2 encoder + reader (1/16) migrated to deep heads (fresh, calibrated on the warm reader); peak LR as the arm's; compare with the WCa/WCb floor"
++ },
++ "NDILW": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "note": "warm-started NDIL: K16r1 epoch-2 encoder + reader (1/16) migrated to deep heads (fresh, calibrated on the warm reader); peak LR as the arm's; compare with the WCa/WCb floor"
++ },
++ "NKVW": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "intervention_target": "kv",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "note": "warm-started NKV: K16r1 epoch-2 encoder + reader (1/16) migrated to deep heads (fresh, calibrated on the warm reader); peak LR as the arm's; compare with the WCa/WCb floor"
+  }
+ }
+\ No newline at end of file

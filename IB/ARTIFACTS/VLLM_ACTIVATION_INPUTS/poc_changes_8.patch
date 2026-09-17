@@ -1,0 +1,1966 @@
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+index d5ad6ae..9f9fd5d 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+@@ -3639,5 +3639,495 @@
+       "distill_weight": 1.0,
+       "distill_layers": -1,
+       "note": "Seed run at 1/32 from scratch WITH the dense term of round 7 (context distillation of the full-context base reader's attention outputs, λ 1 held for 25 % then decayed to 5 % at 75 %), otherwise SK32. The decision-gate case of DENSE_SUPERVISION_PLAN.md: the term was null in every warm pass (A32XD/A32XDn/A32XDR/A32KVTAD); here it shapes the rows before the reader has settled on the input channel. Read against SK32 at matched update counts and the rows-on / rows-off distillation panel."
++  },
++  "A32P2": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "encoder_passes": 2,
++    "note": "Iterative encoder (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + encoder_passes 2 - the side decoder reads [content; summaries] twice, pass 2 with the row inputs summaries_1 + refine_adapter(unit rows of pass 1) (a zero-initialised d_side -> 256 -> d_side bottleneck, so the run starts exactly on the control line); the rows come from pass 2; the mixer and pooling run once; side cost x 2 (the content positions are recomputed; a cache-continued rows-only pass is the production form). Read held - A32W (0.340) and held - passes_off (the same items with the rows of pass 1, the within-run number), with the refine_rms trace (0 = the path never opened) and the pass-1 -> pass-2 row cosine."
++  },
++  "A32KVTAP2": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": -1,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "intervention_source": "side_layers",
++    "scale_fraction": 0.2,
++    "delta_scale_lr": 0.001,
++    "head_style": "lora",
++    "calibration": "row_positions",
++    "intervention_target": "kv_transfer",
++    "encoder_passes": 2,
++    "note": "Iterative encoder (round 8): A32KVTA (kv_transfer at every full-attention layer, 1/32, K16r1 epoch-2 init) + encoder_passes 2 - the side decoder reads [content; summaries] twice, pass 2 with the row inputs summaries_1 + refine_adapter(unit rows of pass 1) (a zero-initialised d_side -> 256 -> d_side bottleneck, so the run starts exactly on the control line); the rows and the transferred side K/V (captured in the last pass only) come from pass 2; the mixer and pooling run once; side cost x 2 (the content positions are recomputed; a cache-continued rows-only pass is the production form). Read held - A32KVTA (0.322; held - deltas_off for the K/V channel) and held - passes_off (the same items with the rows of pass 1, the within-run number), with the refine_rms trace (0 = the path never opened) and the pass-1 -> pass-2 row cosine."
++  },
++  "A32SW": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "rare_weight": 1.0,
++    "note": "Surprisal-weighted terminal loss (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + rare_weight 1 - the per-token SFT weight 1 + s_t / mean(s), s_t = the base's no-context surprisal of the target token (from the stored no-context reference, free), normalised to average 1 per example; the reported losses stay unweighted; no module, order-aware, supervises the identifiers and numbers the rows lose first through the reader's own fetch. Read held - A32W (0.340) (unweighted) and the rare-token panel (loss / accuracy on each item's top-20 % base-surprisal tokens)."
++  },
++  "A32SP": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged. Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - A32W (0.340) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin)."
++  },
++  "A32SPKVTA": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": -1,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "intervention_source": "side_layers",
++    "scale_fraction": 0.2,
++    "delta_scale_lr": 0.001,
++    "head_style": "lora",
++    "calibration": "row_positions",
++    "intervention_target": "kv_transfer",
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): A32KVTA (kv_transfer at every full-attention layer, 1/32, K16r1 epoch-2 init) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged (the transferred K/V follow the new bins). Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - A32KVTA (0.322; held - deltas_off for the K/V channel) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin)."
++  },
++  "NSP": {
++    "gold_targets": true,
++    "row_head_skip": true,
++    "fresh_initial": true,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++    "seed": 20260915,
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): WCa (input-only, 1/16, ND recipe from the K16r1 epoch-2 adapters, seed a) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged. Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - WCa (0.130) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin)."
++  },
++  "A32P2n": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "encoder_passes": 2,
++    "note": "Iterative encoder (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + encoder_passes 2 - the side decoder reads [content; summaries] twice, pass 2 with the row inputs summaries_1 + refine_adapter(unit rows of pass 1) (a zero-initialised d_side -> 256 -> d_side bottleneck, so the run starts exactly on the control line); the rows come from pass 2; the mixer and pooling run once; side cost x 2 (the content positions are recomputed; a cache-continued rows-only pass is the production form). Read held - A32W (0.340) and held - passes_off (the same items with the rows of pass 1, the within-run number), with the refine_rms trace (0 = the path never opened) and the pass-1 -> pass-2 row cosine. EC2 twin (K16 epoch-2 init; control A32X 0.322)."
++  },
++  "A32KVTAP2n": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": -1,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "intervention_source": "side_layers",
++    "scale_fraction": 0.2,
++    "delta_scale_lr": 0.001,
++    "head_style": "lora",
++    "calibration": "row_positions",
++    "intervention_target": "kv_transfer",
++    "encoder_passes": 2,
++    "note": "Iterative encoder (round 8): A32KVTA (kv_transfer at every full-attention layer, 1/32, K16r1 epoch-2 init) + encoder_passes 2 - the side decoder reads [content; summaries] twice, pass 2 with the row inputs summaries_1 + refine_adapter(unit rows of pass 1) (a zero-initialised d_side -> 256 -> d_side bottleneck, so the run starts exactly on the control line); the rows and the transferred side K/V (captured in the last pass only) come from pass 2; the mixer and pooling run once; side cost x 2 (the content positions are recomputed; a cache-continued rows-only pass is the production form). Read held - A32KVTA (0.322; held - deltas_off for the K/V channel) and held - passes_off (the same items with the rows of pass 1, the within-run number), with the refine_rms trace (0 = the path never opened) and the pass-1 -> pass-2 row cosine. EC2 twin (K16 epoch-2 init; control A32KVTAn 0.300)."
++  },
++  "A32SWn": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "rare_weight": 1.0,
++    "note": "Surprisal-weighted terminal loss (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + rare_weight 1 - the per-token SFT weight 1 + s_t / mean(s), s_t = the base's no-context surprisal of the target token (from the stored no-context reference, free), normalised to average 1 per example; the reported losses stay unweighted; no module, order-aware, supervises the identifiers and numbers the rows lose first through the reader's own fetch. Read held - A32W (0.340) (unweighted) and the rare-token panel (loss / accuracy on each item's top-20 % base-surprisal tokens). EC2 twin (K16 epoch-2 init; control A32X 0.322)."
++  },
++  "A32SPn": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": 0,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): A32W (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged. Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - A32W (0.340) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin). EC2 twin (K16 epoch-2 init; control A32X 0.322)."
++  },
++  "A32SPKVTAn": {
++    "ratio": 0.03125,
++    "encoder_lr": 0.0001,
++    "reader_lr": 2e-05,
++    "penalty_weight": 1.0,
++    "penalty_fraction": 0.25,
++    "continue_share": 0.0,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "completion_tokens": 320,
++    "budget_seconds": 27000,
++    "final_train_subset": 512,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "gold_targets": true,
++    "reader_frozen_updates": 0,
++    "material": "material.json",
++    "gate_lr": null,
++    "fresh_initial": true,
++    "row_head_skip": true,
++    "lora_targets_extra": [],
++    "seed": null,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "clip_per_group": false,
++    "penalty_exact": false,
++    "ckpt_every": null,
++    "mixer_layers": null,
++    "row_scale_init": 1.0,
++    "loss_weighting": "example",
++    "gates_scope": "all",
++    "penalty_ref": "stored",
++    "interventions": -1,
++    "last_layer_intervention": true,
++    "prefer_attention": true,
++    "deltas_off": true,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "intervention_source": "side_layers",
++    "scale_fraction": 0.2,
++    "delta_scale_lr": 0.001,
++    "head_style": "lora",
++    "calibration": "row_positions",
++    "intervention_target": "kv_transfer",
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): A32KVTA (kv_transfer at every full-attention layer, 1/32, K16r1 epoch-2 init) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged (the transferred K/V follow the new bins). Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - A32KVTA (0.322; held - deltas_off for the K/V channel) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin). EC2 twin (K16 epoch-2 init; control A32KVTAn 0.300)."
++  },
++  "NSPn": {
++    "gold_targets": true,
++    "row_head_skip": true,
++    "fresh_initial": true,
++    "micro_batch": 3,
++    "ckpt_min_tokens": 1700,
++    "train_items": 8192,
++    "epochs": 1,
++    "reporting_interval": 0.125,
++    "completion_samples": 4,
++    "lr_schedule": "cosine",
++    "warmup": 50,
++    "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++    "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++    "seed": 20260915,
++    "pool_surprisal": 1.0,
++    "note": "Surprisal-weighted summary pooling (round 8): WCa (input-only, 1/16, ND recipe from the K16r1 epoch-2 adapters, seed a) + pool_surprisal 1 - the summary bins are drawn by cumulative mass 1 + s_t / mean(s) (s_t = the side base's no-context surprisal of the content token, one extra no-grad side forward per part, cached) instead of token count, so a row covers an equal share of the passage's entropy plus the token-count prior (a bin is at most 2 x the uniform width + 2), plus a zero-initialised per-head bias s_t / mean(s) on the pooling logits; rows per part unchanged. Moves bits from cheap tokens to expensive ones: the lever the findings point at. Read held - WCa (0.130) and the rare-token panel, with the pool_bins trace (mean surprisal per row, first / last rows, widest bin). EC2 twin (K16 epoch-2 init; control WCn 0.122)."
+   }
+ }
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+index dd14016..c079c62 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+@@ -33,7 +33,8 @@ DEFAULT_ARM = dict(ratio=1 / 16, encoder_lr=1e-4, reader_lr=2e-5, penalty_weight
+                    final_train_subset=512, micro_batch=1, ckpt_min_tokens=2048, gold_targets=False, reader_frozen_updates=0, material='material.json', gate_lr=None, fresh_initial=False, row_head_skip=False, lora_targets_extra=[], seed=None, lr_schedule='constant', warmup=10, clip_per_group=False, penalty_exact=False, ckpt_every=None, mixer_layers=None, row_scale_init=1.0, loss_weighting='example', gates_scope='all', penalty_ref='stored',
+                    interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual', intervention_attention_depth='final', scale_fraction=0.05, delta_scale_lr=1e-3, heads_frozen=False, detach_source=False, deltas_off=True, head_style='scaled', calibration='no_rows', heads_only_updates=0, transfer_init=1.0, transfer_correction=False, intervention_layers=None,
+                    distill_weight=0.0, distill_layers=None, distill_source='attn_out', distill_hold=0.25, distill_decay_end=0.75, distill_floor=0.05,
+-                   init_ac=None, init_reader=None, note='')   # intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); distill_*: dense supervision - the base reader's full-context attention outputs distilled into the row-fed reader at the target positions (weight 0 = off; layers: list, -1 = every full-attention layer, null = the intervention layers of a deep arm else every full-attention layer; the hold / decay-end fractions and the floor share of the λ schedule)
++                   encoder_passes=1, rare_weight=0.0, pool_surprisal=0.0,
++                   init_ac=None, init_reader=None, note='')   # encoder_passes: iterative encoder (side-decoder passes over [content; summaries]; pass k >= 2 re-reads with summaries_1 + refine_adapter(rows of pass k - 1), zero-init; rows and K/V from the last pass; 1 = today); rare_weight: surprisal-weighted terminal loss (per-token weight 1 + rare_weight x s_t / mean(s), s_t = the base's no-context surprisal from the stored reference; metric unweighted; 0 = off); pool_surprisal: surprisal-weighted summary pooling (bins by cumulative mass 1 + pool_surprisal x s_t / mean(s) + a zero-init per-head logit bias; rows per part unchanged; 0 = today's bins); intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); distill_*: dense supervision - the base reader's full-context attention outputs distilled into the row-fed reader at the target positions (weight 0 = off; layers: list, -1 = every full-attention layer, null = the intervention layers of a deep arm else every full-attention layer; the hold / decay-end fractions and the floor share of the λ schedule)
+                    # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only; -1 = every full-attention layer); transfer_init / transfer_correction: kv_transfer's takeover init and optional zero-init correction head; deltas_off: the extra panel without the deltas (deep arms only); head_style: 'scaled' (unit rows x calibrated x learned relative scale) or 'lora' (zero-initialized down projection, no scale); calibration: 'no_rows' (stripped histories) or 'row_positions' (real sequences, at the rows); heads_only_updates: first N updates train the intervention modules only
+ ARMS = {
+     'S': dict(DEFAULT_ARM, train_items=512, epochs=2, reporting_interval=0.25, completion_samples=8, note='smoke: shape and timing'),
+@@ -82,7 +83,8 @@ def phase(reporter, name, **values):
+ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra=(), ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, row_scale_init=1.0,
+             interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual',
+             scale_fraction=0.05, heads_frozen=False, detach_source=False, intervention_attention_depth='final', head_style='scaled', calibration='no_rows',
+-            transfer_init=1.0, transfer_correction=False, intervention_layers=None):
++            transfer_init=1.0, transfer_correction=False, intervention_layers=None, encoder_passes=1, pool_surprisal=0.0):
++    # encoder_passes / pool_surprisal: the round-8 write-side settings of the AC model config (the iterative encoder's passes; the surprisal-weighted summary pooling's strength)
+     # intervention_layers: an explicit list of reader layers (the config's intervention_layers; needs interventions 0, the frequency rule is replaced)
+     # head_style: 'scaled' (today's unit rows x calibrated RMS x learned relative scale) or 'lora' (down(silu(up(z))), down zero-initialized: zero delta at init, no scale group)
+     # calibration: 'no_rows' (median residual RMS of the stripped histories) or 'row_positions' (mean RMS at the row positions of real sequences with the rows present)
+@@ -121,6 +123,7 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
+                                                                         intervention_head_style=head_style, intervention_calibration=calibration,
+                                                                         intervention_transfer_init=transfer_init, intervention_transfer_correction=transfer_correction,
+                                                                         intervention_layers=list(intervention_layers) if intervention_layers is not None else None,
++                                                                        encoder_passes=int(encoder_passes), pool_surprisal=float(pool_surprisal),
+                                                                         **({'mixer_layers': mixer_layers} if mixer_layers is not None else {})))
+     return h
+ 
+@@ -216,6 +219,7 @@ def config(arm, **overrides):
+                   no_context_penalty_weight=arm['penalty_weight'] if arm['reader_lr'] > 0 else 0.0, no_context_penalty_fraction=arm['penalty_fraction'],
+                   distill_weight=arm['distill_weight'], distill_layers=arm['distill_layers'], distill_source=arm['distill_source'],
+                   distill_hold=arm['distill_hold'], distill_decay_end=arm['distill_decay_end'], distill_floor=arm['distill_floor'],
++                  rare_weight=arm['rare_weight'],
+                   checkpoint_every_epoch=True)
+     values.update(overrides)
+     return ActivationContextTrainingConfig(**values)
+@@ -234,7 +238,8 @@ class RunReporter:
+                 super().__init__(str(folder), title,
+                                  'The reader sees each passage only through its compressed rows and must reproduce it. Novel = held-out tool outputs from '
+                                  'unseen trajectories; wiki = NQ passages the base model has likely memorized. No context = the trained reader without the rows.',
+-                                 set_labels={'reporting': 'AC student, held-out', 'validation': 'no context, current reader, held-out novel', 'deltas_off': 'AC student, deltas off, held-out'})
++                                 set_labels={'reporting': 'AC student, held-out', 'validation': 'no context, current reader, held-out novel', 'deltas_off': 'AC student, deltas off, held-out',
++                                             'passes_off': 'AC student, passes off (pass-1 rows), held-out'})
+                 self.set_text('summary', 'Run summary', '')
+                 self.initialize_line_plot('fidelity', 'Greedy reconstruction fidelity (sampled items)',
+                     'Word-level similarity (difflib ratio) between the greedy reconstruction and the passage on the fixed sample items.',
+@@ -246,9 +251,9 @@ class RunReporter:
+                 super().render(force=force)
+             def report_eval(self, progress, name, summary):
+                 super().report_eval(progress, name, summary)
+-                if not summary['items'] or name not in ('reporting', 'deltas_off'): return
++                if not summary['items'] or name not in ('reporting', 'deltas_off', 'passes_off'): return
+                 for kind, values in summary['by_kind'].items():
+-                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, kind) + (' (deltas off)' if name == 'deltas_off' else '')
++                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, kind) + {'deltas_off': ' (deltas off)', 'passes_off': ' (passes off)'}.get(name, '')
+                     for widget, key in (('gold_nll', 'gold_nll'), ('token_accuracy', 'token_accuracy')):
+                         if values.get(key) is not None and widget in self.widgets:
+                             self._ensure_series(widget, label); self.add_data_point(widget, {'x': self.epoch_x, label: values[key]})
+@@ -314,7 +319,8 @@ def run(label):
+                     intervention_source=arm['intervention_source'], intervention_target=arm['intervention_target'],
+                     scale_fraction=arm['scale_fraction'], heads_frozen=arm['heads_frozen'], detach_source=arm['detach_source'],
+                     intervention_attention_depth=arm['intervention_attention_depth'], head_style=arm['head_style'], calibration=arm['calibration'],
+-                    transfer_init=arm['transfer_init'], transfer_correction=arm['transfer_correction'], intervention_layers=arm['intervention_layers'])
++                    transfer_init=arm['transfer_init'], transfer_correction=arm['transfer_correction'], intervention_layers=arm['intervention_layers'],
++                    encoder_passes=arm['encoder_passes'], pool_surprisal=arm['pool_surprisal'])
+         ac = h.module_manager.get_ac_model(AC); ac.prepare(); h.module_manager.ensure_lora(READER)
+         initial_hash = parameter_hash(ac, h)
+         deep_hash = parameter_hash(ac, h, deep=True) if ac.is_deep else None
+@@ -340,7 +346,14 @@ def run(label):
+             + (f' · dense supervision: the base reader\'s full-context attention outputs (after o_proj, no adapters, no rows) distilled into the row-fed reader at the target positions of '
+                f'{"reader layers " + str(arm["distill_layers"]) if isinstance(arm["distill_layers"], list) else "every full-attention reader layer" if arm["distill_layers"] == -1 or not ac.is_deep else "the intervention layers"}, '
+                f'λ {arm["distill_weight"]:g} held for {arm["distill_hold"]:.0%} of the run then decaying linearly to {arm["distill_floor"]:g} × λ at {arm["distill_decay_end"]:.0%} '
+-               f'(the term per layer is mean ||A_student - A_teacher||² / the teacher\'s mean squared norm; panels score it with the rows on and off and the rows\' attention share)' if arm['distill_weight'] > 0 else ''),
++               f'(the term per layer is mean ||A_student - A_teacher||² / the teacher\'s mean squared norm; panels score it with the rows on and off and the rows\' attention share)' if arm['distill_weight'] > 0 else '')
++            + (f' · iterative encoder: {arm["encoder_passes"]} side-decoder passes (pass k ≥ 2 re-reads [content; summaries_1 + refine_adapter(rows of pass k − 1)], zero-init adapter; rows and side K/V from the last pass; '
++               f'side cost × {arm["encoder_passes"]}; "passes off" panel = the same items with the rows of pass 1)' if arm['encoder_passes'] > 1 else '')
++            + (f' · surprisal-weighted terminal loss: per-token weight 1 + {arm["rare_weight"]:g} × s_t / mean(s) (s_t = the base\'s no-context surprisal of the target token, from the stored reference; '
++               f'weights average 1 per example; the reported losses stay unweighted)' if arm['rare_weight'] > 0 else '')
++            + (f' · surprisal-weighted summary pooling: bins by cumulative mass 1 + {arm["pool_surprisal"]:g} × s_t / mean(s) (s_t = the side base\'s no-context surprisal of the content token) '
++               f'plus a zero-init per-head logit bias × {arm["pool_surprisal"]:g}; rows per part unchanged' if arm['pool_surprisal'] > 0 else '')
++            + (' · rare-token panel: the held-out loss / accuracy on the target tokens in each item\'s top 20 % of base surprisal' if arm['rare_weight'] > 0 or arm['pool_surprisal'] > 0 else ''),
+             f'Data · {len(train)} training passages (tool outputs from SWE and deep-research trajectories) × {arm["epochs"]} epochs = {math.ceil(len(train) / 8) * arm["epochs"]} updates of 8 · '
+             f'held-out panel every {arm["reporting_interval"]:g} epoch: {len(held)} novel + {len(wiki)} Wikipedia passages · no-context floor on the novel panel',
+             f'Initial adapters hash {initial_hash[:12]}… · seed {SEED} · SFT on the passage tokens'
+@@ -394,6 +407,13 @@ def run(label):
+                   'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor,
+                   'penalty_last': stats.penalty[-1] if stats.penalty else None,
+                   'distill': {'layers': stats.distill_layers, 'lambda_last': stats.distill_lambda[-1], 'loss_last': stats.distill_loss[-1], 'panel_last': stats.distill_panel[-1] if stats.distill_panel else None} if stats.distill_lambda else None,
++                  'encoder_passes': arm['encoder_passes'], 'rare_weight': arm['rare_weight'], 'pool_surprisal': arm['pool_surprisal'],
++                  'passes_off': {k: v for k, v in (stats.passes_off or {}).items() if k != 'per_item'} if stats.passes_off else None,
++                  'passes_off_novel': ((stats.passes_off or {}).get('by_kind') or {}).get('reconstruct'), 'passes_off_wiki': ((stats.passes_off or {}).get('by_kind') or {}).get('wiki'),
++                  'rare_token': {'held_loss': last.get('rare_token_loss'), 'held_accuracy': last.get('rare_token_accuracy'),
++                                 'novel': {k: (last.get('by_kind') or {}).get('reconstruct', {}).get(k) for k in ('rare_token_loss', 'rare_token_accuracy')},
++                                 'wiki': {k: (last.get('by_kind') or {}).get('wiki', {}).get(k) for k in ('rare_token_loss', 'rare_token_accuracy')}} if last.get('rare_token_loss') is not None else None,
++                  'encoder_trace_last': stats.encoder_trace[-1] if stats.encoder_trace else None, 'encoder_panel_last': stats.encoder_panel[-1] if stats.encoder_panel else None,
+                   'duration_seconds': time.monotonic() - start}
+         write_json(folder / 'result.json', result)
+         r.set_text('result', 'Final result', json.dumps({k: v for k, v in result.items() if k not in ('configuration',)}, indent=2, default=str))
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index 8037bcd..1094a8a 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -28,6 +28,7 @@ fp32; the bases stay bf16. Checkpoints: `AC_MODELS/<name>/round_NNN` (+ `latest`
+ from __future__ import annotations
+ 
+ import dataclasses
++import hashlib
+ import json
+ import math
+ import shutil
+@@ -56,6 +57,7 @@ from .ac_model_utils import (
+     KVSlotHead,
+     KVTransferHead,
+     PassageAttention,
++    RefineAdapter,
+     EncodeQueue,
+     EncodeRequest,
+     RowCache,
+@@ -86,6 +88,7 @@ KV_TARGETS = ("kv", "kv_slots", "kv_transfer", "kv_transfer_full")   # targets t
+ KV_REPLACEMENT_TARGETS = ("kv_slots", "kv_transfer", "kv_transfer_full")   # the row slices are REPLACED (keep x the reader's own + content): one reader path, one engine mapping
+ KV_TRANSFER_TARGETS = ("kv_transfer", "kv_transfer_full")   # the content is the side model's own K/V at the same layer ("_full": over the whole passage run - a CEILING)
+ INTERVENTION_MODULE_PREFIXES = ("delta_heads.", "passage_attention.", "cross_attention.")   # state-dict / parameter-name prefixes of the intervention modules
++REFINE_ADAPTER_RANK = 256        # iterative encoder: the refine adapter's bottleneck width (min(256, d_side))
+ DIAGNOSTIC_CAPACITY = 256        # per layer, the encoder keeps at most this many diagnostic values between trace points    # delta heads draw from a forked stream (initial seed ^ mask): the shared modules and the adapters draw as before
+ PreparedPart = tuple[list[int], list[tuple[int, int]], list[torch.Tensor], int, bool]
+ 
+@@ -118,6 +121,14 @@ class ActivationContextModelConfig:
+     row_head_skip: bool = False              # target head = RMS-normalized (x + FFN(x)) with the FFN's output zero-initialized: rows start as the side state itself
+     row_scale_init: float = 1.0              # target_head.scale starts at this multiple of the target embedding RMS (rows louder than tokens from the start)
+     side_lora_target_modules: list[str] | None = None   # None = the manager's default seven projections
++    encoder_passes: int = 1                  # iterative encoder: side-decoder passes over [content; summaries]. 1 = today. Pass k >= 2 re-reads the passage with
++                                             # summaries_k = summaries_1 + refine_adapter(unit_rows(the final row states of pass k - 1)) (marker and positions as in pass 1);
++                                             # the mixer and pooling run once; the rows and any K/V capture come from the LAST pass; the adapter is zero-initialized
++                                             # (pass 2 starts as an exact re-read). Write-time cost x passes, reader and inference untouched.
++    pool_surprisal: float = 0.0              # surprisal-weighted summary pooling: the summary bins are drawn by cumulative mass 1 + pool_surprisal x s_t / mean(s)
++                                             # (s_t = the side BASE model's no-context surprisal of content token t, one extra no-grad side forward per uncached part,
++                                             # cached by token ids) instead of token count, and the pooling logits gain a zero-initialised per-head bias
++                                             # pool_surprisal x b_h x s_t / mean(s). Rows per part unchanged. 0 = today's token-count bins (bit-identical).
+     intervention_frequency: int = 0          # deep inputs: interior reader layers receiving a residual delta per row (0 = the embedding channel only; the product default becomes 4 once the POC passes);
+                                              # -1 = every full-attention layer of the reader (0 excluded; the last-layer flag is moot)
+     intervention_layers: list[int] | None = None   # explicit reader layers instead of the frequency rule (with intervention_frequency 0; 0 < layer < depth, unique)
+@@ -206,6 +217,13 @@ class ActivationContextModelConfig:
+             raise ValueError("Positive pooling stride must not exceed its positive window")
+         if not 0 < self.min_view_rows <= self.max_view_rows:
+             raise ValueError("Invalid view-row bounds")
++        if type(self.encoder_passes) is not int or self.encoder_passes < 1:
++            raise ValueError("encoder_passes must be an integer >= 1 (1 = a single side-decoder pass, today's encoder)")
++        if self.encoder_passes > 1 and self.intervention_target in ("kv_transfer_full", "cross_attention"):
++            raise ValueError(f"encoder_passes > 1 with intervention_target '{self.intervention_target}' would cost an extra pass for nothing: their spliced content comes "
++                             "from the content positions, whose states are pass-invariant under causal attention (only the summary positions change)")
++        if not math.isfinite(self.pool_surprisal) or self.pool_surprisal < 0:
++            raise ValueError("pool_surprisal must be finite and nonnegative (0 = token-count bins)")
+ 
+ 
+ @dataclass
+@@ -241,7 +259,7 @@ class ActivationContextModules(nn.Module):
+         self.mixer = nn.ModuleList([BlockedLocalAttentionLayer(d_side, config.mixer_heads, config.mixer_window) for _ in range(config.mixer_layers)])
+         self.pooling = (WindowedPooling(d_side, config.mixer_heads, config.input_pooling_window, config.input_pooling_stride)
+                         if config.input_pooling_stride else None)
+-        self.summary_pooling = AdaptiveSummaryPooling(d_side, config.mixer_heads)
++        self.summary_pooling = AdaptiveSummaryPooling(d_side, config.mixer_heads, surprisal=config.pool_surprisal)
+         self.summary_marker = nn.Parameter(torch.empty(d_side))
+         self.position_scale = nn.Parameter(torch.tensor(0.1))
+         self.input_scale = nn.Parameter(torch.tensor(1.0))
+@@ -286,6 +304,13 @@ class ActivationContextModules(nn.Module):
+             with torch.random.fork_rng(devices=[]):
+                 torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 1)
+                 self.passage_attention = nn.ModuleDict({str(layer): PassageAttention(d_side, max(1, min(d_side, d_target) // 4)) for layer in self.intervention_layers})
++        # Iterative encoder: the refine adapter exists (parameters, state-dict keys) only with encoder_passes >= 2, drawn from its own forked stream so every
++        # other module (and the adapters injected later) draws exactly what it draws at encoder_passes 1; its output projection is zero-initialized.
++        self.refine_adapter: RefineAdapter | None = None
++        if config.encoder_passes >= 2:
++            with torch.random.fork_rng(devices=[]):
++                torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 2)
++                self.refine_adapter = RefineAdapter(d_side, min(REFINE_ADAPTER_RANK, d_side))
+ 
+     @property
+     def is_deep(self) -> bool:
+@@ -317,7 +342,9 @@ class ActivationContextModel:
+         if self.kv_transfer and self.side is not self.target:
+             raise ValueError("the K/V transfer targets need the side and the reader to share one base model: the side K/V are read in the reader's native format")
+         self.calibration_items: list[str] = []      # what calibrate_interventions measured on (checkpoint provenance)
+-        self.intervention_diagnostics: dict[str, dict[int | str, list[torch.Tensor]]] = {"cosine": {}, "delta_rms": {}}   # per layer (K/V: "l:k" / "l:v"), per encoded example: cosine(delta, target_head(z)) and the delta RMS; the trainer drains them
++        self.intervention_diagnostics: dict[str, dict[int | str, list[torch.Tensor]]] = {"cosine": {}, "delta_rms": {}, "encoder": {}}   # per layer (K/V: "l:k" / "l:v"), per encoded example: cosine(delta, target_head(z)) and the delta RMS; the trainer drains them
++                                                                                                                                      # "encoder": the round-8 write-side diagnostics per encoded part (refine_rms, pass_cosine, pool_*), drained the same way
++        self.surprisal_cache: dict[str, torch.Tensor] = {}   # pool_surprisal: the side base's no-context surprisal per part, keyed by the part's side token ids (the base never changes)
+         self._calibrating = False                    # encode_batch may run before calibration inside `uncalibrated_encoding` (the row-position calibration needs the rows)
+         self.version = 0
+         self.mode = ROLLOUT
+@@ -739,6 +766,7 @@ class ActivationContextModel:
+         # Work at unit scale so a random pre-norm residual cannot overwhelm the content.
+         x = x / modules.embedding_scale.clamp_min(1e-8)
+         x = x + modules.position_scale * sinusoidal_positions(max_length, self.d_side, device)[None]
++        surprisals = self._content_surprisal(items, device) if self.config.pool_surprisal > 0 else None   # one per item: [N] fp32 on the device
+         phase_started = self._phase("embed", phase_started, device)
+         autocast = torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=device.type == "cuda")
+         def run(module: nn.Module, *args: torch.Tensor | int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+@@ -753,22 +781,32 @@ class ActivationContextModel:
+             if modules.pooling is not None:
+                 pooled, window_valid = run(modules.pooling, x, valid)
+             phase_started = self._phase("pooling", phase_started, device)
+-            sequences = []
++            sequences, content_blocks, summary_blocks = [], [], []
+             for row, (_, _, _, num_rows, _) in enumerate(items):
+                 mixed = x[row, :lengths[row]]
+                 content = mixed if modules.pooling is None else pooled[row][window_valid[row]]
+-                summaries = run(modules.summary_pooling, mixed, num_rows)
++                if surprisals is None:
++                    summaries = run(modules.summary_pooling, mixed, num_rows)
++                else:
++                    summaries = run(modules.summary_pooling, mixed, num_rows, surprisals[row])
++                    if self.mode == TRAINING:
++                        self._record_pool_diagnostics(surprisals[row], lengths[row], num_rows)
+                 summaries = (unit_rows(summaries) + modules.summary_marker
+                              + modules.position_scale * sinusoidal_positions(num_rows, self.d_side, device))
+-                sequences.append(torch.cat([unit_rows(content), unit_rows(summaries)], dim=0) * modules.input_scale)
++                content_blocks.append(unit_rows(content))                   # shared by every pass (the mixer and pooling run once)
++                summary_blocks.append(summaries)                             # summaries_1: the base of every later pass's row inputs
++                sequences.append(torch.cat([content_blocks[-1], unit_rows(summaries)], dim=0) * modules.input_scale)
+         phase_started = self._phase("summaries", phase_started, device)
+         seq_lengths = [int(sequence.shape[0]) for sequence in sequences]
+         if self.profile_phases:
+             self.stats.decoder_sequences.extend(seq_lengths)
+         max_seq = max(seq_lengths)
+-        inputs_embeds = torch.zeros(batch_size, max_seq, self.d_side, device=device, dtype=torch.float32)
+-        for row, sequence in enumerate(sequences):
+-            inputs_embeds[row, :sequence.shape[0]] = sequence
++        def padded(sequences: list[torch.Tensor]) -> torch.Tensor:
++            inputs_embeds = torch.zeros(batch_size, max_seq, self.d_side, device=device, dtype=torch.float32)
++            for row, sequence in enumerate(sequences):
++                inputs_embeds[row, :sequence.shape[0]] = sequence
++            return inputs_embeds
++        inputs_embeds = padded(sequences)
+         attention_mask = None
+         if batch_size > 1:
+             attention_mask = torch.zeros(batch_size, max_seq, device=device, dtype=torch.long)
+@@ -792,22 +830,53 @@ class ActivationContextModel:
+             kv_capture = capture_kv_rows(self.side.model, set(self.intervention_layers), kv_spans)
+         else:
+             kv_capture = nullcontext()
+-        if side_layers:
+-            from ..harness.hf_utils import capture_layer_input_rows
+-            # Passage attention at depth "matched" needs the passage tokens' states too: the whole valid sequence is captured (a view, no copy).
+-            # The transfer's correction reads the side state at the spliced positions.
+-            row_spans = kv_spans if transfer else [((0 if matched else seq_lengths[row] - item[3]), seq_lengths[row]) for row, item in enumerate(items)]
+-            with kv_capture as captured_kv, capture_layer_input_rows(self.side.model, set(self.intervention_source_layers), row_spans) as captured:
+-                hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
+-                            lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
+-            if any(len(states) != batch_size for states in captured.values()):
+-                raise RuntimeError("side-layer capture missed rows (the side decoder did not run the requested layers once)")
+-        else:
+-            with kv_capture as captured_kv:
++        # Iterative encoder: passes 1 .. encoder_passes - 1 run without any capture (no hook is registered, so nothing fires); the LAST pass runs
++        # inside the capture contexts, so the layer-matched states and the transferred K/V are those of the final read, like the rows. Pass k >= 2
++        # re-reads the same content with the row inputs summaries_1 + refine_adapter(unit_rows(the final row states of pass k - 1)); the graph runs
++        # through every pass (each pass is its own checkpointed decoder call).
++        passes = int(getattr(self, "_encoder_passes_override", 0) or self.config.encoder_passes)   # the trainer's passes_off panel forces 1
++        first_rows: list[torch.Tensor] = []                                                       # pass-1 final row states (detached), for the pass cosine
++        for pass_index in range(1, passes + 1):
++            if pass_index > 1:
++                with autocast:
++                    refined = []
++                    for row, (_, _, _, num_rows, _) in enumerate(items):
++                        end = seq_lengths[row]
++                        previous = unit_rows(hidden[row, end - num_rows:end].float())
++                        if pass_index == 2 and self.mode == TRAINING:
++                            first_rows.append(previous.detach())
++                        refinement = modules.refine_adapter(previous)
++                        if pass_index == passes and self.mode == TRAINING:
++                            self._record_diagnostic("encoder", "refine_rms", self._row_rms(refinement) / self._row_rms(summary_blocks[row]).clamp_min(1e-8))
++                        summaries = summary_blocks[row] + refinement
++                        refined.append(torch.cat([content_blocks[row], unit_rows(summaries)], dim=0) * modules.input_scale)
++                inputs_embeds = padded(refined)
++            last = pass_index == passes
++            if side_layers and last:
++                from ..harness.hf_utils import capture_layer_input_rows
++                # Passage attention at depth "matched" needs the passage tokens' states too: the whole valid sequence is captured (a view, no copy).
++                # The transfer's correction reads the side state at the spliced positions.
++                row_spans = kv_spans if transfer else [((0 if matched else seq_lengths[row] - item[3]), seq_lengths[row]) for row, item in enumerate(items)]
++                with kv_capture as captured_kv, capture_layer_input_rows(self.side.model, set(self.intervention_source_layers), row_spans) as captured:
++                    hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
++                                lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
++                if any(len(states) != batch_size for states in captured.values()):
++                    raise RuntimeError("side-layer capture missed rows (the side decoder did not run the requested layers once)")
++            elif last:
++                with kv_capture as captured_kv:
++                    hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
++                                lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
++            else:
+                 hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
+                             lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
+         if transfer and any(len(keys) != batch_size or len(values) != batch_size for keys, values in captured_kv.values()):
+             raise RuntimeError("side K/V capture missed rows (the side decoder did not run the requested full-attention layers once)")
++        if first_rows:                                                          # pass cosine: the pass-1 rows against the last pass's, per part (unit rows)
++            with torch.no_grad():
++                for row, (_, _, _, num_rows, _) in enumerate(items):
++                    end = seq_lengths[row]
++                    final = unit_rows(hidden[row, end - num_rows:end].detach().float())
++                    self._record_diagnostic("encoder", "pass_cosine", F.cosine_similarity(first_rows[row], final, dim=-1).mean())
+         phase_started = self._phase("side_decoder", phase_started, device)
+         for row, (ids, _, _, num_rows, is_recursive) in enumerate(items):
+             end = seq_lengths[row]
+@@ -889,6 +958,64 @@ class ActivationContextModel:
+             return 0, max(seq_length - num_rows, num_rows)
+         return seq_length - num_rows, seq_length
+ 
++    @torch.no_grad()
++    def _content_surprisal(self, items: list[PreparedPart], device: torch.device) -> list[torch.Tensor]:
++        """pool_surprisal: per item the side BASE model's (no adapter) no-context surprisal of every side token, s_t = -log p_base(id_t | id_<t) in nats,
++        s_0 = 0 and the placeholder runs of nested parts set to the mean over the real tokens; one right-padded forward per batch, the gold log-prob read
++        chunk by chunk through the LM head. Cached per part by its token ids (the base never changes, so the cache is valid across training)."""
++        from ..agent_training.agent_training_utils import head_logits
++        results: list[torch.Tensor | None] = [None] * len(items)
++        keys, pending = [], []
++        for index, (ids, *_) in enumerate(items):
++            key = hashlib.sha256(json.dumps(ids, separators=(",", ":")).encode()).hexdigest()
++            keys.append(key)
++            cached = self.surprisal_cache.get(key)
++            if cached is not None:
++                results[index] = cached.to(device)
++            else:
++                pending.append(index)
++        if pending:
++            base = self.side.model
++            embedding = base.get_input_embeddings()
++            head = base.get_output_embeddings()
++            lengths = [len(items[index][0]) for index in pending]
++            longest = max(lengths)
++            ids = torch.full((len(pending), longest), self.pad_id, device=device, dtype=torch.long)
++            for row, index in enumerate(pending):
++                ids[row, :lengths[row]] = torch.tensor(items[index][0], device=device)
++            hidden = self.side.decoder_forward(embedding(ids), None, lora_name=None, gradient_checkpointing=False)   # right padding: a real token never sees a pad
++            surprisal = torch.zeros(len(pending), longest, device=device, dtype=torch.float32)
++            chunk = 256
++            for start in range(0, longest - 1, chunk):
++                end = min(start + chunk, longest - 1)
++                logp = F.log_softmax(head_logits(hidden[:, start:end], head), dim=-1)
++                surprisal[:, start + 1:end + 1] = -logp.gather(-1, ids[:, start + 1:end + 1, None])[..., 0]
++            for row, index in enumerate(pending):
++                values = surprisal[row, :lengths[row]].clone()
++                spans = items[index][1]
++                if spans:
++                    real = torch.ones(lengths[row], dtype=torch.bool, device=device)
++                    for span_start, span_end in spans:
++                        real[span_start:span_end] = False
++                    values[~real] = values[real].mean() if bool(real.any()) else 0.0
++                results[index] = values
++                if len(self.surprisal_cache) >= 100_000:
++                    self.surprisal_cache.pop(next(iter(self.surprisal_cache)))
++                self.surprisal_cache[keys[index]] = values.detach().cpu()
++        return results   # type: ignore[return-value]
++
++    def _record_pool_diagnostics(self, surprisal: torch.Tensor, length: int, num_rows: int) -> None:
++        """pool_surprisal (training mode): per part, the mean surprisal of the tokens in each bin - its mean over the rows, the first row's and the last
++        row's - and the widest bin against the uniform width, as 0-d tensors."""
++        with torch.no_grad():
++            starts, ends, width, _ = self.modules.summary_pooling.bins(length, num_rows, surprisal)
++            row_means = torch.stack([surprisal[int(start):int(end)].mean() for start, end in zip(starts.tolist(), ends.tolist())])
++            self._record_diagnostic("encoder", "pool_row_mean", row_means.mean())
++            self._record_diagnostic("encoder", "pool_first", row_means[0])
++            self._record_diagnostic("encoder", "pool_last", row_means[-1])
++            self._record_diagnostic("encoder", "pool_width_max", torch.tensor(float(width)))
++            self._record_diagnostic("encoder", "pool_width_uniform", torch.tensor(float((length + num_rows - 1) // num_rows + 1)))
++
+     @staticmethod
+     def _row_rms(rows: torch.Tensor) -> torch.Tensor:
+         """Mean over rows of the per-row RMS, detached (0-d tensor: no host sync)."""
+@@ -974,14 +1101,29 @@ class ActivationContextModel:
+         side_lora = folder / SIDE_LORA_FOLDER
+         self._validate_adapter(side_lora, self.config.base_side_model_lora_name)
+         modules_state = dict(state["modules"])
+-        if migrate:
+-            deep_keys = {name for name in self.modules.state_dict() if name.startswith(INTERVENTION_MODULE_PREFIXES) or name in ("intervention_calibration", "interventions_calibrated")}
++        # Iterative encoder: a checkpoint written at encoder_passes 1 (no refine adapter) loads into a model with more passes, the adapter staying at its
++        # zero init (the extra passes start as exact re-reads: a warm start from any single-pass checkpoint). A checkpoint carrying an adapter needs a model with one.
++        saved_refine = any(name.startswith("refine_adapter.") for name in modules_state)
++        if saved_refine and self.modules.refine_adapter is None:
++            raise ValueError(f"Checkpoint carries a refine adapter (encoder_passes {state['config'].get('encoder_passes')}) but the configured model has encoder_passes 1")
++        fresh_refine = {name for name in self.modules.state_dict() if name.startswith("refine_adapter.")} if self.modules.refine_adapter is not None and not saved_refine else set()
++        # Surprisal pooling: likewise, its zero-initialised per-head bias is fresh when the checkpoint predates it; a checkpoint carrying it needs a model with it.
++        saved_bias = "summary_pooling.surprisal_bias" in modules_state
++        if saved_bias and self.modules.summary_pooling.surprisal_bias is None:
++            raise ValueError(f"Checkpoint carries a surprisal pooling bias (pool_surprisal {state['config'].get('pool_surprisal')}) but the configured model has pool_surprisal 0")
++        if self.modules.summary_pooling.surprisal_bias is not None and not saved_bias:
++            fresh_refine = fresh_refine | {"summary_pooling.surprisal_bias"}
++        if migrate or fresh_refine:
++            deep_keys = {name for name in self.modules.state_dict() if name.startswith(INTERVENTION_MODULE_PREFIXES) or name in ("intervention_calibration", "interventions_calibrated")} if migrate else set()
+             result = self.modules.load_state_dict(modules_state, strict=False)
+-            if set(result.missing_keys) != deep_keys or result.unexpected_keys:
+-                raise ValueError(f"Checkpoint modules do not match (missing {sorted(set(result.missing_keys) - deep_keys)}, unexpected {list(result.unexpected_keys)})")
+-            with torch.no_grad():
+-                self.modules.interventions_calibrated.fill_(False)
+-            print(f"{self.name} - Migrated an input-only checkpoint into a deep model: shared modules loaded, {len(self.intervention_layers)} delta heads fresh (seeded init), calibration pending")
++            if set(result.missing_keys) != deep_keys | fresh_refine or result.unexpected_keys:
++                raise ValueError(f"Checkpoint modules do not match (missing {sorted(set(result.missing_keys) - deep_keys - fresh_refine)}, unexpected {list(result.unexpected_keys)})")
++            if migrate:
++                with torch.no_grad():
++                    self.modules.interventions_calibrated.fill_(False)
++                print(f"{self.name} - Migrated an input-only checkpoint into a deep model: shared modules loaded, {len(self.intervention_layers)} delta heads fresh (seeded init), calibration pending")
++            if fresh_refine:
++                print(f"{self.name} - Fresh (zero-initialised) round-8 modules not in the checkpoint: {sorted(fresh_refine)} (encoder_passes {self.config.encoder_passes}, pool_surprisal {self.config.pool_surprisal:g})")
+         else:
+             converted = self._convert_absolute_scales(modules_state)
+             self.modules.load_state_dict(modules_state)
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index f330cbe..9de9796 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -34,6 +34,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
+         self.epoch_origin: int | None = None
+         self.planned_updates: int | None = None
+         self._interventions_reported = 0
++        self._encoder_reported = 0
+         self.initialize_line_plot("gold_nll", "Gold-answer log-loss",
+                                   "Negative log-likelihood per target token of the reference completion, item mean. "
+                                   "Every reader is scored on the same tokens; lower is better and the teacher is not a ceiling.",
+@@ -153,6 +154,9 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             self.set_status(distill_lambda=f"{stats.distill_lambda[-1]:.3g}")
+         if self.references:
+             self.add_data_point("reporting", {"x": self.epoch_x, **self.references})
++        if stats.encoder_trace and len(stats.encoder_trace) != self._encoder_reported:
++            self._encoder_reported = len(stats.encoder_trace)
++            self._report_encoder_entry(stats.encoder_trace[-1], stats.encoder_trace[-1]["update"], "global update", "")
+         if stats.intervention_trace and len(stats.intervention_trace) != self._interventions_reported:
+             entry = stats.intervention_trace[-1]
+             self._interventions_reported = len(stats.intervention_trace)
+@@ -246,6 +250,18 @@ class ActivationContextTrainingReporter(HtmlReporter):
+                         "epochs in this report", "fraction", [])
+                 self._ensure_series("token_accuracy", label)
+                 self.add_data_point("token_accuracy", {"x": self.epoch_x, label: accuracy})
++            for key, title, description in (("rare_token_loss", "Rare-token loss (held-out, top-20 % base surprisal)",
++                                             "Per evaluation set, the item mean of the student's mean -log p over the target tokens whose stored base no-context surprisal is in "
++                                             "the item's top 20 % (the identifiers, numbers and other unpredictable-in-context pieces the rows lose first). Surprisal arms only "
++                                             "(rare_weight / pool_surprisal); read next to the unweighted evaluation loss."),
++                                            ("rare_token_accuracy", "Rare-token accuracy (held-out, top-20 % base surprisal)",
++                                             "Teacher-forced accuracy on the same rare tokens, per evaluation set.")):
++                value = summary.get(key)
++                if value is not None:
++                    if key not in self.widgets:
++                        self.initialize_line_plot(key, title, description, "epochs in this report", "nats per token" if key == "rare_token_loss" else "fraction", [])
++                    self._ensure_series(key, label)
++                    self.add_data_point(key, {"x": self.epoch_x, label: value})
+             if gold is not None:
+                 self._ensure_series("gold_nll", label)
+                 point = {"x": self.epoch_x, label: gold}
+@@ -285,6 +301,36 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             self.add_data_point("rows_attention_share", {"x": self.epoch_x, f"layer {layer}": value})
+         self.render()
+ 
++    def report_encoder_panel(self, progress: "ActivationContextTrainingProgress", entry: dict) -> None:
++        """Round 8 write-side diagnostics on the held-out panel's forwards: the refine adapter's relative RMS and the pass-1 -> last-pass row cosine
++        (encoder_passes > 1), the surprisal pooling's bin statistics (pool_surprisal > 0); the training-forward twins of these curves are on the update axis."""
++        if progress is not None:
++            self.report_phase(progress, "encoder panel")
++        self._report_encoder_entry(entry, self.epoch_x, "epochs in this report", " (panel)")
++        self.render()
++
++    def _report_encoder_entry(self, entry: dict, x: float, x_label: str, suffix: str) -> None:
++        widgets = {
++            "refine_rms": ("Iterative encoder: refine adapter RMS relative to the pass-1 summaries", "RMS of refine_adapter(unit rows of the previous pass) divided by the RMS of the "
++                           "pass-1 summary inputs it is added to, mean over the encoded parts: 0 at init (an exact re-read); a curve that stays at 0 is a path that never opened.",
++                           "ratio", ["refine_rms"]),
++            "pass_cosine": ("Iterative encoder: pass-1 vs last-pass row cosine", "Mean cosine between the unit rows of pass 1 and of the last pass (the side model's final states at the row "
++                            "positions): 1 at init; how far the later passes move the rows.", "cosine", ["pass_cosine"]),
++            "pool_bins": ("Surprisal pooling: bin statistics", "pool_surprisal: the mean base no-context surprisal (nats) of the tokens in a summary bin - averaged over the rows, and the first and "
++                          "last rows' - plus the widest bin and the uniform width in tokens (right axis in spirit; same plot).", "nats / tokens",
++                          ["pool_row_mean", "pool_first", "pool_last", "pool_width_max", "pool_width_uniform"]),
++        }
++        for name, (title, description, y_label, keys) in widgets.items():
++            values = {key: entry[key] for key in keys if entry.get(key) is not None}
++            if not values:
++                continue
++            widget = name + ("_panel" if suffix else "")
++            if widget not in self.widgets:
++                self.initialize_line_plot(widget, title + suffix, description, x_label, y_label, [])
++            for key, value in values.items():
++                self._ensure_series(widget, key)
++                self.add_data_point(widget, {"x": x, key: value})
++
+     def report_evaluation_progress(self, name: str, completed: int, total: int) -> None:
+         self.set_status(phase=self.label(name), evaluation_items=f"{completed} of {total}")
+         self.render(force=completed == 0 or completed == total)
+@@ -305,7 +351,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             "total s": round(epoch.progress.epoch_elapsed_s, 2), "checkpoint": epoch.checkpoint_path or "not written (disabled)"})
+         self.set_status(last_checkpoint=(epoch.checkpoint_path or "none").rsplit("/", 1)[-1])
+         self.set_text(f"epoch_{epoch.progress.epoch_number:03d}", "Epoch record",
+-                      json.dumps({key: value for key, value in asdict(epoch).items() if key not in ("reporting", "validation", "deltas_off", "samples")}, indent=2))
++                      json.dumps({key: value for key, value in asdict(epoch).items() if key not in ("reporting", "validation", "deltas_off", "passes_off", "samples")}, indent=2))
+         self.render(force=True)
+ 
+     def report_training(self, stats: "ActivationContextTrainingStats") -> None:
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index 62ce3f0..76c38c0 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -120,6 +120,9 @@ class ActivationContextTrainingConfig:
+     distill_hold: float = 0.25                       # λ(step) on the LR schedule clock: distill_weight for this fraction of the planned updates, ...
+     distill_decay_end: float = 0.75                  # ... then a linear decay to distill_floor x distill_weight reached at this fraction, then held (resume-safe: updates done / planned total)
+     distill_floor: float = 0.05                      # the floor as a fraction of distill_weight
++    rare_weight: float = 0.0                         # surprisal-weighted terminal loss (SFT): per-token weight w_t = 1 + rare_weight x s_t / mean(s) on the cross-entropy of the
++                                                     # training forwards, s_t = the base's no-context surprisal of target token t (the stored no-context reference, built for every
++                                                     # example with rows), the weights normalised to average 1 per example; the reported losses stay unweighted; 0 = off (bit-identical)
+     gradient_checkpointing: bool = True        # on both bases
+     gradient_checkpointing_min_tokens: int | None = None
+     seed: int = 0
+@@ -168,6 +171,10 @@ class ActivationContextTrainingConfig:
+             raise ValueError(f"distill_source must be one of {DISTILL_SOURCES}")
+         if not 0 <= self.distill_hold <= self.distill_decay_end <= 1 or not 0 <= self.distill_floor <= 1:
+             raise ValueError("the distillation schedule needs 0 <= distill_hold <= distill_decay_end <= 1 and distill_floor in [0, 1]")
++        if not math.isfinite(self.rare_weight) or self.rare_weight < 0:
++            raise ValueError("rare_weight must be finite and nonnegative")
++        if self.rare_weight > 0 and self.loss_kind != "sft":
++            raise ValueError("rare_weight weights the SFT cross-entropy per target token: loss_kind 'sft'")
+         if self.distill_layers is not None and self.distill_layers != -1:
+             layers = list(self.distill_layers) if isinstance(self.distill_layers, (list, tuple)) else None
+             if not layers or any(type(layer) is not int or layer < 0 for layer in layers) or len(set(layers)) != len(layers):
+@@ -187,8 +194,11 @@ class ActivationContextTrainingProgress:
+     elapsed_s: float
+ 
+ 
+-class EvalItemSummary(t.TypedDict):
++class EvalItemSummary(t.TypedDict, total=False):
+     token_accuracy: float                      # teacher-forced argmax accuracy over the target positions
++    rare_token_loss: float | None              # surprisal features on: mean -log p_student over the target tokens whose stored base no-context surprisal is in the item's top 20 %
++    rare_token_accuracy: float | None          # ... and the teacher-forced accuracy on the same tokens
++    rare_positions: int                        # ... how many tokens that is (ceil(0.2 x C), at least 1)
+     item_id: str
+     kind: str
+     loss_kind: str
+@@ -204,8 +214,10 @@ class EvalItemSummary(t.TypedDict):
+     teacher_target_logp: list[float] | None
+ 
+ 
+-class EvalKindSummary(t.TypedDict):
++class EvalKindSummary(t.TypedDict, total=False):
+     token_accuracy: float | None
++    rare_token_loss: float | None              # surprisal features on: item mean of the per-item rare-token loss / accuracy (keys present only then)
++    rare_token_accuracy: float | None
+     loss_kind: str
+     loss: float | None
+     kl: float | None
+@@ -215,8 +227,10 @@ class EvalKindSummary(t.TypedDict):
+     items: int
+ 
+ 
+-class ActivationContextEvalSummary(t.TypedDict):
++class ActivationContextEvalSummary(t.TypedDict, total=False):
+     token_accuracy: float | None
++    rare_token_loss: float | None              # surprisal features on (keys present only then): see EvalItemSummary
++    rare_token_accuracy: float | None
+     items: int
+     dropped_too_long: int
+     loss_kind: str
+@@ -252,6 +266,7 @@ class ActivationContextEpochStats:
+     reporting: ActivationContextEvalSummary | None = None
+     validation: ActivationContextEvalSummary | None = None
+     deltas_off: ActivationContextEvalSummary | None = None       # deep models with deltas_off_panel: the reporting items without their deltas
++    passes_off: ActivationContextEvalSummary | None = None       # iterative encoder (encoder_passes > 1): the reporting items with the rows taken from pass 1
+     checkpoint_path: str | None = None
+     target_lora_checkpoint_path: str | None = None
+     samples: list[CompletionSample] = field(default_factory=list)
+@@ -294,6 +309,14 @@ class ActivationContextTrainingStats:
+     intervention_trace: list[dict] = field(default_factory=list)   # deep models, every 5 updates for the first 200 then every 25: per layer the delta scale, its ratio to the calibration RMS, the head's gradient norm, the applied delta RMS relative to the row-position RMS
+     payload_bytes: int = 0                                          # deep models: delta bytes (bf16) handed to the reader over the call's training forwards
+     deltas_off: ActivationContextEvalSummary | None = None          # deep models: the reporting items without their deltas at the last panel
++    passes_off: ActivationContextEvalSummary | None = None          # iterative encoder: the reporting items with encoder_passes forced to 1 at the last panel (held - passes_off = the later passes' worth)
++    encoder_passes: int = 1                                         # the model's encoder_passes / pool_surprisal / this call's rare_weight (the round-8 write-side settings, for the summary)
++    pool_surprisal: float = 0.0
++    rare_weight: float = 0.0
++    encoder_trace: list[dict] = field(default_factory=list)         # write-side diagnostics of the training forwards at the intervention trace cadence: {"update", "refine_rms" (RMS of the refine
++                                                                    # adapter's contribution / RMS of the pass-1 summaries), "pass_cosine" (pass-1 vs last-pass unit rows), "pool_row_mean" / "pool_first" /
++                                                                    # "pool_last" (mean base surprisal of the tokens in a bin), "pool_width_max" / "pool_width_uniform" (tokens)}; only the keys that exist
++    encoder_panel: list[dict] = field(default_factory=list)         # the same on the held-out panel's forwards: {"update", "epoch", ...}
+     step_seconds: list[float] = field(default_factory=list)
+     step_tokens: list[int] = field(default_factory=list)        # teacher + student tokens per step
+     kl_by_kind: dict[str, list[float]] = field(default_factory=dict)   # per example
+@@ -354,6 +377,10 @@ class ActivationContextTrainingStats:
+             "teacher_cache_mb": round(self.teacher_cache_bytes / 2**20, 1), "teacher_targets": self.teacher_targets,
+             **({"distill_layers": self.distill_layers, "distill_lambda_first": self.distill_lambda[0], "distill_lambda_last": self.distill_lambda[-1],
+                 "distill_loss_first": self.distill_loss[0], "distill_loss_last": self.distill_loss[-1], "distill_panel": self.distill_panel} if self.distill_lambda else {}),
++            "encoder_passes": self.encoder_passes, "pool_surprisal": self.pool_surprisal, "rare_weight": self.rare_weight,
++            **({"passes_off": self.passes_off} if self.passes_off is not None else {}),
++            **({"encoder_trace_last": self.encoder_trace[-1]} if self.encoder_trace else {}),
++            **({"encoder_panel": self.encoder_panel} if self.encoder_panel else {}),
+         }
+ 
+ 
+@@ -393,6 +420,8 @@ class ActivationContextTrainer:
+         self._distill_layers: list[int] = []                                       # dense supervision: the supervised reader layers (resolved by train())
+         self._distill_lambda: float = 0.0                                          # λ of the current update (the schedule clock)
+         self._last_hits: torch.Tensor | None = None                                # set by the chunked losses: argmax == target per target position
++        self._loss_metric: float | None = None                                     # set by _example_loss under rare_weight: the UNWEIGHTED cross-entropy of the last example (the reported loss)
++        self._encoder_pending: dict[str, list[float]] = {}                         # write-side diagnostics of the training forwards since the last trace point
+         self._payload_bytes = 0                                                    # deep models: delta bytes handed to the reader (reset per train call)
+         self._row_rms: dict[int | str, list[torch.Tensor]] = {}                    # deep models: residual RMS at the row positions per layer since the last trace (0-d tensors); K/V targets also "l:k" / "l:v"
+ 
+@@ -426,7 +455,8 @@ class ActivationContextTrainer:
+         key = (ac_model.name + ("#base" if reference else ""), digest, self.config.teacher_cache_top_k)
+         example = _Example(item, teacher_ids, student_ids, teacher_positions, student_positions,
+                            [token for output in item.assistant_token_ids for token in output], spans, requests, key)
+-        if not reference and self.config.no_context_penalty_weight > 0 and self.config.learning_rate_target_lora > 0 and requests:
++        if not reference and requests and ((self.config.no_context_penalty_weight > 0 and self.config.learning_rate_target_lora > 0) or self._surprisal_active(ac_model)):
++            # The no-context reference: the penalty's, and the surprisal features' source of the base's per-target-token surprisal (the same stored log-probs).
+             stripped = strip_ac_parts(item.ac_messages)
+             example.penalty = self.build_example(ac_model, replace(item, item_id=item.item_id + ":no_context_reference", in_context_messages=stripped,
+                                                                    ac_messages=stripped, in_context_start=item.ac_start), reference=True)
+@@ -521,6 +551,11 @@ class ActivationContextTrainer:
+             self._payload_bytes = 0
+             self._distill_layers = self._resolve_distill_layers(ac_model) if self._distill_active() else []
+             stats.distill_layers = list(self._distill_layers)
++            stats.encoder_passes, stats.pool_surprisal, stats.rare_weight = ac_model.config.encoder_passes, ac_model.config.pool_surprisal, config.rare_weight
++            surprisal = self._surprisal_active(ac_model)
++            self._encoder_pending = {}
++            if config.rare_weight > 0 and ac_model.kv_transfer_full:
++                raise ValueError("rare_weight with kv_transfer_full: the ceiling measurement is not a candidate to reweight")
+             if ac_model.is_deep and not ac_model.interventions_calibrated:
+                 # A fresh deep model: the delta scales start at a share of each layer's residual RMS, measured on a fixed training-only sample.
+                 if reporter is not None:
+@@ -543,8 +578,9 @@ class ActivationContextTrainer:
+                 if reporter is not None:
+                     reporter.report_teacher_targets(stats.teacher_targets)
+             penalty_examples = [example.penalty for example in examples if example.penalty is not None]
+-            if penalty_examples and config.no_context_penalty_reference == "stored":
+-                # The penalty's reference is the base with no adapter on the no-context history: fixed for the whole call.
++            if penalty_examples and (config.no_context_penalty_reference == "stored" or surprisal):
++                # The penalty's reference is the base with no adapter on the no-context history: fixed for the whole call. The surprisal features (rare_weight,
++                # pool_surprisal's panel) read the same stored per-target-token log-probs, so they store it whatever the penalty's mode.
+                 if reporter is not None:
+                     reporter.set_status(phase="no-context reference")
+                     reporter.render(force=True)
+@@ -558,6 +594,14 @@ class ActivationContextTrainer:
+                     reference_path.parent.mkdir(parents=True, exist_ok=True)
+                     torch.save({"top_k": config.teacher_cache_top_k, "targets": {k: v for k, v in self.teacher_cache.items() if k in keys},
+                                 "target_logp": {k: v for k, v in self.teacher_target_logp.items() if k in keys}}, reference_path)
++            if surprisal:
++                # The held-out items' base surprisal (the rare_token_loss panel): one no-grad base forward per reporting / validation item, once per call.
++                held = [example.penalty for example in [*reporting_examples, *validation_examples] if example.penalty is not None]
++                if held:
++                    if reporter is not None:
++                        reporter.set_status(phase="held-out no-context surprisal")
++                        reporter.render(force=True)
++                    self._store_teacher_targets(ac_model, held, device, reporter, reporting_name="held-out no-context surprisal", lora=None)
+             ac_parameters = ac_model.trainable_parameters()
+             target_parameters = manager.lora_parameters(target_lora)
+             assert ac_parameters and target_parameters
+@@ -617,21 +661,31 @@ class ActivationContextTrainer:
+             baseline = ActivationContextTrainingProgress(0, config.num_epochs, start_epoch - 1, 0, steps,
+                         self.updates_done.get(ac_model_name, 0), 0.0, time.monotonic() - started)
+             phase = time.monotonic()
++            passes_off_panel = ac_model.config.encoder_passes > 1 and bool(reporting_data)
++            encoder_diagnostics = ac_model.config.encoder_passes > 1 or ac_model.config.pool_surprisal > 0
+             if reporting_data:
+                 stats.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "reporting", stats.reporting)
++                if encoder_diagnostics:
++                    self._report_encoder_panel(ac_model, baseline, stats, reporter)     # the baseline reporting evaluation's write-side diagnostics
+             deltas_off_panel = config.deltas_off_panel and ac_model.is_deep and bool(reporting_data)
+             if deltas_off_panel:
+                 stats.deltas_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "deltas_off", deltas_off=True)
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "deltas_off", stats.deltas_off)
++            if passes_off_panel:
++                stats.passes_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "passes_off", passes_off=True)
++                if reporter is not None:
++                    reporter.report_eval(baseline, "passes_off", stats.passes_off)
+             if validation_data and list(validation_data) != list(reporting_data):
+                 stats.validation_baseline = self._evaluate(ac_model, list(validation_data), device, reporter, "validation")
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "validation", stats.validation_baseline)
+             if self._distill_active() and reporting_data:
+                 self._report_distill_panel(ac_model, list(reporting_data), device, baseline, stats, reporter)
++            if encoder_diagnostics:
++                self._drain_encoder_diagnostics(ac_model)                             # the other baseline evaluations' diagnostics are discarded
+             stats.baseline_samples = self._sample_completions(ac_model, fixed_items, baseline)
+             stats.baseline_seconds = time.monotonic() - phase
+             if reporter is not None and stats.baseline_samples:
+@@ -674,23 +728,23 @@ class ActivationContextTrainer:
+                         group_examples = [examples[index] for index in group]
+                         example_started = time.monotonic()
+                         if batched:
+-                            outcomes = [(result["objective"], None, torch.zeros((), device=device), result["penalty"], result["distill"])
++                            outcomes = [(result["objective"], None, torch.zeros((), device=device), result["penalty"], result["distill"], result.get("metric"))
+                                         for result in self._batch_loss(ac_model, group_examples, device)]
+                         else:
+                             objective, agreement, drift, _, _ = self._example_loss(ac_model, group_examples[0], device)
+-                            outcomes = [(objective, agreement, drift, self._penalty_term, self._distill_term)]
++                            outcomes = [(objective, agreement, drift, self._penalty_term, self._distill_term, self._loss_metric)]
+                         loss = sum((objective + config.drift_term_weight * drift + (penalty_term if penalty_term is not None else 0.0)
+                                     + (distill[0] if distill is not None else 0.0)) * (example.item.weight * share(example))
+-                                   for example, (objective, _, drift, penalty_term, distill) in zip(group_examples, outcomes))
++                                   for example, (objective, _, drift, penalty_term, distill, _) in zip(group_examples, outcomes))
+                         loss.backward()
+                         seconds_each = (time.monotonic() - example_started) / len(group)
+-                        for example, (objective, agreement, drift, penalty_term, distill) in zip(group_examples, outcomes):
++                        for example, (objective, agreement, drift, penalty_term, distill, metric) in zip(group_examples, outcomes):
+                             cached = config.loss_kind == "kl" and config.teacher_cache_top_k > 0 and example.teacher_cache_key in self.teacher_cache
+                             if penalty_term is not None:
+                                 totals["penalty"].append(float(penalty_term.detach()) * config.no_context_penalty_fraction / config.no_context_penalty_weight)
+                             if distill is not None:
+                                 totals["distill"].append(distill[1])
+-                            loss_value = float(objective.detach())
++                            loss_value = float(objective.detach()) if metric is None else float(metric)     # rare_weight: the reported loss stays unweighted
+                             stats.example_records.append({"kind": example.item.kind, "teacher_tokens": len(example.teacher_ids),
+                                 "student_tokens": len(example.student_ids), "seconds": round(seconds_each, 3), "teacher_cached": cached})
+                             stats.teacher_cache_hits += int(cached)
+@@ -730,6 +784,13 @@ class ActivationContextTrainer:
+                         stats.gate_trace.append({"update": self.updates_done.get(ac_model_name, 0), **{gate_names.get(id(parameter), str(index)): float(parameter.detach()) for index, parameter in enumerate(gate_parameters)}})
+                     if ac_model.is_deep and self._intervention_trace_due(self.updates_done.get(ac_model_name, 0)):
+                         stats.intervention_trace.append(self._intervention_trace_entry(ac_model, self.updates_done.get(ac_model_name, 0), head_norms))
++                    if encoder_diagnostics:
++                        self._absorb_encoder_diagnostics(ac_model)
++                        if self._intervention_trace_due(self.updates_done.get(ac_model_name, 0)):
++                            entry = {key: sum(values) / len(values) for key, values in self._encoder_pending.items() if values}
++                            self._encoder_pending = {}
++                            if entry:
++                                stats.encoder_trace.append({"update": self.updates_done.get(ac_model_name, 0), **entry})
+                     encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters)
+                     try:
+                         optimizer.step()
+@@ -766,10 +827,19 @@ class ActivationContextTrainer:
+                         phase = time.monotonic()
+                         if reporter is not None:
+                             reporter.report_phase(progress(step), "reporting")
++                        if encoder_diagnostics:
++                            self._absorb_encoder_diagnostics(ac_model)                 # the training forwards' diagnostics stay with the trace
+                         record.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
+                         stats.reporting = record.reporting
+                         if reporter is not None:
+                             reporter.report_eval(progress(step), "reporting", record.reporting)
++                        if encoder_diagnostics:
++                            self._report_encoder_panel(ac_model, progress(step), stats, reporter)
++                        if passes_off_panel:
++                            record.passes_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "passes_off", passes_off=True)
++                            stats.passes_off = record.passes_off
++                            if reporter is not None:
++                                reporter.report_eval(progress(step), "passes_off", record.passes_off)
+                         if deltas_off_panel:
+                             record.deltas_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "deltas_off", deltas_off=True)
+                             stats.deltas_off = record.deltas_off
+@@ -777,6 +847,8 @@ class ActivationContextTrainer:
+                                 reporter.report_eval(progress(step), "deltas_off", record.deltas_off)
+                         if self._distill_active():
+                             self._report_distill_panel(ac_model, list(reporting_data), device, progress(step), stats, reporter)
++                        if encoder_diagnostics:
++                            self._drain_encoder_diagnostics(ac_model)                  # the other panels' diagnostics are discarded
+                         record.reporting_seconds += time.monotonic() - phase
+                 if validation_data:
+                     phase = time.monotonic()
+@@ -1037,8 +1109,10 @@ class ActivationContextTrainer:
+     # ------------------------------------------------------------------------------------------ internals
+     @torch.no_grad()
+     def _evaluate(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device,
+-                  reporter: "ActivationContextTrainingReporter | None" = None, reporting_name: str = "evaluation", deltas_off: bool = False) -> ActivationContextEvalSummary:
+-        """`deltas_off`: a deep model's items scored with their rows kept and their per-layer deltas withheld (the deltas' contribution)."""
++                  reporter: "ActivationContextTrainingReporter | None" = None, reporting_name: str = "evaluation", deltas_off: bool = False,
++                  passes_off: bool = False) -> ActivationContextEvalSummary:
++        """`deltas_off`: a deep model's items scored with their rows kept and their per-layer deltas withheld (the deltas' contribution).
++        `passes_off`: an iterative encoder's items scored with the rows of pass 1 (encoder_passes forced to 1: the later passes' contribution)."""
+         if reporter is not None:
+             reporter.report_evaluation_progress(reporting_name, 0, len(items))
+         examples = [self.build_example(ac_model, item) for item in items]
+@@ -1051,6 +1125,9 @@ class ActivationContextTrainer:
+             base.eval()
+         per_item = []
+         is_kl = self.config.loss_kind == "kl"
++        surprisal = self._surprisal_active(ac_model)
++        if passes_off:
++            ac_model._encoder_passes_override = 1
+         try:
+             def row(example, loss, agreement, positions, target_logp, hits):
+                 teacher_logp = self.teacher_target_logp.get(example.teacher_cache_key) if is_kl else None
+@@ -1061,7 +1138,8 @@ class ActivationContextTrainer:
+                     "teacher_tokens": len(example.teacher_ids), "student_tokens": len(example.student_ids),
+                     "gold_nll": float(-target_logp.mean()), "target_logp": [round(float(value), 4) for value in target_logp],
+                     "teacher_gold_nll": float(-teacher_logp.mean()) if teacher_logp is not None else None,
+-                    "teacher_target_logp": [round(float(value), 4) for value in teacher_logp] if teacher_logp is not None else None}
++                    "teacher_target_logp": [round(float(value), 4) for value in teacher_logp] if teacher_logp is not None else None,
++                    **(self._rare_token_stats(example, target_logp, hits) if surprisal else {})}
+             rows: list[dict | None] = [None] * len(examples)
+             done = 0
+             if self.config.micro_batch_examples > 1 and not is_kl:
+@@ -1086,10 +1164,16 @@ class ActivationContextTrainer:
+                 base.train(training)
+                 disable_dropout(base)
+             ac_model.set_mode(previous_mode)
++            ac_model.__dict__.pop("_encoder_passes_override", None)
+         def summarize(rows):
+             loss = sum(row["loss"] for row in rows) / len(rows) if rows else None
+             teacher_rows = [row["teacher_gold_nll"] for row in rows if row["teacher_gold_nll"] is not None]
+-            return {"loss_kind": self.config.loss_kind, "loss": loss, "kl": loss if is_kl else None,
++            rare = {}
++            if surprisal:
++                for key in ("rare_token_loss", "rare_token_accuracy"):
++                    values = [row[key] for row in rows if row.get(key) is not None]
++                    rare[key] = sum(values) / len(values) if values else None
++            return {"loss_kind": self.config.loss_kind, "loss": loss, "kl": loss if is_kl else None, **rare,
+                     "agreement": sum(row["agreement"] for row in rows) / len(rows) if is_kl and rows else None,
+                     "gold_nll": sum(row["gold_nll"] for row in rows) / len(rows) if rows else None,
+                     "gold_nll_token": -sum(sum(row["target_logp"]) for row in rows) / max(1, sum(len(row["target_logp"]) for row in rows)) if rows else None,   # token-weighted: long passages count by their length
+@@ -1141,8 +1225,13 @@ class ActivationContextTrainer:
+         if torch.is_grad_enabled():
+             self._harvest_row_rms([payload])
+         student_states = student_hidden[example.student_positions]
++        self._loss_metric = None
++        weights = self._token_weights(example, device) if with_drift and torch.is_grad_enabled() and not is_kl else None   # rare_weight, training forwards only
+         if is_kl:
+             loss, agreement, target_logp = self._chunked_kl(None, student_states, head, cached=cached, target_ids=target_ids)
++        elif weights is not None:
++            cross_entropy, target_logp, self._last_hits = self._chunked_sft_tokens(student_states, head, target_ids)
++            loss, self._loss_metric, agreement = (cross_entropy * weights).mean(), float(cross_entropy.detach().mean()), None
+         else:
+             loss, target_logp = self._chunked_sft(student_states, head, target_ids)
+             agreement = None
+@@ -1193,6 +1282,65 @@ class ActivationContextTrainer:
+     def _distill_active(self) -> bool:
+         return self.config.distill_weight > 0
+ 
++    # ------------------------------------------------------------------------------------------ round 8: surprisal features and write-side diagnostics
++    def _surprisal_active(self, ac_model: ActivationContextModel) -> bool:
++        """The base's per-target-token no-context surprisal is stored (and the rare-token panel computed) for rare_weight or pool_surprisal runs."""
++        return self.config.rare_weight > 0 or ac_model.config.pool_surprisal > 0
++
++    def _target_surprisal(self, example: _Example) -> torch.Tensor | None:
++        """s_t = -log p_base(target token t | the stripped history) per target token [C], CPU fp32, from the stored no-context reference; None for an
++        example without rows (no reference exists) - a missing reference for one with rows is an error (train() stores them before the first update)."""
++        if example.penalty is None:
++            return None
++        logp = self.teacher_target_logp.get(example.penalty.teacher_cache_key)
++        if logp is None:
++            raise RuntimeError(f"{example.item.item_id}: no stored no-context reference for its surprisal; train() stores it before its first update")
++        return (-logp.float()).clamp_min(0.0)
++
++    def _token_weights(self, example: _Example, device: torch.device) -> torch.Tensor | None:
++        """rare_weight: w_t = 1 + rare_weight x s_t / mean(s), normalised to mean 1 over the example's target tokens (uniform for an example without rows)."""
++        if self.config.rare_weight <= 0:
++            return None
++        surprisal = self._target_surprisal(example)
++        if surprisal is None or surprisal.numel() == 0:
++            return None
++        weights = 1.0 + self.config.rare_weight * surprisal / surprisal.mean().clamp_min(1e-6)
++        return (weights / weights.mean()).to(device)
++
++    def _rare_token_stats(self, example: _Example, target_logp: torch.Tensor, hits: torch.Tensor | None) -> dict:
++        """The held-out rare-token panel: over the target tokens whose stored base no-context surprisal is in the item's top 20 % (ceil(0.2 x C) tokens, at
++        least 1; ties by torch.topk), the student's mean -log p and its teacher-forced accuracy. Empty for an item without a reference."""
++        surprisal = self._target_surprisal(example)
++        if surprisal is None or surprisal.numel() == 0 or target_logp.numel() != surprisal.numel():
++            return {}
++        count = max(1, math.ceil(0.2 * surprisal.numel()))
++        chosen = surprisal.topk(count).indices
++        logp = target_logp.detach().float().cpu()[chosen]
++        stats = {"rare_token_loss": float(-logp.mean()), "rare_positions": int(count)}
++        stats["rare_token_accuracy"] = float(hits.detach().cpu()[chosen].float().mean()) if hits is not None and hits.numel() == surprisal.numel() else None
++        return stats
++
++    def _drain_encoder_diagnostics(self, ac_model: ActivationContextModel) -> dict[str, float]:
++        """The encoder's write-side diagnostics recorded since the last drain (refine_rms, pass_cosine, pool_*), each averaged over the parts; cleared."""
++        store = ac_model.intervention_diagnostics.get("encoder", {})
++        entry = {key: float(torch.stack([torch.as_tensor(value, dtype=torch.float32) for value in values]).mean()) for key, values in store.items() if values}
++        store.clear()
++        return entry
++
++    def _absorb_encoder_diagnostics(self, ac_model: ActivationContextModel) -> None:
++        """Training forwards: the encoder's diagnostics go to the pending trace (averaged per part, then over the parts at the trace point)."""
++        for key, value in self._drain_encoder_diagnostics(ac_model).items():
++            self._encoder_pending.setdefault(key, []).append(value)
++
++    def _report_encoder_panel(self, ac_model: ActivationContextModel, progress: ActivationContextTrainingProgress, stats: ActivationContextTrainingStats, reporter) -> None:
++        """After the reporting evaluation: its forwards' write-side diagnostics as one panel entry."""
++        entry = self._drain_encoder_diagnostics(ac_model)
++        if not entry:
++            return
++        stats.encoder_panel.append({"update": progress.global_step, "epoch": progress.epoch_number, **entry})
++        if reporter is not None:
++            reporter.report_encoder_panel(progress, entry)
++
+     @staticmethod
+     def _check_target_alignment(item_id: str, teacher_ids: list[int], teacher_positions: list[int], student_ids: list[int], student_positions: list[int]) -> None:
+         """The teacher's and the student's target positions (the existing per-token position lists) predict the same tokens from the same tokens: at every
+@@ -1379,10 +1527,16 @@ class ActivationContextTrainer:
+         states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
+         targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
+         cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
++        weighted = with_penalty and torch.is_grad_enabled() and config.rare_weight > 0        # rare_weight: training forwards only, the metric stays unweighted
+         results, cursor = [], 0
+         for index, example in enumerate(batch):
+             num = example.num_completion
+-            results.append({"objective": cross_entropy[cursor:cursor + num].mean(), "num": num,
++            objective = cross_entropy[cursor:cursor + num].mean()
++            metric = None
++            weights = self._token_weights(example, device) if weighted else None
++            if weights is not None:
++                objective, metric = (cross_entropy[cursor:cursor + num] * weights).mean(), float(objective.detach())
++            results.append({"objective": objective, "num": num, "metric": metric,
+                             "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None,
+                             "distill": self._distill_terms(captured, index, teacher_rows[index]) if distilled else None})
+             cursor += num
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+index b0cbc07..f8925b9 100644
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -433,33 +433,79 @@ def unit_rows(rows: torch.Tensor) -> torch.Tensor:
+     return rows * rows.square().mean(dim=-1, keepdim=True).clamp_min(1e-8).rsqrt()
+ 
+ 
++def mass_bins(mass: torch.Tensor, num_rows: int) -> tuple[torch.Tensor, torch.Tensor]:
++    """Ordered bins by cumulative mass: with T = the total mass, bin j spans the tokens holding the mass points [j T / V, (j + 1) T / V].
++    `starts[j]` = the number of tokens whose inclusive cumulative mass is <= j T / V; `ends[j]` = one more than the number whose inclusive
++    cumulative mass is < (j + 1) T / V, clamped to N. With a uniform mass these are floor(j N / V) and ceil((j + 1) N / V), the token-count
++    bins; with a positive mass every bin is nonempty (start < end), consecutive bins overlap by at most one token and their union is every token
++    (the float64 cumulative sum decides the exact boundary tokens). O(V log N)."""
++    if mass.dim() != 1 or mass.shape[0] == 0 or num_rows < 1:
++        raise ValueError("mass bins need one positive mass per token and a positive row count")
++    length = mass.shape[0]
++    cumulative = mass.double().cumsum(0)
++    total = cumulative[-1]
++    ordinal = torch.arange(num_rows, device=mass.device, dtype=torch.float64)
++    low, high = ordinal * total / num_rows, (ordinal + 1) * total / num_rows
++    starts = torch.searchsorted(cumulative, low, right=True)                       # tokens with cumulative mass <= low
++    ends = (torch.searchsorted(cumulative, high, right=False) + 1).clamp_max(length)   # tokens with cumulative mass < high, plus one
++    return starts, ends
++
++
+ class AdaptiveSummaryPooling(nn.Module):
+-    """V content-derived mean queries, each attending its ordered adaptive bin; O(N + V) source rows."""
++    """V content-derived mean queries, each attending its ordered adaptive bin; O(N + V) source rows.
++
++    `surprisal` > 0 (pool_surprisal, the writer-side lever of round 8): the bins are drawn by cumulative mass 1 + surprisal x s_t / mean(s) instead of
++    token count (s_t = the base model's no-context surprisal of content token t: a row covers an equal share of the passage's entropy plus the token-count
++    prior; a bin is at most (1 + surprisal) x the uniform width + 2 tokens; rows per part unchanged), and the pooling attention logits gain the bias
++    surprisal x b_h x s_t / mean(s) with b_h a zero-initialised per-head parameter (`surprisal_bias`, registered only when on). At 0 the module and its
++    state dict are exactly the token-count pooling."""
+ 
+-    def __init__(self, d: int, num_heads: int) -> None:
++    def __init__(self, d: int, num_heads: int, surprisal: float = 0.0) -> None:
+         super().__init__()
+         self.norm = nn.LayerNorm(d)
+         self.attention = nn.MultiheadAttention(d, num_heads, dropout=0.0, batch_first=True)
+         self.ffn = FeedForward(d, 4 * d, d)
+         self.residual_scale = nn.Parameter(torch.tensor(0.1))
+-
+-    def forward(self, rows: torch.Tensor, num_rows: int) -> torch.Tensor:
++        self.surprisal = float(surprisal)
++        self.surprisal_bias: nn.Parameter | None = nn.Parameter(torch.zeros(num_heads)) if self.surprisal > 0 else None
++
++    def bins(self, length: int, num_rows: int, surprisal: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor, int, torch.Tensor | None]:
++        """(starts, ends, the widest bin, the relative surprisal s / mean(s) or None): token-count bins, or mass bins when the module is on and a
++        surprisal is given."""
++        ordinal = torch.arange(num_rows, device=surprisal.device if surprisal is not None else None)
++        if surprisal is None or self.surprisal_bias is None:
++            starts = ordinal * length // num_rows
++            ends = ((ordinal + 1) * length + num_rows - 1) // num_rows
++            return starts, ends, (length + num_rows - 1) // num_rows + 1, None
++        if surprisal.shape[0] != length:
++            raise ValueError(f"one surprisal per content token: {surprisal.shape[0]} for {length}")
++        relative = surprisal.float() / surprisal.float().mean().clamp_min(1e-6)          # scale-free: mean 1 over the part
++        starts, ends = mass_bins(1.0 + self.surprisal * relative, num_rows)
++        return starts, ends, int((ends - starts).max()), relative
++
++    def forward(self, rows: torch.Tensor, num_rows: int, surprisal: torch.Tensor | None = None) -> torch.Tensor:
+         # floor/ceil bins cover the input; V>N repeats nonempty bins, never padding.
+         length = rows.shape[0]
+         if length == 0 or num_rows < 1:
+             raise ValueError("Summary pooling needs nonempty content and a positive row count")
+-        ordinal = torch.arange(num_rows, device=rows.device)
+-        starts = ordinal * length // num_rows
+-        ends = ((ordinal + 1) * length + num_rows - 1) // num_rows
+-        width = (length + num_rows - 1) // num_rows + 1
++        starts, ends, width, relative = self.bins(length, num_rows, surprisal)
+         indexes = starts[:, None] + torch.arange(width, device=rows.device)[None]
+         valid = indexes < ends[:, None]
+         bins = rows[indexes.clamp_max(length - 1)]
+         weights = valid[..., None].to(rows.dtype)
+         means = (bins * weights).sum(dim=1) / weights.sum(dim=1)
+         normed = self.norm(bins)
+-        update, _ = self.attention(self.norm(means)[:, None], normed, normed,
+-                                   key_padding_mask=~valid, need_weights=False)
++        if relative is None:
++            update, _ = self.attention(self.norm(means)[:, None], normed, normed,
++                                       key_padding_mask=~valid, need_weights=False)
++        else:
++            # The surprisal bias on the logits: [V, heads, 1, width] -> (V x heads, 1, width), plus the padding as a float mask of the same kind.
++            heads = self.attention.num_heads
++            bias = self.surprisal * self.surprisal_bias[None, :, None, None] * relative[indexes.clamp_max(length - 1)][:, None, None, :]
++            bias = bias.reshape(num_rows * heads, 1, width).to(normed.dtype)
++            padding = torch.zeros(valid.shape, dtype=normed.dtype, device=rows.device).masked_fill(~valid, float("-inf"))
++            update, _ = self.attention(self.norm(means)[:, None], normed, normed,
++                                       key_padding_mask=padding, attn_mask=bias, need_weights=False)
+         summaries = means + self.residual_scale * update[:, 0]
+         return summaries + self.residual_scale * self.ffn(self.norm(summaries))
+ 
+@@ -485,6 +531,21 @@ class RowHead(nn.Module):
+         return out / rms * self.scale
+ 
+ 
++class RefineAdapter(nn.Module):
++    """Iterative encoder (encoder_passes >= 2): a residual bottleneck d -> r -> d, its output projection zero-initialized, mapping the previous
++    pass's final row states (unit rows) back into the side input space. Pass k >= 2 reads summaries_1 + refine(rows_{k-1}); at init the
++    refinement is exactly 0, so a second pass starts as a plain re-read of the first pass's summaries (bit-identical rows)."""
++
++    def __init__(self, d: int, r: int) -> None:
++        super().__init__()
++        self.down = nn.Linear(d, r)
++        self.up = nn.Linear(r, d)
++        nn.init.zeros_(self.up.weight); nn.init.zeros_(self.up.bias)
++
++    def forward(self, rows: torch.Tensor) -> torch.Tensor:
++        return self.up(F.silu(self.down(rows)))
++
++
+ @dataclass
+ class ACOutput:
+     """What the encoder emits for one part: rows in the target input space plus, for a deep model, per intervention layer either
+diff --git a/activation/tests/test_encoder_passes.py b/activation/tests/test_encoder_passes.py
+new file mode 100644
+index 0000000..8b82be7
+--- /dev/null
++++ b/activation/tests/test_encoder_passes.py
+@@ -0,0 +1,403 @@
++"""Round 8 write-side features on tiny CPU models: the iterative encoder (`encoder_passes`: a zero-initialised refine adapter, the rows and the
++side K/V from the last pass, the passes_off panel and the refine / pass-cosine traces), the surprisal-weighted terminal loss (`rare_weight`: per-token
++weights from the stored base no-context surprisal, the metric unweighted) and the surprisal-weighted summary pooling (`pool_surprisal`: mass bins and a
++zero-initialised per-head logit bias), their bit-identity at the defaults, checkpoints, and the bench keys and arms.
++
++  PYTHONPATH=. .venv/bin/python -m pytest activation/tests/test_encoder_passes.py -q -p no:cacheprovider
++"""
++import importlib.util
++import inspect
++import json
++import math
++import os
++from pathlib import Path
++
++import pytest
++import torch
++
++from test_interventions import (ActivationContextTrainer, ActivationContextTrainingConfig, HarnessRuntime, HarnessRuntimeConfig, ModelConfig,   # noqa: F401
++                                calibrate, config, hybrid_dir, items_for, side_lora_parameters, trainer_and_examples)
++from activation.ac_model import ActivationContextModelConfig
++from activation.ac_model.ac_model_utils import AdaptiveSummaryPooling, direct_parts, mass_bins, tokenize_with_parts
++from activation.harness.hf_utils import decoder_layers
++
++torch.set_num_threads(2)
++BENCH = Path(__file__).resolve().parents[2] / "IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon"
++TRANSFER = dict(frequency=-1, source="side_layers", target="kv_transfer", head_style="lora", calibration="row_positions")
++
++
++def build8(tmp_path: Path, model_dir: Path, *, passes: int = 1, pool: float = 0.0, seed: int = 1234, ac_checkpoint: str | None = None, frequency: int = 0,
++           source: str = "summary", target: str = "residual", head_style: str = "scaled", calibration: str = "no_rows"):
++    """test_interventions.build with the round-8 model settings (the same construction order: the AC modules draw first, the adapters at injection)."""
++    os.environ["ACTIVATION_SYNC_ROOT"] = str(tmp_path)
++    torch.manual_seed(seed)
++    h = HarnessRuntime(HarnessRuntimeConfig(model_configs={"reader": ModelConfig("reader", str(model_dir))}))
++    h.module_manager.register_lora("reader_lora", "reader", rank=4, dropout=0.0)
++    deep = {"intervention_frequency": frequency, "intervention_source": source, "intervention_target": target, "intervention_head_style": head_style,
++            "intervention_calibration": calibration} if frequency else {}
++    ac = h.module_manager.register_ac_model(ActivationContextModelConfig(
++        "ac_private", "reader", "side_lora", "reader", "reader_lora", mixer_heads=4, mixer_window=4, side_lora_rank=4, max_view_rows=8,
++        encode_batch_max_tokens=2048, checkpoint_path=ac_checkpoint, encoder_passes=passes, pool_surprisal=pool, **deep))
++    h.module_manager.ensure_lora("reader_lora")
++    ac.prepare()
++    for loaded in h.loaded_models.values():
++        loaded.model.float()
++    return h, ac
++
++
++def perturb_refine(ac, std: float = 0.3) -> None:
++    """Moves the zero-initialised output projection so pass 2 differs from pass 1 (and gradient flows through the second pass)."""
++    with torch.no_grad():
++        torch.manual_seed(99)
++        ac.modules.refine_adapter.up.weight.normal_(std=std)
++        ac.modules.refine_adapter.up.bias.normal_(std=std)
++
++
++def rows_of(ac, request) -> torch.Tensor:
++    with torch.no_grad():
++        return ac.encode_batch([request], with_layers=True)[0].input_embeds.clone()
++
++
++# --------------------------------------------------------------------------------------------------- 1. config, modules, state dict, checkpoints
++def test_encoder_passes_config_modules_and_checkpoints(tmp_path, hybrid_dir):
++    Config = ActivationContextModelConfig
++    for bad in ({"encoder_passes": 0}, {"encoder_passes": 1.5}, {"pool_surprisal": -1.0}, {"pool_surprisal": float("nan")},
++                {"encoder_passes": 2, "intervention_frequency": -1, "intervention_source": "side_layers", "intervention_target": "kv_transfer_full", "intervention_head_style": "lora"},
++                {"encoder_passes": 2, "intervention_frequency": 1, "intervention_target": "cross_attention"}):
++        with pytest.raises(ValueError):
++            Config("x", "reader", "side_lora", "reader", "reader_lora", **bad)
++    Config("x", "reader", "side_lora", "reader", "reader_lora", encoder_passes=3, intervention_frequency=-1, intervention_source="side_layers",
++           intervention_target="kv_transfer", intervention_head_style="lora")
++    h1, one = build8(tmp_path / "one", hybrid_dir, passes=1, seed=3)
++    h2, two = build8(tmp_path / "two", hybrid_dir, passes=2, seed=3)
++    hp, pooled = build8(tmp_path / "pool", hybrid_dir, pool=1.0, seed=3)
++    keys_one, keys_two, keys_pool = set(one.modules.state_dict()), set(two.modules.state_dict()), set(pooled.modules.state_dict())
++    refine_keys = {"refine_adapter.down.weight", "refine_adapter.down.bias", "refine_adapter.up.weight", "refine_adapter.up.bias"}
++    assert keys_two - keys_one == refine_keys and keys_one <= keys_two, "the refine adapter's keys exist only with encoder_passes >= 2"
++    assert keys_pool - keys_one == {"summary_pooling.surprisal_bias"} and keys_one <= keys_pool, "the surprisal bias exists only with pool_surprisal > 0"
++    assert one.modules.refine_adapter is None and one.modules.summary_pooling.surprisal_bias is None
++    assert torch.equal(two.modules.refine_adapter.up.weight, torch.zeros_like(two.modules.refine_adapter.up.weight)) and torch.equal(two.modules.refine_adapter.up.bias, torch.zeros(32))
++    assert torch.equal(pooled.modules.summary_pooling.surprisal_bias, torch.zeros(4))
++    assert two.modules.refine_adapter.down.weight.shape == (32, 32) and two.modules.refine_adapter.down.weight.abs().sum() > 0, "rank min(256, d_side)"
++    for name in keys_one:                                       # the forked stream: every shared module draws what it draws at encoder_passes 1 / pool_surprisal 0
++        assert torch.equal(one.modules.state_dict()[name], two.modules.state_dict()[name]) and torch.equal(one.modules.state_dict()[name], pooled.modules.state_dict()[name]), name
++    for a, b in zip(side_lora_parameters(one), side_lora_parameters(two)):
++        assert torch.equal(a, b), "the adapters draw the same sequence"
++    trainable = {id(parameter) for parameter in two.trainable_parameters()}
++    assert all(id(parameter) in trainable for parameter in two.modules.refine_adapter.parameters()) and all(parameter.numel() > 1 for parameter in two.modules.refine_adapter.parameters()), \
++        "trainable, and no scalar parameter (they would land in the gate group)"
++    assert id(pooled.modules.summary_pooling.surprisal_bias) in {id(parameter) for parameter in pooled.trainable_parameters()} and pooled.modules.summary_pooling.surprisal_bias.numel() == 4
++    # Checkpoints: a single-pass checkpoint loads into a two-pass model (the adapter stays at zero) and into a pooling model (the bias stays at zero); the reverse is refused.
++    one.modules.summary_marker.data.add_(0.5)
++    saved = one.save(str(tmp_path / "ckpt_one"))
++    two.load(saved); pooled.load(saved)
++    assert torch.equal(two.modules.summary_marker, one.modules.summary_marker) and torch.equal(two.modules.refine_adapter.up.weight, torch.zeros(32, 32))
++    assert torch.equal(pooled.modules.summary_marker, one.modules.summary_marker) and torch.equal(pooled.modules.summary_pooling.surprisal_bias, torch.zeros(4))
++    perturb_refine(two)
++    saved_two = two.save(str(tmp_path / "ckpt_two"))
++    with pytest.raises(ValueError, match="refine adapter"):
++        one.load(saved_two)
++    h3, three = build8(tmp_path / "three", hybrid_dir, passes=3, seed=3)
++    three.load(saved_two)                                        # an adapter trained at 2 passes loads into 3 (the same mechanism, more passes)
++    assert torch.equal(three.modules.refine_adapter.up.weight, two.modules.refine_adapter.up.weight)
++    pooled.modules.summary_pooling.surprisal_bias.data.fill_(0.25)
++    saved_pool = pooled.save(str(tmp_path / "ckpt_pool"))
++    with pytest.raises(ValueError, match="surprisal pooling bias"):
++        one.load(saved_pool)
++
++
++# --------------------------------------------------------------------------------------------------- 2. passes 2 == passes 1 at init; gradients; checkpointed == direct
++def test_two_passes_equal_one_at_init_then_move(tmp_path, hybrid_dir):
++    h1, one = build8(tmp_path / "one", hybrid_dir, passes=1, seed=5)
++    h2, two = build8(tmp_path / "two", hybrid_dir, passes=2, seed=5)
++    part = direct_parts(items_for(h1, one)[0].ac_messages)[0]
++    request = one._child_request(part, 0.25)._replace(is_recursive=False)
++    assert torch.equal(rows_of(one, request), rows_of(two, request)), "an exact re-read at init"
++    # Gradient: the terminal loss reaches the refine adapter's output projection at init (the LoRA-style bootstrap: `down` gets none until `up` moves).
++    trainer, items, examples, device = trainer_and_examples(h2, two)
++    two.trainable_parameters()                                   # the manager grants the side adapter's trainability on request
++    loss, *_ = trainer._example_loss(two, examples[0], device)
++    loss.backward()
++    adapter = two.modules.refine_adapter
++    assert adapter.up.weight.grad is not None and adapter.up.weight.grad.abs().sum() > 0 and adapter.up.bias.grad.abs().sum() > 0
++    assert adapter.down.weight.grad is None or adapter.down.weight.grad.abs().sum() == 0
++    assert any(parameter.grad is not None and parameter.grad.abs().sum() > 0 for parameter in side_lora_parameters(two))
++    for parameter in two.trainable_parameters():
++        parameter.grad = None
++    # One optimizer step each, the same seed: the two-pass rows leave the one-pass rows, the adapter moved; side_tokens count a part once whatever the passes.
++    torch.manual_seed(1); stats_one = ActivationContextTrainer(h1, config(examples_per_update=3)).train(one.name, items_for(h1, one))
++    torch.manual_seed(1); stats_two = ActivationContextTrainer(h2, config(examples_per_update=3)).train(two.name, items_for(h2, two))
++    assert stats_one.steps == stats_two.steps == 1 and stats_one.side_tokens == stats_two.side_tokens > 0
++    assert not torch.equal(adapter.up.weight, torch.zeros_like(adapter.up.weight))
++    assert not torch.equal(rows_of(one, request), rows_of(two, request))
++    assert stats_two.summarize()["encoder_passes"] == 2 and stats_one.summarize()["encoder_passes"] == 1
++    # Checkpointed vs direct gradients under two passes (the adapter open): the side LoRA, the adapter and the target head agree.
++    perturb_refine(two)
++    trainer, items, examples, device = trainer_and_examples(h2, two)
++    def gradients(checkpointed: bool) -> list[torch.Tensor]:
++        two._training_gradient_checkpointing = checkpointed
++        for parameter in two.trainable_parameters():
++            parameter.grad = None
++        loss, *_ = trainer._example_loss(two, examples[1], device)
++        loss.backward()
++        watched = [*two.modules.refine_adapter.parameters(), *two.modules.target_head.parameters(), *side_lora_parameters(two, layer=2)]
++        return [parameter.grad.detach().clone() if parameter.grad is not None else torch.zeros_like(parameter) for parameter in watched]
++    with_checkpoint, direct = gradients(True), gradients(False)
++    assert any(gradient.abs().sum() > 0 for gradient in with_checkpoint[:4]), "the adapter takes gradient once open"
++    for a, b in zip(with_checkpoint, direct):
++        torch.testing.assert_close(a, b, rtol=1e-5, atol=1e-6)
++    # A padded batch of two parts (two passes each) gives every part its single-encode rows.
++    requests = [example.part_requests[0] for example in examples[:2]]
++    with torch.no_grad():
++        pair = two.encode_batch(requests, with_layers=True)
++        singles = [two.encode_batch([request], with_layers=True)[0] for request in requests]
++    assert len({request.messages[0]["content"][0]["text"] if isinstance(request.messages[0]["content"], list) else str(request.messages) for request in requests}) == 2
++    for batched, single in zip(pair, singles):
++        torch.testing.assert_close(batched.input_embeds, single.input_embeds, rtol=1e-4, atol=1e-4)
++
++
++# --------------------------------------------------------------------------------------------------- 3. the side K/V come from the last pass
++def test_kv_transfer_capture_is_the_last_pass(tmp_path, hybrid_dir):
++    h, ac = build8(tmp_path, hybrid_dir, passes=2, seed=7, **TRANSFER)
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    calibrate(trainer, ac, examples[:2])
++    perturb_refine(ac)
++    request = examples[0].part_requests[0]
++    attention = decoder_layers(ac.side.model)[2].self_attn
++    decoder = ac.side.model.get_decoder()
++    seen, inputs = [], []
++    handles = [attention.k_norm.register_forward_hook(lambda module, args, output: seen.append(output.detach().clone())),
++               decoder.register_forward_pre_hook(lambda module, args, kwargs: inputs.append(kwargs["inputs_embeds"].detach().clone()), with_kwargs=True)]
++    try:
++        with torch.no_grad():
++            output = ac.encode_batch([request], with_layers=True)[0]
++    finally:
++        for handle in handles:
++            handle.remove()
++    assert len(seen) == 2 and len(inputs) == 2, "two side passes, one k_norm call each"
++    assert not torch.equal(inputs[0], inputs[1]) and torch.equal(inputs[0][0, :-output.input_embeds.shape[0]], inputs[1][0, :-output.input_embeds.shape[0]]), \
++        "pass 2 changes the summary inputs only"
++    num_rows = output.input_embeds.shape[0]
++    content_k = output.kv_slots[2][0]                            # takeover 1 at init, no correction: the captured side K itself
++    assert torch.equal(content_k, seen[1][0, -num_rows:].reshape(num_rows, -1)) and not torch.equal(content_k, seen[0][0, -num_rows:].reshape(num_rows, -1)), \
++        "the transferred K is the LAST pass's k_norm output at the rows"
++    # ... and equals a standalone side forward over the pass-2 inputs.
++    again = []
++    handle = attention.k_norm.register_forward_hook(lambda module, args, out: again.append(out.detach().clone()))
++    try:
++        with torch.no_grad():
++            ac.side.decoder_forward(inputs[1], None, lora_name=ac.config.base_side_model_lora_name, gradient_checkpointing=False)
++    finally:
++        handle.remove()
++    assert torch.equal(again[0][0, -num_rows:].reshape(num_rows, -1), content_k)
++    # Training mode (checkpointed): the capture still fires once, on the last pass, and the loss reaches the adapter through the transferred K/V.
++    for parameter in ac.trainable_parameters():
++        parameter.grad = None
++    loss, *_ = trainer._example_loss(ac, examples[0], device)
++    loss.backward()
++    assert ac.modules.refine_adapter.down.weight.grad.abs().sum() > 0
++
++
++# --------------------------------------------------------------------------------------------------- 4. the passes_off panel and the traces
++def test_passes_off_panel_and_encoder_traces(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextTrainingReporter
++    h, ac = build8(tmp_path, hybrid_dir, passes=2, seed=11)
++    trainer = ActivationContextTrainer(h, config())
++    items = items_for(h, ac)
++    device = ac.prepare(); h.module_manager.ensure_lora("reader_lora")
++    examples = [trainer.build_example(ac, item) for item in items]
++    trainer._store_teacher_targets(ac, [example.penalty for example in examples], device, lora=None)
++    on, off = trainer._evaluate(ac, items, device), trainer._evaluate(ac, items, device, passes_off=True)
++    assert on["loss"] == off["loss"] and "_encoder_passes_override" not in ac.__dict__, "passes off equals passes on at init (an exact re-read); the override is cleared"
++    reporter = ActivationContextTrainingReporter(str(tmp_path / "report"), "passes")
++    stats = ActivationContextTrainer(h, config(examples_per_update=1, num_epochs=2)).train(ac.name, items, reporting_data=items, reporter=reporter)
++    assert stats.steps == 6 and stats.passes_off is not None and stats.passes_off["items"] == len(items) and stats.epochs[-1].passes_off is stats.passes_off
++    assert stats.passes_off["loss"] != stats.reporting["loss"], "after training the second pass does something"
++    assert [entry["update"] for entry in stats.encoder_trace] == [0, 5] and all(set(entry) == {"update", "refine_rms", "pass_cosine"} for entry in stats.encoder_trace)
++    assert stats.encoder_trace[0]["refine_rms"] == 0.0 and stats.encoder_trace[0]["pass_cosine"] == pytest.approx(1.0, abs=1e-6), "at init: no refinement, identical rows"
++    assert stats.encoder_trace[-1]["refine_rms"] > 0 and stats.encoder_trace[-1]["pass_cosine"] < 1.0
++    assert [entry["update"] for entry in stats.encoder_panel] == [0, 3, 6] and stats.encoder_panel[0]["refine_rms"] == 0.0 and stats.encoder_panel[-1]["refine_rms"] > 0
++    summary = stats.summarize()
++    assert summary["encoder_passes"] == 2 and summary["passes_off"] == stats.passes_off and summary["encoder_trace_last"] == stats.encoder_trace[-1] and summary["encoder_panel"] == stats.encoder_panel
++    assert {"refine_rms", "pass_cosine", "refine_rms_panel", "pass_cosine_panel"} <= set(reporter.widgets) and "pool_bins" not in reporter.widgets
++    assert "passes_off" in {series["name"] for series in reporter.widgets["reporting"]["series"]}
++    # A single-pass model records nothing of this.
++    h1, one = build8(tmp_path / "one", hybrid_dir, passes=1, seed=11)
++    stats1 = ActivationContextTrainer(h1, config(examples_per_update=1)).train(one.name, items_for(h1, one), reporting_data=items_for(h1, one))
++    assert stats1.passes_off is None and stats1.encoder_trace == [] and stats1.encoder_panel == [] and "passes_off" not in stats1.summarize() and one.intervention_diagnostics["encoder"] == {}
++
++
++# --------------------------------------------------------------------------------------------------- 5. mass bins and the surprisal pooling module
++def test_mass_bins_and_surprisal_pooling():
++    for length, num_rows in ((10, 4), (7, 3), (6, 3), (5, 8), (1, 3), (64, 8), (13, 13)):
++        ordinal = torch.arange(num_rows)
++        starts, ends = mass_bins(torch.ones(length), num_rows)
++        assert torch.equal(starts, ordinal * length // num_rows) and torch.equal(ends, ((ordinal + 1) * length + num_rows - 1) // num_rows), (length, num_rows)
++    torch.manual_seed(0)
++    for length, num_rows in ((40, 5), (100, 7), (3, 6), (200, 200)):
++        mass = 1.0 + torch.rand(length) * 5
++        starts, ends = mass_bins(mass, num_rows)
++        assert bool((ends > starts).all()) and int(starts[0]) == 0 and int(ends[-1]) == length, "nonempty bins from the first token to the last"
++        assert bool((starts[1:] >= starts[:-1]).all()) and bool((ends[1:] >= ends[:-1]).all()), "ordered"
++        assert bool((starts[1:] <= ends[:-1]).all()) and bool((ends[:-1] - starts[1:] <= 1).all()), "no gap, at most one token of overlap"
++        covered = torch.zeros(length, dtype=torch.long)
++        for start, end in zip(starts.tolist(), ends.tolist()):
++            covered[start:end] += 1
++        assert bool((covered >= 1).all())
++        # a bin's mass share: a heavy region gets more rows than a light one of the same length
++    mass = torch.cat([torch.full((50,), 0.1), torch.full((50,), 3.0)])
++    starts, ends = mass_bins(mass, 10)
++    assert int((starts >= 50).sum()) >= 7, "the surprising half takes most of the rows"
++    torch.manual_seed(1)
++    plain, weighted = AdaptiveSummaryPooling(16, 4), AdaptiveSummaryPooling(16, 4, surprisal=1.0)
++    weighted.load_state_dict({**plain.state_dict(), "surprisal_bias": torch.zeros(4)})
++    rows = torch.randn(23, 16)
++    uniform = torch.full((23,), 2.5)
++    assert torch.allclose(plain(rows, 5), weighted(rows, 5, uniform), atol=1e-6), "uniform surprisal + zero bias = the token-count pooling"
++    assert torch.equal(plain(rows, 5), weighted(rows, 5)), "no surprisal given: the token-count path"
++    surprisal = torch.rand(23) * 4
++    starts, ends, width, relative = weighted.bins(23, 5, surprisal)
++    assert width == int((ends - starts).max()) and width <= 2 * ((23 + 4) // 5 + 1) + 2 and relative.mean() == pytest.approx(1.0, abs=1e-5)
++    out = weighted(rows, 5, surprisal)
++    assert out.shape == (5, 16) and not torch.allclose(out, plain(rows, 5))
++    out.sum().backward()
++    assert weighted.surprisal_bias.grad is not None and weighted.surprisal_bias.grad.abs().sum() > 0, "gradient reaches the pooling bias"
++
++
++# --------------------------------------------------------------------------------------------------- 6. the surprisal pooling in the encoder
++def test_pool_surprisal_encoder_and_training(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextTrainingReporter
++    h, ac = build8(tmp_path, hybrid_dir, pool=1.0, seed=13)
++    rollout_part = direct_parts(items_for(h, ac)[0].ac_messages)[0]
++    rollout_rows = rows_of(ac, ac._child_request(rollout_part, 0.25)._replace(is_recursive=False))      # rollout mode (no grad, cache) runs the surprisal path too
++    assert rollout_rows.shape[0] >= 2 and len(ac.surprisal_cache) == 1
++    ac.surprisal_cache.clear()
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    request = examples[0].part_requests[0]
++    ids, spans = tokenize_with_parts(ac.side.tokenizer, request.messages, [], ac.pad_id, tools=request.tools)
++    surprisal = ac._content_surprisal([(ids, spans, [], 2, False)], device)[0]
++    other = examples[1].part_requests[0]
++    ids2, spans2 = tokenize_with_parts(ac.side.tokenizer, other.messages, [], ac.pad_id, tools=other.tools)
++    ac.surprisal_cache.clear()
++    pair = ac._content_surprisal([(ids, spans, [], 2, False), (ids2, spans2, [], 2, False)], device)          # a right-padded batch: each part's own values
++    torch.testing.assert_close(pair[0], surprisal, rtol=1e-4, atol=1e-4)
++    assert pair[1].shape[0] == len(ids2) and len(ids) != len(ids2)
++    ac.surprisal_cache.clear()
++    torch.testing.assert_close(ac._content_surprisal([(ids2, spans2, [], 2, False)], device)[0], pair[1], rtol=1e-4, atol=1e-4)
++    ac.surprisal_cache.clear()
++    surprisal = ac._content_surprisal([(ids, spans, [], 2, False)], device)[0]
++    embedding, head = ac.side.model.get_input_embeddings(), ac.side.model.get_output_embeddings()
++    with torch.no_grad():
++        hidden = ac.side.decoder_forward(embedding(torch.tensor(ids))[None], None, lora_name=None, gradient_checkpointing=False)[0]
++        logp = torch.log_softmax(head(hidden).float(), dim=-1)
++        expected = torch.cat([torch.zeros(1), -logp[:-1].gather(-1, torch.tensor(ids[1:])[:, None])[:, 0]])
++    torch.testing.assert_close(surprisal, expected, rtol=1e-5, atol=1e-5)
++    assert bool((surprisal[1:] > 0).all()) and len(ac.surprisal_cache) == 1
++    assert torch.equal(ac._content_surprisal([(ids, spans, [], 2, False)], device)[0], surprisal), "cached by the token ids"
++    with torch.no_grad():
++        for parameter in side_lora_parameters(ac):
++            parameter.add_(0.5)
++    ac.surprisal_cache.clear()
++    torch.testing.assert_close(ac._content_surprisal([(ids, spans, [], 2, False)], device)[0], expected, rtol=1e-5, atol=1e-5), "the BASE's surprisal: the adapter plays no part"
++    # Training: the bias takes gradient and moves, the traces and the panel carry the bin statistics, the checkpoint round-trips.
++    reporter = ActivationContextTrainingReporter(str(tmp_path / "report"), "pool")
++    stats = ActivationContextTrainer(h, config(examples_per_update=1)).train(ac.name, items, reporting_data=items, reporter=reporter)
++    assert not torch.equal(ac.modules.summary_pooling.surprisal_bias, torch.zeros(4)), "the pooling bias trains"
++    keys = {"pool_row_mean", "pool_first", "pool_last", "pool_width_max", "pool_width_uniform"}
++    assert stats.encoder_trace and all(keys <= set(entry) for entry in stats.encoder_trace) and stats.encoder_panel and keys <= set(stats.encoder_panel[-1])
++    assert all(entry["pool_width_max"] <= 2 * entry["pool_width_uniform"] + 2 for entry in stats.encoder_trace)
++    assert stats.passes_off is None and {"pool_bins", "pool_bins_panel"} <= set(reporter.widgets) and "refine_rms" not in reporter.widgets
++    assert stats.reporting.get("rare_token_loss") is not None and 0 <= stats.reporting["rare_token_accuracy"] <= 1, "the rare-token panel comes with the surprisal features"
++    saved = ac.save(str(tmp_path / "ckpt"))
++    h2, again = build8(tmp_path / "again", hybrid_dir, pool=1.0, seed=13)
++    again.load(saved)
++    assert torch.equal(again.modules.summary_pooling.surprisal_bias, ac.modules.summary_pooling.surprisal_bias)
++
++
++# --------------------------------------------------------------------------------------------------- 7. the surprisal-weighted terminal loss
++def test_rare_weight_training_and_off_is_inert(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextTrainingReporter
++    with pytest.raises(ValueError, match="rare_weight"):
++        config(rare_weight=-1.0)
++    with pytest.raises(ValueError, match="rare_weight"):
++        config(loss_kind="kl", rare_weight=1.0)
++    h, ac = build8(tmp_path, hybrid_dir, seed=17)
++    trainer, items, examples, device = trainer_and_examples(h, ac, rare_weight=1.0, no_context_penalty_weight=0.0)
++    assert all(example.penalty is not None for example in examples), "the no-context reference is built for the surprisal even with the penalty off"
++    weights = trainer._token_weights(examples[0], device)
++    surprisal = trainer._target_surprisal(examples[0])
++    assert weights.shape == (examples[0].num_completion,) and weights.mean().item() == pytest.approx(1.0, abs=1e-6) and bool((weights > 0).all())
++    expected = 1.0 + surprisal / surprisal.mean()
++    torch.testing.assert_close(weights, (expected / expected.mean()).to(device))
++    assert bool((surprisal >= 0).all()) and surprisal.numel() == examples[0].num_completion
++    # The objective is the weighted cross-entropy, the metric the unweighted one (= the rare_weight-0 trainer's loss on the same state).
++    plain = ActivationContextTrainer(h, config(no_context_penalty_weight=0.0))
++    plain.teacher_target_logp = trainer.teacher_target_logp
++    torch.manual_seed(0); weighted_loss, *_ = trainer._example_loss(ac, examples[0], device)
++    torch.manual_seed(0); plain_loss, *_ = plain._example_loss(ac, examples[0], device)
++    assert trainer._loss_metric == pytest.approx(float(plain_loss.detach()), abs=1e-6) and plain._loss_metric is None
++    cross_entropy, _, _ = trainer._chunked_sft_tokens(ac.target.decoder_forward(ac.target.model.get_input_embeddings()(torch.tensor(examples[0].student_ids))[None], None, lora_name="reader_lora",
++                                                                                gradient_checkpointing=False)[0][examples[0].student_positions], ac.target.model.get_output_embeddings(),
++                                                       torch.tensor(examples[0].target_ids))
++    assert float(weighted_loss) != float(plain_loss) or bool((weights == 1).all())
++    # The batched path gives the per-example values.
++    batched = ActivationContextTrainer(h, config(rare_weight=1.0, no_context_penalty_weight=0.0, micro_batch_examples=2))
++    batched.teacher_target_logp = trainer.teacher_target_logp
++    results = batched._batch_loss(ac, examples[:2], device)
++    single = [trainer._example_loss(ac, example, device)[0] for example in examples[:2]]
++    for result, loss in zip(results, single):
++        assert float(result["objective"]) == pytest.approx(float(loss), abs=1e-5) and result["metric"] is not None
++    evaluated = batched._batch_loss(ac, examples[:2], device, with_penalty=False)
++    assert all(result["metric"] is None for result in evaluated), "evaluation forwards are unweighted"
++    # A training call: the recorded loss is the unweighted metric, the rare-token panel exists with sane values, the reporter takes it; off, nothing of it exists.
++    reporter = ActivationContextTrainingReporter(str(tmp_path / "report"), "rare")
++    stats = ActivationContextTrainer(h, config(rare_weight=1.0, examples_per_update=1)).train(ac.name, items, reporting_data=items, reporter=reporter)
++    assert stats.rare_weight == 1.0 and all(math.isfinite(value) for value in stats.loss)
++    for row in stats.reporting["per_item"]:
++        assert row["rare_positions"] == max(1, math.ceil(0.2 * row["positions"])) and math.isfinite(row["rare_token_loss"]) and 0 <= row["rare_token_accuracy"] <= 1
++    assert stats.reporting["rare_token_loss"] == pytest.approx(sum(row["rare_token_loss"] for row in stats.reporting["per_item"]) / len(stats.reporting["per_item"]))
++    assert all("rare_token_loss" in kind for kind in stats.reporting["by_kind"].values()) and stats.epochs[-1].validation is None
++    assert {"rare_token_loss", "rare_token_accuracy"} <= set(reporter.widgets)
++    h0, off = build8(tmp_path / "off", hybrid_dir, seed=17)
++    stats0 = ActivationContextTrainer(h0, config(examples_per_update=1)).train(off.name, items_for(h0, off), reporting_data=items_for(h0, off))
++    assert stats0.rare_weight == 0.0 and "rare_token_loss" not in stats0.reporting and all("rare_token_loss" not in row for row in stats0.reporting["per_item"])
++    assert all("rare_token_loss" not in kind for kind in stats0.reporting["by_kind"].values()) and stats0.encoder_trace == [] and "encoder_panel" not in stats0.summarize()
++    assert set(off.modules.state_dict()) == set(ac.modules.state_dict()), "no module either way"
++
++
++# --------------------------------------------------------------------------------------------------- 8. bench keys and arms
++def test_bench_round8_keys_and_arms():
++    runner = BENCH / "run_recon.py"
++    if not runner.exists():
++        pytest.skip("bench not present")
++    spec = importlib.util.spec_from_file_location("run_recon", runner)
++    run_recon = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(run_recon)
++    default = run_recon.DEFAULT_ARM
++    assert (default["encoder_passes"], default["rare_weight"], default["pool_surprisal"]) == (1, 0.0, 0.0)
++    parameters = inspect.signature(run_recon.harness).parameters
++    assert parameters["encoder_passes"].default == 1 and parameters["pool_surprisal"].default == 0.0
++    assert run_recon.config(dict(default, rare_weight=1.0)).rare_weight == 1.0 and run_recon.config(default).rare_weight == 0.0
++    arms = run_recon.arms()
++    for label, arm in arms.items():                      # every arm (defaults merged) builds a training config with its rare_weight
++        assert run_recon.config(arm).rare_weight == arm["rare_weight"] and arm["encoder_passes"] >= 1 and arm["pool_surprisal"] >= 0, label
++    strip = lambda arm, *keys: {key: value for key, value in arm.items() if key not in ("note", *keys)}
++    raw = json.loads((BENCH / "arms.json").read_text())
++    k16 = {"init_ac": raw["A32X"]["init_ac"], "init_reader": raw["A32X"]["init_reader"]}
++    assert "/root/" in k16["init_ac"] and "/home/ngom/" in raw["A32W"]["init_ac"]
++    pairs = {"A32P2": ("A32W", {"encoder_passes": 2}), "A32KVTAP2": ("A32KVTA", {"encoder_passes": 2}), "A32SW": ("A32W", {"rare_weight": 1.0}),
++             "A32SP": ("A32W", {"pool_surprisal": 1.0}), "A32SPKVTA": ("A32KVTA", {"pool_surprisal": 1.0}), "NSP": ("WCa", {"pool_surprisal": 1.0})}
++    for label, (base, change) in pairs.items():
++        arm = raw[label]
++        assert strip(arm, *change) == strip(raw[base]) and all(arm[key] == value for key, value in change.items()), label
++        assert arm["init_ac"] == raw[base]["init_ac"] and "round 8" in arm["note"] and "Read held" in arm["note"], label
++        twin = raw[label + "n"]
++        assert strip(twin, "init_ac", "init_reader") == strip(arm, "init_ac", "init_reader") and (twin["init_ac"], twin["init_reader"]) == (k16["init_ac"], k16["init_reader"]), label
++        assert twin["note"].startswith(arm["note"]) and "EC2 twin" in twin["note"], label
++    for label in ("A32P2n", "A32SWn", "A32SPn"):
++        assert "A32X 0.322" in raw[label]["note"]
++    assert "A32KVTAn 0.300" in raw["A32KVTAP2n"]["note"] and "A32KVTAn 0.300" in raw["A32SPKVTAn"]["note"] and "WCn 0.122" in raw["NSPn"]["note"]
++    assert raw["NSP"]["seed"] == raw["WCa"]["seed"] == raw["NSPn"]["seed"], "the 1/16 arms keep WCa's seed (like NXD / NXDn)"
++    assert list(raw)[-12:] == [*pairs, *(label + "n" for label in pairs)] and list(raw)[-13] == "SK32XD"
++    for label in ("A32P3", "A32AN", "A32P2AN", "NP2", "A32P3n", "A32ANn", "A32P2ANn", "NP2n"):
++        assert label not in raw, "dropped at design review"
+diff --git a/activation/tests/test_interventions.py b/activation/tests/test_interventions.py
+index 5cb0a14..f702e25 100644
+--- a/activation/tests/test_interventions.py
++++ b/activation/tests/test_interventions.py
+@@ -970,7 +970,7 @@ def test_bench_arms_are_paired():
+         assert arms[twin]["init_ac"] == arms["NDIAWLn"]["init_ac"] and arms[twin]["init_reader"] == arms["NDIAWLn"]["init_reader"]
+         assert "EC2 twin" in arms[twin]["note"] and arms[twin]["note"].startswith(arms[parent]["note"])
+     assert "CEILING MEASUREMENT, NOT A CANDIDATE" in arms["NXAWn"]["note"]
+-    assert list(arms)[-44:-35] == ["NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA", "NKVSWn", "NKVSWSn", "A32KVSn", "NXAWn"], "appended after NDIWLn, in order"
++    assert list(arms)[-56:-47] == ["NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA", "NKVSWn", "NKVSWSn", "A32KVSn", "NXAWn"], "appended after NDIWLn, in order"
+     # Round 6: the K/V transfer family on the NKVSW / A32KVS recipes (delta_scale_lr 1e-3 inherited) and its whole-passage ceiling; EC2 twins after them.
+     assert strip(arms["NKVTW"], "intervention_target") == strip(arms["NKVSW"], "intervention_target") and arms["NKVTW"]["intervention_target"] == "kv_transfer"
+     assert strip(arms["NKVTWA"], "interventions") == strip(arms["NKVTW"], "interventions") and arms["NKVTWA"]["interventions"] == -1 and arms["NKVTW"]["interventions"] == 4
+@@ -991,7 +991,7 @@ def test_bench_arms_are_paired():
+         assert strip(twin, "init_ac", "init_reader") == strip(arms[parent], "init_ac", "init_reader"), parent
+         assert twin["init_ac"] == arms["NDIAWLn"]["init_ac"] and twin["init_reader"] == arms["NDIAWLn"]["init_reader"]
+         assert "EC2 twin" in twin["note"] and twin["note"].startswith(arms[parent]["note"])
+-    assert list(arms)[-35:-21] == [*transfer_arms, *(label + "n" for label in transfer_arms)], "appended after NXAWn, in order"
++    assert list(arms)[-47:-33] == [*transfer_arms, *(label + "n" for label in transfer_arms)], "appended after NXAWn, in order"
+     # Round 7: dense supervision (context distillation of the base reader's full-context attention outputs) on the A32X / WCa / A32KVTA recipes, the
+     # late-layers-only K/V transfer (explicit intervention_layers), EC2 twins after each group. The ORCD 1/32 dense arms take the K16r1 init of A32DL / A32KVS
+     # / A32KVTA (A32X itself carries the /root K16 paths of its node-1 run: A32XDn is A32X's own init).
+@@ -1019,9 +1019,13 @@ def test_bench_arms_are_paired():
+         assert strip(twin, "init_ac", "init_reader") == strip(arms[parent], "init_ac", "init_reader"), parent
+         assert twin["init_ac"] == arms["NDIAWLn"]["init_ac"] and twin["init_reader"] == arms["NDIAWLn"]["init_reader"]
+         assert "EC2 twin" in twin["note"] and twin["note"].startswith(arms[parent]["note"])
+-    assert list(arms)[-21:-7] == [*dense_arms, *(label + "n" for label in dense_arms), *late_arms, *(label + "n" for label in late_arms)], "appended after A32KVTFn, in order"
+-    assert list(arms)[-7:-3] == ["A32XDc", "A32XDcn", "A32KVTAL", "A32XDL"]
+-    assert list(arms)[-3:] == ["SK32", "SK32KVT", "SK32XD"] and arms["SK32KVT"]["intervention_target"] == "kv_transfer" and arms["SK32XD"]["distill_weight"] == 1.0 and "init_ac" not in arms["SK32"] and arms["A32XDc"]["distill_floor"] == 1.0 and arms["A32XDcn"]["note"].startswith(arms["A32XDc"]["note"])
++    assert list(arms)[-33:-19] == [*dense_arms, *(label + "n" for label in dense_arms), *late_arms, *(label + "n" for label in late_arms)], "appended after A32KVTFn, in order"
++    assert list(arms)[-19:-15] == ["A32XDc", "A32XDcn", "A32KVTAL", "A32XDL"]
++    assert list(arms)[-15:-12] == ["SK32", "SK32KVT", "SK32XD"] and arms["SK32KVT"]["intervention_target"] == "kv_transfer" and arms["SK32XD"]["distill_weight"] == 1.0 and "init_ac" not in arms["SK32"] and arms["A32XDc"]["distill_floor"] == 1.0 and arms["A32XDcn"]["note"].startswith(arms["A32XDc"]["note"])
++    # Round 8: the write-side arms (iterative encoder, surprisal-weighted terminal loss, surprisal-weighted summary pooling) on the A32W / A32KVTA / WCa recipes, EC2 twins after
++    # them (the K16 init paths of A32X / A32KVTAn / WCn); the pairing itself is checked in test_encoder_passes.py::test_bench_round8_keys_and_arms.
++    round8 = ["A32P2", "A32KVTAP2", "A32SW", "A32SP", "A32SPKVTA", "NSP"]
++    assert list(arms)[-12:] == [*round8, *(label + "n" for label in round8)], "appended after SK32XD, in order"
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 15. lora-style heads, row-position calibration, staging

@@ -1,64 +1,53 @@
-DEFERED: custom static workflows. If the harness-designer wants that, they should put that in the task description of the main agent, and rely on it to follow it.
+# Harness/Model Co-Design
+## Updated Teacher Campaign
+Note that we in probing/dev mode now. Avoid any long-running experiments.
 
-## Planning
-Let's open a fresh new artifact folder and a fresh new phase: Agent AC Pre-Training
-M0 of that slice 4a should be about the minor changes I've prototyped (see git diff):
-- (agent env setups needed for many benchmarks, enabling the general_subagent tool by default, etc).
-- This should be relatively quick.
+### Public Trajectory KL
+At pre-planning, go through our code, and identify the changes to make in:
+- The dataset loaders that load trajectories.
+- The ac model study file.
+To make these (1) trajectories and (2) the AC KL items as close to what our agents/agentic programs would naturally use.
+Don't overcomplicate; just make it as reasonably close as possible so the training isn't fighting the online rollouts.
 
-M1 should be about looking into making training multi-gpu and sky, and also looking into MIT orcd. (I've used it for an old version of this project, and I've attached a skill we used to use for it: IB/TMP/ORCD_OLD_SKILL.md).
-- We can use of 2xH200s from there.
-- You'll have to make a script near identical to sky.py, like orcd.py (with all the syncing features and such).
-- Regarless, we need to make sure that our rollouts can be on 2 gpus, which should be the case.
-- Also make sure our hardware auto-tune works correctly there.
-- We should also try to find a hassle-free way to make training multi-gpu. I've been avoiding because, from what I previously know, too much of the code has to architecture to shard training examples. MY HOPE: that all the training ddp logic can isolated inside the various utils files, so nothing else knows about it.
+Then, fix the following problem if it exists:
+- I believe the current KL is litterally just one step, which I think is an anti-pattern, unless I am wrong. Let's now do this.
+- The meaning of `max_post_compaction_tokens` changes.
+- It means do KL over the whole assistant spans up to that point. Is this doable and what's actually recommended.
+
+### KL over Our Own Trajectories
+The idea here is to take a trajectory that did not have AC turned on, then to format it to make an SFT when the student has AC turned on.
+- In line with the idea of KL over whole assistent spans, this should support having activation inputs in many parts of the message.
+
+It's possible the way to unify the two is to remove the notion of prefix/suffix, and just require that the two lengths/patterns be the same (by pattern I mean the precise alternation of system/user/assistent/tool/etc; the assistant spans must be the same, and are used for KL). Give this to me in a decision item if it's a possibility.
+
+Also encode the three default selections (so we don't have to bother even configuration). Anything with a score of 1, 1+unscored, or all. Defaults to all. I am not even sure there is any other option for KL.
+
+### Co-Training over Our Own Trajectories (On-Policy)
+This might be the main complexity here.
+- During training, whatever is selected, whether the trajectories come from a teacher or from ours, whether they have logprobs or not, can we make the gradients flow to the activation model and its lora.
+- Confirm this: if I am using the same model for agents and for AC models, the model itself is loaded only once; it's just that the loras differ.
+- The requirement is that the agent lora being trained, is the main model lora in the target AC.
+- So I want select_agent_runs to return tuple[str, str, str|None] -> None.
+    - Alternatively, make this an object like TrainingTarget or something like that.
+- This means the user/tool span is not strictly masked anymore right? At the latent pieces.
+    - And this must work for trajectories that did not hace AC turned on.
+
+Let's begin with a decision-heavy intent phase, then interface, then reviewed details (a subagent has to confirm the details when we get here; notify me of interface changes.)
 
 
-On key line of non-implementation work actually occurs at pre-planning (interactive discussion) to figure out what exactly our training schedule should be, especially the teacher trajectory thing. Once we have that cached, the rest, include the mass pretraining, is just programmatic transformations of trajectories to make AC/Agent sft items.
-I especially want to settle the task choices/sizes, etc.
 
-
-Musique: 0.2. # Search.
-DAPO: 0.1.
-OMNI-Math Hard: 0.15
-
-LCA: 0.3
+```py
+    intervention_frequency: int = 4 # 0=current behavior. 1 means half-point. 2 means 1/3, 2/3, etc.
+    add_last_layer_intervention: bool = True
+    prefer_attention_interventions: bool = True
+```
 
 
 
-````py
-# Example agentic program.
-def execute(self): # Parallel
-    subtask = f"""
----
-Here is the original task
-{self.agent.agent_config.task} 
----
-
-# Your Task As A Subagent
-You are helping the main agent answer the question.
-You'll iteratively formulate searches until finding an answer, then respond with:
-json
-{
-    "answer": "...",
-    "supporting_evidence": "..."
-}
-It's important that give the supporting evidence IN ADDITION to the answer.
-""".strip()
-    tasks = [subtask] * 3
-    subagent_tool = self.agent.tools["general_subagent"]
-    subagent_results = parallel_run(lambda t: self.agent.run_subagent(subagent_tool, t), tasks)
-    augmented_context = [
-        "Here are results from your subagents, use them to answer the question. Some might be right or wrong. Synthesize a question from them",
-        *subagent_results,
-    ]
-    self.agent.augment_context(augmented_context)
-    return self.agent.run()
-````
-
-In the program above:
-- Confirm that this kind of thing (don't worry about the exact functions like parallel_run) are possible.
-- When AC is disabled, confirm that the model sees sub answers and supporting evidence.
-- When AC is on:
-    - The side model summarizes the whole subagent trajectories (including recursive subcompactions), not some arbitrary span of it.
-    - The main models sees answer, supporting evidence AND vector embeddings input.
+Ok fork vllm as a submodule in IB/REPOS/vllm
+See if you can reuse my git creds to push the fork to my github. Also commit the local code.
+Then, make plan for how we'll implement this MVP solidly. The human-facing projection should show focus on the non-vllm interface changes, whereas the agent-facing projection should probably focus on vllm so reviewers know what you are about to do.
+Hopefully, the local interface-level changes are:
+1. Add interventions to the places that call/decode/train models whether hf or vllm.
+2. Add interventions to the steps/serialization/caches/etc.
+3. Make the changes to the AC/training/agent/etc.

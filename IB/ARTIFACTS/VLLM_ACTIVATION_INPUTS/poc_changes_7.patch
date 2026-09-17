@@ -1,0 +1,1577 @@
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+index 5e93db5..8b4e210 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+@@ -2842,5 +2842,569 @@
+   "calibration": "row_positions",
+   "intervention_target": "kv_transfer_full",
+   "note": "CEILING MEASUREMENT, NOT A CANDIDATE (see NKVTF): the whole-passage K/V transfer at every full-attention layer, warm from the K16r1 epoch-2 adapters at 1/32. The gap between this arm and A32KVTA is the most the row budget costs at 1/32 once the reader reads native side K/V. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32XD": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "Dense supervision (round 7): A32X (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + context distillation of the base reader's full-context attention outputs at every full-attention reader layer, \u03bb 1 held for 25 % of the run, linear decay to 0.05 by 75 %. The main arm: read held \u2212 A32X (0.322) and the per-layer distill_loss, with the held-out panel's rows-on vs rows-off gap and the rows' attention share."
++ },
++ "A32XD3": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "distill_weight": 3.0,
++  "distill_layers": -1,
++  "note": "A32XD with \u03bb 3: does a heavier dense term move the rows further before the decay? Read against A32XD (held \u2212 A32X 0.322; the rows-on / rows-off gap)."
++ },
++ "A32XDR": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 5e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "A32XD with reader LR 5e-5 at \u03bb 1: a faster reader on the dense target (does the reader's fit of the teacher's conditional mean run ahead of the rows, or pull them along?). Read against A32XD and A32X 0.322."
++ },
++ "NXD": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "seed": 20260915,
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "Dense supervision at 1/16: WCa (input-only, ND recipe from the K16r1 epoch-2 adapters, seed a) + context distillation at every full-attention reader layer, \u03bb 1 (hold 25 %, decay to 0.05 by 75 %). Read held \u2212 WCa (0.130) / WCn (0.122) and the rows-on vs rows-off gap."
++ },
++ "A32KVTAD": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": -1,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "distill_weight": 1.0,
++  "note": "A32KVTA (kv_transfer at every full-attention layer, 1/32) + context distillation at the same layers (the intervention layers), \u03bb 1: the dense target on top of the native-format K/V write. Read against A32KVTA (held \u2212 deltas_off, intervention_takeover) and A32XD."
++ },
++ "A32XDn": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "Dense supervision (round 7): A32X (input-only, 1/32, ND schedule, K16r1 epoch-2 init) + context distillation of the base reader's full-context attention outputs at every full-attention reader layer, \u03bb 1 held for 25 % of the run, linear decay to 0.05 by 75 %. The main arm: read held \u2212 A32X (0.322) and the per-layer distill_loss, with the held-out panel's rows-on vs rows-off gap and the rows' attention share. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32XD3n": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "distill_weight": 3.0,
++  "distill_layers": -1,
++  "note": "A32XD with \u03bb 3: does a heavier dense term move the rows further before the decay? Read against A32XD (held \u2212 A32X 0.322; the rows-on / rows-off gap). EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32XDRn": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 5e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "A32XD with reader LR 5e-5 at \u03bb 1: a faster reader on the dense target (does the reader's fit of the teacher's conditional mean run ahead of the rows, or pull them along?). Read against A32XD and A32X 0.322. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "NXDn": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "seed": 20260915,
++  "distill_weight": 1.0,
++  "distill_layers": -1,
++  "note": "Dense supervision at 1/16: WCa (input-only, ND recipe from the K16r1 epoch-2 adapters, seed a) + context distillation at every full-attention reader layer, \u03bb 1 (hold 25 %, decay to 0.05 by 75 %). Read held \u2212 WCa (0.130) / WCn (0.122) and the rows-on vs rows-off gap. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32KVTADn": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": -1,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "distill_weight": 1.0,
++  "note": "A32KVTA (kv_transfer at every full-attention layer, 1/32) + context distillation at the same layers (the intervention layers), \u03bb 1: the dense target on top of the native-format K/V write. Read against A32KVTA (held \u2212 deltas_off, intervention_takeover) and A32XD. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32KVTL": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "intervention_layers": [
++   23,
++   27,
++   31
++  ],
++  "note": "Depth placement of the native-format transfer: A32KVT (kv_transfer, 1/32, t init 1.0) at the late full-attention layers 23 / 27 / 31 only (explicit intervention_layers). Reading from A32KVTAn (every layer): the early layers' takeovers fall to 0.79\u20130.95 while layer 31's value takeover rises above 1, so the reader wants its own K/V back early and more of the side's late. Read held \u2212 deltas_off against A32KVT (layers 7/11/19/23/31) and A32KVTA (every layer), and the takeovers."
++ },
++ "NKVTL": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "delta_scale_lr": 0.001,
++  "intervention_layers": [
++   23,
++   27,
++   31
++  ],
++  "note": "Depth placement of the native-format transfer at 1/16: NKVTW (kv_transfer, K16r1 epoch-2 init, t init 1.0) at the late full-attention layers 23 / 27 / 31 only (explicit intervention_layers); the A32KVTL question at the looser ratio. Read held \u2212 deltas_off against NKVTW and NKVTWA, and the takeovers."
++ },
++ "A32KVTLn": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "intervention_layers": [
++   23,
++   27,
++   31
++  ],
++  "note": "Depth placement of the native-format transfer: A32KVT (kv_transfer, 1/32, t init 1.0) at the late full-attention layers 23 / 27 / 31 only (explicit intervention_layers). Reading from A32KVTAn (every layer): the early layers' takeovers fall to 0.79\u20130.95 while layer 31's value takeover rises above 1, so the reader wants its own K/V back early and more of the side's late. Read held \u2212 deltas_off against A32KVT (layers 7/11/19/23/31) and A32KVTA (every layer), and the takeovers. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "NKVTLn": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 0,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_transfer",
++  "delta_scale_lr": 0.001,
++  "intervention_layers": [
++   23,
++   27,
++   31
++  ],
++  "note": "Depth placement of the native-format transfer at 1/16: NKVTW (kv_transfer, K16r1 epoch-2 init, t init 1.0) at the late full-attention layers 23 / 27 / 31 only (explicit intervention_layers); the A32KVTL question at the looser ratio. Read held \u2212 deltas_off against NKVTW and NKVTWA, and the takeovers. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
+  }
+ }
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+index ae155f6..dd14016 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+@@ -31,7 +31,10 @@ BUDGET_SECONDS = int(os.environ.get('AC_RECON_BUDGET_SECONDS', 27000))
+ DEFAULT_ARM = dict(ratio=1 / 16, encoder_lr=1e-4, reader_lr=2e-5, penalty_weight=1.0, penalty_fraction=0.25, continue_share=0.0,
+                    train_items=None, epochs=2, reporting_interval=0.125, completion_samples=8, completion_tokens=320, budget_seconds=BUDGET_SECONDS,
+                    final_train_subset=512, micro_batch=1, ckpt_min_tokens=2048, gold_targets=False, reader_frozen_updates=0, material='material.json', gate_lr=None, fresh_initial=False, row_head_skip=False, lora_targets_extra=[], seed=None, lr_schedule='constant', warmup=10, clip_per_group=False, penalty_exact=False, ckpt_every=None, mixer_layers=None, row_scale_init=1.0, loss_weighting='example', gates_scope='all', penalty_ref='stored',
+-                   interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual', intervention_attention_depth='final', scale_fraction=0.05, delta_scale_lr=1e-3, heads_frozen=False, detach_source=False, deltas_off=True, head_style='scaled', calibration='no_rows', heads_only_updates=0, transfer_init=1.0, transfer_correction=False, init_ac=None, init_reader=None, note='')   # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only; -1 = every full-attention layer); transfer_init / transfer_correction: kv_transfer's takeover init and optional zero-init correction head; deltas_off: the extra panel without the deltas (deep arms only); head_style: 'scaled' (unit rows x calibrated x learned relative scale) or 'lora' (zero-initialized down projection, no scale); calibration: 'no_rows' (stripped histories) or 'row_positions' (real sequences, at the rows); heads_only_updates: first N updates train the intervention modules only
++                   interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual', intervention_attention_depth='final', scale_fraction=0.05, delta_scale_lr=1e-3, heads_frozen=False, detach_source=False, deltas_off=True, head_style='scaled', calibration='no_rows', heads_only_updates=0, transfer_init=1.0, transfer_correction=False, intervention_layers=None,
++                   distill_weight=0.0, distill_layers=None, distill_source='attn_out', distill_hold=0.25, distill_decay_end=0.75, distill_floor=0.05,
++                   init_ac=None, init_reader=None, note='')   # intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); distill_*: dense supervision - the base reader's full-context attention outputs distilled into the row-fed reader at the target positions (weight 0 = off; layers: list, -1 = every full-attention layer, null = the intervention layers of a deep arm else every full-attention layer; the hold / decay-end fractions and the floor share of the λ schedule)
++                   # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only; -1 = every full-attention layer); transfer_init / transfer_correction: kv_transfer's takeover init and optional zero-init correction head; deltas_off: the extra panel without the deltas (deep arms only); head_style: 'scaled' (unit rows x calibrated x learned relative scale) or 'lora' (zero-initialized down projection, no scale); calibration: 'no_rows' (stripped histories) or 'row_positions' (real sequences, at the rows); heads_only_updates: first N updates train the intervention modules only
+ ARMS = {
+     'S': dict(DEFAULT_ARM, train_items=512, epochs=2, reporting_interval=0.25, completion_samples=8, note='smoke: shape and timing'),
+     'A16': dict(DEFAULT_ARM, ratio=1 / 16, note='anchor 1/16'),
+@@ -79,7 +82,8 @@ def phase(reporter, name, **values):
+ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra=(), ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, row_scale_init=1.0,
+             interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual',
+             scale_fraction=0.05, heads_frozen=False, detach_source=False, intervention_attention_depth='final', head_style='scaled', calibration='no_rows',
+-            transfer_init=1.0, transfer_correction=False):
++            transfer_init=1.0, transfer_correction=False, intervention_layers=None):
++    # intervention_layers: an explicit list of reader layers (the config's intervention_layers; needs interventions 0, the frequency rule is replaced)
+     # head_style: 'scaled' (today's unit rows x calibrated RMS x learned relative scale) or 'lora' (down(silu(up(z))), down zero-initialized: zero delta at init, no scale group)
+     # calibration: 'no_rows' (median residual RMS of the stripped histories) or 'row_positions' (mean RMS at the row positions of real sequences with the rows present)
+     # intervention_attention_depth: for intervention_source 'passage_attention', 'final' (z queries the passage's final states) or 'matched' (side layer s(l) states)
+@@ -99,6 +103,8 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
+     from activation.harness.module_manager import DEFAULT_LORA_TARGET_MODULES
+     from activation.ac_model import ActivationContextModelConfig
+     targets = [*DEFAULT_LORA_TARGET_MODULES, *lora_targets_extra]
++    if intervention_layers is not None and interventions != 0:
++        raise ValueError(f'intervention_layers {intervention_layers} replace the frequency rule: set interventions 0 (got {interventions})')
+     torch.set_num_threads(4); torch.manual_seed(seed)
+     h = HarnessRuntime(HarnessRuntimeConfig(
+         model_configs={NAME: ModelConfig(NAME, MODEL, engine_kwargs={'max_model_len': 4096, 'gpu_memory_utilization': .75})},
+@@ -114,6 +120,7 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
+                                                                         intervention_attention_depth=intervention_attention_depth,
+                                                                         intervention_head_style=head_style, intervention_calibration=calibration,
+                                                                         intervention_transfer_init=transfer_init, intervention_transfer_correction=transfer_correction,
++                                                                        intervention_layers=list(intervention_layers) if intervention_layers is not None else None,
+                                                                         **({'mixer_layers': mixer_layers} if mixer_layers is not None else {})))
+     return h
+ 
+@@ -207,6 +214,8 @@ def config(arm, **overrides):
+                   num_epochs=arm['epochs'], warmup_updates=arm['warmup'], lr_schedule=arm['lr_schedule'], clip_per_group=arm['clip_per_group'], penalty_count_exact=arm['penalty_exact'], checkpoint_every_updates=arm['ckpt_every'], persist_no_context_reference=True, loss_weighting=arm['loss_weighting'], learning_rate_gates_scope=arm['gates_scope'], no_context_penalty_reference=arm['penalty_ref'], completion_samples=arm['completion_samples'], completion_max_new_tokens=arm['completion_tokens'],
+                   reporting_interval=arm['reporting_interval'], seed=SEED if arm['seed'] is None else arm['seed'], teacher_cache_top_k=TOP_K, gradient_checkpointing_min_tokens=arm['ckpt_min_tokens'], micro_batch_examples=arm['micro_batch'], teacher_targets_include_gold=arm['gold_targets'], target_lora_frozen_updates=arm['reader_frozen_updates'], learning_rate_gates=arm['gate_lr'], deltas_off_panel=arm['deltas_off'], learning_rate_delta_scales=arm['delta_scale_lr'], intervention_heads_only_updates=arm['heads_only_updates'],
+                   no_context_penalty_weight=arm['penalty_weight'] if arm['reader_lr'] > 0 else 0.0, no_context_penalty_fraction=arm['penalty_fraction'],
++                  distill_weight=arm['distill_weight'], distill_layers=arm['distill_layers'], distill_source=arm['distill_source'],
++                  distill_hold=arm['distill_hold'], distill_decay_end=arm['distill_decay_end'], distill_floor=arm['distill_floor'],
+                   checkpoint_every_epoch=True)
+     values.update(overrides)
+     return ActivationContextTrainingConfig(**values)
+@@ -305,7 +314,7 @@ def run(label):
+                     intervention_source=arm['intervention_source'], intervention_target=arm['intervention_target'],
+                     scale_fraction=arm['scale_fraction'], heads_frozen=arm['heads_frozen'], detach_source=arm['detach_source'],
+                     intervention_attention_depth=arm['intervention_attention_depth'], head_style=arm['head_style'], calibration=arm['calibration'],
+-                    transfer_init=arm['transfer_init'], transfer_correction=arm['transfer_correction'])
++                    transfer_init=arm['transfer_init'], transfer_correction=arm['transfer_correction'], intervention_layers=arm['intervention_layers'])
+         ac = h.module_manager.get_ac_model(AC); ac.prepare(); h.module_manager.ensure_lora(READER)
+         initial_hash = parameter_hash(ac, h)
+         deep_hash = parameter_hash(ac, h, deep=True) if ac.is_deep else None
+@@ -327,11 +336,15 @@ def run(label):
+         r.set_text('summary', 'Run summary', '\n'.join([
+             f'Arm {label} · {arm["note"]} · compression 1/{round(1 / arm["ratio"])} · encoder LR {arm["encoder_lr"]:g} · reader LR {arm["reader_lr"]:g}'
+             + (f' · no-context penalty λ={arm["penalty_weight"]:g} on {arm["penalty_fraction"]:.0%} of the examples' if arm['reader_lr'] > 0 and arm['penalty_weight'] > 0 else ' · no penalty')
+-            + (f' · {arm["continue_share"]:.0%} cued-continuation items' if arm['continue_share'] else ''),
++            + (f' · {arm["continue_share"]:.0%} cued-continuation items' if arm['continue_share'] else '')
++            + (f' · dense supervision: the base reader\'s full-context attention outputs (after o_proj, no adapters, no rows) distilled into the row-fed reader at the target positions of '
++               f'{"reader layers " + str(arm["distill_layers"]) if isinstance(arm["distill_layers"], list) else "every full-attention reader layer" if arm["distill_layers"] == -1 or not ac.is_deep else "the intervention layers"}, '
++               f'λ {arm["distill_weight"]:g} held for {arm["distill_hold"]:.0%} of the run then decaying linearly to {arm["distill_floor"]:g} × λ at {arm["distill_decay_end"]:.0%} '
++               f'(the term per layer is mean ||A_student - A_teacher||² / the teacher\'s mean squared norm; panels score it with the rows on and off and the rows\' attention share)' if arm['distill_weight'] > 0 else ''),
+             f'Data · {len(train)} training passages (tool outputs from SWE and deep-research trajectories) × {arm["epochs"]} epochs = {math.ceil(len(train) / 8) * arm["epochs"]} updates of 8 · '
+             f'held-out panel every {arm["reporting_interval"]:g} epoch: {len(held)} novel + {len(wiki)} Wikipedia passages · no-context floor on the novel panel',
+             f'Initial adapters hash {initial_hash[:12]}… · seed {SEED} · SFT on the passage tokens'
+-            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "pre-RoPE K/V slots REPLACING the row positions of (keep x the reader's own + side-computed content; takeover 0 at init)" if ac.kv_slots else "CEILING MEASUREMENT (not a candidate): the SIDE MODEL'S OWN pre-RoPE K/V of the WHOLE passage run REPLACING the reader's at" if ac.kv_transfer_full else f"the SIDE MODEL'S OWN pre-RoPE K/V REPLACING the row positions' at ((1 - t) x the reader's own + t x the side's, t init {arm['transfer_init']:g}{', zero-init correction head' if arm['transfer_correction'] else ''})" if ac.kv_transfer else "CEILING MEASUREMENT (not a candidate): cross-attention of every reader position over the whole passage at" if ac.cross_attention else "deltas at the inputs of"} reader layers {ac.intervention_layers}'
++            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "pre-RoPE K/V slots REPLACING the row positions of (keep x the reader's own + side-computed content; takeover 0 at init)" if ac.kv_slots else "CEILING MEASUREMENT (not a candidate): the SIDE MODEL'S OWN pre-RoPE K/V of the WHOLE passage run REPLACING the reader's at" if ac.kv_transfer_full else f"the SIDE MODEL'S OWN pre-RoPE K/V REPLACING the row positions' at ((1 - t) x the reader's own + t x the side's, t init {arm['transfer_init']:g}{', zero-init correction head' if arm['transfer_correction'] else ''})" if ac.kv_transfer else "CEILING MEASUREMENT (not a candidate): cross-attention of every reader position over the whole passage at" if ac.cross_attention else "deltas at the inputs of"} reader layers {ac.intervention_layers}{" (explicit intervention_layers)" if arm["intervention_layers"] is not None else ""}'
+                 + (' read from the side model\'s final states of all passage tokens (zero compression, not engine-compatible)' if ac.cross_attention else
+                    f' read from {"the side state at layers " + str(ac.intervention_source_layers) if ac.config.intervention_source == "side_layers" else ("row-over-passage attention at " + ("side layers " + str(ac.intervention_source_layers) if ac.config.intervention_attention_depth == "matched" else "the final side states") + ", zero-initialized out projection") if ac.config.intervention_source == "passage_attention" else "the final side state"}')
+                 + f' (heads hash {deep_hash[:12]}…; ' + ('zero-initialized cross-attention blocks, no heads' if ac.cross_attention else f'the side model\'s K/V captured in the side pass, takeovers at {arm["delta_scale_lr"]:g}' if ac.kv_transfer else f'zero-initialized slot heads around the reader\'s own K/V, takeovers at {arm["delta_scale_lr"]:g}' if ac.kv_slots else f'relative scales from {arm["scale_fraction"]:g} x RMS at {arm["delta_scale_lr"]:g}' if arm['head_style'] == 'scaled' else 'lora-style heads: zero-initialized down projection, no scale group')
+@@ -379,7 +392,9 @@ def run(label):
+                   'held': {k: v for k, v in last.items() if k not in ('per_item',)},   # blend of both panels; per panel below
+                   'held_novel': (last.get('by_kind') or {}).get('reconstruct'), 'held_wiki': (last.get('by_kind') or {}).get('wiki'), 'no_context': {k: v for k, v in (stats.epochs[-1].validation or {}).items() if k != 'per_item'} if stats.epochs and stats.epochs[-1].validation else None,
+                   'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor,
+-                  'penalty_last': stats.penalty[-1] if stats.penalty else None, 'duration_seconds': time.monotonic() - start}
++                  'penalty_last': stats.penalty[-1] if stats.penalty else None,
++                  'distill': {'layers': stats.distill_layers, 'lambda_last': stats.distill_lambda[-1], 'loss_last': stats.distill_loss[-1], 'panel_last': stats.distill_panel[-1] if stats.distill_panel else None} if stats.distill_lambda else None,
++                  'duration_seconds': time.monotonic() - start}
+         write_json(folder / 'result.json', result)
+         r.set_text('result', 'Final result', json.dumps({k: v for k, v in result.items() if k not in ('configuration',)}, indent=2, default=str))
+         phase(r, 'complete', run_elapsed=f'{result["duration_seconds"] / 60:.1f} min'); r.finish()
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index 35191b8..f330cbe 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -135,6 +135,22 @@ class ActivationContextTrainingReporter(HtmlReporter):
+                     "a rising curve means the reader improves without the rows.", "global update", "KL", ["train"])
+             self.add_data_point("penalty", {"x": progress.global_step, "train": stats.penalty[-1]})
+             self.set_status(no_context_penalty=f"{stats.penalty[-1]:.4f}")
++        if stats.distill_lambda:
++            if "distill_loss" not in self.widgets:
++                self.initialize_line_plot("distill_loss", "Dense supervision: distillation term per layer (training, rows on)",
++                    "Per supervised reader layer, the mean over the update's examples of the normalised context-distillation term on the training forwards: "
++                    "mean over the target positions of ||A_student - A_teacher||^2 / the teacher's mean squared norm there, A = the attention block's output (after o_proj). "
++                    "The teacher is the base reader with no adapters on the full-context history; the student the row-fed reader as trained. 1 = the student writes nothing "
++                    "like the teacher, 0 = it writes the teacher's tensor. Read with 'Dense supervision: held-out panel' (rows on vs rows off): the rows-independent part "
++                    "of the fit falls first in every arm.", "global update", "normalised term", [], smoothing_window=5)
++                self.initialize_line_plot("distill_lambda", "Dense supervision: λ per update",
++                    "The weight of the distillation term on the schedule clock: held for distill_hold of the planned updates, a linear decay to the floor at distill_decay_end, "
++                    "then the floor.", "global update", "λ", ["λ"])
++            for layer, value in stats.distill_loss[-1].items():
++                self._ensure_series("distill_loss", f"layer {layer}")
++                self.add_data_point("distill_loss", {"x": progress.global_step, f"layer {layer}": value})
++            self.add_data_point("distill_lambda", {"x": progress.global_step, "λ": stats.distill_lambda[-1]})
++            self.set_status(distill_lambda=f"{stats.distill_lambda[-1]:.3g}")
+         if self.references:
+             self.add_data_point("reporting", {"x": self.epoch_x, **self.references})
+         if stats.intervention_trace and len(stats.intervention_trace) != self._interventions_reported:
+@@ -245,6 +261,30 @@ class ActivationContextTrainingReporter(HtmlReporter):
+                 **({"agreement": _round(values["agreement"])} if self.loss_kind == "kl" else {})})
+         self.render()
+ 
++    def report_distill_panel(self, progress: "ActivationContextTrainingProgress", panel: dict) -> None:
++        """Dense supervision, at every panel on a few held-out items: the distillation term per layer with the rows on and with the rows off (the reader on the
++        stripped history), and the rows' attention share per layer."""
++        if "distill_panel" not in self.widgets:
++            self.initialize_line_plot("distill_panel", "Dense supervision: held-out panel, rows on vs rows off",
++                "Per supervised reader layer on a few held-out items, the normalised distillation term of the reader as trained with the rows present ('rows on') and "
++                "of the same reader on the stripped history without any rows ('rows off'): the rows-off curve is the rows-independent part of the fit (the reader "
++                "LoRA matching the teacher's conditional mean) and falls first; the gap between the two curves is what the rows deliver at that layer.",
++                "epochs in this report", "normalised term", [])
++            self.initialize_line_plot("rows_attention_share", "Rows' attention share at the target positions",
++                "Per supervised reader layer on the same held-out items, the share of the target positions' attention mass that lands on the row positions "
++                "(manual attention over the reader's q / k with its RoPE, GQA grouping and scaling; mean over heads, positions and items). Rising = the reader "
++                "has started reading the rows at that layer.", "epochs in this report", "share", [])
++        if progress is not None:
++            self.report_phase(progress, "dense supervision panel")
++        for name, label in (("rows_on", "rows on"), ("rows_off", "rows off")):
++            for layer, value in panel.get(name, {}).items():
++                self._ensure_series("distill_panel", f"layer {layer} ({label})")
++                self.add_data_point("distill_panel", {"x": self.epoch_x, f"layer {layer} ({label})": value})
++        for layer, value in panel.get("rows_attention_share", {}).items():
++            self._ensure_series("rows_attention_share", f"layer {layer}")
++            self.add_data_point("rows_attention_share", {"x": self.epoch_x, f"layer {layer}": value})
++        self.render()
++
+     def report_evaluation_progress(self, name: str, completed: int, total: int) -> None:
+         self.set_status(phase=self.label(name), evaluation_items=f"{completed} of {total}")
+         self.render(force=completed == 0 or completed == total)
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index b974477..62ce3f0 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -11,7 +11,7 @@ from pathlib import Path
+ import time
+ import typing as t
+ from dataclasses import asdict, dataclass, field, replace
+-from contextlib import ExitStack
++from contextlib import ExitStack, nullcontext
+ 
+ import torch
+ import torch.nn.functional as F
+@@ -21,7 +21,8 @@ from ..agent_training.agent_training_utils import (
+     disable_dropout, head_logits, optimizer_state_to, persistent_optimizer, set_learning_rates,
+ )
+ from ..autotuners import get_ac_training_autotuning_variables, configure_fla_runtime
+-from ..harness.hf_utils import SOURCE_DEVICE, TARGET_DEVICE, Interventions, generate_with_interventions
++from ..harness.hf_utils import (DISTILL_SOURCES, SOURCE_DEVICE, TARGET_DEVICE, Interventions, attention_shares, capture_attention_qk,
++                                capture_layer_outputs, contiguous_runs, generate_with_interventions)
+ from ..common.data_syncing import resolve_path
+ from .ac_model import INTERVENTION_MODULE_PREFIXES, ROLLOUT, TRAINING, ActivationContextModel
+ from ..common.ac_parts import strip_ac_parts
+@@ -29,6 +30,7 @@ from .ac_model_utils import (ACOutput, EncodeRequest, direct_parts, prepare_trai
+                              validate_paired_histories, validate_part_capacity)
+ 
+ CALIBRATION_EXAMPLES = 8        # deep models: the first this many training examples (their stripped histories) set the delta scales
++DISTILL_PANEL_ITEMS = 8         # dense supervision: reporting items (with rows) scored at every panel with the rows on and off, and for the rows' attention share
+ 
+ if t.TYPE_CHECKING:
+     from ..harness import HarnessRuntime
+@@ -111,6 +113,13 @@ class ActivationContextTrainingConfig:
+                                                      # the schedule clock keeps running, so a resume continues the staging where the checkpoint left it
+     teacher_targets_include_gold: bool = False       # stored targets always hold the gold token (its base log-prob replaces the k-th entry when absent), so the coarsened KL sees mass moved onto it
+     fp32_head_matmul: bool = False
++    distill_weight: float = 0.0                      # dense supervision: λ of the context-distillation term - the base reader's (no adapters, no rows) per-layer attention outputs on the
++                                                     # full-context view (`in_context_messages`) distilled into the row-fed reader at the target positions; 0 = off (no teacher pass, no hooks)
++    distill_layers: list[int] | int | None = None    # supervised reader layers: a list, -1 = every full-attention layer, None = a deep model's intervention layers, else every full-attention layer
++    distill_source: str = "attn_out"                 # the supervised tensor: "attn_out" = the attention block's output after o_proj (its residual contribution); the only source
++    distill_hold: float = 0.25                       # λ(step) on the LR schedule clock: distill_weight for this fraction of the planned updates, ...
++    distill_decay_end: float = 0.75                  # ... then a linear decay to distill_floor x distill_weight reached at this fraction, then held (resume-safe: updates done / planned total)
++    distill_floor: float = 0.05                      # the floor as a fraction of distill_weight
+     gradient_checkpointing: bool = True        # on both bases
+     gradient_checkpointing_min_tokens: int | None = None
+     seed: int = 0
+@@ -153,6 +162,17 @@ class ActivationContextTrainingConfig:
+             raise ValueError("micro_batch_examples > 1 is only implemented for loss_kind='sft'")
+         if self.completion_samples < 0 or self.completion_max_new_tokens < 1:
+             raise ValueError("Invalid completion inspection budget")
++        if not math.isfinite(self.distill_weight) or self.distill_weight < 0:
++            raise ValueError("distill_weight must be finite and nonnegative")
++        if self.distill_source not in DISTILL_SOURCES:
++            raise ValueError(f"distill_source must be one of {DISTILL_SOURCES}")
++        if not 0 <= self.distill_hold <= self.distill_decay_end <= 1 or not 0 <= self.distill_floor <= 1:
++            raise ValueError("the distillation schedule needs 0 <= distill_hold <= distill_decay_end <= 1 and distill_floor in [0, 1]")
++        if self.distill_layers is not None and self.distill_layers != -1:
++            layers = list(self.distill_layers) if isinstance(self.distill_layers, (list, tuple)) else None
++            if not layers or any(type(layer) is not int or layer < 0 for layer in layers) or len(set(layers)) != len(layers):
++                raise ValueError("distill_layers must be None, -1 (every full-attention layer) or a non-empty list of distinct non-negative reader layers")
++            self.distill_layers = sorted(layers)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -288,6 +308,11 @@ class ActivationContextTrainingStats:
+     resumed_from: str | None = None                                       # the optimizer.pt this call restored, if any
+     no_context_reference: dict = field(default_factory=dict)            # penalty: the same for the base's no-context reference
+     penalty: list[float] = field(default_factory=list)                  # per update: mean unweighted no-context KL over the sampled examples (carried forward when none)
++    distill_loss: list[dict[int, float]] = field(default_factory=list)   # dense supervision, per update: per supervised layer the normalised term on the training forwards (rows on; mean over the update's examples, before λ)
++    distill_lambda: list[float] = field(default_factory=list)            # dense supervision, per update: λ(step)
++    distill_layers: list[int] = field(default_factory=list)              # dense supervision: the supervised reader layers of this call
++    distill_panel: list[dict] = field(default_factory=list)              # dense supervision, per panel on DISTILL_PANEL_ITEMS held-out items: {"update", "epoch", "rows_on": {layer: term}, "rows_off": {layer: term},
++                                                                         # "rows_attention_share": {layer: share}} - rows_off = the reader on the stripped history (no rows): the rows-independent part of the fit
+     checkpoint_path: str | None = None
+     target_lora_checkpoint_path: str | None = None
+     peak_memory_bytes: int = 0
+@@ -327,6 +352,8 @@ class ActivationContextTrainingStats:
+             "peak_memory_gb": round(self.peak_memory_bytes / 2**30, 2), "duration_s": round(self.duration_s, 1),
+             "seconds_by_bucket": self.seconds_by_bucket(), "teacher_cache_hits": self.teacher_cache_hits,
+             "teacher_cache_mb": round(self.teacher_cache_bytes / 2**20, 1), "teacher_targets": self.teacher_targets,
++            **({"distill_layers": self.distill_layers, "distill_lambda_first": self.distill_lambda[0], "distill_lambda_last": self.distill_lambda[-1],
++                "distill_loss_first": self.distill_loss[0], "distill_loss_last": self.distill_loss[-1], "distill_panel": self.distill_panel} if self.distill_lambda else {}),
+         }
+ 
+ 
+@@ -362,6 +389,9 @@ class ActivationContextTrainer:
+         self._penalty_rng = random.Random(self.config.seed)                        # which training examples carry the no-context penalty
+         self._penalty_forced: set[int] | None = None                                # penalty_count_exact: ids of this update's penalty examples
+         self._penalty_term: torch.Tensor | None = None                             # set by _example_loss: the weighted penalty of the last example, if sampled
++        self._distill_term: tuple[torch.Tensor, dict[int, float]] | None = None    # set by _example_loss: (λ x the layer-mean distillation term, the per-layer values) of the last example
++        self._distill_layers: list[int] = []                                       # dense supervision: the supervised reader layers (resolved by train())
++        self._distill_lambda: float = 0.0                                          # λ of the current update (the schedule clock)
+         self._last_hits: torch.Tensor | None = None                                # set by the chunked losses: argmax == target per target position
+         self._payload_bytes = 0                                                    # deep models: delta bytes handed to the reader (reset per train call)
+         self._row_rms: dict[int | str, list[torch.Tensor]] = {}                    # deep models: residual RMS at the row positions per layer since the last trace (0-d tensors); K/V targets also "l:k" / "l:v"
+@@ -380,12 +410,15 @@ class ActivationContextTrainer:
+         student_ids, spans, student_positions = prepare_training_history(tokenizer, item.ac_messages, item.ac_start,
+                             item.assistant_token_ids, lengths, tools=item.tools, chat_template_kwargs=chat_kwargs)
+         teacher_ids, teacher_positions = [], []
+-        if self.config.loss_kind == "kl" or reference:
++        distilled = not reference and self.config.distill_weight > 0 and item.in_context_messages is not None   # the distillation teacher reads the full-context view
++        if self.config.loss_kind == "kl" or reference or distilled:
+             if item.in_context_messages is None:
+                 raise ValueError(f"{item.item_id}: KL needs an in-context teacher history")
+             validate_paired_histories(item.in_context_messages, item.in_context_start, item.ac_messages, item.ac_start)
+             teacher_ids, _, teacher_positions = prepare_training_history(tokenizer, item.in_context_messages,
+                                 item.in_context_start, item.assistant_token_ids, [], tools=item.tools, chat_template_kwargs=chat_kwargs)
++        if distilled:
++            self._check_target_alignment(item.item_id, teacher_ids, teacher_positions, student_ids, student_positions)
+         for view, ids in (("teacher", teacher_ids), ("student", student_ids)):
+             if len(ids) > self.config.max_example_tokens:
+                 raise ValueError(f"{item.item_id}: {view} history has {len(ids)} tokens, exceeding max_example_tokens={self.config.max_example_tokens}; regenerate or raise the guard")
+@@ -486,6 +519,8 @@ class ActivationContextTrainer:
+             ac_model._training_gradient_checkpointing = config.gradient_checkpointing
+             self._check_capacity(ac_model, [*examples, *reporting_examples, *validation_examples])
+             self._payload_bytes = 0
++            self._distill_layers = self._resolve_distill_layers(ac_model) if self._distill_active() else []
++            stats.distill_layers = list(self._distill_layers)
+             if ac_model.is_deep and not ac_model.interventions_calibrated:
+                 # A fresh deep model: the delta scales start at a share of each layer's residual RMS, measured on a fixed training-only sample.
+                 if reporter is not None:
+@@ -595,6 +630,8 @@ class ActivationContextTrainer:
+                 stats.validation_baseline = self._evaluate(ac_model, list(validation_data), device, reporter, "validation")
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "validation", stats.validation_baseline)
++            if self._distill_active() and reporting_data:
++                self._report_distill_panel(ac_model, list(reporting_data), device, baseline, stats, reporter)
+             stats.baseline_samples = self._sample_completions(ac_model, fixed_items, baseline)
+             stats.baseline_seconds = time.monotonic() - phase
+             if reporter is not None and stats.baseline_samples:
+@@ -618,7 +655,8 @@ class ActivationContextTrainer:
+                     before_side_tokens = ac_model.stats.side_tokens
+                     mini = order[(step - 1) * per_step:step * per_step]
+                     optimizer.zero_grad(set_to_none=True)
+-                    totals = {"loss": 0.0, "agreement": 0.0, "drift": 0.0, "tokens": 0, "penalty": [], "penalty_examples": 0}
++                    totals = {"loss": 0.0, "agreement": 0.0, "drift": 0.0, "tokens": 0, "penalty": [], "penalty_examples": 0, "distill": []}
++                    self._distill_lambda = self._distill_lambda_at(self.updates_done.get(ac_model_name, 0), planned_total) if self._distill_active() else 0.0
+                     mini_tokens = max(1, sum(examples[index].num_completion for index in mini))
+                     def share(example):     # this example's weight in the update's loss
+                         return example.num_completion / mini_tokens if config.loss_weighting == "token" else 1.0 / len(mini)
+@@ -636,19 +674,22 @@ class ActivationContextTrainer:
+                         group_examples = [examples[index] for index in group]
+                         example_started = time.monotonic()
+                         if batched:
+-                            outcomes = [(result["objective"], None, torch.zeros((), device=device), result["penalty"])
++                            outcomes = [(result["objective"], None, torch.zeros((), device=device), result["penalty"], result["distill"])
+                                         for result in self._batch_loss(ac_model, group_examples, device)]
+                         else:
+                             objective, agreement, drift, _, _ = self._example_loss(ac_model, group_examples[0], device)
+-                            outcomes = [(objective, agreement, drift, self._penalty_term)]
+-                        loss = sum((objective + config.drift_term_weight * drift + (penalty_term if penalty_term is not None else 0.0)) * (example.item.weight * share(example))
+-                                   for example, (objective, _, drift, penalty_term) in zip(group_examples, outcomes))
++                            outcomes = [(objective, agreement, drift, self._penalty_term, self._distill_term)]
++                        loss = sum((objective + config.drift_term_weight * drift + (penalty_term if penalty_term is not None else 0.0)
++                                    + (distill[0] if distill is not None else 0.0)) * (example.item.weight * share(example))
++                                   for example, (objective, _, drift, penalty_term, distill) in zip(group_examples, outcomes))
+                         loss.backward()
+                         seconds_each = (time.monotonic() - example_started) / len(group)
+-                        for example, (objective, agreement, drift, penalty_term) in zip(group_examples, outcomes):
++                        for example, (objective, agreement, drift, penalty_term, distill) in zip(group_examples, outcomes):
+                             cached = config.loss_kind == "kl" and config.teacher_cache_top_k > 0 and example.teacher_cache_key in self.teacher_cache
+                             if penalty_term is not None:
+                                 totals["penalty"].append(float(penalty_term.detach()) * config.no_context_penalty_fraction / config.no_context_penalty_weight)
++                            if distill is not None:
++                                totals["distill"].append(distill[1])
+                             loss_value = float(objective.detach())
+                             stats.example_records.append({"kind": example.item.kind, "teacher_tokens": len(example.teacher_ids),
+                                 "student_tokens": len(example.student_ids), "seconds": round(seconds_each, 3), "teacher_cached": cached})
+@@ -706,6 +747,9 @@ class ActivationContextTrainer:
+                         stats.drift.append(totals["drift"] / len(mini))
+                     if config.no_context_penalty_weight > 0:
+                         stats.penalty.append(sum(totals["penalty"]) / len(totals["penalty"]) if totals["penalty"] else (stats.penalty[-1] if stats.penalty else 0.0))
++                    if self._distill_active():
++                        stats.distill_lambda.append(self._distill_lambda)
++                        stats.distill_loss.append({layer: sum(values[layer] for values in totals["distill"]) / len(totals["distill"]) for layer in self._distill_layers} if totals["distill"] else {})
+                     stats.grad_norm.append(grad_norm)
+                     stats.step_seconds.append(seconds)
+                     stats.step_tokens.append(totals["tokens"])
+@@ -731,6 +775,8 @@ class ActivationContextTrainer:
+                             stats.deltas_off = record.deltas_off
+                             if reporter is not None:
+                                 reporter.report_eval(progress(step), "deltas_off", record.deltas_off)
++                        if self._distill_active():
++                            self._report_distill_panel(ac_model, list(reporting_data), device, progress(step), stats, reporter)
+                         record.reporting_seconds += time.monotonic() - phase
+                 if validation_data:
+                     phase = time.monotonic()
+@@ -1085,8 +1131,13 @@ class ActivationContextTrainer:
+         student_embeds, payload = self._assemble_student(student_embeds, example.spans, outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+         checkpointed = (config.gradient_checkpointing and torch.is_grad_enabled()
+                         and len(example.student_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
+-        student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
+-                                                interventions=[payload] if payload is not None else None)[0]
++        distilled = with_drift and torch.is_grad_enabled() and self._distill_active()      # training forwards only (the panels score under no_grad)
++        teacher_rows = self._distill_teacher(ac_model, [example], device)[0] if distilled else None
++        capture = capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions)], config.distill_source) if distilled else nullcontext()
++        with capture as captured:
++            student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
++                                                    interventions=[payload] if payload is not None else None)[0]
++        self._distill_term = self._distill_terms(captured, 0, teacher_rows) if distilled else None
+         if torch.is_grad_enabled():
+             self._harvest_row_rms([payload])
+         student_states = student_hidden[example.student_positions]
+@@ -1138,6 +1189,152 @@ class ActivationContextTrainer:
+             self._penalty_term = (config.no_context_penalty_weight / config.no_context_penalty_fraction) * penalty
+         return loss, agreement, drift, num, target_logp
+ 
++    # ------------------------------------------------------------------------------------------ dense supervision (context distillation)
++    def _distill_active(self) -> bool:
++        return self.config.distill_weight > 0
++
++    @staticmethod
++    def _check_target_alignment(item_id: str, teacher_ids: list[int], teacher_positions: list[int], student_ids: list[int], student_positions: list[int]) -> None:
++        """The teacher's and the student's target positions (the existing per-token position lists) predict the same tokens from the same tokens: at every
++        aligned pair the token at the predicting position and the target token after it agree (the passage tokens exist only in the teacher, the rows only in
++        the student, so the offsets differ while the target runs match token for token)."""
++        if len(teacher_positions) != len(student_positions):
++            raise ValueError(f"{item_id}: the teacher and the student have {len(teacher_positions)} and {len(student_positions)} target positions")
++        for p, q in zip(teacher_positions, student_positions):
++            if teacher_ids[p] != student_ids[q] or teacher_ids[p + 1] != student_ids[q + 1]:
++                raise ValueError(f"{item_id}: teacher position {p} and student position {q} are not aligned "
++                                 f"(tokens {teacher_ids[p]}->{teacher_ids[p + 1]} vs {student_ids[q]}->{student_ids[q + 1]})")
++
++    def _resolve_distill_layers(self, ac_model: ActivationContextModel) -> list[int]:
++        """The supervised reader layers: `distill_layers` as a list or -1 (every full-attention layer), else a deep model's intervention layers, else every
++        full-attention layer. Every chosen layer must be a full-attention layer of the reader (the attention output lives there)."""
++        from ..harness.model_config import LayerType
++        descriptions = ac_model.target.model_config.model_description.layer_descriptions
++        full = [layer.layer_idx for layer in descriptions if layer.layer_type is LayerType.FULL_ATTENTION]
++        chosen = self.config.distill_layers
++        if chosen is None:
++            chosen = list(ac_model.intervention_layers) if ac_model.is_deep else list(full)
++        elif chosen == -1:
++            chosen = list(full)
++        else:
++            chosen = list(chosen)
++        if not chosen:
++            raise ValueError("dense supervision needs at least one supervised reader layer (the reader describes no full-attention layer)")
++        wrong = [layer for layer in chosen if not 0 <= layer < len(descriptions)]
++        if wrong:
++            raise ValueError(f"distill_layers {wrong} lie outside the reader's layers 0..{len(descriptions) - 1}")
++        wrong = [layer for layer in chosen if layer not in full]
++        if wrong:
++            raise ValueError(f"dense supervision reads the attention output of full-attention reader layers; {wrong} are not (set distill_layers)")
++        return sorted(set(chosen))
++
++    def _distill_lambda_at(self, update: int, planned_total: int | None) -> float:
++        """λ(step) on the schedule clock: `distill_weight` while update / planned_total <= distill_hold, a linear decay to distill_floor x distill_weight
++        reached at distill_decay_end, the floor afterwards. `update` counts the optimizer steps done so far (restored on a resume), like the LR schedule."""
++        config = self.config
++        progress = min(1.0, max(0.0, update / planned_total)) if planned_total else 0.0
++        floor = config.distill_floor * config.distill_weight
++        if progress <= config.distill_hold:
++            return config.distill_weight
++        if progress >= config.distill_decay_end:
++            return floor
++        fraction = (progress - config.distill_hold) / (config.distill_decay_end - config.distill_hold)
++        return config.distill_weight + (floor - config.distill_weight) * fraction
++
++    @torch.no_grad()
++    def _distill_teacher(self, ac_model: ActivationContextModel, batch: t.Sequence[_Example], device: torch.device) -> list[dict[int, torch.Tensor]]:
++        """The teacher: the base reader with every adapter disabled (`lora_name=None`) and no rows on the full-context (in-context) history of each example,
++        one forward (right-padded when several; no checkpointing, no payload, nothing cached), keeping only the supervised tensor at the supervised (target)
++        positions per layer: per example {layer: [C, d]}, detached, in the model's dtype."""
++        target = ac_model.target
++        base = target.model
++        embedding = base.get_input_embeddings()
++        for example in batch:
++            if not example.teacher_ids:
++                raise ValueError(f"{example.item.item_id}: dense supervision needs the item's in-context (full-context) history")
++        embeds = [embedding(torch.tensor(example.teacher_ids, device=device, dtype=torch.long)) for example in batch]
++        runs = [contiguous_runs(example.teacher_positions) for example in batch]
++        with capture_layer_outputs(base, self._distill_layers, runs, self.config.distill_source) as captured:
++            if len(batch) == 1:
++                target.decoder_forward(embeds[0][None], None, lora_name=None, gradient_checkpointing=False)
++            else:
++                self._padded_forward(target, embeds, None)
++        return [{layer: torch.cat(captured[layer][row]).detach() for layer in captured} for row in range(len(batch))]
++
++    def _distill_terms(self, captured: dict, row: int, teacher_rows: dict[int, torch.Tensor]) -> tuple[torch.Tensor, dict[int, float]]:
++        """(λ x the mean over layers of the normalised term, the per-layer values): per layer, the mean over the supervised positions of
++        ||A_student - A_teacher||^2 divided by the teacher's mean squared norm there (d x its RMS^2 over those positions, detached): 1 when the
++        student writes nothing, 0 when it writes the teacher's tensor, O(1) at the start, so λ = 1 is parity with the terminal loss."""
++        terms: dict[int, torch.Tensor] = {}
++        for layer in self._distill_layers:
++            student = torch.cat(captured[layer][row]).float()
++            teacher = teacher_rows[layer].float()
++            if student.shape != teacher.shape:
++                raise RuntimeError(f"layer {layer}: the student captured {tuple(student.shape)} at the target positions, the teacher {tuple(teacher.shape)}")
++            terms[layer] = (student - teacher).pow(2).sum(dim=-1).mean() / teacher.pow(2).sum(dim=-1).mean().clamp_min(1e-12)
++        mean = sum(terms.values()) / len(terms)
++        return self._distill_lambda * mean, {layer: float(term.detach()) for layer, term in terms.items()}
++
++    @torch.no_grad()
++    def _distill_panel(self, ac_model: ActivationContextModel, items: t.Sequence[ActivationContextTrainingItem], device: torch.device) -> dict:
++        """Diagnostics on the first DISTILL_PANEL_ITEMS items with rows (no grad): per supervised layer the normalised term with the rows on (the reader as
++        trained, payload included) and with the rows off (the same reader on the stripped history, no rows: the rows-independent part of the fit - the
++        reader LoRA matching the teacher's conditional mean - which falls first in every arm; the gap between the two is what the rows deliver), and the
++        rows' attention share: the share of the target positions' attention mass on the row positions (a manual attention over the reader's q / k with
++        its RoPE, GQA grouping and scaling; mean over heads, positions and items). {"rows_on", "rows_off", "rows_attention_share"}, each {layer: value}."""
++        examples = [(item, example) for item, example in ((item, self.build_example(ac_model, item)) for item in items)
++                    if example.part_requests and example.teacher_ids][:DISTILL_PANEL_ITEMS]
++        if not examples or not self._distill_layers:
++            return {}
++        target = ac_model.target
++        base = target.model
++        embedding = base.get_input_embeddings()
++        lora = ac_model.config.target_model_lora_name
++        previous_mode = ac_model.mode
++        ac_model.set_mode(TRAINING)
++        bases = list(dict.fromkeys([target.model, ac_model.side.model]))
++        modes = [b.training for b in bases]
++        for b in bases:
++            b.eval()
++        sums = {name: {layer: 0.0 for layer in self._distill_layers} for name in ("rows_on", "rows_off", "rows_attention_share")}
++        try:
++            for item, example in examples:
++                teacher = self._distill_teacher(ac_model, [example], device)[0]
++                outputs = ac_model.encode_batch(example.part_requests, with_layers=True)
++                embeds, payload = self._assemble_student(embedding(torch.tensor(example.student_ids, device=device)), example.spans, outputs,
++                                                         next(base.parameters()).dtype, ac_model=ac_model)
++                rows = [position for start, end in example.spans for position in range(start, end)]
++                with capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions)], self.config.distill_source) as captured, \
++                        capture_attention_qk(base, self._distill_layers) as attention:
++                    target.decoder_forward(embeds[None], None, lora_name=lora, gradient_checkpointing=False, interventions=[payload] if payload is not None else None)
++                for layer, value in self._distill_terms(captured, 0, teacher)[1].items():
++                    sums["rows_on"][layer] += value
++                for layer in self._distill_layers:
++                    sums["rows_attention_share"][layer] += float(attention_shares(base, attention, layer, example.student_positions, rows).mean())
++                stripped = strip_ac_parts(item.ac_messages)
++                reference = self.build_example(ac_model, replace(item, item_id=item.item_id + ":rows_off", in_context_messages=stripped, ac_messages=stripped,
++                                                                 in_context_start=item.ac_start), reference=True)
++                self._check_target_alignment(item.item_id, example.teacher_ids, example.teacher_positions, reference.student_ids, reference.student_positions)
++                with capture_layer_outputs(base, self._distill_layers, [contiguous_runs(reference.student_positions)], self.config.distill_source) as captured:
++                    target.decoder_forward(embedding(torch.tensor(reference.student_ids, device=device))[None], None, lora_name=lora, gradient_checkpointing=False)
++                for layer, value in self._distill_terms(captured, 0, teacher)[1].items():
++                    sums["rows_off"][layer] += value
++        finally:
++            for b, training in zip(bases, modes):
++                b.train(training)
++                disable_dropout(b)
++            ac_model.set_mode(previous_mode)
++        return {name: {layer: value / len(examples) for layer, value in values.items()} for name, values in sums.items()}
++
++    def _report_distill_panel(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device,
++                              progress: ActivationContextTrainingProgress, stats: ActivationContextTrainingStats, reporter) -> None:
++        panel = self._distill_panel(ac_model, items, device)
++        if not panel:
++            return
++        stats.distill_panel.append({"update": progress.global_step, "epoch": progress.epoch_number, **panel})
++        if reporter is not None:
++            reporter.report_distill_panel(progress, panel)
++
+     def _penalty_active(self) -> bool:
+         """The no-context penalty only trains the reader; while the reader is frozen (the staged recipes' first updates) it is skipped."""
+         done = self.updates_done.get(getattr(self, "_training_ac_name", ""), 0)
+@@ -1171,17 +1368,23 @@ class ActivationContextTrainer:
+             student_embeds, payload = self._assemble_student(student_embeds, example.spans, example_outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+             embeds.append(student_embeds)
+             payloads.append(payload)
+-        hidden = self._padded_forward(target, embeds, lora, payloads)
++        distilled = with_penalty and torch.is_grad_enabled() and self._distill_active()      # training forwards only
++        teacher_rows = self._distill_teacher(ac_model, batch, device) if distilled else None
++        capture = (capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions) for example in batch], config.distill_source)
++                   if distilled else nullcontext())
++        with capture as captured:
++            hidden = self._padded_forward(target, embeds, lora, payloads)
+         if torch.is_grad_enabled():
+             self._harvest_row_rms(payloads)
+         states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
+         targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
+         cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
+         results, cursor = [], 0
+-        for example in batch:
++        for index, example in enumerate(batch):
+             num = example.num_completion
+             results.append({"objective": cross_entropy[cursor:cursor + num].mean(), "num": num,
+-                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
++                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None,
++                            "distill": self._distill_terms(captured, index, teacher_rows[index]) if distilled else None})
+             cursor += num
+         if with_penalty and config.no_context_penalty_weight > 0 and self._penalty_active():
+             sampled = [index for index, example in enumerate(batch) if example.penalty is not None
+diff --git a/activation/harness/hf_utils.py b/activation/harness/hf_utils.py
+index 2e0bcf1..a6c1708 100644
+--- a/activation/harness/hf_utils.py
++++ b/activation/harness/hf_utils.py
+@@ -407,6 +407,109 @@ def capture_layer_input_rows(model, layers: t.Iterable[int], spans: list[tuple[i
+             handle.remove()
+ 
+ 
++def contiguous_runs(positions: t.Sequence[int]) -> list[tuple[int, int]]:
++    """Sorted, unique positions as maximal [start, end) runs: [5, 6, 7, 12] -> [(5, 8), (12, 13)]. Runs let a capture hook take basic slices
++    (views that save no tensors for backward) instead of an index gather (which would save its index tensor and change the saved-tensor
++    sequence a checkpoint recompute has to reproduce)."""
++    runs: list[tuple[int, int]] = []
++    for position in sorted({int(position) for position in positions}):
++        if runs and runs[-1][1] == position:
++            runs[-1] = (runs[-1][0], position + 1)
++        else:
++            runs.append((position, position + 1))
++    return runs
++
++
++DISTILL_SOURCES = ("attn_out",)      # "hidden" (the layer's residual stream) was dropped at design review: the residual's per-dimension scale spread makes a whole-tensor RMS normalisation misleading
++
++
++@contextmanager
++def capture_layer_outputs(model, layers: t.Iterable[int], runs: list[list[tuple[int, int]]], source: str = "attn_out"):
++    """Captures, per listed full-attention decoder layer, the attention block's output (`self_attn`'s first output, i.e. after `o_proj`: the
++    residual contribution of attention) at `runs[row]` (the (start, end) runs of every physical row of the next forward), each run as a
++    [end - start, d] clone: the yielded dict maps layer -> per row the list of run tensors, in order. The slice and the clone are graph-attached
++    (their backward reaches the block) and save no tensor of their own, so a non-reentrant checkpoint recompute of the layer - which runs
++    without these hooks - re-creates exactly the saved-tensor sequence of the original forward; the clone also stops the captured rows from
++    pinning the block's whole [B, S, d] output. One capture per forward."""
++    if source not in DISTILL_SOURCES:
++        raise ValueError(f"source must be one of {DISTILL_SOURCES}")
++    record: dict[int, list[list[torch.Tensor]]] = {int(layer): [] for layer in layers}
++    handles = []
++    def hook(index: int):
++        def capture(module, args, output):
++            if record[index]:
++                return
++            tensor = output[0] if isinstance(output, (tuple, list)) else output
++            record[index].extend([tensor[row, start:end].clone() for start, end in row_runs] for row, row_runs in enumerate(runs))
++        return capture
++    all_layers = decoder_layers(model)
++    for index in record:
++        if not 0 <= index < len(all_layers):
++            raise ValueError(f"decoder layer {index} does not exist (the reader has {len(all_layers)} layers)")
++        attention = getattr(all_layers[index], "self_attn", None)
++        if attention is None:
++            raise ValueError(f"decoder layer {index} has no full attention (self_attn) to capture the attention output from")
++        handles.append(attention.register_forward_hook(hook(index)))
++    try:
++        yield record
++    finally:
++        for handle in handles:
++            handle.remove()
++
++
++@contextmanager
++def capture_attention_qk(model, layers: t.Iterable[int]):
++    """Diagnostic (no grad): per listed full-attention layer, the queries after `q_norm` and the keys after `k_norm` (both [B, S, heads, head_dim],
++    pre-RoPE, the K including any K/V intervention written by the payload hooks, which run first) of the next forward, plus the forward's rotary
++    (cos, sin) under "rope"; `attention_shares` turns them into attention weights the way the model does."""
++    record: dict = {int(layer): {} for layer in layers}
++    handles = []
++    install_intervention_hooks(model)        # the payload hooks (persistent, once per model) must run before these: the K read here is the K the payload wrote
++    def hook(index: int, name: str):
++        def capture(module, args, output):
++            record[index].setdefault(name, output.detach())
++        return capture
++    all_layers = decoder_layers(model)
++    for index in record:
++        attention = getattr(all_layers[index], "self_attn", None)
++        if attention is None or not hasattr(attention, "q_norm") or not hasattr(attention, "k_norm"):
++            raise ValueError(f"decoder layer {index} has no full attention (q_norm / k_norm) to read attention weights from")
++        handles.append(attention.q_norm.register_forward_hook(hook(index, "q")))
++        handles.append(attention.k_norm.register_forward_hook(hook(index, "k")))
++    def rope(module, args, output):
++        record.setdefault("rope", tuple(tensor.detach() for tensor in output))      # returns None: the module's output stays its own
++    handles.append(text_decoder(model).rotary_emb.register_forward_hook(rope))
++    try:
++        yield record
++    finally:
++        for handle in handles:
++            handle.remove()
++
++
++@torch.no_grad()
++def attention_shares(model, captured: dict, layer: int, queries: t.Sequence[int], keys: t.Sequence[int]) -> torch.Tensor:
++    """From a `capture_attention_qk` record of a single-row forward: for `layer`, the attention weights of the positions `queries` (causal softmax
++    over every earlier position, the model's RoPE, GQA grouping and scaling) summed over the key positions `keys`, per head and query
++    position ([heads, len(queries)]); the mean is the share of attention mass those keys receive."""
++    import sys
++    text = text_decoder(model)
++    rotary = sys.modules[type(text).__module__].apply_rotary_pos_emb
++    attention = decoder_layers(model)[layer].self_attn
++    q = captured[layer]["q"].transpose(1, 2).float()          # [1, H, S, D]
++    k = captured[layer]["k"].transpose(1, 2).float()          # [1, Hkv, S, D]
++    cos, sin = (tensor.float() for tensor in captured["rope"])
++    q, k = rotary(q, k, cos, sin)
++    repeats = q.shape[1] // k.shape[1]
++    k = k.repeat_interleave(repeats, dim=1) if repeats > 1 else k
++    query_index = torch.as_tensor(list(queries), device=q.device, dtype=torch.long)
++    scores = torch.matmul(q[0, :, query_index], k[0].transpose(-1, -2)) * attention.scaling          # [H, C, S]
++    causal = torch.arange(k.shape[2], device=q.device)[None, :] > query_index[:, None]                # key after the query
++    scores = scores.masked_fill(causal[None], float("-inf"))
++    weights = torch.softmax(scores, dim=-1)
++    key_index = torch.as_tensor(list(keys), device=q.device, dtype=torch.long)
++    return weights[:, :, key_index].sum(dim=-1)
++
++
+ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, interventions: list[Interventions | None], **generate_kwargs):
+     """
+     Greedy, single-sequence `generate` from embeddings whose prompt rows carry deltas. HF validates generate's kwargs
+diff --git a/activation/tests/test_distill.py b/activation/tests/test_distill.py
+new file mode 100644
+index 0000000..55d4d1a
+--- /dev/null
++++ b/activation/tests/test_distill.py
+@@ -0,0 +1,303 @@
++"""Dense supervision (round 7): the full-context base reader's per-layer attention outputs distilled into the row-fed reader on tiny CPU models.
++Position alignment, the teacher pass (adapters off, no rows), zero loss when the student is the teacher, the λ schedule and its resume, gradients
++from the term alone into the rows' writer and the reader LoRA under checkpointing, the batched path, the held-out panel (rows on / off, the rows'
++attention share against eager attention weights), bit-identity of distill_weight 0, and the bench keys and arms.
++
++  PYTHONPATH=. .venv/bin/python -m pytest activation/tests/test_distill.py -q -p no:cacheprovider
++"""
++import importlib.util
++import json
++from dataclasses import replace
++from pathlib import Path
++
++import pytest
++import torch
++
++from test_interventions import (ActivationContextTrainer, ActivationContextTrainingConfig, build, config, hybrid_dir, items_for,   # noqa: F401 (hybrid_dir is a fixture)
++                                side_lora_parameters, trainer_and_examples, transfer_parameters)
++from activation.ac_model.ac_model_training import DISTILL_PANEL_ITEMS
++from activation.harness.hf_utils import attention_shares, capture_attention_qk, capture_layer_outputs, contiguous_runs, decoder_layers
++
++torch.set_num_threads(2)
++BENCH = Path(__file__).resolve().parents[2] / "IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon"
++TRANSFER = dict(frequency=-1, source="side_layers", target="kv_transfer", head_style="lora", calibration="row_positions")
++
++
++def reader_lora_parameters(h, ac, layer: int | None = None) -> list[torch.nn.Parameter]:
++    """The reader adapter's parameters, optionally those of one reader layer."""
++    manager = h.module_manager
++    granted = {id(parameter) for parameter in manager.lora_parameters(ac.config.target_model_lora_name)}
++    return [parameter for name, parameter in ac.target.model.named_parameters() if id(parameter) in granted and (layer is None or f".layers.{layer}." in name)]
++
++
++def manual_attention_outputs(target, embeds: torch.Tensor, layers, lora_name, positions) -> dict[int, torch.Tensor]:
++    """Plain hooks on `self_attn` (no checkpointing): the attention block's output (after o_proj) at `positions`, per layer."""
++    seen = {}
++    def remember(layer):
++        def hook(module, args, out):
++            seen.setdefault(layer, out[0].detach().clone())
++        return hook
++    handles = [decoder_layers(target.model)[layer].self_attn.register_forward_hook(remember(layer)) for layer in layers]
++    try:
++        with torch.no_grad():
++            target.decoder_forward(embeds[None], None, lora_name=lora_name, gradient_checkpointing=False)
++    finally:
++        for handle in handles:
++            handle.remove()
++    return {layer: tensor[0, positions] for layer, tensor in seen.items()}
++
++
++# --------------------------------------------------------------------------------------------------- 1. config, layers, alignment, the teacher, zero loss
++def test_distill_config_layers_alignment_and_teacher(tmp_path, hybrid_dir):
++    for wrong in (dict(distill_weight=-1.0), dict(distill_weight=float("nan")), dict(distill_source="hidden"), dict(distill_hold=0.8, distill_decay_end=0.5),
++                  dict(distill_floor=2.0), dict(distill_layers=[]), dict(distill_layers=[2, 2]), dict(distill_layers=[-3]), dict(distill_layers="2")):
++        with pytest.raises(ValueError):
++            config(**wrong)
++    assert config(distill_layers=[5, 2]).distill_layers == [2, 5] and config(distill_layers=-1).distill_layers == -1 and config().distill_layers is None
++    assert config().distill_weight == 0.0 and config().distill_source == "attn_out" and (config().distill_hold, config().distill_decay_end, config().distill_floor) == (0.25, 0.75, 0.05)
++    assert contiguous_runs([5, 6, 7, 12, 3]) == [(3, 4), (5, 8), (12, 13)] and contiguous_runs([]) == []
++    # Layers: the input-only model's default is every full-attention layer (2 and 5 on the hybrid); -1 the same; a list as given; linear-attention and out-of-range refused;
++    # a deep model's default is its intervention layers.
++    h, ac = build(tmp_path, hybrid_dir, seed=21)
++    resolve = lambda ac, **overrides: ActivationContextTrainer(ac.harness, config(distill_weight=1.0, **overrides))._resolve_distill_layers(ac)
++    assert resolve(ac) == [2, 5] == resolve(ac, distill_layers=-1) and resolve(ac, distill_layers=[5]) == [5]
++    with pytest.raises(ValueError, match="full-attention"):
++        resolve(ac, distill_layers=[3])
++    with pytest.raises(ValueError, match="outside"):
++        resolve(ac, distill_layers=[9])
++    hd, deep = build(tmp_path / "deep", hybrid_dir, seed=21, **TRANSFER)
++    assert deep.intervention_layers == [2, 5] and resolve(deep) == [2, 5]
++    assert resolve(build(tmp_path / "one", hybrid_dir, seed=21, layers=[5], **{k: v for k, v in TRANSFER.items() if k != "frequency"})[1]) == [5]
++    # Alignment: with distill_weight > 0 the SFT examples carry the in-context (teacher) tokens; at every aligned target position the predicting token and the target agree.
++    trainer, items, examples, device = trainer_and_examples(h, ac, distill_weight=1.0)
++    assert all(example.teacher_ids and example.teacher_positions for example in examples)
++    for example in examples:
++        assert len(example.teacher_positions) == len(example.student_positions) == len(example.target_ids)
++        assert [example.teacher_ids[p] for p in example.teacher_positions] == [example.student_ids[q] for q in example.student_positions]
++        assert [example.teacher_ids[p + 1] for p in example.teacher_positions] == [example.student_ids[q + 1] for q in example.student_positions] == example.target_ids
++    assert any(len(example.teacher_ids) != len(example.student_ids) for example in examples), "the passage tokens exist only in the teacher, the rows only in the student"
++    with pytest.raises(ValueError, match="not aligned"):
++        example = examples[0]
++        trainer._check_target_alignment("x", example.teacher_ids, [p + 1 for p in example.teacher_positions], example.student_ids, example.student_positions)
++    with pytest.raises(ValueError, match="target positions"):
++        trainer._check_target_alignment("x", example.teacher_ids, example.teacher_positions[:-1], example.student_ids, example.student_positions)
++    off = ActivationContextTrainer(h, config())
++    assert all(not off.build_example(ac, item).teacher_ids for item in items), "distill_weight 0: no teacher tokens for SFT examples"
++    # The teacher: the base with the adapters disabled and no rows on the full-context history, equal to a manual forward with plain hooks; unchanged by the reader adapter.
++    trainer._distill_layers = trainer._resolve_distill_layers(ac)
++    example = examples[0]
++    target = ac.target
++    embedding = target.model.get_input_embeddings()
++    teacher_ids = torch.tensor(example.teacher_ids, device=device)
++    teacher = trainer._distill_teacher(ac, [example], device)[0]
++    manual = manual_attention_outputs(target, embedding(teacher_ids), (2, 5), None, example.teacher_positions)
++    assert set(teacher) == {2, 5} and all(torch.equal(teacher[layer], manual[layer]) for layer in (2, 5))
++    assert all(tensor.shape == (len(example.target_ids), ac.d_target) and not tensor.requires_grad for tensor in teacher.values())
++    with torch.no_grad():
++        for parameter in reader_lora_parameters(h, ac):
++            parameter.add_(torch.randn_like(parameter) * 0.1)
++    again = trainer._distill_teacher(ac, [example], device)[0]
++    assert all(torch.equal(teacher[layer], again[layer]) for layer in (2, 5)), "the teacher never sees the reader adapter"
++    adapted = manual_attention_outputs(target, embedding(teacher_ids), (2, 5), "reader_lora", example.teacher_positions)
++    assert not torch.allclose(adapted[5], manual[5])
++    # Batched teacher (right-padded rows) equals the single-example teacher.
++    batched = trainer._distill_teacher(ac, examples, device)
++    for row, other in enumerate(examples):
++        single = trainer._distill_teacher(ac, [other], device)[0]
++        for layer in (2, 5):
++            torch.testing.assert_close(batched[row][layer], single[layer], atol=1e-5, rtol=1e-5)
++    # Zero loss when the student is the teacher: the base with no rows on the full context, captured under the checkpointed reader forward; positive for the real student.
++    trainer._distill_lambda = 1.0
++    with capture_layer_outputs(target.model, [2, 5], [contiguous_runs(example.teacher_positions)]) as captured:
++        target.decoder_forward(embedding(teacher_ids)[None], None, lora_name=None, gradient_checkpointing=True)
++    term, values = trainer._distill_terms(captured, 0, teacher)
++    assert values == {2: 0.0, 5: 0.0} and float(term) == 0.0          # (nothing requires grad with the adapters disabled: the base is frozen)
++    trainer._example_loss(ac, example, device)
++    real, real_values = trainer._distill_term
++    assert all(value > 0 for value in real_values.values()) and float(real.detach()) == pytest.approx(sum(real_values.values()) / 2)
++    zeros = {layer: [[torch.zeros_like(teacher[layer])]] for layer in (2, 5)}
++    assert trainer._distill_terms(zeros, 0, teacher)[1] == {2: pytest.approx(1.0), 5: pytest.approx(1.0)}, "a student that writes nothing scores exactly 1 per layer"
++
++
++# --------------------------------------------------------------------------------------------------- 2. the schedule and its resume
++def test_distill_schedule_and_resume(tmp_path, hybrid_dir):
++    h, ac = build(tmp_path, hybrid_dir, seed=8)
++    trainer = ActivationContextTrainer(h, config(distill_weight=2.0))
++    values = [trainer._distill_lambda_at(update, 8) for update in range(8)]
++    assert values == pytest.approx([2.0, 2.0, 2.0, 1.525, 1.05, 0.575, 0.1, 0.1])       # hold through 0.25, linear to the floor 0.05 x 2 at 0.75, then the floor
++    assert trainer._distill_lambda_at(100, 8) == pytest.approx(0.1) and trainer._distill_lambda_at(0, None) == 2.0
++    step = ActivationContextTrainer(h, config(distill_weight=1.0, distill_hold=0.5, distill_decay_end=0.5, distill_floor=0.0))
++    assert [step._distill_lambda_at(update, 4) for update in range(4)] == [1.0, 1.0, 1.0, 0.0]
++    # A run of 2 updates on an 8-update clock holds λ; the resumed run (a new harness loading the epoch pair with resume_optimizer) continues the decay from update 2.
++    items = items_for(h, ac)
++    trainer = ActivationContextTrainer(h, config(distill_weight=2.0, schedule_total_updates=8, checkpoint_every_epoch=True))
++    stats = trainer.train(ac.name, items)
++    assert stats.distill_lambda == [2.0, 2.0] and stats.distill_layers == [2, 5] and len(stats.distill_loss) == 2 and set(stats.distill_loss[0]) == {2, 5}
++    assert trainer.updates_done[ac.name] == 2 and (Path(stats.checkpoint_path) / "optimizer.pt").exists()
++    h2, ac2 = build(tmp_path, hybrid_dir, seed=9, ac_checkpoint=stats.checkpoint_path, reader_checkpoint=stats.target_lora_checkpoint_path)
++    trainer2 = ActivationContextTrainer(h2, config(distill_weight=2.0, schedule_total_updates=8, checkpoint_every_epoch=True, resume_optimizer=True, num_epochs=2))
++    stats2 = trainer2.train(ac2.name, items_for(h2, ac2))
++    assert stats2.resumed_from == str(Path(stats.checkpoint_path) / "optimizer.pt") and stats2.global_steps == [3, 4, 5, 6]
++    assert stats2.distill_lambda == pytest.approx([2.0, 1.525, 1.05, 0.575]), "λ continues on the restored update clock"
++
++
++# --------------------------------------------------------------------------------------------------- 3. gradients: the term alone reaches the writer and the reader LoRA; checkpointed == direct; batched == single
++@pytest.mark.parametrize("kind", ["input_only", "kv_transfer"])
++def test_distill_gradients_reach_writer_and_reader(tmp_path, hybrid_dir, kind):
++    h, ac = build(tmp_path, hybrid_dir, seed=31, **(TRANSFER if kind == "kv_transfer" else {}))
++    trainer, items, examples, device = trainer_and_examples(h, ac, distill_weight=1.0, learning_rate_target_lora=1e-2)
++    if ac.is_deep:
++        from test_interventions import calibrate
++        calibrate(trainer, ac, examples[:2])
++    trainer._distill_layers = trainer._resolve_distill_layers(ac)
++    trainer._distill_lambda = 1.0
++    example = examples[0]
++    encoder = [parameter for parameter in ac.trainable_parameters()]
++    reader_low = reader_lora_parameters(h, ac, layer=2)
++    reader_high = reader_lora_parameters(h, ac, layer=5)
++    watched = [*encoder, *reader_low, *reader_high]
++    # The terminal loss plays no part: only the distillation term is differentiated (terminal weight 0 in this unit).
++    trainer._example_loss(ac, example, device)
++    term, _ = trainer._distill_term
++    checkpointed = torch.autograd.grad(term, watched, allow_unused=True)
++    ac._training_gradient_checkpointing = False
++    try:
++        trainer._example_loss(ac, example, device)
++        direct = torch.autograd.grad(trainer._distill_term[0], watched, allow_unused=True)
++    finally:
++        ac._training_gradient_checkpointing = True
++    norms = []
++    for parameter, g_ckpt, g_direct in zip(watched, checkpointed, direct):
++        assert (g_ckpt is None) == (g_direct is None)
++        if g_ckpt is not None:
++            torch.testing.assert_close(g_ckpt, g_direct, atol=1e-6, rtol=1e-5)
++        norms.append(float(g_ckpt.norm()) if g_ckpt is not None else 0.0)
++    encoder_norms, low_norms, high_norms = norms[:len(encoder)], norms[len(encoder):len(encoder) + len(reader_low)], norms[len(encoder) + len(reader_low):]
++    assert any(norm > 0 for norm in encoder_norms), "the rows' writer (the encoder) hears the distillation term"
++    assert any(norm > 0 for norm in low_norms) and any(norm > 0 for norm in high_norms), "the reader LoRA at layers <= the supervised layers hears it"
++    if ac.is_deep:
++        trainer._example_loss(ac, example, device)
++        heads = torch.autograd.grad(trainer._distill_term[0], [*transfer_parameters(ac), *side_lora_parameters(ac, layer=5)], allow_unused=True)
++        assert all(g is not None and float(g.norm()) > 0 for g in heads[:len(transfer_parameters(ac))]), "the K/V takeovers hear the term alone"
++        assert any(g is not None and float(g.norm()) > 0 for g in heads[len(transfer_parameters(ac)):]), "the side adapter hears it through the transferred K/V"
++    # The batched path (right-padded micro-batch) gives the per-example terms.
++    single = {}
++    for other in examples:
++        trainer._example_loss(ac, other, device)
++        single[other.item.item_id] = trainer._distill_term[1]
++    batched = ActivationContextTrainer(h, config(distill_weight=1.0, micro_batch_examples=3))
++    batched._distill_layers, batched._distill_lambda = trainer._distill_layers, 1.0
++    batched.teacher_cache = trainer.teacher_cache
++    for other, result in zip(examples, batched._batch_loss(ac, examples, device)):
++        for layer, value in result["distill"][1].items():
++            assert value == pytest.approx(single[other.item.item_id][layer], rel=1e-4, abs=1e-6), (other.item.item_id, layer)
++        assert float(result["distill"][0].detach()) == pytest.approx(sum(result["distill"][1].values()) / len(result["distill"][1]))
++
++
++# --------------------------------------------------------------------------------------------------- 4. training: the term changes the update; distill_weight 0 leaves everything as before
++def test_distill_training_and_off_is_inert(tmp_path, hybrid_dir):
++    h, ac = build(tmp_path, hybrid_dir, seed=12)
++    h0, off = build(tmp_path / "off", hybrid_dir, seed=12)
++    before = {name: tensor.clone() for name, tensor in ac.modules.state_dict().items()}
++    trainer_on, trainer_off = ActivationContextTrainer(h, config(distill_weight=1.0, schedule_total_updates=8)), ActivationContextTrainer(h0, config(schedule_total_updates=8))
++    torch.manual_seed(1); stats = trainer_on.train(ac.name, items_for(h, ac), reporting_data=items_for(h, ac))
++    torch.manual_seed(1); stats0 = trainer_off.train(off.name, items_for(h0, off), reporting_data=items_for(h0, off))
++    assert stats.distill_lambda == [1.0, 1.0] and all(set(entry) == {2, 5} and all(value > 0 for value in entry.values()) for entry in stats.distill_loss)
++    assert stats0.distill_lambda == [] and stats0.distill_loss == [] and stats0.distill_panel == [] and stats0.distill_layers == []
++    assert set(ac.modules.state_dict()) == set(off.modules.state_dict()) == set(before), "no new state-dict keys either way"
++    layout = lambda trainer, model: [len(group["params"]) for group in trainer.optimizers[model.name].param_groups]
++    assert layout(trainer_on, ac) == layout(trainer_off, off), "no new optimizer group"
++    moved = [name for name in before if not torch.equal(before[name], ac.modules.state_dict()[name])]
++    assert moved and any(not torch.equal(ac.modules.state_dict()[name], off.modules.state_dict()[name]) for name in moved), "the term changes the update"
++    assert stats.teacher_tokens > 0 and stats0.teacher_tokens == 0, "the teacher view is tokenised only when the term is on (SFT)"
++    # The held-out panel: baseline + one panel, rows on / off and the attention share per layer, all in range; the panel never fires with the term off.
++    assert [entry["update"] for entry in stats.distill_panel] == [0, 2]
++    for entry in stats.distill_panel:
++        assert set(entry["rows_on"]) == set(entry["rows_off"]) == set(entry["rows_attention_share"]) == {2, 5}
++        assert all(0 <= value <= 1 for value in entry["rows_attention_share"].values()) and all(value > 0 for value in entry["rows_on"].values())
++    summary = stats.summarize()
++    assert summary["distill_layers"] == [2, 5] and summary["distill_lambda_last"] == 1.0 and summary["distill_panel"] == stats.distill_panel and "distill_layers" not in stats0.summarize()
++    # The reporter takes the widgets.
++    from activation.ac_model import ActivationContextTrainingReporter
++    reporter = ActivationContextTrainingReporter(str(tmp_path / "report"), "distill")
++    hr, again = build(tmp_path / "rep", hybrid_dir, seed=12)
++    ActivationContextTrainer(hr, config(distill_weight=1.0)).train(again.name, items_for(hr, again), reporting_data=items_for(hr, again), reporter=reporter)
++    assert {"distill_loss", "distill_lambda", "distill_panel", "rows_attention_share"} <= set(reporter.widgets)
++    assert {series["name"] for series in reporter.widgets["distill_panel"]["series"]} == {f"layer {layer} ({label})" for layer in (2, 5) for label in ("rows on", "rows off")}
++    assert {series["name"] for series in reporter.widgets["distill_loss"]["series"]} == {"layer 2", "layer 5"}
++
++
++# --------------------------------------------------------------------------------------------------- 5. the rows' attention share equals the model's own (eager) attention weights
++def test_rows_attention_share_matches_eager_attention(tmp_path, hybrid_dir):
++    h, ac = build(tmp_path, hybrid_dir, seed=5, **TRANSFER)          # a K/V payload: the share must read the K the payload wrote
++    trainer, items, examples, device = trainer_and_examples(h, ac, distill_weight=1.0)
++    from test_interventions import calibrate
++    calibrate(trainer, ac, examples[:2])
++    trainer._distill_layers = [2, 5]
++    example = examples[0]
++    target = ac.target
++    embedding = target.model.get_input_embeddings()
++    with torch.no_grad():
++        outputs = ac.encode_batch(example.part_requests, with_layers=True)
++        embeds, payload = trainer._assemble_student(embedding(torch.tensor(example.student_ids)), example.spans, outputs, torch.float32, ac_model=ac)
++    rows = [position for start, end in example.spans for position in range(start, end)]
++    attention = {layer: decoder_layers(target.model)[layer].self_attn for layer in (2, 5)}
++    previous = {layer: module.config._attn_implementation for layer, module in attention.items()}
++    weights = {}
++    def remember(layer):
++        def hook(module, args, out):
++            weights.setdefault(layer, out[1].detach())
++        return hook
++    handles = [module.register_forward_hook(remember(layer)) for layer, module in attention.items()]
++    try:
++        for module in attention.values():
++            module.config._attn_implementation = "eager"
++        with torch.no_grad(), capture_attention_qk(target.model, [2, 5]) as captured:
++            target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[payload])
++    finally:
++        for handle in handles:
++            handle.remove()
++        for layer, module in attention.items():
++            module.config._attn_implementation = previous[layer]
++    for layer in (2, 5):
++        manual = attention_shares(target.model, captured, layer, example.student_positions, rows)              # [heads, targets]
++        eager = weights[layer][0][:, example.student_positions][:, :, rows].sum(dim=-1)
++        assert manual.shape == eager.shape == (4, len(example.student_positions))
++        torch.testing.assert_close(manual, eager, atol=1e-5, rtol=1e-5)
++        assert 0 < float(manual.mean()) < 1
++    panel = trainer._distill_panel(ac, items * (DISTILL_PANEL_ITEMS // len(items) + 1), device)        # more items than the cap: the first DISTILL_PANEL_ITEMS with rows
++    assert set(panel) == {"rows_on", "rows_off", "rows_attention_share"} and set(panel["rows_attention_share"]) == {2, 5}
++    assert panel["rows_on"][2] > 0 and panel["rows_off"][2] > 0 and panel["rows_on"] != panel["rows_off"]
++
++
++# --------------------------------------------------------------------------------------------------- 6. bench keys and arms
++def test_bench_distill_keys_and_arms():
++    runner = BENCH / "run_recon.py"
++    if not runner.exists():
++        pytest.skip("bench not present")
++    spec = importlib.util.spec_from_file_location("run_recon", runner)
++    run_recon = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(run_recon)
++    default = run_recon.DEFAULT_ARM
++    assert (default["distill_weight"], default["distill_layers"], default["distill_source"], default["distill_hold"], default["distill_decay_end"], default["distill_floor"]) == (0.0, None, "attn_out", 0.25, 0.75, 0.05)
++    assert default["intervention_layers"] is None
++    training = run_recon.config(dict(default, distill_weight=1.0, distill_layers=[23, 31], distill_hold=0.1))
++    assert training.distill_weight == 1.0 and training.distill_layers == [23, 31] and training.distill_hold == 0.1 and training.distill_floor == 0.05
++    assert run_recon.config(default).distill_weight == 0.0
++    with pytest.raises(ValueError, match="interventions 0"):
++        run_recon.harness(True, interventions=4, intervention_layers=[23, 27, 31])
++    arms = run_recon.arms()
++    strip = lambda arm, *keys: {key: value for key, value in arm.items() if key not in ("note", *keys)}
++    k16r1 = {"init_ac": arms["A4X"]["init_ac"], "init_reader": arms["A4X"]["init_reader"]}
++    k16 = {"init_ac": arms["NDIAWLn"]["init_ac"], "init_reader": arms["NDIAWLn"]["init_reader"]}
++    assert "/home/ngom/" in k16r1["init_ac"] and "/root/" in k16["init_ac"]
++    for label, arm in arms.items():                      # every arm (defaults merged) builds a training config with its distillation keys
++        expected = run_recon.config(arm)
++        assert expected.distill_weight == arm["distill_weight"] and expected.distill_layers in (None, -1, arm["distill_layers"]), label
++    raw = json.loads((BENCH / "arms.json").read_text())
++    for label in ("A32XD", "A32XD3", "A32XDR", "NXD", "A32KVTAD", "A32KVTL", "NKVTL"):
++        for arm in (raw[label], raw[label + "n"]):
++            for key in ("distill_source", "distill_hold", "distill_decay_end", "distill_floor"):
++                assert key not in arm, f"{label}: the schedule keys keep their defaults"
++    assert all(arms[label]["distill_weight"] == 1.0 for label in ("A32XD", "A32XDR", "NXD", "A32KVTAD", "A32XDn", "A32XDRn", "NXDn", "A32KVTADn")) and arms["A32XD3"]["distill_weight"] == 3.0
++    assert all(arms[label]["distill_weight"] == 0.0 and arms[label]["intervention_layers"] == [23, 27, 31] for label in ("A32KVTL", "NKVTL", "A32KVTLn", "NKVTLn"))
+diff --git a/activation/tests/test_interventions.py b/activation/tests/test_interventions.py
+index 2e69076..5e4da8f 100644
+--- a/activation/tests/test_interventions.py
++++ b/activation/tests/test_interventions.py
+@@ -970,7 +970,7 @@ def test_bench_arms_are_paired():
+         assert arms[twin]["init_ac"] == arms["NDIAWLn"]["init_ac"] and arms[twin]["init_reader"] == arms["NDIAWLn"]["init_reader"]
+         assert "EC2 twin" in arms[twin]["note"] and arms[twin]["note"].startswith(arms[parent]["note"])
+     assert "CEILING MEASUREMENT, NOT A CANDIDATE" in arms["NXAWn"]["note"]
+-    assert list(arms)[-23:-14] == ["NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA", "NKVSWn", "NKVSWSn", "A32KVSn", "NXAWn"], "appended after NDIWLn, in order"
++    assert list(arms)[-37:-28] == ["NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA", "NKVSWn", "NKVSWSn", "A32KVSn", "NXAWn"], "appended after NDIWLn, in order"
+     # Round 6: the K/V transfer family on the NKVSW / A32KVS recipes (delta_scale_lr 1e-3 inherited) and its whole-passage ceiling; EC2 twins after them.
+     assert strip(arms["NKVTW"], "intervention_target") == strip(arms["NKVSW"], "intervention_target") and arms["NKVTW"]["intervention_target"] == "kv_transfer"
+     assert strip(arms["NKVTWA"], "interventions") == strip(arms["NKVTW"], "interventions") and arms["NKVTWA"]["interventions"] == -1 and arms["NKVTW"]["interventions"] == 4
+@@ -991,7 +991,35 @@ def test_bench_arms_are_paired():
+         assert strip(twin, "init_ac", "init_reader") == strip(arms[parent], "init_ac", "init_reader"), parent
+         assert twin["init_ac"] == arms["NDIAWLn"]["init_ac"] and twin["init_reader"] == arms["NDIAWLn"]["init_reader"]
+         assert "EC2 twin" in twin["note"] and twin["note"].startswith(arms[parent]["note"])
+-    assert list(arms)[-14:] == [*transfer_arms, *(label + "n" for label in transfer_arms)], "appended after NXAWn, in order"
++    assert list(arms)[-28:-14] == [*transfer_arms, *(label + "n" for label in transfer_arms)], "appended after NXAWn, in order"
++    # Round 7: dense supervision (context distillation of the base reader's full-context attention outputs) on the A32X / WCa / A32KVTA recipes, the
++    # late-layers-only K/V transfer (explicit intervention_layers), EC2 twins after each group. The ORCD 1/32 dense arms take the K16r1 init of A32DL / A32KVS
++    # / A32KVTA (A32X itself carries the /root K16 paths of its node-1 run: A32XDn is A32X's own init).
++    k16r1 = {"init_ac": arms["A4X"]["init_ac"], "init_reader": arms["A4X"]["init_reader"]}
++    assert strip(arms["A32XD"], "distill_weight", "distill_layers", "init_ac", "init_reader") == strip(arms["A32X"], "init_ac", "init_reader")
++    assert arms["A32XD"]["distill_weight"] == 1.0 and arms["A32XD"]["distill_layers"] == -1 and arms["A32XD"]["interventions"] == 0
++    assert (arms["A32XD"]["init_ac"], arms["A32XD"]["init_reader"]) == (k16r1["init_ac"], k16r1["init_reader"]) == (arms["A32KVTA"]["init_ac"], arms["A32KVTA"]["init_reader"])
++    assert strip(arms["A32XD3"], "distill_weight") == strip(arms["A32XD"], "distill_weight") and arms["A32XD3"]["distill_weight"] == 3.0
++    assert strip(arms["A32XDR"], "reader_lr") == strip(arms["A32XD"], "reader_lr") and arms["A32XDR"]["reader_lr"] == 5e-5 and arms["A32XD"]["reader_lr"] == 2e-5
++    assert "A32XDH" not in arms and "A32XDHn" not in arms, "the 'hidden' source arm was dropped at design review"
++    assert strip(arms["NXD"], "distill_weight", "distill_layers") == strip(arms["WCa"]) and arms["NXD"]["distill_weight"] == 1.0 and arms["NXD"]["distill_layers"] == -1
++    assert strip(arms["A32KVTAD"], "distill_weight") == strip(arms["A32KVTA"]) and arms["A32KVTAD"]["distill_weight"] == 1.0 and "distill_layers" not in arms["A32KVTAD"]
++    dense_arms = ("A32XD", "A32XD3", "A32XDR", "NXD", "A32KVTAD")
++    for label in dense_arms:
++        assert arms[label]["note"] and all(key not in arms[label] for key in ("distill_source", "distill_hold", "distill_decay_end", "distill_floor")), label
++    assert strip(arms["A32KVTL"], "interventions", "intervention_layers") == strip(arms["A32KVT"], "interventions") and arms["A32KVTL"]["interventions"] == 0
++    assert arms["A32KVTL"]["intervention_layers"] == [23, 27, 31] and arms["A32KVT"]["interventions"] == 4 and "intervention_layers" not in arms["A32KVT"]
++    assert strip(arms["NKVTL"], "interventions", "intervention_layers") == strip(arms["NKVTW"], "interventions") and arms["NKVTL"]["interventions"] == 0
++    assert arms["NKVTL"]["intervention_layers"] == [23, 27, 31] and arms["NKVTW"]["interventions"] == 4
++    for label in ("A32KVTL", "NKVTL"):
++        assert arms[label]["intervention_target"] == "kv_transfer" and "transfer_init" not in arms[label] and "depth" in arms[label]["note"].lower()
++    late_arms = ("A32KVTL", "NKVTL")
++    for parent in (*dense_arms, *late_arms):
++        twin = arms[parent + "n"]
++        assert strip(twin, "init_ac", "init_reader") == strip(arms[parent], "init_ac", "init_reader"), parent
++        assert twin["init_ac"] == arms["NDIAWLn"]["init_ac"] and twin["init_reader"] == arms["NDIAWLn"]["init_reader"]
++        assert "EC2 twin" in twin["note"] and twin["note"].startswith(arms[parent]["note"])
++    assert list(arms)[-14:] == [*dense_arms, *(label + "n" for label in dense_arms), *late_arms, *(label + "n" for label in late_arms)], "appended after A32KVTFn, in order"
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 15. lora-style heads, row-position calibration, staging

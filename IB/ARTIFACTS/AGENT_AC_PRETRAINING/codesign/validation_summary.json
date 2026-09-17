@@ -1,0 +1,1447 @@
+{
+  "ready_for_handoff": true,
+  "source_snapshot": {
+    "branch": "codesign-gpu-20260915T150206Z",
+    "tag": "codesign-gpu-20260915T150206Z",
+    "commit": "632c256275f3475206df1c0cc8338f512392498d"
+  },
+  "cpu_private": {
+    "passed": 47,
+    "logs": [
+      "review_fixes.log",
+      "unaffected_final.log"
+    ]
+  },
+  "existing_focused_regressions": {
+    "passed": 15,
+    "gpu_slow_skipped_locally": 8,
+    "log": "mainline.log"
+  },
+  "gpu": {
+    "cluster": "ac-4a-camp",
+    "hardware": "2 x NVIDIA RTX PRO 6000 Blackwell Server Edition, 96 GB each",
+    "mainline_sky_job": 20,
+    "mainline": {
+      "test_basic_agent_ac_training": {
+        "tests": 3,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "seconds": 2499.742,
+        "junit": "gpu_results/test_basic_agent_ac_training.xml",
+        "cases": [
+          "test_ac_compaction",
+          "test_ac_trajectory_qa",
+          "test_ac_rag_qa"
+        ]
+      },
+      "test_basic_ac_self_distillation": {
+        "tests": 2,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "seconds": 468.655,
+        "junit": "gpu_results/test_basic_ac_self_distillation.xml",
+        "cases": [
+          "test_basic_ac_self_distillation[kl]",
+          "test_basic_ac_self_distillation[sft]"
+        ]
+      }
+    },
+    "private": {
+      "tests": 4,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 26.189,
+      "junit": "gpu_results/private_gpu.xml",
+      "cases": [
+        "test_whole_history_loss_gradients_shared_recomputation[kl]",
+        "test_whole_history_loss_gradients_shared_recomputation[sft]",
+        "test_fixed_rows_policy_gradients_training_and_causality[False]",
+        "test_fixed_rows_policy_gradients_training_and_causality[True]"
+      ]
+    },
+    "private_scope": "Actual BF16 tiny Qwen3.5 hybrid model; independent FP32 linear-head loss/gradient oracles; KL/SFT all-targets; 3 shared side/reader checkpoint threshold combinations; 88/153-token padded/packed fixed rows; causal effects; real reader update; frozen side/base/rows.",
+    "private_source_sha256": "59723324dd5bbd5c7b322667ec7dcb1b34669d0884c346148ba00cb789e2c1b5",
+    "node_final_state": "STOPPED",
+    "node_state_evidence": "sky_pause.log"
+  },
+  "comparisons": {
+    "rag_qa": {
+      "initial_ac": {
+        "loss_kind": "kl",
+        "loss": 0.6757061863318086,
+        "kl": 0.6757061863318086,
+        "agreement": 0.8045272817122029,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "rag_qa": {
+            "loss_kind": "kl",
+            "loss": 0.6757061863318086,
+            "kl": 0.6757061863318086,
+            "agreement": 0.8045272817122029,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:0",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 1.5191317796707153,
+            "kl": 1.5191317796707153,
+            "agreement": 0.6666666666666666,
+            "positions": 105,
+            "teacher_tokens": 628,
+            "student_tokens": 607
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:1",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.9528746604919434,
+            "kl": 0.9528746604919434,
+            "agreement": 0.7666666666666667,
+            "positions": 60,
+            "teacher_tokens": 499,
+            "student_tokens": 881
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:2",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.29838675260543823,
+            "kl": 0.29838675260543823,
+            "agreement": 0.8837209302325582,
+            "positions": 43,
+            "teacher_tokens": 442,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:3",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.9611027240753174,
+            "kl": 0.9611027240753174,
+            "agreement": 0.7222222222222222,
+            "positions": 54,
+            "teacher_tokens": 564,
+            "student_tokens": 1152
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:4",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.35653209686279297,
+            "kl": 0.35653209686279297,
+            "agreement": 0.8709677419354839,
+            "positions": 62,
+            "teacher_tokens": 525,
+            "student_tokens": 828
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:5",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.4249524474143982,
+            "kl": 0.4249524474143982,
+            "agreement": 0.7727272727272727,
+            "positions": 176,
+            "teacher_tokens": 694,
+            "student_tokens": 965
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:6",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.8573449850082397,
+            "kl": 0.8573449850082397,
+            "agreement": 0.7532467532467533,
+            "positions": 77,
+            "teacher_tokens": 1412,
+            "student_tokens": 1194
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:7",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.03532404452562332,
+            "kl": 0.03532404452562332,
+            "agreement": 1.0,
+            "positions": 32,
+            "teacher_tokens": 515,
+            "student_tokens": 446
+          }
+        ]
+      },
+      "initial_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.6617138478904963,
+        "kl": 0.6617138478904963,
+        "agreement": 0.7970360143923066,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "rag_qa": {
+            "loss_kind": "kl",
+            "loss": 0.6617138478904963,
+            "kl": 0.6617138478904963,
+            "agreement": 0.7970360143923066,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:0:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 1.4575886726379395,
+            "kl": 1.4575886726379395,
+            "agreement": 0.6761904761904762,
+            "positions": 105,
+            "teacher_tokens": 628,
+            "student_tokens": 565
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:1:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.9562586545944214,
+            "kl": 0.9562586545944214,
+            "agreement": 0.7333333333333333,
+            "positions": 60,
+            "teacher_tokens": 499,
+            "student_tokens": 470
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:2:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.27000725269317627,
+            "kl": 0.27000725269317627,
+            "agreement": 0.8837209302325582,
+            "positions": 43,
+            "teacher_tokens": 442,
+            "student_tokens": 447
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:3:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.9876642823219299,
+            "kl": 0.9876642823219299,
+            "agreement": 0.6851851851851852,
+            "positions": 54,
+            "teacher_tokens": 564,
+            "student_tokens": 444
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:4:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.3494317829608917,
+            "kl": 0.3494317829608917,
+            "agreement": 0.8548387096774194,
+            "positions": 62,
+            "teacher_tokens": 525,
+            "student_tokens": 484
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:5:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.3883914053440094,
+            "kl": 0.3883914053440094,
+            "agreement": 0.7897727272727273,
+            "positions": 176,
+            "teacher_tokens": 694,
+            "student_tokens": 652
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:6:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.8405791521072388,
+            "kl": 0.8405791521072388,
+            "agreement": 0.7532467532467533,
+            "positions": 77,
+            "teacher_tokens": 1412,
+            "student_tokens": 539
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:7:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.0437895804643631,
+            "kl": 0.0437895804643631,
+            "agreement": 1.0,
+            "positions": 32,
+            "teacher_tokens": 515,
+            "student_tokens": 424
+          }
+        ]
+      },
+      "final_ac": {
+        "loss_kind": "kl",
+        "loss": 0.5345572982914746,
+        "kl": 0.5345572982914746,
+        "agreement": 0.8270563869998885,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "rag_qa": {
+            "loss_kind": "kl",
+            "loss": 0.5345572982914746,
+            "kl": 0.5345572982914746,
+            "agreement": 0.8270563869998885,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:0",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 1.2961609363555908,
+            "kl": 1.2961609363555908,
+            "agreement": 0.6761904761904762,
+            "positions": 105,
+            "teacher_tokens": 628,
+            "student_tokens": 607
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:1",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.7948789596557617,
+            "kl": 0.7948789596557617,
+            "agreement": 0.7833333333333333,
+            "positions": 60,
+            "teacher_tokens": 499,
+            "student_tokens": 881
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:2",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.172730952501297,
+            "kl": 0.172730952501297,
+            "agreement": 0.9069767441860465,
+            "positions": 43,
+            "teacher_tokens": 442,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:3",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.8465312719345093,
+            "kl": 0.8465312719345093,
+            "agreement": 0.7222222222222222,
+            "positions": 54,
+            "teacher_tokens": 564,
+            "student_tokens": 1152
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:4",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.24162325263023376,
+            "kl": 0.24162325263023376,
+            "agreement": 0.8548387096774194,
+            "positions": 62,
+            "teacher_tokens": 525,
+            "student_tokens": 828
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:5",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.1765730232000351,
+            "kl": 0.1765730232000351,
+            "agreement": 0.8806818181818182,
+            "positions": 176,
+            "teacher_tokens": 694,
+            "student_tokens": 965
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:6",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.7015242576599121,
+            "kl": 0.7015242576599121,
+            "agreement": 0.7922077922077922,
+            "positions": 77,
+            "teacher_tokens": 1412,
+            "student_tokens": 1194
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:7",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.04643573239445686,
+            "kl": 0.04643573239445686,
+            "agreement": 1.0,
+            "positions": 32,
+            "teacher_tokens": 515,
+            "student_tokens": 446
+          }
+        ]
+      },
+      "final_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.5336262132041156,
+        "kl": 0.5336262132041156,
+        "agreement": 0.8238497817771543,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "rag_qa": {
+            "loss_kind": "kl",
+            "loss": 0.5336262132041156,
+            "kl": 0.5336262132041156,
+            "agreement": 0.8238497817771543,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:0:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 1.2970718145370483,
+            "kl": 1.2970718145370483,
+            "agreement": 0.6666666666666666,
+            "positions": 105,
+            "teacher_tokens": 628,
+            "student_tokens": 565
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:1:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.7845202684402466,
+            "kl": 0.7845202684402466,
+            "agreement": 0.7833333333333333,
+            "positions": 60,
+            "teacher_tokens": 499,
+            "student_tokens": 470
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:2:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.17541934549808502,
+            "kl": 0.17541934549808502,
+            "agreement": 0.9069767441860465,
+            "positions": 43,
+            "teacher_tokens": 442,
+            "student_tokens": 447
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:3:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.851832389831543,
+            "kl": 0.851832389831543,
+            "agreement": 0.7222222222222222,
+            "positions": 54,
+            "teacher_tokens": 564,
+            "student_tokens": 444
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:4:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.2444361299276352,
+            "kl": 0.2444361299276352,
+            "agreement": 0.8387096774193549,
+            "positions": 62,
+            "teacher_tokens": 525,
+            "student_tokens": 484
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:5:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.17448510229587555,
+            "kl": 0.17448510229587555,
+            "agreement": 0.8806818181818182,
+            "positions": 176,
+            "teacher_tokens": 694,
+            "student_tokens": 652
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:6:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.6986305117607117,
+            "kl": 0.6986305117607117,
+            "agreement": 0.7922077922077922,
+            "positions": 77,
+            "teacher_tokens": 1412,
+            "student_tokens": 539
+          },
+          {
+            "item_id": "rag_qa:bright___domain_biology__n_100__corpus_2000:0:7:no_context",
+            "kind": "rag_qa",
+            "loss_kind": "kl",
+            "loss": 0.04261414334177971,
+            "kl": 0.04261414334177971,
+            "agreement": 1.0,
+            "positions": 32,
+            "teacher_tokens": 515,
+            "student_tokens": 424
+          }
+        ]
+      },
+      "ac_kl_advantage": -0.0009310850873589516
+    },
+    "traj_qa": {
+      "initial_ac": {
+        "loss_kind": "kl",
+        "loss": 0.7638187203556299,
+        "kl": 0.7638187203556299,
+        "agreement": 0.8098772338321376,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "traj_qa": {
+            "loss_kind": "kl",
+            "loss": 0.7638187203556299,
+            "kl": 0.7638187203556299,
+            "agreement": 0.8098772338321376,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:0",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.1763956993818283,
+            "kl": 0.1763956993818283,
+            "agreement": 0.9333333333333333,
+            "positions": 30,
+            "teacher_tokens": 20502,
+            "student_tokens": 560
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:1",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.1129341125488281,
+            "kl": 1.1129341125488281,
+            "agreement": 0.8666666666666667,
+            "positions": 30,
+            "teacher_tokens": 18863,
+            "student_tokens": 2075
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:2",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.8598567247390747,
+            "kl": 0.8598567247390747,
+            "agreement": 0.7727272727272727,
+            "positions": 44,
+            "teacher_tokens": 18798,
+            "student_tokens": 590
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:3",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.0976427793502808,
+            "kl": 1.0976427793502808,
+            "agreement": 0.7735849056603774,
+            "positions": 53,
+            "teacher_tokens": 26397,
+            "student_tokens": 4995
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:0",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.070159912109375,
+            "kl": 1.070159912109375,
+            "agreement": 0.6979166666666666,
+            "positions": 96,
+            "teacher_tokens": 20916,
+            "student_tokens": 665
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:1",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.16115084290504456,
+            "kl": 0.16115084290504456,
+            "agreement": 0.9629629629629629,
+            "positions": 27,
+            "teacher_tokens": 18341,
+            "student_tokens": 2007
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:2",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.8803871870040894,
+            "kl": 0.8803871870040894,
+            "agreement": 0.7114093959731543,
+            "positions": 149,
+            "teacher_tokens": 17772,
+            "student_tokens": 776
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:3",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.7520225048065186,
+            "kl": 0.7520225048065186,
+            "agreement": 0.7604166666666666,
+            "positions": 192,
+            "teacher_tokens": 25088,
+            "student_tokens": 4712
+          }
+        ]
+      },
+      "initial_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.7352435663342476,
+        "kl": 0.7352435663342476,
+        "agreement": 0.797969197816351,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "traj_qa": {
+            "loss_kind": "kl",
+            "loss": 0.7352435663342476,
+            "kl": 0.7352435663342476,
+            "agreement": 0.797969197816351,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:0:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.16080398857593536,
+            "kl": 0.16080398857593536,
+            "agreement": 0.9333333333333333,
+            "positions": 30,
+            "teacher_tokens": 20502,
+            "student_tokens": 451
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:1:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.0673717260360718,
+            "kl": 1.0673717260360718,
+            "agreement": 0.8666666666666667,
+            "positions": 30,
+            "teacher_tokens": 18863,
+            "student_tokens": 461
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:2:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.7651136517524719,
+            "kl": 0.7651136517524719,
+            "agreement": 0.7727272727272727,
+            "positions": 44,
+            "teacher_tokens": 18798,
+            "student_tokens": 455
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:3:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.0602757930755615,
+            "kl": 1.0602757930755615,
+            "agreement": 0.7169811320754716,
+            "positions": 53,
+            "teacher_tokens": 26397,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:0:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 1.0788967609405518,
+            "kl": 1.0788967609405518,
+            "agreement": 0.6770833333333334,
+            "positions": 96,
+            "teacher_tokens": 20916,
+            "student_tokens": 513
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:1:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.14391128718852997,
+            "kl": 0.14391128718852997,
+            "agreement": 0.9629629629629629,
+            "positions": 27,
+            "teacher_tokens": 18341,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:2:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.8573318719863892,
+            "kl": 0.8573318719863892,
+            "agreement": 0.7248322147651006,
+            "positions": 149,
+            "teacher_tokens": 17772,
+            "student_tokens": 638
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:3:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.7482434511184692,
+            "kl": 0.7482434511184692,
+            "agreement": 0.7291666666666666,
+            "positions": 192,
+            "teacher_tokens": 25088,
+            "student_tokens": 655
+          }
+        ]
+      },
+      "final_ac": {
+        "loss_kind": "kl",
+        "loss": 0.5261137699708343,
+        "kl": 0.5261137699708343,
+        "agreement": 0.8078708380393356,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "traj_qa": {
+            "loss_kind": "kl",
+            "loss": 0.5261137699708343,
+            "kl": 0.5261137699708343,
+            "agreement": 0.8078708380393356,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:0",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.14785198867321014,
+            "kl": 0.14785198867321014,
+            "agreement": 0.9333333333333333,
+            "positions": 30,
+            "teacher_tokens": 20502,
+            "student_tokens": 560
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:1",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.8708570003509521,
+            "kl": 0.8708570003509521,
+            "agreement": 0.8333333333333334,
+            "positions": 30,
+            "teacher_tokens": 18863,
+            "student_tokens": 2075
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:2",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.32923054695129395,
+            "kl": 0.32923054695129395,
+            "agreement": 0.7954545454545454,
+            "positions": 44,
+            "teacher_tokens": 18798,
+            "student_tokens": 590
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:3",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.9086505174636841,
+            "kl": 0.9086505174636841,
+            "agreement": 0.7547169811320755,
+            "positions": 53,
+            "teacher_tokens": 26397,
+            "student_tokens": 4995
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:0",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.7089399695396423,
+            "kl": 0.7089399695396423,
+            "agreement": 0.6875,
+            "positions": 96,
+            "teacher_tokens": 20916,
+            "student_tokens": 665
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:1",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.08899081498384476,
+            "kl": 0.08899081498384476,
+            "agreement": 0.9629629629629629,
+            "positions": 27,
+            "teacher_tokens": 18341,
+            "student_tokens": 2007
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:2",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.6698870658874512,
+            "kl": 0.6698870658874512,
+            "agreement": 0.7248322147651006,
+            "positions": 149,
+            "teacher_tokens": 17772,
+            "student_tokens": 776
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:3",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.48450225591659546,
+            "kl": 0.48450225591659546,
+            "agreement": 0.7708333333333334,
+            "positions": 192,
+            "teacher_tokens": 25088,
+            "student_tokens": 4712
+          }
+        ]
+      },
+      "final_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.5213823458179832,
+        "kl": 0.5213823458179832,
+        "agreement": 0.8073560424322581,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "traj_qa": {
+            "loss_kind": "kl",
+            "loss": 0.5213823458179832,
+            "kl": 0.5213823458179832,
+            "agreement": 0.8073560424322581,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:0:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.14377787709236145,
+            "kl": 0.14377787709236145,
+            "agreement": 0.9333333333333333,
+            "positions": 30,
+            "teacher_tokens": 20502,
+            "student_tokens": 451
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:1:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.8385177850723267,
+            "kl": 0.8385177850723267,
+            "agreement": 0.8333333333333334,
+            "positions": 30,
+            "teacher_tokens": 18863,
+            "student_tokens": 461
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:2:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.33294329047203064,
+            "kl": 0.33294329047203064,
+            "agreement": 0.8181818181818182,
+            "positions": 44,
+            "teacher_tokens": 18798,
+            "student_tokens": 455
+          },
+          {
+            "item_id": "traj_qa:s1_deep_research___lang_en__n_48__min_0:0:3:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.9062583446502686,
+            "kl": 0.9062583446502686,
+            "agreement": 0.7547169811320755,
+            "positions": 53,
+            "teacher_tokens": 26397,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:0:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.7021862268447876,
+            "kl": 0.7021862268447876,
+            "agreement": 0.6979166666666666,
+            "positions": 96,
+            "teacher_tokens": 20916,
+            "student_tokens": 513
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:1:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.07948600500822067,
+            "kl": 0.07948600500822067,
+            "agreement": 0.9629629629629629,
+            "positions": 27,
+            "teacher_tokens": 18341,
+            "student_tokens": 488
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:2:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.669345498085022,
+            "kl": 0.669345498085022,
+            "agreement": 0.697986577181208,
+            "positions": 149,
+            "teacher_tokens": 17772,
+            "student_tokens": 638
+          },
+          {
+            "item_id": "traj_qa:open_swe___config_v1.2__split_minisweagent__n_48__min_0:0:3:no_context",
+            "kind": "traj_qa",
+            "loss_kind": "kl",
+            "loss": 0.49854373931884766,
+            "kl": 0.49854373931884766,
+            "agreement": 0.7604166666666666,
+            "positions": 192,
+            "teacher_tokens": 25088,
+            "student_tokens": 655
+          }
+        ]
+      },
+      "ac_kl_advantage": -0.004731424152851105
+    },
+    "compaction": {
+      "initial_ac": {
+        "loss_kind": "kl",
+        "loss": 0.27285321708768606,
+        "kl": 0.27285321708768606,
+        "agreement": 0.8617414570308596,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "compaction": {
+            "loss_kind": "kl",
+            "loss": 0.27285321708768606,
+            "kl": 0.27285321708768606,
+            "agreement": 0.8617414570308596,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:0",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.5148738622665405,
+            "kl": 0.5148738622665405,
+            "agreement": 0.7594594594594595,
+            "positions": 740,
+            "teacher_tokens": 24667,
+            "student_tokens": 4069
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:1",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.3741324245929718,
+            "kl": 0.3741324245929718,
+            "agreement": 0.8366228070175439,
+            "positions": 912,
+            "teacher_tokens": 15009,
+            "student_tokens": 2701
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:2",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.27873507142066956,
+            "kl": 0.27873507142066956,
+            "agreement": 0.8251953125,
+            "positions": 7168,
+            "teacher_tokens": 41197,
+            "student_tokens": 9922
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:3",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.11009890586137772,
+            "kl": 0.11009890586137772,
+            "agreement": 0.9245151388307521,
+            "positions": 7167,
+            "teacher_tokens": 23439,
+            "student_tokens": 9779
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:4",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.18502755463123322,
+            "kl": 0.18502755463123322,
+            "agreement": 0.8923734853884533,
+            "positions": 2806,
+            "teacher_tokens": 20638,
+            "student_tokens": 5937
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:5",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.37021857500076294,
+            "kl": 0.37021857500076294,
+            "agreement": 0.8492822966507177,
+            "positions": 836,
+            "teacher_tokens": 21567,
+            "student_tokens": 3296
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:6",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.127924844622612,
+            "kl": 0.127924844622612,
+            "agreement": 0.9130314360891844,
+            "positions": 7221,
+            "teacher_tokens": 27940,
+            "student_tokens": 10548
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:7",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.22181449830532074,
+            "kl": 0.22181449830532074,
+            "agreement": 0.8934517203107658,
+            "positions": 901,
+            "teacher_tokens": 21553,
+            "student_tokens": 2291
+          }
+        ]
+      },
+      "initial_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.27100321371108294,
+        "kl": 0.27100321371108294,
+        "agreement": 0.8603609939874168,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "compaction": {
+            "loss_kind": "kl",
+            "loss": 0.27100321371108294,
+            "kl": 0.27100321371108294,
+            "agreement": 0.8603609939874168,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:0:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.5181631445884705,
+            "kl": 0.5181631445884705,
+            "agreement": 0.7581081081081081,
+            "positions": 740,
+            "teacher_tokens": 24667,
+            "student_tokens": 1316
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:1:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.38259565830230713,
+            "kl": 0.38259565830230713,
+            "agreement": 0.8322368421052632,
+            "positions": 912,
+            "teacher_tokens": 15009,
+            "student_tokens": 1384
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:2:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.2774275541305542,
+            "kl": 0.2774275541305542,
+            "agreement": 0.8244977678571429,
+            "positions": 7168,
+            "teacher_tokens": 41197,
+            "student_tokens": 7873
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:3:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.11024435609579086,
+            "kl": 0.11024435609579086,
+            "agreement": 0.9235384400725548,
+            "positions": 7167,
+            "teacher_tokens": 23439,
+            "student_tokens": 7844
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:4:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.1888190507888794,
+            "kl": 0.1888190507888794,
+            "agreement": 0.8913043478260869,
+            "positions": 2806,
+            "teacher_tokens": 20638,
+            "student_tokens": 4003
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:5:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.34701818227767944,
+            "kl": 0.34701818227767944,
+            "agreement": 0.854066985645933,
+            "positions": 836,
+            "teacher_tokens": 21567,
+            "student_tokens": 1419
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:6:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.13143128156661987,
+            "kl": 0.13143128156661987,
+            "agreement": 0.9101232516271984,
+            "positions": 7221,
+            "teacher_tokens": 27940,
+            "student_tokens": 8175
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:7:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.21232648193836212,
+            "kl": 0.21232648193836212,
+            "agreement": 0.8890122086570478,
+            "positions": 901,
+            "teacher_tokens": 21553,
+            "student_tokens": 1391
+          }
+        ]
+      },
+      "final_ac": {
+        "loss_kind": "kl",
+        "loss": 0.2554805353283882,
+        "kl": 0.2554805353283882,
+        "agreement": 0.8643984948094611,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "compaction": {
+            "loss_kind": "kl",
+            "loss": 0.2554805353283882,
+            "kl": 0.2554805353283882,
+            "agreement": 0.8643984948094611,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:0",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.48530125617980957,
+            "kl": 0.48530125617980957,
+            "agreement": 0.7594594594594595,
+            "positions": 740,
+            "teacher_tokens": 24667,
+            "student_tokens": 4069
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:1",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.36271002888679504,
+            "kl": 0.36271002888679504,
+            "agreement": 0.8410087719298246,
+            "positions": 912,
+            "teacher_tokens": 15009,
+            "student_tokens": 2701
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:2",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.26151034235954285,
+            "kl": 0.26151034235954285,
+            "agreement": 0.8297991071428571,
+            "positions": 7168,
+            "teacher_tokens": 41197,
+            "student_tokens": 9922
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:3",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.10458141565322876,
+            "kl": 0.10458141565322876,
+            "agreement": 0.9243756104367239,
+            "positions": 7167,
+            "teacher_tokens": 23439,
+            "student_tokens": 9779
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:4",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.17910179495811462,
+            "kl": 0.17910179495811462,
+            "agreement": 0.8970064148253742,
+            "positions": 2806,
+            "teacher_tokens": 20638,
+            "student_tokens": 5937
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:5",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.32678908109664917,
+            "kl": 0.32678908109664917,
+            "agreement": 0.8492822966507177,
+            "positions": 836,
+            "teacher_tokens": 21567,
+            "student_tokens": 3296
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:6",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.12093186378479004,
+            "kl": 0.12093186378479004,
+            "agreement": 0.9108156764990999,
+            "positions": 7221,
+            "teacher_tokens": 27940,
+            "student_tokens": 10548
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:7",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.20291849970817566,
+            "kl": 0.20291849970817566,
+            "agreement": 0.9034406215316315,
+            "positions": 901,
+            "teacher_tokens": 21553,
+            "student_tokens": 2291
+          }
+        ]
+      },
+      "final_no_context": {
+        "loss_kind": "kl",
+        "loss": 0.25213719066232443,
+        "kl": 0.25213719066232443,
+        "agreement": 0.8666952490519634,
+        "items": 8,
+        "dropped_too_long": 0,
+        "by_kind": {
+          "compaction": {
+            "loss_kind": "kl",
+            "loss": 0.25213719066232443,
+            "kl": 0.25213719066232443,
+            "agreement": 0.8666952490519634,
+            "items": 8
+          }
+        },
+        "per_item": [
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:0:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.48611459136009216,
+            "kl": 0.48611459136009216,
+            "agreement": 0.7675675675675676,
+            "positions": 740,
+            "teacher_tokens": 24667,
+            "student_tokens": 1316
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:1:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.3549967408180237,
+            "kl": 0.3549967408180237,
+            "agreement": 0.8453947368421053,
+            "positions": 912,
+            "teacher_tokens": 15009,
+            "student_tokens": 1384
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:2:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.26280519366264343,
+            "kl": 0.26280519366264343,
+            "agreement": 0.8268694196428571,
+            "positions": 7168,
+            "teacher_tokens": 41197,
+            "student_tokens": 7873
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:3:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.10294757783412933,
+            "kl": 0.10294757783412933,
+            "agreement": 0.9256313659829776,
+            "positions": 7167,
+            "teacher_tokens": 23439,
+            "student_tokens": 7844
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:4:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.1830308884382248,
+            "kl": 0.1830308884382248,
+            "agreement": 0.8930862437633642,
+            "positions": 2806,
+            "teacher_tokens": 20638,
+            "student_tokens": 4003
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:5:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.314410001039505,
+            "kl": 0.314410001039505,
+            "agreement": 0.8564593301435407,
+            "positions": 836,
+            "teacher_tokens": 21567,
+            "student_tokens": 1419
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:6:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.11954622715711594,
+            "kl": 0.11954622715711594,
+            "agreement": 0.9128929511148041,
+            "positions": 7221,
+            "teacher_tokens": 27940,
+            "student_tokens": 8175
+          },
+          {
+            "item_id": "compaction:nemotron_math___subset_tir__n_48__min_40000:0:7:no_context",
+            "kind": "compaction",
+            "loss_kind": "kl",
+            "loss": 0.19324630498886108,
+            "kl": 0.19324630498886108,
+            "agreement": 0.9056603773584906,
+            "positions": 901,
+            "teacher_tokens": 21553,
+            "student_tokens": 1391
+          }
+        ]
+      },
+      "ac_kl_advantage": -0.0033433446660637856
+    }
+  },
+  "self_distillation": [
+    {
+      "loss_kind": "kl",
+      "task_ids": [
+        "5abd04f15542996e802b467e",
+        "5adf732a5542993a75d264e9",
+        "5ac52b495542994611c8b3de",
+        "5a8b63755542997f31a41cfe"
+      ],
+      "text_scores": [
+        1.0,
+        1.0,
+        0.4,
+        1.0
+      ],
+      "ac_scores": [
+        1.0,
+        1.0,
+        0.4,
+        1.0
+      ],
+      "training_items": 8,
+      "ac_history_items": 8,
+      "before_loss": 0.8186376765370369,
+      "after_loss": 0.7727603986859322,
+      "reloaded_loss": 0.7727603986859322,
+      "checkpoint": {
+        "epoch_number": 1,
+        "ac_checkpoint": "AC_MODELS/hotpot_ac_kl_d528d84045/epoch_001",
+        "target_lora_checkpoint": "LORAS/hotpot_ac_kl_d528d84045_reader/epoch_001"
+      },
+      "quality_scope": "same four training questions; diagnostic only"
+    },
+    {
+      "loss_kind": "sft",
+      "task_ids": [
+        "5abd04f15542996e802b467e",
+        "5adf732a5542993a75d264e9",
+        "5ac52b495542994611c8b3de",
+        "5a8b63755542997f31a41cfe"
+      ],
+      "text_scores": [
+        1.0,
+        1.0,
+        0.4,
+        1.0
+      ],
+      "ac_scores": [
+        0.0,
+        0.0,
+        0.4,
+        1.0
+      ],
+      "training_items": 8,
+      "ac_history_items": 8,
+      "before_loss": 0.8889586254954338,
+      "after_loss": 1.8998577147722244,
+      "reloaded_loss": 1.8998577147722244,
+      "checkpoint": {
+        "epoch_number": 1,
+        "ac_checkpoint": "AC_MODELS/hotpot_ac_sft_cf88cee34d/epoch_001",
+        "target_lora_checkpoint": "LORAS/hotpot_ac_sft_cf88cee34d_reader/epoch_001"
+      },
+      "quality_scope": "same four training questions; diagnostic only"
+    }
+  ],
+  "reviews": [
+    "PLAN_REVIEW_FINAL.md",
+    "FINAL_IMPLEMENTATION_REVIEW_FINAL.md",
+    "GPU_PROOF_REVIEW_FINAL.md"
+  ],
+  "limitations": [
+    "Small runs establish mechanics; no long-run quality or convergence claim.",
+    "HotpotQA diagnostics reuse the four training problems; SFT quality worsened in this tiny run.",
+    "DDP and old-corpus conversion are outside scope.",
+    "Artifact renderer checker is available; interactive editor visual inspection is not."
+  ],
+  "execution_notes": [
+    "Queued Sky private job21 canceled; private probes used GPU1 after HotpotQA completed while job20 used GPU0.",
+    "Stalled local forwarded SSH agent bypassed with env -u SSH_AUTH_SOCK; no node restart was needed.",
+    "Initial private fixture attribute check corrected; final proof strengthened to independent heads and unequal chunk-crossing sequences. No GPU-driven product correction."
+  ]
+}

@@ -67,3 +67,7 @@ pnpm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Agent worktrees and reference clones
+.claude/worktrees/
+IB/REPOS/

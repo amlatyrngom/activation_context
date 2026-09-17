@@ -131,7 +131,7 @@ class ModuleManager:
         assert config.base_side_model_name in self.harness.loaded_models, f"Unknown model {config.base_side_model_name!r}."
         assert config.target_model_name in self.harness.loaded_models, f"Unknown model {config.target_model_name!r}."
         if config.base_side_model_lora_name not in self.lora_configs:
-            self.register_lora(config.base_side_model_lora_name, config.base_side_model_name, rank=config.side_lora_rank)
+            self.register_lora(config.base_side_model_lora_name, config.base_side_model_name, rank=config.side_lora_rank, target_modules=config.side_lora_target_modules)
         else:
             side_lora = self.lora_configs[config.base_side_model_lora_name]
             assert side_lora.model_name == config.base_side_model_name, (
@@ -194,28 +194,45 @@ class ModuleManager:
         """
         if lora_name is None:
             peft_model = self.peft_models.get(model_name)
-            if peft_model is None:
-                yield
-            else:
-                with peft_model.disable_adapter():
-                    yield
+        else:
+            lora_config = self.get_lora_config(lora_name)
+            assert lora_config.model_name == model_name, f"LoRA {lora_name!r} belongs to {lora_config.model_name!r}, not {model_name!r}."
+            peft_model = self.ensure_lora(lora_name)
+        if peft_model is None:
+            yield
             return
-        lora_config = self.get_lora_config(lora_name)
-        assert lora_config.model_name == model_name, f"LoRA {lora_name!r} belongs to {lora_config.model_name!r}, not {model_name!r}."
-        peft_model = self.ensure_lora(lora_name)
-        peft_model.set_adapter(lora_config.adapter_name)
-        yield
+        previous_adapter = peft_model.active_adapter
+        trainability = [(parameter, parameter.requires_grad) for parameter in peft_model.parameters()]
+        from peft.tuners.tuners_utils import BaseTunerLayer
+        layers = [(module, module.disable_adapters) for module in peft_model.modules() if isinstance(module, BaseTunerLayer)]
+        try:
+            if lora_name is not None:
+                peft_model.set_adapter(lora_config.adapter_name)
+            for layer, _ in layers:
+                layer.enable_adapters(lora_name is not None)
+            # PEFT routing changes trainability. Optimizer ownership, not the active adapter, controls it here.
+            for parameter, trainable in trainability:
+                parameter.requires_grad_(trainable)
+            yield
+        finally:
+            peft_model.set_adapter(previous_adapter)
+            for layer, disabled in layers:
+                layer.enable_adapters(not disabled)
+            for parameter, trainable in trainability:
+                parameter.requires_grad_(trainable)
 
     def lora_parameters(self, lora_name: str) -> list[nn.Parameter]:
         """The trainable parameters of that adapter only (injecting it if needed)."""
         peft_model = self.ensure_lora(lora_name)
         adapter_name = self.get_lora_config(lora_name).adapter_name
-        peft_model.set_adapter(adapter_name)
-        return [
+        parameters = [
             parameter
             for name, parameter in peft_model.named_parameters()
-            if f".{adapter_name}." in name and parameter.requires_grad
+            if f".{adapter_name}." in name
         ]
+        for parameter in parameters:
+            parameter.requires_grad_(True)
+        return parameters
 
     def free_lora(self, model_name: str, lora_name: str, checkpoint_path: str | None = None) -> None:
         """

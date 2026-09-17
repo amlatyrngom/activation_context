@@ -1,0 +1,191 @@
+diff --git a/activation/dataset/dataset_manager.py b/activation/dataset/dataset_manager.py
+--- a/activation/dataset/dataset_manager.py
++++ b/activation/dataset/dataset_manager.py
+@@ -60,6 +60,7 @@
+         study_context: str | None = None,
+         caching_id: str | None = None,
+         modality: DataModality | None = None,
++        *, progress: t.Callable[[dict], None] | None = None,
+     ) -> list[DatasetQAExample]:
+         """
+         Synthesize study questions from the dataset's chunks (see DatasetStudyGenerator.generate_examples_qa).
+@@ -67,7 +68,7 @@
+         """
+         study_generator = self._get_or_create_study_generator(dataset_id)
+         seed = self.harness.harness_config.dataset_study_seed if base_seed is None else base_seed
+-        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality)
++        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress)
+ 
+ 
+     def label_study_examples(
+diff --git a/activation/dataset/dataset_study.py b/activation/dataset/dataset_study.py
+--- a/activation/dataset/dataset_study.py
++++ b/activation/dataset/dataset_study.py
+@@ -202,6 +202,7 @@
+         study_context: str | None = None,
+         caching_id: str | None = None,
+         modality: DataModality | None = None,
++        *, progress: t.Callable[[dict], None] | None = None,
+     ) -> list[DatasetQAExample]:
+         """
+         One question per sampled chunk (num_samples chunks of the given modality, or of every modality
+@@ -230,6 +231,12 @@
+                 examples.append(self._example_from_row(row, kind, base_seed))
+         stats.study_num_cached += len(cached_rows)
+         pending = list(enumerate(study_samples))[len(cached_rows):]
++        def report(completed: int, phase: str) -> None:
++            if progress is not None:
++                progress({"phase": phase, "completed": completed, "total": len(study_samples),
++                          "accepted": len(examples), "cached": len(cached_rows),
++                          "rejected": stats.study_num_junk_skipped, "failed": stats.study_num_parse_failures})
++        report(len(cached_rows), "loading QA model" if pending else "QA complete")
+         if not pending:
+             return examples
+         # vllm batches a whole conversation list inside one chat() call, so a
+@@ -258,6 +265,7 @@
+                     },
+                 ])
+             batch_start_time = time.time()
++            report(len(cached_rows) + batch_start, "generating QA")
+             outputs = loaded_model.engine_chat_many(conversations, chat_kwargs=chat_kwargs)
+             elapsed = time.time() - batch_start_time
+             total_generation_time += elapsed
+@@ -284,6 +292,7 @@
+                 examples.append(self._example_from_row(row, kind, base_seed))
+             if key is not None:
+                 self.cache.append(key, new_rows)
++            report(len(cached_rows) + batch_start + len(batch), "generating QA")
+             if reporting_interval <= 0:
+                 print(
+                     f"{self.dataset_id} - Study ({kind}): {batch_start + len(batch)}/{len(pending)} chunks, "
+@@ -291,6 +300,7 @@
+                 )
+                 reporting_interval = max(1, len(pending) // 20)
+             reporting_interval -= len(batch)
++        report(len(study_samples), "QA complete")
+         return examples
+ 
+ 
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -347,6 +347,9 @@
+         start_epoch = self._next_epoch_number(ac_model)
+         stats = ActivationContextTrainingStats(loss_kind=config.loss_kind, start_epoch=start_epoch, items=len(training_data))
+         started = time.monotonic()
++        if reporter is not None:
++            reporter.set_status(phase="building training examples", examples=str(len(training_data)))
++            reporter.render(force=True)
+         torch.manual_seed(config.seed + start_epoch)
+         examples = [self.build_example(ac_model, item) for item in training_data]
+         reporting_examples = [self.build_example(ac_model, item) for item in reporting_data]
+@@ -367,6 +370,9 @@
+             reporter.initialize_training(config, stats)
+         try:
+             placement_started = time.monotonic()
++            if reporter is not None:
++                reporter.set_status(phase="model placement and kernel preparation")
++                reporter.render(force=True)
+             if target.vllm_model is not None:
+                 target.engine_to_device(SOURCE_DEVICE)
+             variables = self._autotuning_variables(ac_model)
+@@ -400,7 +406,7 @@
+                         self.updates_done.get(ac_model_name, 0), 0.0, time.monotonic() - started)
+             phase = time.monotonic()
+             if reporting_data:
+-                stats.reporting = self._evaluate(ac_model, list(reporting_data), device)
++                stats.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "reporting", stats.reporting)
+             stats.baseline_samples = self._sample_completions(ac_model, fixed_items, baseline)
+@@ -474,7 +480,7 @@
+                         phase = time.monotonic()
+                         if reporter is not None:
+                             reporter.report_phase(progress(step), "reporting")
+-                        record.reporting = self._evaluate(ac_model, list(reporting_data), device)
++                        record.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
+                         record.reporting_seconds += time.monotonic() - phase
+                         stats.reporting = record.reporting
+                         if reporter is not None:
+@@ -484,7 +490,7 @@
+                     if reporter is not None:
+                         reporter.report_phase(progress(steps), "validation")
+                     record.validation = (record.reporting if list(validation_data) == list(reporting_data) and record.reporting is not None
+-                                         else self._evaluate(ac_model, list(validation_data), device))
++                                         else self._evaluate(ac_model, list(validation_data), device, reporter, "validation"))
+                     record.validation_seconds = time.monotonic() - phase
+                     if reporter is not None:
+                         reporter.report_eval(progress(steps), "validation", record.validation)
+@@ -653,7 +659,7 @@
+             kernel_scope.enter_context(configure_fla_runtime(variables["fla_config"]))
+             module_manager.ensure_lora(ac_model.config.target_model_lora_name)
+             device = ac_model.prepare()
+-            summary = self._evaluate(ac_model, items, device)
++            summary = self._evaluate(ac_model, items, device, reporter, reporting_name or reference_name or "evaluation")
+             if reporter is not None:
+                 reporter.report_eval(progress, reporting_name or reference_name or "evaluation", summary)
+                 if reference_name is not None and summary["items"]:
+@@ -669,7 +675,10 @@
+ 
+     # ------------------------------------------------------------------------------------------ internals
+     @torch.no_grad()
+-    def _evaluate(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device) -> ActivationContextEvalSummary:
++    def _evaluate(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device,
++                  reporter: "ActivationContextTrainingReporter | None" = None, reporting_name: str = "evaluation") -> ActivationContextEvalSummary:
++        if reporter is not None:
++            reporter.report_evaluation_progress(reporting_name, 0, len(items))
+         examples = [self.build_example(ac_model, item) for item in items]
+         self._check_capacity(ac_model, examples)
+         previous_mode = ac_model.mode
+@@ -687,6 +696,8 @@
+                     "loss_kind": self.config.loss_kind, "loss": float(loss), "kl": float(loss) if is_kl else None,
+                     "agreement": agreement, "positions": positions,
+                     "teacher_tokens": len(example.teacher_ids), "student_tokens": len(example.student_ids)})
++                if reporter is not None:
++                    reporter.report_evaluation_progress(reporting_name, len(per_item), len(examples))
+         finally:
+             for base, training in zip(bases, training_modes):
+                 base.train(training)
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -23,7 +23,7 @@
+         self.epoch_x = 0.0
+         self.epoch_origin: int | None = None
+         self.initialize_line_plot("loss", "Training loss", "Weighted item mean.", "global optimizer step", "loss", ["train"], smoothing_window=5)
+-        self.initialize_line_plot("reporting", "Held-out loss", "Current-reader reporting/validation and initial-reader references.",
++        self.initialize_line_plot("reporting", "Evaluation loss", "Named evaluation sets and initial-reader references.",
+                                   "epochs in this report", "loss", ["reporting", "validation", *REFERENCE_SERIES])
+         self.initialize_line_plot("throughput", "Token throughput", "Teacher and student tokens per training second.",
+                                   "global optimizer step", "tokens/s", ["tokens/s"])
+@@ -44,7 +44,7 @@
+         label = "KL" if loss_kind == "kl" else "Cross-entropy"
+         for name in ("loss", "reporting"):
+             self.widgets[name]["y_label"] = label
+-            self.widgets[name]["title"] = ("Training " if name == "loss" else "Held-out ") + label
++            self.widgets[name]["title"] = ("Training " if name == "loss" else "Evaluation ") + label
+         if loss_kind == "kl":
+             self.initialize_line_plot("agreement", "Top-1 agreement", "Mean teacher/student agreement over items.",
+                                       "global optimizer step", "fraction", ["train"])
+@@ -111,13 +111,19 @@
+         self.add_data_point("evals", {"epoch": epoch, "global step": self.global_step, "name": name, "items": summary["items"],
+                                       "dropped": summary["dropped_too_long"], "loss kind": summary["loss_kind"], "loss": summary["loss"],
+                                       **({"agreement": summary["agreement"]} if self.loss_kind == "kl" else {})})
+-        if name in ("reporting", "validation") and summary["items"]:
+-            self.add_data_point("reporting", {"x": self.epoch_x, name: summary["loss"], **self.references})
++        if summary["items"]:
++            if name not in {series["name"] for series in self.widgets["reporting"]["series"]}:
++                self.widgets["reporting"]["series"].append({"name": name, "x": [], "y": []})
++            self.add_data_point("reporting", {"x": self.epoch_x, **self.references, name: summary["loss"]})
+         for kind, values in summary["by_kind"].items():
+             self.add_data_point("kinds", {"epoch": epoch, "set": name, "kind": kind, "items": values["items"],
+                 "loss kind": values["loss_kind"], "loss": values["loss"],
+                 **({"agreement": values["agreement"]} if self.loss_kind == "kl" else {})})
+         self.render()
++
++    def report_evaluation_progress(self, name: str, completed: int, total: int) -> None:
++        self.set_status(phase=name, evaluation_items=f"{completed}/{total}")
++        self.render(force=completed == 0 or completed == total)
+ 
+     def report_completions(self, progress: "ActivationContextTrainingProgress", rows: list["CompletionSample"]) -> None:
+         text = "\n\n".join(f"[{r['item_id']}] ({r['kind']}, global step {r['global_step']}, AC version {r['ac_version']})\n"

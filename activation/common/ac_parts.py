@@ -104,6 +104,25 @@ def is_ac_part(part: object) -> bool:
     return isinstance(part, dict) and part.get("type") == AC_PART_TYPE
 
 
+def strip_ac_parts(messages: list[dict]) -> list[dict]:
+    """
+    The same messages with every activation_context part removed (descendants included): the no-context view of a
+    history. Text pieces of a content list are kept in order; a list left with only text becomes one string.
+    """
+    stripped = []
+    for message in messages:
+        content = message.get("content")
+        if isinstance(content, list):
+            pieces = [piece for piece in content if not is_ac_part(piece)]
+            if all(isinstance(piece, dict) and piece.get("type") == "text" for piece in pieces):
+                content = "".join(piece.get("text", "") for piece in pieces)
+            else:
+                content = pieces
+            message = {**message, "content": content}
+        stripped.append(message)
+    return stripped
+
+
 def direct_parts(messages: list[dict]) -> list[dict]:
     """The activation_context parts of these messages, in order of appearance (not their descendants)."""
     parts = []

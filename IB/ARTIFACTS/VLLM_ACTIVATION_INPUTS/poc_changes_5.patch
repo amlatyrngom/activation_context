@@ -1,0 +1,1569 @@
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+index f507a58..deb0a34 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/arms.json
+@@ -2072,5 +2072,293 @@
+   "head_style": "lora",
+   "calibration": "row_positions",
+   "note": "NDIW with lora-style residual heads on the summary readout and the row-position calibration: the plain deep arm under the new parametrization, the reference for NDIAWL (attention) and NKVWL (K/V). Pairs with NDIW. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "NKVSW": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "delta_scale_lr": 0.001,
++  "note": "Round 5, kv_slots at matched depth: at reader layers 7/11/19/23/31 the row positions' pre-RoPE K and V are REPLACED by keep x the reader's own + a side-computed slot content read from the side state at the same layer (s(l) = l); zero-initialized slot heads and takeover 0, so update 0 is bit-identical to the input-only K16r1 model (held == deltas_off by construction). Every target token's attention at those layers then reads passage content the side model computed at that depth: the fetch-side test (encoder-decoder cross-attention with the row count as the slot budget), engine mapping = a per-request K/V write into the rows' cache entries. 1/16 warm from K16r1 epoch 2, ND schedule (cosine, warm-up 50), lora-style heads, row-position calibration. The takeovers (keep = 1 - takeover on the reader's own K/V) are the heads' scale parameters and train in the scale group at delta_scale_lr 1e-3 (a scalar under Adam walks ~lr per update: at the encoder rate 1e-4 it could not leave 0.05 within the arm and the arm would replicate NKVWL; at 1e-3 a full replacement is reachable within the epoch). Read: held - deltas_off (must leave 0 and keep separating), intervention_delta_rms per half (the slot content against the reader's own K/V at the rows), intervention_slot_rms (written / own; 1 at init), intervention_takeover (0 at init; rising = the layer discards the reader's own row K/V), intervention_grads. Pairs with NKVWL (additive K/V deltas from the same source: the differences are replacement vs addition and the takeover group) and with NDIAWL / K16r1 (same init, same shared draws)."
++ },
++ "NKVSWS": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "delta_scale_lr": 0.001,
++  "heads_only_updates": 200,
++  "note": "NKVSW plus staged training: the first 200 updates step the slot heads (content and takeovers) only; the encoder, its gates and both LoRAs keep their gradients dropped (no penalty term), then everything trains on the same cosine clock. Read against NKVSW: do the slots open faster when the shared parameters cannot absorb the loss first? Expect grad_norm_reader = 0 and a flat gate trace for 200 updates."
++ },
++ "A32KVS": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "note": "1/32 warm from the K16r1 epoch-2 adapters plus kv_slots at matched depth (the NKVSW mechanism): the starved-rows test where the fetch side has the most to gain (A32DnF 0.323 vs the input-only A32X 0.322, deltas off 0.333: every store-side design landed on the control). delta_scale_lr 1e-3 explicitly (A32DL's 0.0 would freeze the takeovers, which train in the scale group); scale_fraction kept but inert. Read held - deltas_off against A32DL (A2 residual deltas, same init) and the control A32W; intervention_slot_rms / intervention_takeover say whether the slots stop being the reader's own K/V."
++ },
++ "NXAW": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "summary",
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "cross_attention",
++  "note": "CEILING MEASUREMENT, NOT A CANDIDATE (not engine-compatible: the reader reads the whole passage's side states, zero compression). At reader layers 7/11/19/23/31 every target position from the first row on adds a zero-initialized cross-attention (query = the reader's own residual there, keys/values = the side model's final states at ALL passage tokens; 4 heads of 160 at r = 640) to the layer input; the rows stay as they are. Bounds what any fetch-side design at these layers can reach: if NXAW does not beat the input-only K16r1 line either, the limitation is not the fetch of the rows. 1/16 warm from K16r1 epoch 2, ND schedule; deltas_off = no delta. Read: held - deltas_off, intervention_attention (out-projection norm per layer, 0 at init), intervention_delta_rms (the delta against the residual at the positions written), intervention_grads (block gradient norms). payload_bytes counts the whole passage."
++ },
++ "A32XA": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/home/ngom/activation_artifacts/SYNC_RUNS/K16r1/LORAS/rag_reader/epoch_002",
++  "intervention_source": "summary",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.0,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "cross_attention",
++  "note": "CEILING MEASUREMENT, NOT A CANDIDATE (see NXAW): the cross-attention ceiling at 1/32, warm from the K16r1 epoch-2 adapters. The rows are clearly short here (A32X 0.322 vs K16 0.190), so the gap between this arm and A32DL / A32KVS is the most that any fetch-side mechanism could recover at 1/32 with these layers; a ceiling near A32X says the reader cannot use the passage at these depths at all. scale_fraction and delta_scale_lr inert."
++ },
++ "NKVSWn": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "delta_scale_lr": 0.001,
++  "note": "Round 5, kv_slots at matched depth: at reader layers 7/11/19/23/31 the row positions' pre-RoPE K and V are REPLACED by keep x the reader's own + a side-computed slot content read from the side state at the same layer (s(l) = l); zero-initialized slot heads and takeover 0, so update 0 is bit-identical to the input-only K16r1 model (held == deltas_off by construction). Every target token's attention at those layers then reads passage content the side model computed at that depth: the fetch-side test (encoder-decoder cross-attention with the row count as the slot budget), engine mapping = a per-request K/V write into the rows' cache entries. 1/16 warm from K16r1 epoch 2, ND schedule (cosine, warm-up 50), lora-style heads, row-position calibration. The takeovers (keep = 1 - takeover on the reader's own K/V) are the heads' scale parameters and train in the scale group at delta_scale_lr 1e-3 (a scalar under Adam walks ~lr per update: at the encoder rate 1e-4 it could not leave 0.05 within the arm and the arm would replicate NKVWL; at 1e-3 a full replacement is reachable within the epoch). Read: held - deltas_off (must leave 0 and keep separating), intervention_delta_rms per half (the slot content against the reader's own K/V at the rows), intervention_slot_rms (written / own; 1 at init), intervention_takeover (0 at init; rising = the layer discards the reader's own row K/V), intervention_grads. Pairs with NKVWL (additive K/V deltas from the same source: the differences are replacement vs addition and the takeover group) and with NDIAWL / K16r1 (same init, same shared draws). EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "NKVSWSn": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "side_layers",
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "delta_scale_lr": 0.001,
++  "heads_only_updates": 200,
++  "note": "NKVSW plus staged training: the first 200 updates step the slot heads (content and takeovers) only; the encoder, its gates and both LoRAs keep their gradients dropped (no penalty term), then everything trains on the same cosine clock. Read against NKVSW: do the slots open faster when the shared parameters cannot absorb the loss first? Expect grad_norm_reader = 0 and a flat gate trace for 200 updates. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "A32KVSn": {
++  "ratio": 0.03125,
++  "encoder_lr": 0.0001,
++  "reader_lr": 2e-05,
++  "penalty_weight": 1.0,
++  "penalty_fraction": 0.25,
++  "continue_share": 0.0,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "completion_tokens": 320,
++  "budget_seconds": 27000,
++  "final_train_subset": 512,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "gold_targets": true,
++  "reader_frozen_updates": 0,
++  "material": "material.json",
++  "gate_lr": null,
++  "fresh_initial": true,
++  "row_head_skip": true,
++  "lora_targets_extra": [],
++  "seed": null,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "clip_per_group": false,
++  "penalty_exact": false,
++  "ckpt_every": null,
++  "mixer_layers": null,
++  "row_scale_init": 1.0,
++  "loss_weighting": "example",
++  "gates_scope": "all",
++  "penalty_ref": "stored",
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "deltas_off": true,
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "intervention_source": "side_layers",
++  "scale_fraction": 0.2,
++  "delta_scale_lr": 0.001,
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "kv_slots",
++  "note": "1/32 warm from the K16r1 epoch-2 adapters plus kv_slots at matched depth (the NKVSW mechanism): the starved-rows test where the fetch side has the most to gain (A32DnF 0.323 vs the input-only A32X 0.322, deltas off 0.333: every store-side design landed on the control). delta_scale_lr 1e-3 explicitly (A32DL's 0.0 would freeze the takeovers, which train in the scale group); scale_fraction kept but inert. Read held - deltas_off against A32DL (A2 residual deltas, same init) and the control A32W; intervention_slot_rms / intervention_takeover say whether the slots stop being the reader's own K/V. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
++ },
++ "NXAWn": {
++  "gold_targets": true,
++  "row_head_skip": true,
++  "fresh_initial": true,
++  "micro_batch": 3,
++  "ckpt_min_tokens": 1700,
++  "train_items": 8192,
++  "epochs": 1,
++  "reporting_interval": 0.125,
++  "completion_samples": 4,
++  "lr_schedule": "cosine",
++  "warmup": 50,
++  "interventions": 4,
++  "last_layer_intervention": true,
++  "prefer_attention": true,
++  "intervention_source": "summary",
++  "init_ac": "/root/activation_artifacts/SYNC_RUNS/K16/AC_MODELS/rag_poc/epoch_002",
++  "init_reader": "/root/activation_artifacts/SYNC_RUNS/K16/LORAS/rag_reader/epoch_002",
++  "head_style": "lora",
++  "calibration": "row_positions",
++  "intervention_target": "cross_attention",
++  "note": "CEILING MEASUREMENT, NOT A CANDIDATE (not engine-compatible: the reader reads the whole passage's side states, zero compression). At reader layers 7/11/19/23/31 every target position from the first row on adds a zero-initialized cross-attention (query = the reader's own residual there, keys/values = the side model's final states at ALL passage tokens; 4 heads of 160 at r = 640) to the layer input; the rows stay as they are. Bounds what any fetch-side design at these layers can reach: if NXAW does not beat the input-only K16r1 line either, the limitation is not the fetch of the rows. 1/16 warm from K16r1 epoch 2, ND schedule; deltas_off = no delta. Read: held - deltas_off, intervention_attention (out-projection norm per layer, 0 at init), intervention_delta_rms (the delta against the residual at the positions written), intervention_grads (block gradient norms). payload_bytes counts the whole passage. EC2 twin (K16 epoch-2 init; controls A32X 0.322 / WCn 0.122)."
+  }
+-}
+\ No newline at end of file
++}
+diff --git a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+index 079ea1e..5dae3b6 100644
+--- a/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
++++ b/IB/ARTIFACTS/AGENT_AC_PRETRAINING/ac_recon/run_recon.py
+@@ -84,7 +84,10 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
+     # intervention_attention_depth: for intervention_source 'passage_attention', 'final' (z queries the passage's final states) or 'matched' (side layer s(l) states)
+     # scale_fraction: the heads' relative scales start at this share of the calibrated RMS; heads_frozen / detach_source: the NDIR / NDID controls
+     # intervention_source: what the delta heads read ('summary' = the final side state, 'side_layers' = the side state at the matching layer);
+-    # intervention_target: 'residual' (layer input) or 'kv' (pre-RoPE keys and values at the row positions, full-attention layers only)
++    # intervention_target: 'residual' (layer input), 'kv' (pre-RoPE K/V deltas added at the row positions, full-attention layers only), 'kv_slots' (the row
++    #   positions' pre-RoPE K/V REPLACED by keep x the reader's own + a side-computed slot content; zero-init head and takeover 0 at init, so bit-identical to no
++    #   intervention; needs head_style 'lora'), or 'cross_attention' (a MEASUREMENT, not a candidate: every reader position adds a zero-init cross-attention over the
++    #   side model's final states of the whole passage; zero compression, not engine-compatible; needs intervention_source 'summary')
+     # seed: the fresh modules' initialization (replicate arms with their own seed differ in init and data order, not data order only)
+     # ac_path/reader_path: explicit adapter folders (a resume's latest epoch); otherwise the shared `initial` pair
+     import torch
+@@ -181,10 +184,11 @@ def prepare():
+ 
+ 
+ def parameter_hash(ac, h, deep=False):
+-    """Shared parameters (AC modules without the delta heads and passage-attention blocks, side and reader LoRA): the same across a paired input-only / deep arm. `deep`: the heads and blocks alone."""
++    """Shared parameters (AC modules without the delta heads and the attention blocks, side and reader LoRA): the same across a paired input-only / deep arm. `deep`: the heads and blocks alone."""
+     import torch
++    from activation.ac_model.ac_model import INTERVENTION_MODULE_PREFIXES
+     value = hashlib.sha256()
+-    modules = [p for name, p in ac.modules.named_parameters() if name.startswith(('delta_heads.', 'passage_attention.')) == deep]
++    modules = [p for name, p in ac.modules.named_parameters() if name.startswith(INTERVENTION_MODULE_PREFIXES) == deep]
+     params = modules if deep else modules + h.module_manager.lora_parameters(ac.config.base_side_model_lora_name) + h.module_manager.lora_parameters(READER)
+     for p in params:
+         value.update(str(tuple(p.shape)).encode()); value.update(p.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy().tobytes())
+@@ -321,9 +325,10 @@ def run(label):
+             f'Data · {len(train)} training passages (tool outputs from SWE and deep-research trajectories) × {arm["epochs"]} epochs = {math.ceil(len(train) / 8) * arm["epochs"]} updates of 8 · '
+             f'held-out panel every {arm["reporting_interval"]:g} epoch: {len(held)} novel + {len(wiki)} Wikipedia passages · no-context floor on the novel panel',
+             f'Initial adapters hash {initial_hash[:12]}… · seed {SEED} · SFT on the passage tokens'
+-            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "deltas at the inputs of"} reader layers {ac.intervention_layers}'
+-                f' read from {"the side state at layers " + str(ac.intervention_source_layers) if ac.config.intervention_source == "side_layers" else ("row-over-passage attention at " + ("side layers " + str(ac.intervention_source_layers) if ac.config.intervention_attention_depth == "matched" else "the final side states") + ", zero-initialized out projection") if ac.config.intervention_source == "passage_attention" else "the final side state"}'
+-                f' (heads hash {deep_hash[:12]}…; ' + (f'relative scales from {arm["scale_fraction"]:g} x RMS at {arm["delta_scale_lr"]:g}' if arm['head_style'] == 'scaled' else 'lora-style heads: zero-initialized down projection, no scale group')
++            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "pre-RoPE K/V slots REPLACING the row positions of (keep x the reader's own + side-computed content; takeover 0 at init)" if ac.kv_slots else "CEILING MEASUREMENT (not a candidate): cross-attention of every reader position over the whole passage at" if ac.cross_attention else "deltas at the inputs of"} reader layers {ac.intervention_layers}'
++                + (' read from the side model\'s final states of all passage tokens (zero compression, not engine-compatible)' if ac.cross_attention else
++                   f' read from {"the side state at layers " + str(ac.intervention_source_layers) if ac.config.intervention_source == "side_layers" else ("row-over-passage attention at " + ("side layers " + str(ac.intervention_source_layers) if ac.config.intervention_attention_depth == "matched" else "the final side states") + ", zero-initialized out projection") if ac.config.intervention_source == "passage_attention" else "the final side state"}')
++                + f' (heads hash {deep_hash[:12]}…; ' + ('zero-initialized cross-attention blocks, no heads' if ac.cross_attention else f'zero-initialized slot heads around the reader\'s own K/V, takeovers at {arm["delta_scale_lr"]:g}' if ac.kv_slots else f'relative scales from {arm["scale_fraction"]:g} x RMS at {arm["delta_scale_lr"]:g}' if arm['head_style'] == 'scaled' else 'lora-style heads: zero-initialized down projection, no scale group')
+                 + f'; calibration on {"the row positions of real sequences" if arm["calibration"] == "row_positions" else "stripped histories (no rows)"}'
+                 + (f'; first {arm["heads_only_updates"]} updates train the intervention modules only' if arm['heads_only_updates'] else '')
+                 + f'{"; heads frozen" if arm["heads_frozen"] else ""}{"; source detached" if arm["detach_source"] else ""}), "deltas off" panel = the same items with the rows kept and the deltas withheld') if ac.is_deep else ''),
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index 754dd6b..213db8c 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -52,6 +52,7 @@ from .ac_model_utils import (
+     BlockedLocalAttentionLayer,
+     DeltaHead,
+     KVDeltaHead,
++    KVSlotHead,
+     PassageAttention,
+     EncodeQueue,
+     EncodeRequest,
+@@ -78,6 +79,9 @@ ROLLOUT, TRAINING = "rollout", "training"
+ ARCHITECTURE_VERSION = 2
+ INTERVENTION_SCALE_FRACTION = 0.05      # calibrated initial delta magnitude: this share of the destination layer's residual RMS
+ INTERVENTION_INIT_SEED_MASK = 0xDEE9
++INTERVENTION_TARGETS = ("residual", "kv", "kv_slots", "cross_attention")
++KV_TARGETS = ("kv", "kv_slots")          # targets that touch the pre-RoPE keys and values of full-attention layers (calibrated against the K and V RMS)
++INTERVENTION_MODULE_PREFIXES = ("delta_heads.", "passage_attention.", "cross_attention.")   # state-dict / parameter-name prefixes of the intervention modules
+ DIAGNOSTIC_CAPACITY = 256        # per layer, the encoder keeps at most this many diagnostic values between trace points    # delta heads draw from a forked stream (initial seed ^ mask): the shared modules and the adapters draw as before
+ PreparedPart = tuple[list[int], list[tuple[int, int]], list[torch.Tensor], int, bool]
+ 
+@@ -120,7 +124,14 @@ class ActivationContextModelConfig:
+     intervention_source_layers: list[int] | None = None   # side layers for "side_layers" and "passage_attention"/"matched" (None = the resolved reader layers, s(l) = l)
+     intervention_attention_depth: str = "final"   # "passage_attention": "final" = the row's final state queries the passage tokens' final states; "matched" = both from side layer s(l)
+     intervention_target: str = "residual"    # where the deltas land: "residual" = the reader layer's input; "kv" = the layer's pre-RoPE keys and values at the
+-                                             # row positions (full-attention layers only; one head per layer emits dk, dv with separate calibrated scales)
++                                             # row positions (full-attention layers only; one head per layer emits dk, dv with separate calibrated scales);
++                                             # "kv_slots" = the row positions' pre-RoPE K/V of full-attention layers are REPLACED by keep x the reader's own
++                                             # + a side-computed slot content (KVSlotHead: zero-init head, takeover 0 at init, so bit-identical to no
++                                             # intervention; the engine mapping is a per-request K/V write into the rows' cache entries); "cross_attention" =
++                                             # a MEASUREMENT, not a candidate: every target position adds a zero-init cross-attention over the side model's
++                                             # final states of ALL passage tokens (zero compression: the ceiling of any fetch-side design; not engine-compatible)
++    intervention_slots_extra: int = 0        # kv_slots: extra K/V slots per layer beyond the row positions (prefix-style). Designed only: any value but 0 is refused
++                                             # (see POC_IMPLEMENTATION_5.md; extra entries must be prompt positions in both HF and vLLM, i.e. more rows)
+     intervention_scale_fraction: float = INTERVENTION_SCALE_FRACTION   # initial delta scale as a share of the calibrated residual (or K/V) RMS: the heads' `relative` start
+     intervention_heads_frozen: bool = False  # control: the heads' weights stay at their random init; only the relative scales train
+     intervention_detach_source: bool = False # control: the heads read a detached source (the encoder never hears the deltas' gradient)
+@@ -140,8 +151,14 @@ class ActivationContextModelConfig:
+             raise ValueError("intervention_frequency must be nonnegative")
+         if self.intervention_source not in ("summary", "side_layers", "passage_attention"):
+             raise ValueError("intervention_source must be 'summary', 'side_layers' or 'passage_attention'")
+-        if self.intervention_target not in ("residual", "kv"):
+-            raise ValueError("intervention_target must be 'residual' or 'kv'")
++        if self.intervention_target not in INTERVENTION_TARGETS:
++            raise ValueError(f"intervention_target must be one of {INTERVENTION_TARGETS}")
++        if self.intervention_slots_extra:
++            raise ValueError("intervention_slots_extra is designed only (0): extra K/V slots are extra prompt positions in HF and vLLM alike, i.e. more rows")
++        if self.intervention_target == "kv_slots" and self.intervention_head_style != "lora":
++            raise ValueError("intervention_target 'kv_slots' needs intervention_head_style 'lora' (its head is zero-initialized around the reader's own K/V; a scaled head would replace the rows' keys with noise)")
++        if self.intervention_target == "cross_attention" and (self.intervention_source != "summary" or self.intervention_heads_frozen):
++            raise ValueError("intervention_target 'cross_attention' reads the side model's final passage states (intervention_source 'summary') and has no heads to freeze")
+         if self.intervention_attention_depth not in ("final", "matched"):
+             raise ValueError("intervention_attention_depth must be 'final' or 'matched'")
+         if self.intervention_source_layers is not None and not self.layer_matched_source:
+@@ -210,17 +227,25 @@ class ActivationContextModules(nn.Module):
+         # the model is deep, so an input-only model's checkpoint is the one it always was. Their initialization draws from a
+         # forked generator: the mixer, heads and the adapters injected later draw exactly the sequence they drew before.
+         self.delta_heads: nn.ModuleDict | None = None
++        self.cross_attention: nn.ModuleDict | None = None    # "cross_attention": one reader-side block per layer (no delta heads)
+         self.intervention_layers: list[int] = [int(layer) for layer in intervention_layers]
+         self.intervention_target = config.intervention_target
+         if self.intervention_layers:
+             r = max(1, min(d_side, d_target) // 4)
+             with torch.random.fork_rng(devices=[]):
+                 torch.manual_seed(torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK)
+-                if config.intervention_target == "kv":
++                if config.intervention_target in KV_TARGETS:
+                     if not d_kv:
+                         raise ValueError("K/V interventions need the reader's K/V width (num_key_value_heads x head_dim)")
+-                    self.delta_heads = nn.ModuleDict({str(layer): KVDeltaHead(d_side, d_kv, r, config.intervention_scale_fraction, config.intervention_head_style) for layer in self.intervention_layers})
++                    if config.intervention_target == "kv":
++                        self.delta_heads = nn.ModuleDict({str(layer): KVDeltaHead(d_side, d_kv, r, config.intervention_scale_fraction, config.intervention_head_style) for layer in self.intervention_layers})
++                    else:
++                        self.delta_heads = nn.ModuleDict({str(layer): KVSlotHead(d_side, d_kv, r) for layer in self.intervention_layers})
+                     self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers), 2))   # (K RMS, V RMS) per layer at calibration
++                elif config.intervention_target == "cross_attention":
++                    # Queries from the reader's residual (d_target), keys and values from the side model's final states (d_side); no residual inside the block.
++                    self.cross_attention = nn.ModuleDict({str(layer): PassageAttention(d_target, r, d_passage=d_side, residual=False) for layer in self.intervention_layers})
++                    self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers)))   # residual RMS per layer at calibration (diagnostic anchor)
+                 else:
+                     self.delta_heads = nn.ModuleDict({str(layer): DeltaHead(d_side, d_target, r, config.intervention_scale_fraction, config.intervention_head_style) for layer in self.intervention_layers})
+                     self.register_buffer("intervention_calibration", torch.zeros(len(self.intervention_layers)))   # residual RMS per layer at calibration
+@@ -234,7 +259,13 @@ class ActivationContextModules(nn.Module):
+ 
+     @property
+     def is_deep(self) -> bool:
+-        return self.delta_heads is not None
++        return bool(self.intervention_layers)
++
++    @property
++    def intervention_modules(self) -> list[nn.Module]:
++        """The per-layer intervention modules in layer order (delta heads, or the cross-attention blocks)."""
++        owner = self.delta_heads if self.delta_heads is not None else self.cross_attention
++        return [owner[str(layer)] for layer in self.intervention_layers] if owner is not None else []
+ 
+ 
+ 
+@@ -358,7 +389,7 @@ class ActivationContextModel:
+         from ..harness.model_config import LayerType
+         if not self.intervention_layers:
+             return []
+-        if self.config.intervention_target == "kv":
++        if self.config.intervention_target in KV_TARGETS:
+             full = {layer.layer_idx for layer in self.target.model_config.model_description.layer_descriptions if layer.layer_type is LayerType.FULL_ATTENTION}
+             wrong = [layer for layer in self.intervention_layers if layer not in full]
+             if wrong:
+@@ -377,8 +408,22 @@ class ActivationContextModel:
+ 
+     @property
+     def kv_interventions(self) -> bool:
++        """Additive K/V deltas at the rows (`kv`)."""
+         return self.is_deep and self.config.intervention_target == "kv"
+ 
++    @property
++    def kv_targets(self) -> bool:
++        """Any target on the pre-RoPE keys and values (`kv` deltas or `kv_slots` replacement): calibrated against the K and V RMS."""
++        return self.is_deep and self.config.intervention_target in KV_TARGETS
++
++    @property
++    def kv_slots(self) -> bool:
++        return self.is_deep and self.config.intervention_target == "kv_slots"
++
++    @property
++    def cross_attention(self) -> bool:
++        return self.is_deep and self.config.intervention_target == "cross_attention"
++
+     @property
+     def interventions_calibrated(self) -> bool:
+         return self.is_deep and bool(self.modules.interventions_calibrated)
+@@ -389,25 +434,30 @@ class ActivationContextModel:
+             return {}
+         heads = self.modules.delta_heads
+         calibration = self.modules.intervention_calibration.tolist()
+-        if self.kv_interventions:
++        scales, relative, takeover = {}, {}, {}
++        if self.kv_targets:
+             rms = {layer: {"k": float(k), "v": float(v)} for layer, (k, v) in zip(self.intervention_layers, calibration)}
+-            scales = {layer: {"k": float(heads[str(layer)].scale_k.detach()), "v": float(heads[str(layer)].scale_v.detach())} for layer in self.intervention_layers}
+         else:
+             rms = {layer: float(value) for layer, value in zip(self.intervention_layers, calibration)}
+-            scales = {layer: float(heads[str(layer)].scale.detach()) for layer in self.intervention_layers}
+         if self.kv_interventions:
++            scales = {layer: {"k": float(heads[str(layer)].scale_k.detach()), "v": float(heads[str(layer)].scale_v.detach())} for layer in self.intervention_layers}
+             relative = {layer: {"k": float(heads[str(layer)].relative_k.detach()), "v": float(heads[str(layer)].relative_v.detach())} for layer in self.intervention_layers}
+-        else:
++        elif self.kv_slots:      # no scales: the takeover of the reader's own K and V at the rows (0 = the reader's own, 1 = purely side-computed)
++            takeover = {layer: {"k": float(heads[str(layer)].takeover_k.detach()), "v": float(heads[str(layer)].takeover_v.detach())} for layer in self.intervention_layers}
++        elif heads is not None:
++            scales = {layer: float(heads[str(layer)].scale.detach()) for layer in self.intervention_layers}
+             relative = {layer: float(heads[str(layer)].relative.detach()) for layer in self.intervention_layers}
++        blocks = self.modules.passage_attention if self.modules.passage_attention is not None else self.modules.cross_attention
+         return {"layers": list(self.intervention_layers), "calibrated": self.interventions_calibrated, "calibration_items": list(self.calibration_items),
+                 "source": self.config.intervention_source, "source_layers": list(self.intervention_source_layers), "target": self.config.intervention_target,
+                 "attention_depth": self.config.intervention_attention_depth if self.config.intervention_source == "passage_attention" else None,
+-                "calibration_rms": rms, "scales": scales, "relative": relative, "scale_fraction": self.config.intervention_scale_fraction,
+-                "parametrization": "relative" if self.config.intervention_head_style == "scaled" else "lora",
++                "calibration_rms": rms, "scales": scales, "relative": relative, **({"takeover": takeover} if self.kv_slots else {}), "scale_fraction": self.config.intervention_scale_fraction,
++                "parametrization": "relative" if self.config.intervention_head_style == "scaled" and heads is not None and not self.kv_slots else "lora",
+                 "head_style": self.config.intervention_head_style, "calibration": self.config.intervention_calibration,
+                 "heads_frozen": self.config.intervention_heads_frozen, "detach_source": self.config.intervention_detach_source,
+-                "head_parameters": sum(parameter.numel() for parameter in heads.parameters()),
+-                "attention_parameters": sum(parameter.numel() for parameter in self.modules.passage_attention.parameters()) if self.modules.passage_attention is not None else 0}
++                "head_parameters": sum(parameter.numel() for parameter in heads.parameters()) if heads is not None else 0,
++                "attention_parameters": sum(parameter.numel() for parameter in blocks.parameters()) if blocks is not None else 0,
++                **({"measurement_only": True} if self.cross_attention else {})}      # the ceiling target only: every other summary keeps its keys
+ 
+     @contextmanager
+     def uncalibrated_encoding(self) -> t.Iterator[None]:
+@@ -447,7 +497,7 @@ class ActivationContextModel:
+         was_training = model.training
+         model.eval()
+         embedding = model.get_input_embeddings()
+-        capture = capture_kv_rms if self.kv_interventions else capture_layer_input_rms
++        capture = capture_kv_rms if self.kv_targets else capture_layer_input_rms
+         record: dict[int, list] = {layer: [] for layer in self.intervention_layers}
+         try:
+             with torch.no_grad():
+@@ -468,7 +518,7 @@ class ActivationContextModel:
+         finally:
+             model.train(was_training)
+         with torch.no_grad():
+-            if self.kv_interventions:      # per layer (K RMS, V RMS): each scale a share of its own statistic
++            if self.kv_targets:      # per layer (K RMS, V RMS): each scale a share of its own statistic (slots: diagnostic anchors)
+                 rms = {layer: (sum(k for k, _ in values) / len(values), sum(v for _, v in values) / len(values)) for layer, values in record.items()}
+                 for index, layer in enumerate(self.intervention_layers):
+                     self.modules.intervention_calibration[index, 0] = rms[layer][0]
+@@ -480,7 +530,8 @@ class ActivationContextModel:
+                 rms = {layer: sum(values) / len(values) for layer, values in record.items()}
+                 for index, layer in enumerate(self.intervention_layers):
+                     self.modules.intervention_calibration[index] = rms[layer]
+-                    self.modules.delta_heads[str(layer)].rms.fill_(rms[layer])
++                    if self.modules.delta_heads is not None:
++                        self.modules.delta_heads[str(layer)].rms.fill_(rms[layer])
+                 described = ", ".join(f"layer {layer} rms {value:.3f}" for layer, value in rms.items())
+             self.modules.interventions_calibrated.fill_(True)
+         self.calibration_items = list(item_ids or [])
+@@ -492,7 +543,7 @@ class ActivationContextModel:
+         """The AC modules' parameters (minus the delta heads' weights when they are frozen) plus the side adapter's."""
+         modules = [parameter for name, parameter in self.modules.named_parameters()
+                    if parameter.requires_grad       # the lora-style heads' inert scales never train
+-                   and not (self.config.intervention_heads_frozen and name.startswith(("delta_heads.", "passage_attention.")) and not name.split(".")[-1].startswith("relative"))]
++                   and not (self.config.intervention_heads_frozen and name.startswith(INTERVENTION_MODULE_PREFIXES) and not name.split(".")[-1].startswith("relative"))]
+         return modules + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
+ 
+     # ------------------------------------------------------------------------------------------ encoding
+@@ -685,9 +736,15 @@ class ActivationContextModel:
+             if is_recursive:
+                 results[indexes[row]] = ACOutput(modules.recursive_adapter(rows))
+             else:
+-                deltas, kv = {}, {}
++                deltas, kv, slots, cross_passage = {}, {}, {}, None
+                 input_embeds = modules.target_head(rows)
+-                if modules.is_deep:
++                if self.cross_attention:
++                    # The measurement target: the side model's final states of every passage position travel to the reader whole (no per-layer head here;
++                    # the reader's blocks query them at its target positions). The control detaches them like any other source.
++                    cross_passage = hidden[row, :end - num_rows].float()
++                    if self.config.intervention_detach_source:
++                        cross_passage = cross_passage.detach()
++                elif modules.is_deep:
+                     final_passage = hidden[row, :end - num_rows].float() if attention is not None and not matched else None   # one fp32 copy per example, shared by the layers
+                     for index, layer in enumerate(self.intervention_layers):
+                         if matched:                                                # side layer s(l): the row states query that layer's passage states
+@@ -707,6 +764,13 @@ class ActivationContextModel:
+                             if self.mode == TRAINING:
+                                 self._record_diagnostic("delta_rms", f"{layer}:k", self._row_rms(kv[layer][0]))
+                                 self._record_diagnostic("delta_rms", f"{layer}:v", self._row_rms(kv[layer][1]))
++                        elif self.kv_slots:                                        # the slot content plus the layer's keep factors (shared by every part)
++                            head = modules.delta_heads[str(layer)]
++                            slot_k, slot_v = head(source)
++                            slots[layer] = (slot_k, slot_v, *head.keep())
++                            if self.mode == TRAINING:
++                                self._record_diagnostic("delta_rms", f"{layer}:k", self._row_rms(slot_k))
++                                self._record_diagnostic("delta_rms", f"{layer}:v", self._row_rms(slot_v))
+                         else:
+                             deltas[layer] = modules.delta_heads[str(layer)](source)
+                             if self.mode == TRAINING:                              # does the delta re-inject the row? cosine with the input row, per layer; and the delta's RMS (0-d tensors, read at the trace point)
+@@ -714,7 +778,7 @@ class ActivationContextModel:
+                                     cosine = F.cosine_similarity(deltas[layer].detach(), input_embeds.detach(), dim=-1).mean()
+                                 self._record_diagnostic("cosine", layer, cosine)
+                                 self._record_diagnostic("delta_rms", layer, self._row_rms(deltas[layer]))
+-                results[indexes[row]] = ACOutput(input_embeds, deltas, kv)
++                results[indexes[row]] = ACOutput(input_embeds, deltas, kv, slots, cross_passage)
+             self.stats.encodes += 1
+             self.stats.side_tokens += len(ids)
+             self.stats.view_rows += num_rows
+@@ -806,7 +870,7 @@ class ActivationContextModel:
+         self._validate_adapter(side_lora, self.config.base_side_model_lora_name)
+         modules_state = dict(state["modules"])
+         if migrate:
+-            deep_keys = {name for name in self.modules.state_dict() if name.startswith(("delta_heads.", "passage_attention.")) or name in ("intervention_calibration", "interventions_calibrated")}
++            deep_keys = {name for name in self.modules.state_dict() if name.startswith(INTERVENTION_MODULE_PREFIXES) or name in ("intervention_calibration", "interventions_calibrated")}
+             result = self.modules.load_state_dict(modules_state, strict=False)
+             if set(result.missing_keys) != deep_keys or result.unexpected_keys:
+                 raise ValueError(f"Checkpoint modules do not match (missing {sorted(set(result.missing_keys) - deep_keys)}, unexpected {list(result.unexpected_keys)})")
+@@ -833,6 +897,8 @@ class ActivationContextModel:
+         `rms` buffer; they become relative = scale / calibration RMS with rms = that RMS. Returns what was converted (empty when nothing)."""
+         converted = []
+         calibration = modules_state.get("intervention_calibration")
++        if self.config.intervention_target not in ("residual", "kv"):
++            return converted                     # the slot and cross-attention targets never had an absolute scale
+         for index, layer in enumerate(self.intervention_layers):
+             prefix = f"delta_heads.{layer}."
+             pairs = [("scale_k", "relative_k", "rms_k", 0), ("scale_v", "relative_v", "rms_v", 1)] if self.kv_interventions else [("scale", "relative", "rms", None)]
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index 081f21a..8fcf14c 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -154,8 +154,9 @@ class ActivationContextTrainingReporter(HtmlReporter):
+                     "global update", "norm", [])
+                 self.initialize_line_plot("intervention_delta_rms", "Applied delta RMS relative to the residual at the rows",
+                     "Per intervention layer, the RMS of the delta rows the reader received (mean over the encoded rows since the last point) divided by the residual RMS "
+-                    "measured at the row positions on the same training forwards (K/V targets: per half against the K or V RMS at the rows): the real relative magnitude "
+-                    "whatever the head style. In bf16 the addition rounds away below ~0.4 %; watch it cross ~1 % and settle in the 2-10 % band.", "global update", "delta RMS / row RMS", [])
++                    "measured at the row positions on the same training forwards (K/V targets: per half against the K or V RMS at the rows; kv_slots: the side-computed "
++                    "slot content against the reader's own K or V; cross_attention: the block's delta against the residual at the target positions it wrote): the real "
++                    "relative magnitude whatever the head style. In bf16 the addition rounds away below ~0.4 %; watch it cross ~1 % and settle in the 2-10 % band.", "global update", "delta RMS / row RMS", [])
+                 self.initialize_line_plot("intervention_row_rms", "Residual RMS at the row positions",
+                     "Per intervention layer, measured by the reader hooks on the training forwards (reader as trained, rows present): the deltas' true denominator, "
+                     "against the calibration RMS from no-row sequences.", "global update", "RMS", [])
+@@ -168,11 +169,23 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             for layer, value in entry["head_grad_norm"].items():
+                 self._ensure_series("intervention_grads", f"layer {layer}")
+                 self.add_data_point("intervention_grads", {"x": entry["update"], f"layer {layer}": value})
+-            if entry.get("attention_out_norm") and "intervention_attention" not in self.widgets:      # A2 arms only, created once
+-                self.initialize_line_plot("intervention_attention", "Passage attention: out-projection weight norm",
+-                    "A2 sources only. Per intervention layer, the norm of the zero-initialized output projection of the row-over-passage attention block: "
+-                    "0 at init (the head reads exactly its plain source), rising as the attention path opens.", "global update", "norm", [])
+-            for widget, key in (("intervention_row_rms", "row_rms"), ("intervention_cosine", "cosine"), ("intervention_attention", "attention_out_norm"), ("intervention_delta_rms", "delta_rms")):
++            if entry.get("attention_out_norm") and "intervention_attention" not in self.widgets:      # A2 and cross-attention arms only, created once
++                self.initialize_line_plot("intervention_attention", "Attention blocks: out-projection weight norm",
++                    "A2 sources and the cross-attention ceiling. Per intervention layer, the norm of the zero-initialized output projection of the attention block "
++                    "(A2: the row over the passage in the encoder; cross_attention: every reader position over the whole passage): "
++                    "0 at init (nothing is read through the block), rising as the attention path opens.", "global update", "norm", [])
++            if entry.get("slot_rms") and "intervention_slot_rms" not in self.widgets:                # kv_slots arms only, created once
++                self.initialize_line_plot("intervention_slot_rms", "K/V replacement RMS relative to the reader's own K/V at the rows",
++                    "kv_slots only. Per intervention layer and half ('layer l:k' / 'layer l:v'), the RMS of the K or V written over the row positions "
++                    "(keep x the reader's own + the side-computed slot content) divided by the RMS of the reader's own K or V at the same rows on the same "
++                    "training forwards: exactly 1 at init (the slot is the reader's own value); a departure from 1 means the slots carry side-computed content "
++                    "of their own magnitude. Read with 'Applied delta RMS' (the side-computed content alone) and 'K/V takeover'.", "global update", "written RMS / own RMS", [])
++                self.initialize_line_plot("intervention_takeover", "K/V takeover",
++                    "kv_slots only. Per intervention layer and half, the learned takeover of the reader's own K or V at the rows: 0 = the reader's own value is "
++                    "kept whole (init), 1 = the slot is purely side-computed (a per-request K/V prefix write in the engine). Negative or above 1 is allowed (a linear mix).",
++                    "global update", "takeover", [])
++            for widget, key in (("intervention_row_rms", "row_rms"), ("intervention_cosine", "cosine"), ("intervention_attention", "attention_out_norm"), ("intervention_delta_rms", "delta_rms"),
++                                ("intervention_slot_rms", "slot_rms"), ("intervention_takeover", "takeover")):
+                 for layer, value in (entry.get(key) or {}).items():
+                     if value is None or widget not in self.widgets:
+                         continue
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index d8fa346..24a2193 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -23,7 +23,7 @@ from ..agent_training.agent_training_utils import (
+ from ..autotuners import get_ac_training_autotuning_variables, configure_fla_runtime
+ from ..harness.hf_utils import SOURCE_DEVICE, TARGET_DEVICE, Interventions, generate_with_interventions
+ from ..common.data_syncing import resolve_path
+-from .ac_model import ROLLOUT, TRAINING, ActivationContextModel
++from .ac_model import INTERVENTION_MODULE_PREFIXES, ROLLOUT, TRAINING, ActivationContextModel
+ from ..common.ac_parts import strip_ac_parts
+ from .ac_model_utils import (ACOutput, EncodeRequest, direct_parts, prepare_training_history,
+                              validate_paired_histories, validate_part_capacity)
+@@ -529,12 +529,13 @@ class ActivationContextTrainer:
+             if config.intervention_heads_only_updates and not ac_model.is_deep:
+                 raise ValueError("intervention_heads_only_updates applies to deep models only")
+             # Heads-only staging: everything but the intervention modules (delta heads, passage attention) drops its gradient for the first updates.
+-            intervention_ids = {id(parameter) for name, parameter in ac_model.modules.named_parameters() if name.startswith(("delta_heads.", "passage_attention."))}
++            intervention_ids = {id(parameter) for name, parameter in ac_model.modules.named_parameters() if name.startswith(INTERVENTION_MODULE_PREFIXES)}
+             staged_parameters = [parameter for parameter in ac_parameters if id(parameter) not in intervention_ids]
+             # The deep heads' relative scales (units of their layer's calibrated RMS) always form the last group, at their own rate:
+             # a scalar in Adam moves by about its rate per step, so the relative units make that step the same share of the
+-            # residual at every layer, and the shared parameters train exactly as in the paired input-only arm.
+-            delta_scales = [scale for head in ac_model.modules.delta_heads.values() for scale in head.scale_parameters()] if ac_model.is_deep else []
++            # residual at every layer, and the shared parameters train exactly as in the paired input-only arm. The K/V slot heads'
++            # takeovers are their scale parameters (the same group, the same reason); lora-style heads have none (no group).
++            delta_scales = [scale for head in ac_model.modules.delta_heads.values() for scale in head.scale_parameters()] if ac_model.modules.delta_heads is not None else []
+             ac_parameters = [parameter for parameter in ac_parameters if not any(parameter is scale for scale in delta_scales)]
+             gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]
+             if config.learning_rate_gates_scope == "row_scale":
+@@ -910,7 +911,7 @@ class ActivationContextTrainer:
+                     if side == "student" and example.part_requests:
+                         present = [(span, request) for span, request in zip(example.spans, example.part_requests) if span[1] <= prefix_length]
+                         outputs = ac_model.encode_batch([request for _, request in present], with_layers=True) if present else []
+-                        embeds, payload = self._assemble_student(embeds, [span for span, _ in present], outputs, embeds.dtype)
++                        embeds, payload = self._assemble_student(embeds, [span for span, _ in present], outputs, embeds.dtype, ac_model=ac_model)
+                     lora = ac_model.config.target_model_lora_name
+                     peft_model = manager.ensure_lora(lora)
+                     budget = min(self.config.completion_max_new_tokens, capacity - prefix_length) if capacity else self.config.completion_max_new_tokens
+@@ -1081,7 +1082,7 @@ class ActivationContextTrainer:
+         student_ids = torch.tensor(example.student_ids, device=device)
+         with torch.no_grad():
+             student_embeds = embedding(student_ids)
+-        student_embeds, payload = self._assemble_student(student_embeds, example.spans, outputs, base_dtype, deltas_off=deltas_off)
++        student_embeds, payload = self._assemble_student(student_embeds, example.spans, outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+         checkpointed = (config.gradient_checkpointing and torch.is_grad_enabled()
+                         and len(example.student_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
+         student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
+@@ -1167,7 +1168,7 @@ class ActivationContextTrainer:
+                 student_embeds = embedding(student_ids)
+             example_outputs = outputs[cursor_rows:cursor_rows + len(example.part_requests)]
+             cursor_rows += len(example.part_requests)
+-            student_embeds, payload = self._assemble_student(student_embeds, example.spans, example_outputs, base_dtype, deltas_off=deltas_off)
++            student_embeds, payload = self._assemble_student(student_embeds, example.spans, example_outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+             embeds.append(student_embeds)
+             payloads.append(payload)
+         hidden = self._padded_forward(target, embeds, lora, payloads)
+@@ -1219,9 +1220,12 @@ class ActivationContextTrainer:
+         return target.decoder_forward(padded, None, lora_name=lora, gradient_checkpointing=checkpointed, interventions=interventions)
+ 
+     def _assemble_student(self, student_embeds: torch.Tensor, spans: list[tuple[int, int]], outputs: list[ACOutput], dtype: torch.dtype,
+-                          deltas_off: bool = False) -> tuple[torch.Tensor, Interventions | None]:
++                          deltas_off: bool = False, *, ac_model: ActivationContextModel | None = None) -> tuple[torch.Tensor, Interventions | None]:
+         """The rows written over the placeholder runs, and (deep models) one payload: the runs' positions in order with every
+-        part's deltas concatenated per layer. `deltas_off` keeps the rows and withholds the payload."""
++        part's deltas (or K/V slot contents, with the layers' keep factors) concatenated per layer; a cross-attention model's
++        payload carries every part's passage states, the position each part becomes visible from (its run's start) and the
++        model's blocks (`ac_model` required). `deltas_off` keeps the rows and withholds the payload (K/V slots: the reader's
++        own K/V; cross-attention: no delta)."""
+         if not outputs:
+             return student_embeds, None
+         assert [int(output.input_embeds.shape[0]) for output in outputs] == [end - start for start, end in spans], "placeholder runs differ from the encoded rows"
+@@ -1231,16 +1235,29 @@ class ActivationContextTrainer:
+             cursor = end
+         pieces.append(student_embeds[cursor:])
+         embeds = torch.cat(pieces, dim=0)
+-        if deltas_off or not (outputs[0].layer_inputs or outputs[0].kv_inputs):
++        if deltas_off or not outputs[0].has_interventions:
+             return embeds, None
+         positions = [position for start, end in spans for position in range(start, end)]
+         layer_inputs = {layer: torch.cat([output.layer_inputs[layer] for output in outputs], dim=0) for layer in outputs[0].layer_inputs}
+         kv_inputs = {layer: (torch.cat([output.kv_inputs[layer][0] for output in outputs], dim=0), torch.cat([output.kv_inputs[layer][1] for output in outputs], dim=0))
+                      for layer in outputs[0].kv_inputs}
++        kv_slots = {layer: (torch.cat([output.kv_slots[layer][0] for output in outputs], dim=0), torch.cat([output.kv_slots[layer][1] for output in outputs], dim=0),
++                            outputs[0].kv_slots[layer][2], outputs[0].kv_slots[layer][3])          # the keep factors are the layer's, shared by every part
++                    for layer in outputs[0].kv_slots}
++        payload: Interventions = {"positions": positions, "layer_inputs": layer_inputs, "kv_inputs": kv_inputs, "kv_slots": kv_slots}
++        if outputs[0].cross_passage is not None:
++            if ac_model is None or ac_model.modules.cross_attention is None:
++                raise ValueError("a cross-attention payload needs the AC model whose blocks the reader runs (ac_model=)")
++            payload["cross_inputs"] = {"passage": torch.cat([output.cross_passage for output in outputs], dim=0),
++                                       "visible_from": [start for (start, _), output in zip(spans, outputs) for _ in range(output.cross_passage.shape[0])],
++                                       "blocks": {layer: ac_model.modules.cross_attention[str(layer)] for layer in ac_model.intervention_layers}}
+         if torch.is_grad_enabled():                                                          # training forwards only: the panels and the samples run under no_grad
+             self._payload_bytes += sum(rows.numel() * 2 for rows in layer_inputs.values())  # bf16 at the reader boundary
+             self._payload_bytes += sum((dk.numel() + dv.numel()) * 2 for dk, dv in kv_inputs.values())
+-        return embeds, {"positions": positions, "layer_inputs": layer_inputs, "kv_inputs": kv_inputs}
++            self._payload_bytes += sum((k.numel() + v.numel()) * 2 for k, v, _, _ in kv_slots.values())
++            if "cross_inputs" in payload:
++                self._payload_bytes += payload["cross_inputs"]["passage"].numel() * 2       # the whole passage: the honest cost of the ceiling
++        return embeds, payload
+ 
+     def _calibration_sequence(self, ac_model: ActivationContextModel, example: _Example) -> tuple[list[int], str]:
+         """The example's history with its parts replaced by their plain messages (what the no-context reference reads), tokenized for the reader."""
+@@ -1258,7 +1275,7 @@ class ActivationContextTrainer:
+         with torch.no_grad(), ac_model.uncalibrated_encoding():
+             outputs = ac_model.encode_batch(example.part_requests, with_layers=True)
+             student_embeds = embedding(torch.tensor(example.student_ids, device=device))
+-            embeds, _ = self._assemble_student(student_embeds, example.spans, outputs, next(base.parameters()).dtype, deltas_off=True)
++            embeds, _ = self._assemble_student(student_embeds, example.spans, outputs, next(base.parameters()).dtype, deltas_off=True, ac_model=ac_model)
+         return embeds, [position for start, end in example.spans for position in range(start, end)]
+ 
+     @staticmethod
+@@ -1269,9 +1286,10 @@ class ActivationContextTrainer:
+     def _head_grad_norms(self, ac_model: ActivationContextModel) -> dict:
+         """Per intervention layer, the norm of the head's gradient (weights and scale) as it stands when called: taken before clipping.
+         A2 models also get the passage-attention block's norm under "attn:<layer>", on the same footing."""
+-        norms = {layer: self._grad_norm(list(ac_model.modules.delta_heads[str(layer)].parameters())) for layer in ac_model.intervention_layers}
+-        if ac_model.modules.passage_attention is not None:
+-            norms.update({f"attn:{layer}": self._grad_norm(list(ac_model.modules.passage_attention[str(layer)].parameters())) for layer in ac_model.intervention_layers})
++        norms = {layer: self._grad_norm(list(module.parameters())) for layer, module in zip(ac_model.intervention_layers, ac_model.modules.intervention_modules)}
++        blocks = ac_model.modules.passage_attention if ac_model.modules.passage_attention is not None else ac_model.modules.cross_attention
++        if blocks is not None:                     # A2 blocks, or the cross-attention blocks (there the head norm and the block norm coincide)
++            norms.update({f"attn:{layer}": self._grad_norm(list(blocks[str(layer)].parameters())) for layer in ac_model.intervention_layers})
+         return norms
+ 
+     def _intervention_trace_entry(self, ac_model: ActivationContextModel, update: int, head_norms: dict[int, float] | None = None) -> dict:
+@@ -1283,30 +1301,44 @@ class ActivationContextTrainer:
+         modules = ac_model.modules
+         head_norms = self._head_grad_norms(ac_model) if head_norms is None else head_norms
+         entry = {"update": update, "scale": {}, "relative": {}, "head_grad_norm": {}, "row_rms": {}, "cosine": {}, "attention_out_norm": {}, "attention_grad_norm": {},
+-                 "delta_rms": {}, "delta_rms_abs": {}}
++                 "delta_rms": {}, "delta_rms_abs": {}, **({"takeover": {}, "slot_rms": {}} if ac_model.kv_slots else {})}   # the slot fields exist for slot models only (every other trace is as it was)
+         def mean_of(values) -> float | None:
+             return float(torch.stack([torch.as_tensor(value, dtype=torch.float32) for value in values]).mean()) if values else None
++        blocks = modules.passage_attention if modules.passage_attention is not None else modules.cross_attention
+         for index, layer in enumerate(ac_model.intervention_layers):
+-            head = modules.delta_heads[str(layer)]
+-            if modules.passage_attention is not None:      # A2: the out projection's weight norm (0 at init; rising = the attention path opens) and the block's gradient norm (before clipping)
+-                block = modules.passage_attention[str(layer)]
++            head = modules.delta_heads[str(layer)] if modules.delta_heads is not None else None
++            if blocks is not None:      # A2 or cross-attention: the out projection's weight norm (0 at init; rising = the attention path opens) and the block's gradient norm (before clipping)
++                block = blocks[str(layer)]
+                 entry["attention_out_norm"][layer] = float(block.out.weight.detach().norm())
+                 entry["attention_grad_norm"][layer] = head_norms[f"attn:{layer}"]
+             if ac_model.kv_interventions:      # K/V heads: one scale per half, keyed "<layer>:k" / "<layer>:v", each in units of its own calibration RMS
+                 pairs = [(f"{layer}:k", head.scale_k, head.relative_k), (f"{layer}:v", head.scale_v, head.relative_v)]
++            elif ac_model.kv_slots:            # slot heads: no scales; the takeover of the reader's own K and V, and the written K/V RMS against the reader's own
++                pairs = [(f"{layer}:k", None, None), (f"{layer}:v", None, None)]
++                entry["takeover"][f"{layer}:k"] = float(head.takeover_k.detach()); entry["takeover"][f"{layer}:v"] = float(head.takeover_v.detach())
++            elif ac_model.cross_attention:     # the delta is computed in the reader: its RMS against the residual RMS at the target positions
++                pairs = [(layer, None, None)]
+             else:
+                 pairs = [(layer, head.scale, head.relative)]
+             for key, scale, relative in pairs:
+-                entry["scale"][key] = float(scale.detach())
+-                entry["relative"][key] = float(relative.detach())
++                if scale is not None:
++                    entry["scale"][key] = float(scale.detach())
++                    entry["relative"][key] = float(relative.detach())
+             entry["head_grad_norm"][layer] = head_norms[layer]
+             entry["row_rms"][layer] = mean_of(self._row_rms.pop(layer, []))                 # 0-d tensors, converted here (one host sync per trace point, not per forward)
+             entry["cosine"][layer] = mean_of(ac_model.intervention_diagnostics["cosine"].pop(layer, []))
+             for key, _, _ in pairs:                                                     # the applied delta's RMS against the RMS at the rows of the same forwards
+-                denominator = entry["row_rms"][layer] if key == layer else mean_of(self._row_rms.pop(key, []))
+-                applied = mean_of(ac_model.intervention_diagnostics["delta_rms"].pop(key, []))
++                if ac_model.cross_attention:
++                    denominator = mean_of(self._row_rms.pop(f"{layer}:cross", []))
++                    applied = mean_of(self._row_rms.pop(f"{layer}:cross_delta", []))
++                else:
++                    denominator = entry["row_rms"][layer] if key == layer else mean_of(self._row_rms.pop(key, []))
++                    applied = mean_of(ac_model.intervention_diagnostics["delta_rms"].pop(key, []))
+                 entry["delta_rms_abs"][key] = applied
+                 entry["delta_rms"][key] = applied / denominator if applied is not None and denominator else None
++                if ac_model.kv_slots:
++                    written = mean_of(self._row_rms.pop(f"{key}:slot", []))
++                    entry["slot_rms"][key] = written / denominator if written is not None and denominator else None
+         return entry
+ 
+     def _harvest_row_rms(self, payloads) -> None:
+@@ -1318,6 +1350,13 @@ class ActivationContextTrainer:
+                 for key, value in ((f"{layer}:k", k_rms), (f"{layer}:v", v_rms)):
+                     if value is not None:
+                         self._row_rms.setdefault(key, []).append(value.detach())
++            for layer, (k_rms, v_rms) in (payload or {}).pop("slot_kv_rms", {}).items():      # K/V slots: the written (replacement) K/V RMS at the rows
++                for key, value in ((f"{layer}:k:slot", k_rms), (f"{layer}:v:slot", v_rms)):
++                    if value is not None:
++                        self._row_rms.setdefault(key, []).append(value.detach())
++            for layer, (delta_rms, target_rms) in (payload or {}).pop("cross_rms", {}).items():   # cross-attention: the delta and the residual at the target positions
++                self._row_rms.setdefault(f"{layer}:cross_delta", []).append(delta_rms.detach())
++                self._row_rms.setdefault(f"{layer}:cross", []).append(target_rms.detach())
+ 
+     def _chunked_sft_tokens(self, states: torch.Tensor, head: torch.nn.Module, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+         """(per-token cross-entropy [C] with grad, detached per-token log-probs [C], detached top-1 hits [C])."""
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+index cf73c49..098386b 100644
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -488,25 +488,41 @@ class RowHead(nn.Module):
+ @dataclass
+ class ACOutput:
+     """What the encoder emits for one part: rows in the target input space plus, for a deep model, per intervention layer either
+-    one residual delta ([V, d_target], `layer_inputs`) or one pre-RoPE K/V delta pair ([V, d_kv] each, `kv_inputs`), learned
+-    scales included. Recursive results carry empty maps."""
++    one residual delta ([V, d_target], `layer_inputs`), one pre-RoPE K/V delta pair ([V, d_kv] each, `kv_inputs`), or one K/V slot
++    tuple (`kv_slots`: the side-computed K and V contributions [V, d_kv] each plus the layer's two 0-d keep factors for the reader's
++    own K and V at the rows; the reader writes keep x own + contribution over the row slices), learned scales included. A
++    cross-attention model carries `cross_passage` instead: the side model's final states at every passage position ([N, d_side]),
++    read by the reader's per-layer cross-attention blocks. Recursive results carry empty maps."""
+     input_embeds: torch.Tensor
+     layer_inputs: dict[int, torch.Tensor] = field(default_factory=dict)
+     kv_inputs: dict[int, tuple[torch.Tensor, torch.Tensor]] = field(default_factory=dict)
++    kv_slots: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = field(default_factory=dict)
++    cross_passage: torch.Tensor | None = None
+ 
+     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
+-        return ACOutput(self.input_embeds.to(device=device, dtype=dtype),
+-                        {int(layer): rows.to(device=device, dtype=dtype) for layer, rows in self.layer_inputs.items()},
+-                        {int(layer): (dk.to(device=device, dtype=dtype), dv.to(device=device, dtype=dtype)) for layer, (dk, dv) in self.kv_inputs.items()})
++        move = lambda tensor: tensor.to(device=device, dtype=dtype)
++        return ACOutput(move(self.input_embeds),
++                        {int(layer): move(rows) for layer, rows in self.layer_inputs.items()},
++                        {int(layer): (move(dk), move(dv)) for layer, (dk, dv) in self.kv_inputs.items()},
++                        {int(layer): tuple(move(tensor) for tensor in entry) for layer, entry in self.kv_slots.items()},
++                        None if self.cross_passage is None else move(self.cross_passage))
+ 
+     def detach_cpu(self, dtype: torch.dtype = torch.bfloat16) -> "ACOutput":
+         cpu = lambda tensor: tensor.detach().to(device="cpu", dtype=dtype).contiguous()
+         return ACOutput(cpu(self.input_embeds), {int(layer): cpu(rows) for layer, rows in self.layer_inputs.items()},
+-                        {int(layer): (cpu(dk), cpu(dv)) for layer, (dk, dv) in self.kv_inputs.items()})
++                        {int(layer): (cpu(dk), cpu(dv)) for layer, (dk, dv) in self.kv_inputs.items()},
++                        {int(layer): tuple(cpu(tensor) for tensor in entry) for layer, entry in self.kv_slots.items()},
++                        None if self.cross_passage is None else cpu(self.cross_passage))
++
++    @property
++    def has_interventions(self) -> bool:
++        return bool(self.layer_inputs or self.kv_inputs or self.kv_slots or self.cross_passage is not None)
+ 
+     @property
+     def tensors(self) -> list[torch.Tensor]:
+-        return [self.input_embeds, *self.layer_inputs.values(), *(tensor for pair in self.kv_inputs.values() for tensor in pair)]
++        """The per-row payload tensors (the slot keep factors are per-model scalars, not payload)."""
++        return [self.input_embeds, *self.layer_inputs.values(), *(tensor for pair in self.kv_inputs.values() for tensor in pair),
++                *(tensor for entry in self.kv_slots.values() for tensor in entry[:2]), *([self.cross_passage] if self.cross_passage is not None else [])]
+ 
+     @property
+     def nbytes(self) -> int:
+@@ -599,30 +615,81 @@ class PassageAttention(nn.Module):
+     bottleneck projections (d -> r; `heads` attention heads of r / heads dims) and adds the projected result back: `rows + out(attn)`.
+     `out` is zero-initialized, so at init the module is the identity on the rows (the delta head behind it reads exactly what it
+     read before: the summary readout at depth "final", the layer-matched readout at depth "matched") and the attention path opens
+-    only as `out` leaves zero. Both inputs pass one shared LayerNorm before the projections."""
++    only as `out` leaves zero. Both inputs pass one shared LayerNorm before the projections.
+ 
+-    def __init__(self, d: int, r: int, heads: int | None = None) -> None:
++    The same block serves the reader-side cross-attention ceiling (`intervention_target = "cross_attention"`): `d_passage` gives the
++    passage its own width and LayerNorm when it differs from the query width, `residual=False` returns the projected attention alone
++    (the delta the reader adds at its target positions; exactly 0 at init), and `forward(..., mask)` takes a [M, N] boolean mask
++    (True = the query may read that passage token) for the causal visibility of the passage parts."""
++
++    def __init__(self, d: int, r: int, heads: int | None = None, d_passage: int | None = None, residual: bool = True) -> None:
+         super().__init__()
+         self.heads = heads if heads is not None else (4 if r % 4 == 0 and r >= 64 else 1)
+         if r % self.heads:
+             raise ValueError("the bottleneck width must be a multiple of the head count")
++        self.residual = residual
++        d_passage = d if d_passage is None else int(d_passage)
+         self.norm = nn.LayerNorm(d)
++        self.passage_norm = nn.LayerNorm(d_passage) if d_passage != d else None      # registered only when the widths differ (the A2 keys stay as they were)
+         self.query = nn.Linear(d, r)
+-        self.key = nn.Linear(d, r)
+-        self.value = nn.Linear(d, r)
++        self.key = nn.Linear(d_passage, r)
++        self.value = nn.Linear(d_passage, r)
+         self.out = nn.Linear(r, d)
+         nn.init.zeros_(self.out.weight)
+         nn.init.zeros_(self.out.bias)
+ 
+-    def forward(self, rows: torch.Tensor, passage: torch.Tensor) -> torch.Tensor:
+-        """rows [M, d] (queries), passage [N, d] (keys and values) -> [M, d]."""
++    def forward(self, rows: torch.Tensor, passage: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
++        """rows [M, d] (queries), passage [N, d_passage] (keys and values), optional mask [M, N] (True = readable) -> [M, d]."""
+         rows, passage = rows.float(), passage.float()
+         if passage.shape[0] == 0:
+-            return rows
++            return rows if self.residual else torch.zeros_like(rows)
++        normed = lambda: (self.norm if self.passage_norm is None else self.passage_norm)(passage)    # applied once per consumer: the A2 op sequence (and its gradients) exactly as before
+         split = lambda tensor, n: tensor.view(n, self.heads, -1).transpose(0, 1)                   # [heads, n, r / heads]
+-        q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(self.norm(passage)), passage.shape[0]), split(self.value(self.norm(passage)), passage.shape[0])
+-        mixed = F.scaled_dot_product_attention(q, k, v).transpose(0, 1).reshape(rows.shape[0], -1)
+-        return rows + self.out(mixed)
++        q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(normed()), passage.shape[0]), split(self.value(normed()), passage.shape[0])
++        mixed = F.scaled_dot_product_attention(q, k, v, attn_mask=None if mask is None else mask[None]).transpose(0, 1).reshape(rows.shape[0], -1)
++        projected = self.out(mixed)
++        return rows + projected if self.residual else projected
++
++
++class KVSlotHead(nn.Module):
++    """The K/V slot head of `intervention_target = "kv_slots"`: a bottleneck FFN (d_in -> r -> 2 d_kv, SiLU) whose two halves are the
++    side-computed contributions to a full-attention reader layer's pre-RoPE keys and values at the row positions, and two learned
++    takeover scalars (one per half, 0 at init). The reader REPLACES the row slices with `keep x own + contribution`, keep = 1 - takeover.
++
++    Init: `down` is zero-initialized and the takeovers are 0, so the written K/V are exactly the reader's own (bit-identical to no
++    intervention) - the one replacement that starts meaningful without any extra state: a pure side-computed replacement would have
++    to reproduce the reader's own K/V (a function of the reader's forward) before it could help, and a random one starts by wrecking
++    the rows' keys (the silent-phase failure of the scaled heads). From there the head owns its magnitude (no unit-RMS normalisation,
++    no scale on the content) and the takeover lets the layer discard the reader's own K/V at the rows entirely (takeover 1 = the slot
++    is purely side-computed: what an engine injects as a per-request K/V prefix); an additive head cannot cancel a value it never sees.
++    The two takeovers are the head's `scale_parameters()`: they train in the optimizer's scale group at `learning_rate_delta_scales`
++    (a scalar under Adam moves by about its rate per step; at the encoder rate, 1e-4, the sum over an arm's schedule would bound the
++    takeover near 0.05 and the slots could never leave the reader's-own regime), like the scaled heads' relative scales and unlike the
++    lora-style heads, which have none. `rms_k` / `rms_v` are calibration anchors for the diagnostics only (the forward never reads them)."""
++
++    def __init__(self, d_in: int, d_kv: int, r: int) -> None:
++        super().__init__()
++        self.d_kv = int(d_kv)
++        self.up = nn.Linear(d_in, r)
++        self.down = nn.Linear(r, 2 * self.d_kv)
++        self.takeover_k = nn.Parameter(torch.tensor(0.0))
++        self.takeover_v = nn.Parameter(torch.tensor(0.0))
++        self.register_buffer("rms_k", torch.tensor(0.0))
++        self.register_buffer("rms_v", torch.tensor(0.0))
++        nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)
++
++    def forward(self, rows: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
++        """[M, d_in] -> (K contribution [M, d_kv], V contribution [M, d_kv])."""
++        both = self.down(F.silu(self.up(rows.float())))
++        return both[:, :self.d_kv], both[:, self.d_kv:]
++
++    def keep(self) -> tuple[torch.Tensor, torch.Tensor]:
++        """The factors on the reader's own K and V at the rows: 1 - takeover (0-d tensors, graph-attached)."""
++        return 1.0 - self.takeover_k, 1.0 - self.takeover_v
++
++    def scale_parameters(self) -> list[nn.Parameter]:
++        """The takeovers: the scale group's members (the content path has no scale, like a lora-style head)."""
++        return [self.takeover_k, self.takeover_v]
+ 
+ 
+ def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool, prefer_attention: bool,
+diff --git a/activation/harness/hf_utils.py b/activation/harness/hf_utils.py
+index aa758e8..f4fa991 100644
+--- a/activation/harness/hf_utils.py
++++ b/activation/harness/hf_utils.py
+@@ -84,12 +84,22 @@ class Interventions(t.TypedDict, total=False):
+     """One logical sequence's deltas: `positions` index the unpadded physical row (prompt indices, sorted, unique);
+     every `layer_inputs[layer]` is [M, d_model] added to that decoder layer's input; every `kv_inputs[layer]` is a
+     (dk, dv) pair of [M, num_kv_heads x head_dim] added to that full-attention layer's keys (after k_norm, before RoPE)
+-    and values (after v_proj) at the same positions. Producers' scales are already applied; None means no intervention."""
++    and values (after v_proj) at the same positions; every `kv_slots[layer]` is (k, v, keep_k, keep_v): the row slices of
++    that layer's keys and values are REPLACED by keep x the reader's own value + the side-computed k / v ([M, num_kv_heads x
++    head_dim] each; the keeps are 0-d). `cross_inputs` (the cross-attention ceiling) carries the side model's final states of
++    every passage token (`passage` [N, d_side]), the reader position from which each token may be read (`visible_from`, N
++    entries: the start of its part's row run) and the per-layer blocks; every target position from the first visible one on
++    receives `block(hidden[position], passage)` added to that layer's input. Producers' scales are already applied; None
++    means no intervention."""
+     positions: list[int]
+     layer_inputs: dict[int, torch.Tensor]
+     kv_inputs: dict[int, tuple[torch.Tensor, torch.Tensor]]
++    kv_slots: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
++    cross_inputs: dict                   # {"passage": Tensor [N, d_side], "visible_from": list[int], "blocks": {layer: module}}
+     row_rms: dict[int, torch.Tensor]     # written by the reader hooks: residual RMS at the row positions per intervened layer (0-d tensors; diagnostic)
+-    row_kv_rms: dict[int, list[torch.Tensor]]   # K/V payloads: [K RMS, V RMS] at the row positions per layer (0-d tensors; diagnostic)
++    row_kv_rms: dict[int, list[torch.Tensor]]   # K/V payloads: [K RMS, V RMS] of the reader's own K/V at the row positions per layer (0-d tensors; diagnostic)
++    slot_kv_rms: dict[int, list[torch.Tensor]]  # K/V slots: [K RMS, V RMS] of the written (replacement) K/V at the row positions per layer (0-d tensors; diagnostic)
++    cross_rms: dict[int, list[torch.Tensor]]    # cross-attention: [delta RMS, residual RMS] over the target positions written per layer (0-d tensors; diagnostic)
+ 
+ 
+ _KV_BOUND_ATTRIBUTE = "_activation_kv_bound"
+@@ -139,7 +149,10 @@ def install_intervention_hooks(model) -> None:
+     rows to the layer input out of place. K/V payloads (`kv_inputs`) are stashed on the layer for the duration of
+     its forward (the recompute of a checkpointed layer re-runs the pre-hook, so it stashes the same tensors again)
+     and added, out of place, by forward hooks on `self_attn.k_norm` (keys after the norm, before RoPE) and
+-    `self_attn.v_proj` (values) at the same positions. A forward without the kwarg is untouched.
++    `self_attn.v_proj` (values) at the same positions; K/V slot payloads (`kv_slots`) take the same route but REPLACE the
++    row slices (keep x the reader's own value + the side-computed content). Cross-attention payloads (`cross_inputs`) run
++    the layer's block on the target positions inside the pre-hook (the recompute of a checkpointed layer runs it again on the
++    same tensors). A forward without the kwarg is untouched.
+     """
+     if getattr(model, _HOOKS_ATTRIBUTE, None) is not None:
+         return
+@@ -147,16 +160,21 @@ def install_intervention_hooks(model) -> None:
+     handles = []
+ 
+     def add_rows(output: torch.Tensor, bound: "BoundInterventions", index: int, part: int) -> torch.Tensor | None:
+-        """`output` [B, S, ...] with the rows' K (part 0) or V (part 1) deltas of layer `index` added at positions - offset; None when nothing lands."""
++        """`output` [B, S, ...] with the rows' K (part 0) or V (part 1) deltas of layer `index` added at positions - offset, or, for a
++        K/V slot payload, the row slices replaced by keep x own + contribution; None when nothing lands."""
+         length = output.shape[1]
+         result = None
++        rms_of = lambda values: values.reshape(values.shape[0], -1).pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
+         for row, payload in enumerate(bound.payloads):
+             if not payload:
+                 continue
+             pair = (payload.get("kv_inputs") or {}).get(index)
+-            if pair is None:
++            slot = (payload.get("kv_slots") or {}).get(index)
++            if pair is None and slot is None:
+                 continue
+-            rows = pair[part]
++            if pair is not None and slot is not None:
++                raise ValueError("a payload carries both K/V deltas and K/V slots for one layer")
++            rows = (pair if pair is not None else slot)[part]
+             positions = torch.as_tensor(payload["positions"], device=output.device, dtype=torch.long)
+             if positions.numel() != rows.shape[0]:
+                 raise ValueError("positions and K/V delta rows differ in count")
+@@ -164,12 +182,20 @@ def install_intervention_hooks(model) -> None:
+             keep = (local >= 0) & (local < length)
+             if not bool(keep.any()):
+                 continue
+-            # Diagnostic for the producer: the K (part 0) or V (part 1) RMS at this forward's row positions (the K/V deltas' true denominator).
+-            at_rows = output[row, local[keep]].detach().float()
+-            payload.setdefault("row_kv_rms", {}).setdefault(index, [None, None])[part] = at_rows.reshape(at_rows.shape[0], -1).pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
++            # Diagnostic for the producer: the reader's own K (part 0) or V (part 1) RMS at this forward's row positions (the true denominator).
++            payload.setdefault("row_kv_rms", {}).setdefault(index, [None, None])[part] = rms_of(output[row, local[keep]].detach().float())
+             if result is None:
+                 result = output.clone()
+-            result[row].index_add_(0, local[keep], rows[keep].to(device=output.device, dtype=output.dtype).reshape(-1, *output.shape[2:]))
++            contribution = rows[keep].to(device=output.device, dtype=output.dtype).reshape(-1, *output.shape[2:])
++            if pair is not None:
++                result[row].index_add_(0, local[keep], contribution)
++            else:                                                             # replacement: keep x the reader's own value + the side-computed slot content
++                # Mixed in fp32 and cast once: in bf16 a keep of 1 - takeover rounds to 1.0 below a takeover of 0.4 % and then moves in
++                # 0.8 % steps while the takeover's gradient is the exact linearisation; at init (keep 1, content 0) either precision is exact.
++                own = output[row, local[keep]]
++                written = (own.float() * slot[2 + part].to(device=output.device, dtype=torch.float32) + contribution.float()).to(output.dtype)
++                result[row, local[keep]] = written
++                payload.setdefault("slot_kv_rms", {}).setdefault(index, [None, None])[part] = rms_of(written.detach().float())
+         return result
+ 
+     def bind(module, args, kwargs):
+@@ -194,27 +220,48 @@ def install_intervention_hooks(model) -> None:
+                 raise ValueError(f"{len(bound.payloads)} intervention payloads for {hidden.shape[0]} physical rows")
+             length = hidden.shape[1]
+             output = None
++            kv_here = False
+             for row, payload in enumerate(bound.payloads):
+                 if not payload:
+                     continue
+                 rows = payload["layer_inputs"].get(index)
+-                if rows is None and (payload.get("kv_inputs") or {}).get(index) is None:
++                has_kv = (payload.get("kv_inputs") or {}).get(index) is not None or (payload.get("kv_slots") or {}).get(index) is not None
++                cross = payload.get("cross_inputs")
++                block = (cross or {}).get("blocks", {}).get(index)
++                if rows is None and not has_kv and block is None:
+                     continue
++                kv_here = kv_here or has_kv
+                 positions = torch.as_tensor(payload["positions"], device=hidden.device, dtype=torch.long)
+                 if rows is not None and positions.numel() != rows.shape[0]:
+                     raise ValueError("positions and delta rows differ in count")
+                 local = positions - bound.offset
+                 keep = (local >= 0) & (local < length)
+-                if not bool(keep.any()):
+-                    continue
+-                # Diagnostic for the producer: the residual RMS at this forward's row positions (the deltas' true denominator).
+-                payload.setdefault("row_rms", {})[index] = hidden[row, local[keep]].detach().float().pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
+-                if rows is None:
+-                    continue
+-                if output is None:
+-                    output = hidden.clone()
+-                output[row].index_add_(0, local[keep], rows[keep].to(device=hidden.device, dtype=hidden.dtype))
+-            if any(payload and (payload.get("kv_inputs") or {}).get(index) is not None for payload in bound.payloads):
++                if bool(keep.any()):
++                    # Diagnostic for the producer: the residual RMS at this forward's row positions (the deltas' true denominator).
++                    payload.setdefault("row_rms", {})[index] = hidden[row, local[keep]].detach().float().pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
++                    if rows is not None:
++                        if output is None:
++                            output = hidden.clone()
++                        output[row].index_add_(0, local[keep], rows[keep].to(device=hidden.device, dtype=hidden.dtype))
++                if block is not None:
++                    # Cross-attention ceiling: every target position from the first visible passage token on (this chunk's share of them,
++                    # decode steps included) queries the passage states it may see; the block's projected attention is added to the input.
++                    visible_from = list(cross["visible_from"])                         # plain ints: the first visible position needs no device sync
++                    passage = cross["passage"]
++                    if len(visible_from) != passage.shape[0]:
++                        raise ValueError("visible_from and passage states differ in count")
++                    visible = torch.as_tensor(visible_from, device=hidden.device, dtype=torch.long)
++                    start = max(0, min(visible_from) - bound.offset) if visible_from else length
++                    if start < length:
++                        absolute = torch.arange(start, length, device=hidden.device) + bound.offset
++                        queries = hidden[row, start:length]
++                        delta = block(queries, passage.to(device=hidden.device), absolute[:, None] >= visible[None, :])
++                        payload.setdefault("cross_rms", {})[index] = [delta.detach().float().pow(2).mean(dim=-1).sqrt().mean(),
++                                                                      queries.detach().float().pow(2).mean(dim=-1).sqrt().mean()]
++                        if output is None:
++                            output = hidden.clone()
++                        output[row, start:length] = output[row, start:length] + delta.to(dtype=hidden.dtype)
++            if kv_here:
+                 if getattr(module, "self_attn", None) is None or not hasattr(module.self_attn, "k_norm"):
+                     raise ValueError(f"decoder layer {index} has no full attention (k_norm) to receive K/V deltas")
+                 setattr(module, _KV_BOUND_ATTRIBUTE, bound)
+@@ -336,7 +383,8 @@ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, inte
+     against the model signature (an `interventions=` kwarg is rejected), so the payload is bound for this call only by
+     wrapping the base model's `prepare_inputs_for_generation` (the one HF's loop calls every step under a PEFT wrapper
+     too; the wrapper keeps the original signature for HF's validation and is removed in `finally`). The layer hooks
+-    map every step's cache offset, so the deltas land on the prompt at prefill and on nothing afterwards.
++    map every step's cache offset, so the row deltas and K/V slots land on the prompt at prefill and on nothing afterwards
++    (the cache keeps the written K/V); a cross-attention payload also reaches every generated position.
+     """
+     import functools
+     if inputs_embeds.dim() != 3 or inputs_embeds.shape[0] != 1 or len(interventions) != 1:
+diff --git a/activation/tests/test_interventions.py b/activation/tests/test_interventions.py
+index 51af1b0..d7f1c3b 100644
+--- a/activation/tests/test_interventions.py
++++ b/activation/tests/test_interventions.py
+@@ -112,14 +112,14 @@ def calibrate(trainer, ac, examples):
+ 
+ def shared_state(ac) -> dict[str, torch.Tensor]:
+     """Everything but the intervention modules: the AC modules' shared parameters, the side and reader adapters (cloned)."""
+-    modules = {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if not name.startswith(("delta_heads.", "passage_attention.", "intervention"))}
++    modules = {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if not name.startswith(("delta_heads.", "passage_attention.", "cross_attention.", "intervention"))}
+     side = {f"side:{index}": parameter.detach().clone() for index, parameter in enumerate(ac.harness.module_manager.lora_parameters(ac.config.base_side_model_lora_name))}
+     reader = {f"reader:{index}": parameter.detach().clone() for index, parameter in enumerate(ac.harness.module_manager.lora_parameters(ac.config.target_model_lora_name))}
+     return {**modules, **side, **reader}
+ 
+ 
+ def intervention_state(ac) -> dict[str, torch.Tensor]:
+-    return {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if name.startswith(("delta_heads.", "passage_attention."))}
++    return {name: tensor.clone() for name, tensor in ac.modules.state_dict().items() if name.startswith(("delta_heads.", "passage_attention.", "cross_attention."))}
+ 
+ 
+ def boost_scales(ac, factor: float = 50.0) -> None:
+@@ -896,6 +896,18 @@ def test_reporter_takes_deep_trace_entries(tmp_path):
+     stats.loss.append(1.0); stats.step_tokens.append(100); stats.step_seconds.append(1.0); stats.grad_norm.append(1.0)
+     stats.intervention_trace.append({"update": 125, "scale": {"7:k": 0.1, "7:v": 0.2}, "relative": {"7:k": 0.05, "7:v": 0.05}, "head_grad_norm": {7: 1.0}, "row_rms": {7: 0.5}, "cosine": {7: None}})
+     reporter.report_step(ActivationContextTrainingProgress(1, 1, 1, 125, 200, 125, 1.0, 1.0), stats)
++    assert not {"intervention_slot_rms", "intervention_takeover"} & set(reporter.widgets), "the slot widgets appear for slot entries only"
++    # A kv_slots entry: no scales, the takeover and the written / own ratio per half get their own widgets (created once).
++    for step in (150, 175):
++        stats.loss.append(1.0); stats.step_tokens.append(100); stats.step_seconds.append(1.0); stats.grad_norm.append(1.0)
++        stats.intervention_trace.append({"update": step, "scale": {}, "relative": {}, "head_grad_norm": {7: 0.2}, "row_rms": {7: 0.5}, "cosine": {7: None},
++                                         "delta_rms": {"7:k": 0.0, "7:v": 0.02}, "delta_rms_abs": {"7:k": 0.0, "7:v": 0.01},
++                                         "takeover": {"7:k": 0.0, "7:v": 0.1}, "slot_rms": {"7:k": 1.0, "7:v": None}})
++        reporter.report_step(ActivationContextTrainingProgress(1, 1, 1, step, 200, step, 1.0, 1.0), stats)
++    slot_series = {series["name"]: series for series in reporter.widgets["intervention_slot_rms"]["series"]}
++    assert set(slot_series) == {"layer 7:k"} and slot_series["layer 7:k"]["y"] == [1.0, 1.0]
++    takeover_series = {series["name"]: series for series in reporter.widgets["intervention_takeover"]["series"]}
++    assert set(takeover_series) == {"layer 7:k", "layer 7:v"} and takeover_series["layer 7:v"]["y"] == [0.1, 0.1]
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 9. bench arms
+@@ -926,6 +938,32 @@ def test_bench_arms_are_paired():
+     assert strip(arms["NDIAWLS"], "heads_only_updates") == strip(arms["NDIAWL"]) and arms["NDIAWLS"]["heads_only_updates"] == 200
+     for label in ("NDIAWL", "NDIAWLS", "NKVWL", "NDIWL", "A32DL"):
+         assert arms[label]["init_ac"] == arms["A4X"]["init_ac"] and arms[label]["init_reader"] == arms["A4X"]["init_reader"] and arms[label]["note"]
++    # Round 5: K/V slots (replacement) at matched depth and the cross-attention ceiling, warm from the same K16r1 init on the NDIAWL / A32DL recipes.
++    assert strip(arms["NKVSW"], "intervention_source", "intervention_target", "delta_scale_lr") == strip(arms["NDIAWL"], "intervention_source")
++    assert arms["NKVSW"]["intervention_source"] == "side_layers" and arms["NKVSW"]["intervention_target"] == "kv_slots" and arms["NKVSW"]["head_style"] == "lora"
++    assert strip(arms["NKVSW"], "intervention_target", "delta_scale_lr") == strip(arms["NKVWL"], "intervention_target"), "NKVSW pairs with NKVWL on replacement vs addition only"
++    assert "delta_scale_lr" not in arms["NKVWL"] and "delta_scale_lr" not in arms["NDIAWL"]
++    assert strip(arms["NKVSWS"], "heads_only_updates") == strip(arms["NKVSW"]) and arms["NKVSWS"]["heads_only_updates"] == 200
++    assert strip(arms["A32KVS"], "intervention_source", "intervention_target", "delta_scale_lr") == strip(arms["A32DL"], "intervention_source", "intervention_attention_depth", "delta_scale_lr")
++    assert arms["A32KVS"]["intervention_source"] == "side_layers" and arms["A32KVS"]["intervention_target"] == "kv_slots" and "intervention_attention_depth" not in arms["A32KVS"]
++    for label in ("NKVSW", "NKVSWS", "A32KVS"):
++        assert arms[label]["delta_scale_lr"] == 1e-3, f"{label}: the takeovers train in the scale group at 1e-3 (A32DL's inherited 0.0 would freeze them)"
++    assert arms["A32DL"]["delta_scale_lr"] == 0.0
++    assert strip(arms["NXAW"], "intervention_source", "intervention_target") == strip(arms["NDIAWL"], "intervention_source")
++    assert arms["NXAW"]["intervention_source"] == "summary" and arms["NXAW"]["intervention_target"] == "cross_attention"
++    assert strip(arms["A32XA"], "intervention_source", "intervention_target") == strip(arms["A32DL"], "intervention_source", "intervention_attention_depth")
++    assert arms["A32XA"]["intervention_source"] == "summary" and arms["A32XA"]["intervention_target"] == "cross_attention"
++    for label in ("NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA"):
++        assert arms[label]["init_ac"] == arms["A4X"]["init_ac"] and arms[label]["init_reader"] == arms["A4X"]["init_reader"] and arms[label]["note"]
++    for label in ("NXAW", "A32XA"):
++        assert "CEILING MEASUREMENT, NOT A CANDIDATE" in arms[label]["note"]
++    # EC2 twins: the parent arm with the K16 epoch-2 init paths and the twin note, like NDIAWLn / A32DLn.
++    for twin, parent in (("NKVSWn", "NKVSW"), ("NKVSWSn", "NKVSWS"), ("A32KVSn", "A32KVS"), ("NXAWn", "NXAW")):
++        assert strip(arms[twin], "init_ac", "init_reader") == strip(arms[parent], "init_ac", "init_reader"), (twin, parent)
++        assert arms[twin]["init_ac"] == arms["NDIAWLn"]["init_ac"] and arms[twin]["init_reader"] == arms["NDIAWLn"]["init_reader"]
++        assert "EC2 twin" in arms[twin]["note"] and arms[twin]["note"].startswith(arms[parent]["note"])
++    assert "CEILING MEASUREMENT, NOT A CANDIDATE" in arms["NXAWn"]["note"]
++    assert list(arms)[-9:] == ["NKVSW", "NKVSWS", "A32KVS", "NXAW", "A32XA", "NKVSWn", "NKVSWSn", "A32KVSn", "NXAWn"], "appended after NDIWLn, in order"
+ 
+ 
+ # --------------------------------------------------------------------------------------------------- 15. lora-style heads, row-position calibration, staging
+@@ -1114,3 +1152,341 @@ def test_heads_only_staging_and_resume(tmp_path, hybrid_dir):
+     before = shared_state(plain)
+     ActivationContextTrainer(h3, config()).train(plain.name, items_for(h3, plain))
+     assert any(not torch.equal(tensor, shared_state(plain)[name]) for name, tensor in before.items() if name.startswith("mixer."))
++
++
++# --------------------------------------------------------------------------------------------------- 16. K/V slots (replacement at the rows)
++def slot_parameters(ac):
++    return [parameter for name, parameter in ac.modules.named_parameters() if name.startswith("delta_heads.")]
++
++
++def open_slots(ac, std: float = 0.2, takeover: float = 0.3) -> None:
++    """Audible slots: the zero down projections drawn off zero and the takeovers moved, so the written K/V differ from the reader's own."""
++    with torch.no_grad():
++        for head in ac.modules.delta_heads.values():
++            head.down.weight.normal_(std=std); head.down.bias.normal_(std=std)
++            head.takeover_k.fill_(takeover); head.takeover_v.fill_(-takeover)
++
++
++def test_kv_slots_replace_the_rows_and_start_as_the_reader(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextModelConfig as Config
++    from activation.ac_model.ac_model_utils import KVSlotHead
++    with pytest.raises(ValueError, match="intervention_target must be one of"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_target="slots")
++    with pytest.raises(ValueError, match="head_style 'lora'"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_target="kv_slots")
++    with pytest.raises(ValueError, match="designed only"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_target="kv_slots", intervention_head_style="lora", intervention_slots_extra=4)
++    with pytest.raises(ValueError, match="full-attention"):
++        build(tmp_path / "gdn", hybrid_dir, frequency=1, prefer=False, target="kv_slots", head_style="lora")     # layer 3 is a linear-attention block
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, source="side_layers", target="kv_slots", head_style="lora", calibration="row_positions", seed=41)
++    h0, zero = build(tmp_path / "zero", hybrid_dir, seed=41)
++    hk, additive = build(tmp_path / "kv", hybrid_dir, frequency=1, source="side_layers", target="kv", head_style="lora", calibration="row_positions", seed=41)
++    assert ac.intervention_layers == [2, 5] and ac.kv_slots and ac.kv_targets and not ac.kv_interventions and ac.modules.is_deep
++    assert all(isinstance(head, KVSlotHead) for head in ac.modules.delta_heads.values()) and ac.modules.cross_attention is None
++    d_kv = ac.target.model_config.model_description.d_kv
++    keys = set(ac.modules.state_dict())
++    assert {"delta_heads.2.takeover_k", "delta_heads.2.takeover_v", "delta_heads.2.rms_k", "delta_heads.5.up.weight", "delta_heads.5.down.bias"} <= keys
++    assert not any(name.startswith("cross_attention.") for name in keys) and "delta_heads.2.relative_k" not in keys
++    for name, tensor in zero.modules.state_dict().items():
++        assert torch.equal(tensor, ac.modules.state_dict()[name]), f"{name}: the shared draws are the input-only model's"
++    for layer in ("2", "5"):
++        head = ac.modules.delta_heads[layer]
++        assert torch.equal(head.down.weight, torch.zeros_like(head.down.weight)) and float(head.takeover_k.detach()) == 0.0 == float(head.takeover_v.detach())
++        assert torch.equal(head.up.weight, additive.modules.delta_heads[layer].up.weight), "the slot head's up projection draws exactly like the K/V delta head's"
++        assert head.scale_parameters() == [head.takeover_k, head.takeover_v], "the takeovers are the slot head's scale parameters"
++        assert additive.modules.delta_heads[layer].scale_parameters() == [], "the lora-style K/V head still has none"
++    summary_keys = ac.intervention_summary()
++    assert summary_keys["target"] == "kv_slots" and summary_keys["takeover"] == {2: {"k": 0.0, "v": 0.0}, 5: {"k": 0.0, "v": 0.0}} and summary_keys["scales"] == {} and summary_keys["parametrization"] == "lora"
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    rms = calibrate(trainer, ac, examples[:2])
++    assert all(k > 0 and v > 0 for k, v in rms.values()) and tuple(ac.modules.intervention_calibration.shape) == (2, 2)
++    # Init: the slot content is exactly zero and the keeps exactly one; the reader forward with the payload is bit-identical to the forward without it
++    # and to the input-only model's forward (`interventions = 0`) on the same rows.
++    output = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
++    assert output.layer_inputs == {} and output.kv_inputs == {} and set(output.kv_slots) == {2, 5} and output.cross_passage is None
++    for layer, (k, v, keep_k, keep_v) in output.kv_slots.items():
++        assert k.shape == v.shape == (output.input_embeds.shape[0], d_kv) and torch.equal(k, torch.zeros_like(k)) and torch.equal(v, torch.zeros_like(v))
++        assert float(keep_k.detach()) == 1.0 == float(keep_v.detach()) and keep_k.requires_grad
++    assert torch.equal(output.input_embeds, zero.encode_batch([fixed_request(zero)])[0])
++    example = examples[0]
++    target = ac.target
++    embedding = target.model.get_input_embeddings()
++    outputs = ac.encode_batch(example.part_requests, with_layers=True)
++    with torch.no_grad():
++        student = embedding(torch.tensor(example.student_ids))
++        with_payload, payload = trainer._assemble_student(student, example.spans, outputs, student.dtype)
++        without, none = trainer._assemble_student(student, example.spans, outputs, student.dtype, deltas_off=True)
++        assert set(payload["kv_slots"]) == {2, 5} and payload["kv_inputs"] == {} and payload["layer_inputs"] == {} and none is None
++        hidden_on = target.decoder_forward(with_payload[None], None, lora_name="reader_lora", interventions=[payload])
++        hidden_off = target.decoder_forward(without[None], None, lora_name="reader_lora")
++        zero.cache.clear()                                                             # rollout mode: the cache would serve the bf16 copy of the first encode
++        zero_rows = [row.input_embeds for row in zero.encode_batch(example.part_requests, with_layers=True)]
++        zero_embeds, _ = trainer._assemble_student(student, example.spans, [ACOutput(rows) for rows in zero_rows], student.dtype)
++        hidden_zero = zero.target.decoder_forward(zero_embeds[None], None, lora_name="reader_lora")
++    assert torch.equal(hidden_on, hidden_off), "at init the written K/V are the reader's own: bit-identical to no intervention"
++    assert torch.equal(with_payload, zero_embeds) and torch.equal(hidden_on, hidden_zero), "and to the input-only model's forward"
++    assert all(float(payload["slot_kv_rms"][layer][part]) == float(payload["row_kv_rms"][layer][part]) for layer in (2, 5) for part in (0, 1)), "written RMS == own RMS at init"
++    # Gradients reach the head at init: the down projections (the content) and the takeovers (the reader's own K/V are heard); up gets none through a zero down.
++    loss = trainer._example_loss(ac, example, device, with_drift=False)[0]
++    names = [name for name, _ in ac.modules.named_parameters() if name.startswith("delta_heads.")]
++    grads = dict(zip(names, torch.autograd.grad(loss, slot_parameters(ac), allow_unused=True)))
++    for name, g in grads.items():
++        if ".down." in name or name.endswith(("takeover_k", "takeover_v")):
++            assert g is not None and float(g.norm()) > 0, name
++        else:
++            assert g is None or float(g.norm()) == 0, name
++    # Opened slots: the hook replaces exactly the row-position slices of K (after k_norm, pre-RoPE) and V (after v_proj) with keep x own + content, nothing else.
++    open_slots(ac)
++    outputs = ac.encode_batch(example.part_requests, with_layers=True)
++    with torch.no_grad():
++        embeds, payload = trainer._assemble_student(student, example.spans, outputs, student.dtype)
++    install_intervention_hooks(target.model)
++    layer2 = decoder_layers(target.model)[2]
++    seen = {}
++    def record(name):
++        def hook(module, args, output):
++            seen.setdefault(name, []).append(output.detach().clone())
++        return hook
++    handles = [layer2.self_attn.k_norm.register_forward_hook(record("k")), layer2.self_attn.v_proj.register_forward_hook(record("v")),
++               layer2.register_forward_pre_hook(lambda module, args: seen.setdefault("input", []).append(args[0].detach().clone()))]
++    try:
++        with torch.no_grad():
++            with_slots = target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[payload])
++            plain = target.decoder_forward(embeds[None], None, lora_name="reader_lora")
++    finally:
++        for handle in handles:
++            handle.remove()
++    positions = torch.tensor(payload["positions"])
++    k, v, keep_k, keep_v = payload["kv_slots"][2]
++    (k_on, k_off), (v_on, v_off) = seen["k"], seen["v"]
++    k_on, k_off, v_on, v_off = (tensor[0].reshape(embeds.shape[0], -1) for tensor in (k_on, k_off, v_on, v_off))
++    torch.testing.assert_close(k_on[positions], k_off[positions] * float(keep_k) + k, atol=1e-5, rtol=1e-5)
++    torch.testing.assert_close(v_on[positions], v_off[positions] * float(keep_v) + v, atol=1e-5, rtol=1e-5)
++    assert float(keep_k) == pytest.approx(0.7) and float(keep_v) == pytest.approx(1.3) and not torch.allclose(k_on[positions], k_off[positions])
++    mask = torch.ones(embeds.shape[0], dtype=torch.bool); mask[positions] = False
++    assert torch.equal(k_on[mask], k_off[mask]) and torch.equal(v_on[mask], v_off[mask]), "no other position's K or V moves"
++    assert torch.equal(seen["input"][0], seen["input"][1]), "the residual stream at the layer input is untouched"
++    first = int(positions.min())
++    assert torch.equal(with_slots[0, :first], plain[0, :first]) and not torch.equal(with_slots[0, first:], plain[0, first:])
++    with pytest.raises(ValueError, match="both K/V deltas and K/V slots"):
++        target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[{**payload, "kv_inputs": {2: (k, v)}}])
++    # Generation binds the slots across the KV cache: the first step's logits are the training forward's on the prefix, and greedy decoding equals a full recompute.
++    manager = h.module_manager
++    prefix_length = example.student_positions[0] + 1
++    with torch.no_grad():
++        prefix = embedding(torch.tensor(example.student_ids[:prefix_length]))
++    present = [(span, request) for span, request in zip(example.spans, example.part_requests) if span[1] <= prefix_length]
++    with torch.no_grad():
++        prefix, prefix_payload = trainer._assemble_student(prefix, [span for span, _ in present], ac.encode_batch([request for _, request in present], with_layers=True), prefix.dtype)
++    peft_model = manager.ensure_lora("reader_lora")
++    head = target.model.get_output_embeddings()
++    steps = 3
++    generation = dict(max_new_tokens=steps, min_new_tokens=steps, do_sample=False, use_cache=True, pad_token_id=target.tokenizer.pad_token_id, output_logits=True, return_dict_in_generate=True)
++    with torch.no_grad(), manager.lora_context("reader", "reader_lora"):
++        generated = generate_with_interventions(peft_model, inputs_embeds=prefix[None], interventions=[prefix_payload], **generation)
++        training_logits = head(target.decoder_forward(prefix[None], None, lora_name="reader_lora", interventions=[prefix_payload])[0, -1])
++        base_logits = head(target.decoder_forward(prefix[None], None, lora_name="reader_lora")[0, -1])
++    torch.testing.assert_close(generated.logits[0][0], training_logits, atol=1e-4, rtol=1e-4)
++    assert not torch.allclose(training_logits, base_logits), "the opened slots are heard"
++    oracle = []
++    with torch.no_grad():
++        for _ in range(steps):
++            full = torch.cat([prefix, embedding(torch.tensor(oracle, dtype=torch.long))], dim=0) if oracle else prefix
++            logits = head(target.decoder_forward(full[None], None, lora_name="reader_lora", interventions=[prefix_payload])[0, -1])
++            logits[target.tokenizer.eos_token_id] = float("-inf")
++            oracle.append(int(logits.argmax()))
++    assert generated.sequences[0].tolist() == oracle
++    # deltas_off = the reader's own K/V (no payload): the panel differs from the held panel once the slots are open.
++    manager.ensure_lora("reader_lora")
++    on = trainer._evaluate(ac, items, device, None, "reporting"); off = trainer._evaluate(ac, items, device, None, "deltas_off", deltas_off=True)
++    assert on["gold_nll"] != off["gold_nll"]
++    # A training epoch: three optimizer groups - the scale group holds exactly the four takeovers at learning_rate_delta_scales (no lora
++    # scalar, no content parameter, nothing of the encoder); the trace carries the takeover and the written / own ratio per half, 1.0 at init.
++    hf, fresh = build(tmp_path / "fresh", hybrid_dir, frequency=1, source="side_layers", target="kv_slots", head_style="lora", calibration="row_positions", seed=41)
++    trainer_f = ActivationContextTrainer(hf, config(learning_rate_delta_scales=5e-3, deltas_off_panel=True))
++    before = intervention_state(fresh)
++    stats = trainer_f.train(fresh.name, items_for(hf, fresh), reporting_data=items_for(hf, fresh))
++    groups = trainer_f.optimizers[fresh.name].param_groups
++    assert len(groups) == 3, "encoder, reader, the takeovers"
++    takeover_ids = {id(head.takeover_k) for head in fresh.modules.delta_heads.values()} | {id(head.takeover_v) for head in fresh.modules.delta_heads.values()}
++    assert {id(parameter) for parameter in groups[-1]["params"]} == takeover_ids and len(groups[-1]["params"]) == 4
++    assert not any(id(parameter) in takeover_ids for group in groups[:-1] for parameter in group["params"]), "the takeovers leave the encoder group"
++    trainer_k = ActivationContextTrainer(hk, config(learning_rate_delta_scales=5e-3, deltas_off_panel=True))
++    trainer_k.train(additive.name, items_for(hk, additive))
++    assert len(trainer_k.optimizers[additive.name].param_groups) == 2, "the lora-style K/V heads have no scale group"
++    first_entry = stats.intervention_trace[0]
++    keys = {f"{layer}:{half}" for layer in (2, 5) for half in "kv"}
++    assert set(first_entry["takeover"]) == set(first_entry["slot_rms"]) == set(first_entry["delta_rms"]) == keys and first_entry["scale"] == {} == first_entry["relative"]
++    assert all(value == 0.0 for value in first_entry["takeover"].values()) and all(value == 0.0 for value in first_entry["delta_rms"].values())
++    assert all(value == pytest.approx(1.0) for value in first_entry["slot_rms"].values()), "written / own == 1 at init"
++    assert set(first_entry["head_grad_norm"]) == {2, 5} and all(first_entry["row_rms"][layer] > 0 for layer in (2, 5))
++    after = fresh.modules.state_dict()
++    assert any(not torch.equal(tensor, after[name]) for name, tensor in before.items() if ".down.weight" in name), "the slot content trains"
++    assert any(not torch.equal(tensor, after[name]) for name, tensor in before.items() if name.endswith(("takeover_k", "takeover_v"))), "the takeovers train"
++    assert stats.deltas_off is not None and stats.payload_bytes > 0 and fresh.intervention_summary()["takeover"][2]["k"] != 0.0
++    # Checkpoints: a kv_slots checkpoint round-trips into a kv_slots model and is refused by the additive K/V and the residual targets.
++    folder = fresh.save(str(tmp_path / "slots_ckpt"))
++    with pytest.raises(ValueError, match="source/target"):
++        additive.load(folder)
++    hr, residual = build(tmp_path / "residual", hybrid_dir, frequency=1, source="side_layers", target="residual", head_style="lora", calibration="row_positions")
++    with pytest.raises(ValueError, match="source/target"):
++        residual.load(folder)
++    h2, again = build(tmp_path / "again", hybrid_dir, frequency=1, source="side_layers", target="kv_slots", head_style="lora", calibration="row_positions", seed=5, ac_checkpoint=folder)
++    assert again.interventions_calibrated and again.intervention_summary()["takeover"] == fresh.intervention_summary()["takeover"]
++    assert all(torch.equal(tensor, again.modules.state_dict()[name]) for name, tensor in after.items() if name.startswith("delta_heads."))
++
++
++# --------------------------------------------------------------------------------------------------- 17. cross-attention ceiling
++def cross_parameters(ac):
++    return [parameter for name, parameter in ac.modules.named_parameters() if name.startswith("cross_attention.")]
++
++
++def open_cross(ac, std: float = 0.2) -> None:
++    with torch.no_grad():
++        for block in ac.modules.cross_attention.values():
++            block.out.weight.normal_(std=std)
++
++
++def test_cross_attention_ceiling(tmp_path, hybrid_dir):
++    from activation.ac_model import ActivationContextModelConfig as Config
++    with pytest.raises(ValueError, match="cross_attention"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_target="cross_attention", intervention_source="side_layers")
++    with pytest.raises(ValueError, match="cross_attention"):
++        Config("x", "reader", "side_lora", "reader", "reader_lora", intervention_frequency=1, intervention_target="cross_attention", intervention_heads_frozen=True)
++    h, ac = build(tmp_path, hybrid_dir, frequency=1, target="cross_attention", head_style="lora", calibration="row_positions", seed=43)
++    h0, zero = build(tmp_path / "zero", hybrid_dir, seed=43)
++    assert ac.intervention_layers == [2, 5] and ac.cross_attention and ac.is_deep and ac.modules.is_deep and ac.modules.delta_heads is None
++    assert set(ac.modules.cross_attention) == {"2", "5"} and len(ac.modules.intervention_modules) == 2
++    keys = set(ac.modules.state_dict())
++    assert not any(name.startswith("delta_heads.") for name in keys) and {"cross_attention.2.out.weight", "cross_attention.5.query.weight", "intervention_calibration"} <= keys
++    assert not any(name.endswith("passage_norm.weight") for name in keys), "equal widths: the block shares one LayerNorm"
++    for name, tensor in zero.modules.state_dict().items():
++        assert torch.equal(tensor, ac.modules.state_dict()[name]), f"{name}: the shared draws are the input-only model's"
++    for block in ac.modules.cross_attention.values():
++        assert not block.residual and torch.equal(block.out.weight, torch.zeros_like(block.out.weight)) and torch.equal(block.out.bias, torch.zeros_like(block.out.bias))
++    summary = ac.intervention_summary()
++    assert summary["measurement_only"] and summary["target"] == "cross_attention" and summary["head_parameters"] == 0 and summary["attention_parameters"] == sum(p.numel() for p in cross_parameters(ac))
++    assert "takeover" not in summary and "measurement_only" not in zero.intervention_summary() and "takeover" not in build(tmp_path / "plain_kv", hybrid_dir, frequency=1, source="side_layers", target="kv")[1].intervention_summary()
++    trainer, items, examples, device = trainer_and_examples(h, ac)
++    rms = calibrate(trainer, ac, examples[:2])
++    assert set(rms) == {2, 5} and all(value > 0 for value in rms.values())
++    # The encoder emits the passage's final side states whole (no per-layer head); the payload needs the model's blocks.
++    output = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
++    assert output.layer_inputs == {} and output.kv_inputs == {} and output.kv_slots == {} and output.cross_passage is not None
++    assert output.cross_passage.dim() == 2 and output.cross_passage.shape[1] == ac.d_side and output.cross_passage.shape[0] > output.input_embeds.shape[0]
++    assert torch.equal(output.input_embeds, zero.encode_batch([fixed_request(zero)])[0])
++    example = examples[0]
++    target = ac.target
++    embedding = target.model.get_input_embeddings()
++    outputs = ac.encode_batch(example.part_requests, with_layers=True)
++    with torch.no_grad():
++        student = embedding(torch.tensor(example.student_ids))
++    with pytest.raises(ValueError, match="ac_model="):
++        trainer._assemble_student(student, example.spans, outputs, student.dtype)
++    with torch.no_grad():
++        embeds, payload = trainer._assemble_student(student, example.spans, outputs, student.dtype, ac_model=ac)
++        kept, none = trainer._assemble_student(student, example.spans, outputs, student.dtype, deltas_off=True, ac_model=ac)
++    cross = payload["cross_inputs"]
++    n = sum(output.cross_passage.shape[0] for output in outputs)
++    assert cross["passage"].shape == (n, ac.d_side) and cross["visible_from"] == [start for (start, _), output in zip(example.spans, outputs) for _ in range(output.cross_passage.shape[0])]
++    assert set(cross["blocks"]) == {2, 5} and cross["blocks"][2] is ac.modules.cross_attention["2"] and payload["layer_inputs"] == {} and payload["kv_slots"] == {}
++    assert none is None and torch.equal(kept, embeds)
++    # Zero at init: the forward with the payload is bit-identical to the forward without it (deltas-off = base).
++    with torch.no_grad():
++        hidden_on = target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[payload])
++        hidden_off = target.decoder_forward(embeds[None], None, lora_name="reader_lora")
++    assert torch.equal(hidden_on, hidden_off)
++    assert all(float(payload["cross_rms"][layer][0]) == 0.0 and float(payload["cross_rms"][layer][1]) > 0 for layer in (2, 5)), "the hook traced a zero delta and the target RMS"
++    # Non-zero gradient at init into the blocks' out projections (and into the side adapter through the passage states once the blocks are open).
++    loss = trainer._example_loss(ac, example, device, with_drift=False)[0]
++    names = [name for name, _ in ac.modules.named_parameters() if name.startswith("cross_attention.")]
++    grads = dict(zip(names, torch.autograd.grad(loss, cross_parameters(ac), allow_unused=True)))
++    assert all(g is not None and float(g.norm()) > 0 for name, g in grads.items() if ".out." in name), "out learns at init"
++    assert all(g is None or float(g.norm()) == 0 for name, g in grads.items() if ".out." not in name), "nothing reaches q/k/v through a zero out"
++    open_cross(ac)
++    params = cross_parameters(ac) + side_lora_parameters(ac) + list(h.module_manager.lora_parameters("reader_lora"))
++    grads = {}
++    for checkpointed in (False, True):
++        trainer.config.gradient_checkpointing = checkpointed
++        ac.config.side_gradient_checkpointing = checkpointed
++        losses = [trainer._example_loss(ac, example, device, with_drift=False)[0] for example in examples[:2]]
++        grads[checkpointed] = torch.autograd.grad(sum(losses), params, allow_unused=True)
++    for direct, recomputed in zip(grads[False], grads[True]):
++        assert direct is not None and recomputed is not None
++        torch.testing.assert_close(direct, recomputed, atol=1e-6, rtol=1e-5)
++    assert all(float(g.norm()) > 0 for g in grads[True][:len(cross_parameters(ac))]), "q/k/v/out and the norm all receive gradient through the opened path"
++    assert any(float(g.norm()) > 0 for g in grads[True][len(cross_parameters(ac)):len(cross_parameters(ac)) + len(side_lora_parameters(ac))]), "the side adapter hears the reader through the passage states"
++    # Opened: writes at the target positions only (every position from the first row on moves, nothing before it), and the delta is what the block computes.
++    outputs = ac.encode_batch(example.part_requests, with_layers=True)
++    with torch.no_grad():
++        embeds, payload = trainer._assemble_student(student, example.spans, outputs, student.dtype, ac_model=ac)
++    install_intervention_hooks(target.model)
++    seen = []
++    handle = decoder_layers(target.model)[2].register_forward_pre_hook(lambda module, args: seen.append(args[0].detach().clone()))
++    try:
++        with torch.no_grad():
++            with_cross = target.decoder_forward(embeds[None], None, lora_name="reader_lora", interventions=[payload])
++            plain = target.decoder_forward(embeds[None], None, lora_name="reader_lora")
++    finally:
++        handle.remove()
++    first = min(payload["positions"])
++    assert torch.equal(with_cross[0, :first], plain[0, :first]) and not torch.equal(with_cross[0, first:], plain[0, first:])
++    layer_on, layer_off = seen                                                             # the layer-2 inputs, after the product pre-hook
++    assert torch.equal(layer_on[0, :first], layer_off[0, :first])
++    with torch.no_grad():
++        length = embeds.shape[0]
++        mask = torch.arange(first, length)[:, None] >= torch.tensor(cross["visible_from"])[None, :]
++        expected = ac.modules.cross_attention["2"](layer_off[0, first:], payload["cross_inputs"]["passage"], mask)
++    torch.testing.assert_close(layer_on[0, first:] - layer_off[0, first:], expected, atol=1e-5, rtol=1e-5)
++    assert (layer_on[0, first:] - layer_off[0, first:]).abs().sum(dim=-1).gt(0).all(), "every target position from the first row on is written"
++    # Generation: the delta reaches the generated positions too, so greedy decoding with the cache equals a full recompute.
++    manager = h.module_manager
++    prefix_length = example.student_positions[0] + 1
++    with torch.no_grad():
++        prefix = embedding(torch.tensor(example.student_ids[:prefix_length]))
++    present = [(span, request) for span, request in zip(example.spans, example.part_requests) if span[1] <= prefix_length]
++    with torch.no_grad():
++        prefix, prefix_payload = trainer._assemble_student(prefix, [span for span, _ in present], ac.encode_batch([request for _, request in present], with_layers=True), prefix.dtype, ac_model=ac)
++    peft_model = manager.ensure_lora("reader_lora")
++    head = target.model.get_output_embeddings()
++    steps = 3
++    generation = dict(max_new_tokens=steps, min_new_tokens=steps, do_sample=False, use_cache=True, pad_token_id=target.tokenizer.pad_token_id, output_logits=True, return_dict_in_generate=True)
++    with torch.no_grad(), manager.lora_context("reader", "reader_lora"):
++        generated = generate_with_interventions(peft_model, inputs_embeds=prefix[None], interventions=[prefix_payload], **generation)
++        training_logits = head(target.decoder_forward(prefix[None], None, lora_name="reader_lora", interventions=[prefix_payload])[0, -1])
++    torch.testing.assert_close(generated.logits[0][0], training_logits, atol=1e-4, rtol=1e-4)
++    oracle = []
++    with torch.no_grad():
++        for _ in range(steps):
++            full = torch.cat([prefix, embedding(torch.tensor(oracle, dtype=torch.long))], dim=0) if oracle else prefix
++            logits = head(target.decoder_forward(full[None], None, lora_name="reader_lora", interventions=[prefix_payload])[0, -1])
++            logits[target.tokenizer.eos_token_id] = float("-inf")
++            oracle.append(int(logits.argmax()))
++    assert generated.sequences[0].tolist() == oracle
++    # deltas-off = base: the panel without the payload equals the input-only model's panel on the same items; with the blocks open the held panel differs.
++    manager.ensure_lora("reader_lora")
++    off = trainer._evaluate(ac, items, device, None, "deltas_off", deltas_off=True)
++    on = trainer._evaluate(ac, items, device, None, "reporting")
++    assert off["gold_nll"] != on["gold_nll"]
++    trainer0 = ActivationContextTrainer(h0, config())
++    items0 = items_for(h0, zero)
++    trainer0._store_teacher_targets(zero, [trainer0.build_example(zero, item).penalty for item in items0], zero.prepare(), lora=None)
++    h0.module_manager.ensure_lora("reader_lora")
++    assert off["gold_nll"] == pytest.approx(trainer0._evaluate(zero, items0, zero.device, None, "reporting")["gold_nll"], rel=1e-5)
++    # A training epoch traces the blocks (out norm, gradient norm, delta / target RMS); the staging treats the blocks as the intervention modules.
++    hf, fresh = build(tmp_path / "fresh", hybrid_dir, frequency=1, target="cross_attention", head_style="lora", calibration="row_positions", seed=43)
++    trainer_f = ActivationContextTrainer(hf, config(deltas_off_panel=True, intervention_heads_only_updates=1))
++    stats = trainer_f.train(fresh.name, items_for(hf, fresh), reporting_data=items_for(hf, fresh))
++    entry = stats.intervention_trace[0]
++    assert entry["attention_out_norm"] == {2: 0.0, 5: 0.0} and set(entry["head_grad_norm"]) == {2, 5} and entry["scale"] == {} and "takeover" not in entry
++    assert entry["delta_rms"] == {2: 0.0, 5: 0.0} and entry["delta_rms_abs"] == {2: 0.0, 5: 0.0} and all(entry["row_rms"][layer] > 0 for layer in (2, 5))
++    assert stats.deltas_off is not None and stats.payload_bytes > 0 and stats.grad_norm_reader[0] == 0.0, "the first update was heads-only (blocks are the intervention modules)"
++    assert float(fresh.modules.cross_attention["2"].out.weight.abs().sum()) > 0, "the blocks step"
++    # Checkpoints: round trip into a cross-attention model; refused by a residual model on the same layers.
++    folder = fresh.save(str(tmp_path / "cross_ckpt"))
++    hr, residual = build(tmp_path / "residual", hybrid_dir, frequency=1, head_style="lora", calibration="row_positions")
++    with pytest.raises(ValueError, match="source/target"):
++        residual.load(folder)
++    h2, again = build(tmp_path / "again", hybrid_dir, frequency=1, target="cross_attention", head_style="lora", calibration="row_positions", seed=5, ac_checkpoint=folder)
++    assert again.interventions_calibrated and torch.load(Path(folder) / "ac_modules.pt", map_location="cpu", weights_only=False)["interventions"]["measurement_only"]
++    assert all(torch.equal(tensor, again.modules.state_dict()[name]) for name, tensor in fresh.modules.state_dict().items() if name.startswith("cross_attention."))

@@ -123,18 +123,6 @@
     "source_sha256": "b5761616ba0498ec18bfc4c1cb9e6f7f3c4745d79c92d066ccfe00bd59a70610",
     "staged_sha256": "1d9c985f21384bbf053f435ea7ff679d9f20b4c64e23d7a70318320204855400"
   },
-  "activation/tests/test_basic_agent_env_setups.py": {
-    "source_sha256": null,
-    "staged_sha256": "9ca232ea1493832b7a3917dac7e9d31ff53fd04dfcbfd873c9568055065f45ff"
-  },
-  "activation/tests/test_basic_teacher_study.py": {
-    "source_sha256": null,
-    "staged_sha256": "803c706046d91da781afa9de1faf79198b7176bac23a8da9e77a44a454fb25c3"
-  },
-  "activation/tests/test_basic_tool_call_shapes.py": {
-    "source_sha256": null,
-    "staged_sha256": "85a4c12da24818c4d93176e539b393cb776dd85ed09307d1a713ab0af492613a"
-  },
   "activation/dataset/loaders/deepmath.py": {
     "source_sha256": null,
     "staged_sha256": "234c61f03e856d3c67c5a5844d2a3bf1b7d67a37411a11b85ed21969b2a94714"
@@ -151,22 +139,6 @@
     "source_sha256": "fd7ea53fb1c7caa93f3d0c0704ece42e29351f3b4cedaae0c4a74fb4bb0121dd",
     "staged_sha256": "b1e9617df1af975976cc66084fa757bda2e375c918779bc1988801e98ebc6e44"
   },
-  "activation/tests/test_basic_scoring_kinds.py": {
-    "source_sha256": null,
-    "staged_sha256": "c8aa90e0fa449190b7cc9dcaf6f860d5c7abeb8e5ddb76951a357d466cdcb044"
-  },
-  "activation/tests/test_basic_loft_loong_loaders.py": {
-    "source_sha256": null,
-    "staged_sha256": "e9238a85defe378455dca2182b69a7dbd7167782bae81091f927bdbadeb8e21d"
-  },
-  "activation/tests/test_basic_rollout_tuning.py": {
-    "source_sha256": null,
-    "staged_sha256": "c3cf312e1814bfac112cd4bcf7bd90f3c4f972de847ea45e8330efd545e331d6"
-  },
-  "activation/tests/test_basic_rollout_deadline.py": {
-    "source_sha256": null,
-    "staged_sha256": "dc0403567a771df86c6760bbf695d07d67f64ff21ac1edf0d4fc21933473a856"
-  },
   "activation/agent/__init__.py": {
     "source_sha256": "82769ac571b5f2cfdf32605a0bc1d5b7b604ca83c259aeb2b71b03071ff5ead1",
     "staged_sha256": "3b82aae587805b6a7bab194d4568195b559707a8c81b28e1bae91ffe6d9c9fb7"
@@ -182,10 +154,6 @@
   "activation/tests/test_basic_agentic_program.py": {
     "source_sha256": null,
     "staged_sha256": "636abc023eb7642d9459905021aa87fa18f03b71b921e7e7c3d047df11c3a3dd"
-  },
-  "activation/bench/agent_probes/agentic_program_probe.py": {
-    "source_sha256": null,
-    "staged_sha256": "bf30ffb1ef88774209b4688922fb40beaa5573eab285c08d78c8b775091463ff"
   },
   "activation/common/ac_parts.py": {
     "source_sha256": "45232e31b18f75897db23e11e142cc0d542db5b0ecba84111f7a1e268edf1f07",
@@ -219,8 +187,12 @@
     "source_sha256": "65b67c992d59f43561e50f84857a20d572714b8f83ca4a606065825e0c2a6439",
     "staged_sha256": "85a0f0fb7e668d1a32ce901bba9abfc3792535695721ec6fccf20c035da5ae18"
   },
-  "activation/tests/test_basic_rollout_redo.py": {
-    "source_sha256": null,
-    "staged_sha256": "92a9a0893a3fe7392dea4df7a20cea5a4549a51eefed40f93f539c8923b0a77f"
+  "pyproject.toml": {
+    "source_sha256": "4fd393ff57214cb9eafbc3fc86729e70fa8759fed6d17f0f3327509140082432",
+    "staged_sha256": "1d8f20cad65539040c4dda508416a1193a750a366a811cdd73871a691282b660"
+  },
+  "uv.lock": {
+    "source_sha256": "13a314da7e374a87bdf3e1e900d75e65d109af7d2f98f29b2ba1f0baf98d1d32",
+    "staged_sha256": "a1f0a0d73f7f477f0bf83a6673983c44203888512ebb64a3297827f50c0a7be1"
   }
 }

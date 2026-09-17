@@ -1,0 +1,147 @@
+"""AC epoch progress, exact evaluation, training diagnostics and retained greedy samples."""
+from __future__ import annotations
+
+import json
+import typing as t
+from dataclasses import asdict
+
+from ..common.reporting import HtmlReporter
+
+if t.TYPE_CHECKING:
+    from .ac_model_training import (ActivationContextTrainingConfig, ActivationContextTrainingStats,
+        ActivationContextTrainingProgress, ActivationContextEvalSummary, ActivationContextEpochStats, CompletionSample, ReferenceName)
+
+REFERENCE_SERIES = ("no_context", "recent_text", "untrained_ac", "in_context")
+
+
+class ActivationContextTrainingReporter(HtmlReporter):
+    def __init__(self, folder: str, title: str = "AC training", description: str = "", **kwargs: t.Any) -> None:
+        super().__init__(folder, title, description, eyebrow="AC training", **kwargs)
+        self.loss_kind: str | None = None
+        self.references: dict[str, float] = {}
+        self.global_step = 0
+        self.epoch_x = 0.0
+        self.epoch_origin: int | None = None
+        self.initialize_line_plot("loss", "Training loss", "Weighted item mean.", "global optimizer step", "loss", ["train"], smoothing_window=5)
+        self.initialize_line_plot("reporting", "Held-out loss", "Current-reader reporting/validation and initial-reader references.",
+                                  "epochs in this report", "loss", ["reporting", "validation", *REFERENCE_SERIES])
+        self.initialize_line_plot("throughput", "Token throughput", "Teacher and student tokens per training second.",
+                                  "global optimizer step", "tokens/s", ["tokens/s"])
+        self.initialize_line_plot("grad", "Gradient norm", "Before clipping.", "global optimizer step", "norm", ["grad_norm"])
+        self.initialize_table("epochs", "Epochs", "Phase times in seconds.",
+                              ["epoch", "global step", "train s", "report s", "validation s", "samples s", "checkpoint s", "total s", "checkpoint"])
+        self.initialize_table("kinds", "Per kind", "Exact reporting/validation results.", ["epoch", "set", "kind", "items", "loss kind", "loss", "agreement"])
+        self.initialize_table("evals", "Evaluations", "Exact current-adapter results; empty and dropped sets are counted.",
+                              ["epoch", "global step", "name", "items", "dropped", "loss kind", "loss", "agreement"])
+        self.initialize_table("references", "Reference measurements", "QA recent_text is oracle gold text; compaction uses the text tail.", ["name", "loss kind", "loss", "measured with"])
+
+    def _set_loss_kind(self, loss_kind: str) -> None:
+        if self.loss_kind == loss_kind:
+            return
+        if loss_kind not in ("kl", "sft") or self.loss_kind is not None:
+            raise ValueError("Use a separate AC reporter for each loss kind")
+        self.loss_kind = loss_kind
+        label = "KL" if loss_kind == "kl" else "Cross-entropy"
+        for name in ("loss", "reporting"):
+            self.widgets[name]["y_label"] = label
+            self.widgets[name]["title"] = ("Training " if name == "loss" else "Held-out ") + label
+        if loss_kind == "kl":
+            self.initialize_line_plot("agreement", "Top-1 agreement", "Mean teacher/student agreement over items.",
+                                      "global optimizer step", "fraction", ["train"])
+            self.widgets["loss"]["description"] = "Weighted item mean; cached teachers use coarsened KL."
+            self.widgets["throughput"]["description"] = "Original teacher + student tokens; cached teachers count as equivalent work."
+        else:
+            self.remove_widget("agreement")
+            self.remove_widget("rates")
+            for name in ("kinds", "evals"):
+                self.widgets[name]["columns"] = [column for column in self.widgets[name]["columns"] if column != "agreement"]
+            self.widgets["loss"]["description"] = "Weighted mean cross-entropy over retained assistant tokens."
+            self.widgets["throughput"]["description"] = "Student tokens per training second."
+
+    def initialize_training(self, config: "ActivationContextTrainingConfig", stats: "ActivationContextTrainingStats") -> None:
+        self._set_loss_kind(config.loss_kind)
+        if self.epoch_origin is None:
+            self.epoch_origin = stats.start_epoch - 1
+        self.epoch_x = float(stats.start_epoch - 1 - self.epoch_origin)
+        self.set_status(epoch=f"0/{config.num_epochs}", phase="baseline", examples=str(stats.examples), dropped=str(stats.dropped_too_long),
+                        completion_tokens=str(stats.completion_tokens), teacher_tokens=str(stats.teacher_tokens))
+        self.set_text("config", "Training config", json.dumps(asdict(config), indent=2))
+        self.render()
+
+    def report_phase(self, progress: "ActivationContextTrainingProgress", phase: str) -> None:
+        self.global_step = progress.global_step
+        if self.epoch_origin is None:
+            self.epoch_origin = progress.epoch_number if progress.epoch == 0 else progress.epoch_number - 1
+        completed = progress.epoch_number if progress.epoch == 0 else progress.epoch_number - 1 + progress.step / max(1, progress.steps)
+        self.epoch_x = completed - self.epoch_origin
+        self.set_status(epoch=f"{progress.epoch}/{progress.epochs}", checkpoint_epoch=str(progress.epoch_number), step=f"{progress.step}/{progress.steps}",
+                        global_step=str(progress.global_step), phase=phase, epoch_elapsed=f"{progress.epoch_elapsed_s:.1f}s", elapsed=f"{progress.elapsed_s:.1f}s")
+        self.render()
+
+    def report_step(self, progress: "ActivationContextTrainingProgress", stats: "ActivationContextTrainingStats") -> None:
+        self._set_loss_kind(stats.loss_kind)
+        self.report_phase(progress, "training")
+        self.add_data_point("loss", {"x": progress.global_step, "train": stats.loss[-1]})
+        if stats.loss_kind == "kl":
+            self.add_data_point("agreement", {"x": progress.global_step, "train": stats.agreement[-1]})
+        self.add_data_point("throughput", {"x": progress.global_step, "tokens/s": stats.step_tokens[-1] / max(stats.step_seconds[-1], 1e-6)})
+        self.add_data_point("grad", {"x": progress.global_step, "grad_norm": stats.grad_norm[-1]})
+        if self.references:
+            self.add_data_point("reporting", {"x": self.epoch_x, **self.references})
+        self.set_status(loss_kind=stats.loss_kind, loss=f"{stats.loss[-1]:.4f}", learning_rates=", ".join(f"{lr:.3g}" for lr in stats.learning_rates[-1]))
+        if stats.loss_kind == "kl":
+            self.set_status(agreement=f"{stats.agreement[-1]:.3f}")
+        self.render()
+
+    def report_reference(self, name: "ReferenceName", loss: float, *, provenance: str = "initial adapter; held set", loss_kind: str = "kl") -> None:
+        assert name in REFERENCE_SERIES, name
+        self._set_loss_kind(loss_kind)
+        self.references[name] = loss
+        self.add_data_point("references", {"name": name, "loss kind": loss_kind, "loss": loss, "measured with": provenance})
+        self.add_data_point("reporting", {"x": 0, name: loss})
+        if self.epoch_x:
+            self.add_data_point("reporting", {"x": self.epoch_x, name: loss})
+        self.render()
+
+    def report_eval(self, progress: "ActivationContextTrainingProgress | None", name: str, summary: "ActivationContextEvalSummary") -> None:
+        self._set_loss_kind(summary["loss_kind"])
+        if progress is not None:
+            self.report_phase(progress, name)
+        epoch = progress.epoch_number - (self.epoch_origin or 0) if progress else "external"
+        self.add_data_point("evals", {"epoch": epoch, "global step": self.global_step, "name": name, "items": summary["items"],
+                                      "dropped": summary["dropped_too_long"], "loss kind": summary["loss_kind"], "loss": summary["loss"],
+                                      **({"agreement": summary["agreement"]} if self.loss_kind == "kl" else {})})
+        if name in ("reporting", "validation") and summary["items"]:
+            self.add_data_point("reporting", {"x": self.epoch_x, name: summary["loss"], **self.references})
+        for kind, values in summary["by_kind"].items():
+            self.add_data_point("kinds", {"epoch": epoch, "set": name, "kind": kind, "items": values["items"],
+                "loss kind": values["loss_kind"], "loss": values["loss"],
+                **({"agreement": values["agreement"]} if self.loss_kind == "kl" else {})})
+        self.render()
+
+    def report_completions(self, progress: "ActivationContextTrainingProgress", rows: list["CompletionSample"]) -> None:
+        text = "\n\n".join(f"[{r['item_id']}] ({r['kind']}, global step {r['global_step']}, AC version {r['ac_version']})\n"
+                           f"reference: {r['reference']}\n" + (f"teacher: {r['teacher']}\n" if r["teacher"] is not None else "") + f"student: {r['student']}" for r in rows)
+        label = "Baseline" if progress.epoch == 0 else f"Epoch {progress.epoch_number - (self.epoch_origin or 0)}"
+        key = f"completions_{'baseline' if progress.epoch == 0 else 'epoch'}_{progress.epoch_number:03d}"
+        self.set_text(key, f"{label} inspection samples", text)
+        self.render()
+
+    def report_epoch(self, epoch: "ActivationContextEpochStats", stats: "ActivationContextTrainingStats") -> None:
+        self.report_phase(epoch.progress, "epoch complete")
+        self.add_data_point("epochs", {"epoch": epoch.progress.epoch_number - (self.epoch_origin or 0), "global step": epoch.progress.global_step,
+            "train s": round(epoch.training_seconds, 2), "report s": round(epoch.reporting_seconds, 2), "validation s": round(epoch.validation_seconds, 2),
+            "samples s": round(epoch.sample_seconds, 2), "checkpoint s": round(epoch.checkpoint_seconds, 2),
+            "total s": round(epoch.progress.epoch_elapsed_s, 2), "checkpoint": epoch.checkpoint_path or "disabled"})
+        self.set_text(f"epoch_{epoch.progress.epoch_number:03d}", "Epoch record", json.dumps(asdict(epoch), indent=2))
+        self.render(force=True)
+
+    def report_training(self, stats: "ActivationContextTrainingStats") -> None:
+        self.set_status(phase="complete", peak_memory=f"{stats.peak_memory_bytes / 2**30:.2f} GB", elapsed=f"{stats.duration_s:.1f}s")
+        if stats.loss_kind == "kl":
+            groups = {name: [r["seconds"] for r in stats.example_records if r["teacher_cached"] == cached]
+                      for name, cached in (("live", False), ("cached", True))}
+            self.set_text("rates", "Live and cached teacher examples", json.dumps({name: {"examples": len(values), "seconds": sum(values),
+                "examples_per_second": len(values) / sum(values) if sum(values) else None} for name, values in groups.items()}, indent=2))
+        self.set_text("training_summary", "Training summary", json.dumps(stats.summarize(), indent=2))
+        self.render(force=True)

@@ -2,12 +2,20 @@
 
 Everything the agent AC pre-training slice delivered as of 2026-09-14, in one place: where the code, data and documents are, what the system does now, how the records look, how to run it, what was validated, and what is open. The exact patch against your source is in the round document; this file is the map.
 
+## Applied locally (2026-09-14)
+
+Applied to `/home/ubuntu/activation_context` on top of commit `a839760` and the matching prototype edits. The product patch now contains **49 files**: 47 original product paths plus `pyproject.toml` and `uv.lock`, which supply the handoff's omitted `math-verify` dependency. Eight supplementary test files and `agentic_program_probe.py` remain in `slice4a/` for IB-only validation and are excluded from the product patch and diff cards. The key `test_basic_agentic_program.py` and canonical teacher-generation CLI are included. Unrelated prototype files are preserved.
+
+Local validation: 46 focused tests passed, one real-sandbox test skipped; activation-channel, trajectory-harvest and agentic-program CPU checks passed. The full main suite collected 19 tests. GPU results below are prior staging evidence. The initial IB probe runner needed `runpy.run_module(..., alter_sys=True)` for faithful `__main__` serialization; no product fix was needed. Recovery copies and logs: `IB/TMP/AGENT_AC_PRETRAINING/apply_20260914T182304Z/`.
+
+The patch and hashes describe the pre-application baseline; do not reapply them to this already-updated checkout. No campaign launch, corpus conversion, S3 upload, commit or cloud operation was performed. Existing corpus records still predate P4.
+
 ## Where things are
 
 | What | Where | Notes |
 |---|---|---|
-| Development tree | `/workspace` (git, branch `main`, head `dce8a1c`) | `campaign-stable` branch and tag `redo-launch-2026-09-11` mark the code the 12 h campaign ran. `IB/TMP` is ignored by git. |
-| Exact delta against `/source` | `IB/ARTIFACTS/AGENT_AC_PRETRAINING/slice4a/` (`changes.patch`, `source_manifest.json`, staged files) and `SLICE4A_ROUND.tressoir.md` | 56 product files. Regenerate with `IB/TMP/AGENT_AC_PRETRAINING/build_round.py` after any edit in `/workspace`. |
+| Original staging tree | `/workspace` (git, branch `main`, head `dce8a1c`) | `campaign-stable` branch and tag `redo-launch-2026-09-11` mark the code the 12 h campaign ran. `IB/TMP` is ignored by git. |
+| Exact delta against `/source` | `IB/ARTIFACTS/AGENT_AC_PRETRAINING/slice4a/` (`changes.patch`, `source_manifest.json`, staged files) and `SLICE4A_ROUND.tressoir.md` | 49 applied product files, including dependency metadata; supplementary tests/probe remain IB-only. The original builder describes staging history. Local reconciliation: `IB/TMP/AGENT_AC_PRETRAINING/apply_20260914T182304Z/reconcile_handoff.py`. |
 | Plans and reports | `PLAN.tressoir.md` (slice plan, M0–M4 in Review), `AGENTIC_PROGRAMS.tressoir.md` (P0–P4 in Review), `ROLLOUT_TUNING.tressoir.md`, `PROBE_REPORT.tressoir.md`, `PROBE_COMPARE.tressoir.md`, `TUNING_REPORT.tressoir.md` | Same folder as this file. Sources `.md` next to each projection. |
 | Durable decisions | `IB/CANON/ROOT_CANON.md` | Workflow rule, agentic programs, activation content, `score` default, rollout cache rules. |
 | Status | `IB/STATE.md` | Newest section first. |
@@ -15,7 +23,7 @@ Everything the agent AC pre-training slice delivered as of 2026-09-14, in one pl
 | Tuning configurations | `IB/TMP/AGENT_AC_PRETRAINING/node_camp/TUNING/` (`campaign_27b_medium_v2.json`, `smoke_v1.json`) | Saved autotune ids; `--autotune-id` reloads them. |
 | Node logs | `IB/TMP/AGENT_AC_PRETRAINING/node_*.log` | One per job; the remote copy is `~/sky_logs/<job>-sky-cmd/run.log`. |
 | Test reports | `IB/TMP/AGENT_AC_PRETRAINING/node_camp/{program_test,ac_test,probe_v3,smoke_*}/` | Pulled `report.tressoir.html` folders. |
-| Cloud node | `ac-4a-camp` (AWS ap-northeast-1, g7e.12xlarge, 2x RTX PRO 6000, autostop after idle) | Kept alive; its disk holds the campaign cache and the model weights. Tear down after pulling anything you still need. |
+| Cloud node (last recorded by handoff; not checked locally) | `ac-4a-camp` (AWS ap-northeast-1, g7e.12xlarge, 2x RTX PRO 6000, autostop after idle) | Kept alive; its disk holds the campaign cache and the model weights. Tear down after pulling anything you still need. |
 | CPU fixture | `IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35` | Tiny Qwen3.5 used by the probes and the 3b checks; no docker needed. |
 | S3 upload | `IB/TMP/AGENT_AC_PRETRAINING/upload_campaign_to_s3.py` | Needs `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` and `boto3`; blocked here (no credentials visible to the agent container). |
 
@@ -61,7 +69,7 @@ Everything the agent AC pre-training slice delivered as of 2026-09-14, in one pl
 
 The contention diagnosis (about 11 tokens per second per live sequence at about 125 live sequences; subagents run outside the pool bound; halving the pool doubled subagent speed) is in `PLAN.tressoir.md` M4 and `ROLLOUT_TUNING.tressoir.md`.
 
-## How to run
+## Historical staging commands
 
 All commands from `/workspace`. Local Python: `env UV_PYTHON_INSTALL_DIR=$HOME/.local/share/uv/python /workspace/.venv/bin/python`; on the node plain `uv run` (do not carry the local override there).
 
@@ -99,7 +107,7 @@ cd /workspace && python IB/TMP/AGENT_AC_PRETRAINING/upload_campaign_to_s3.py
 
 Two cache rules matter when rerunning a test after a code change: a finished row under the same caching id is replayed as is (finish reason and budgets are not in the key), so clear `~/activation_artifacts/SYNC/ROLLOUTS/<caching_id>/` on the node or use a new id; and a `RedoPolicy` only re-rolls the finish reasons it names.
 
-## Validation status
+## Prior staging validation status
 
 | Check | Result |
 |---|---|
@@ -121,7 +129,7 @@ Two cache rules matter when rerunning a test after a code change: a finished row
 - **Training integration**: `build_example` still refuses AC-bearing runs (fixed-row trainer integration deferred since 3b); `activation_messages_of` gives the message side, not token ids.
 - **Old-row upgrade step** (subagent parts from `subagent_results`): not written.
 - **Two stale tests** in the source (`test_basic_harness.py`): fix or drop.
-- **Node**: `ac-4a-camp` is still up with the corpus cache on its disk.
+- **Node**: the handoff last recorded `ac-4a-camp` up with the corpus cache on its disk; current state was not checked during local application.
 
 ## Lessons recorded
 

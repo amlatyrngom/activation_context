@@ -1,0 +1,180 @@
+{
+  "version": "1.0",
+  "truncation": null,
+  "padding": null,
+  "added_tokens": [
+    {
+      "id": 0,
+      "content": "<unk>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 1,
+      "content": "<pad>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 2,
+      "content": "<|end|>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    }
+  ],
+  "normalizer": null,
+  "pre_tokenizer": {
+    "type": "WhitespaceSplit"
+  },
+  "post_processor": {
+    "type": "TemplateProcessing",
+    "single": [
+      {
+        "Sequence": {
+          "id": "A",
+          "type_id": 0
+        }
+      }
+    ],
+    "pair": [
+      {
+        "Sequence": {
+          "id": "A",
+          "type_id": 0
+        }
+      },
+      {
+        "Sequence": {
+          "id": "B",
+          "type_id": 1
+        }
+      }
+    ],
+    "special_tokens": {}
+  },
+  "decoder": {
+    "type": "WordPiece",
+    "prefix": "",
+    "cleanup": false
+  },
+  "model": {
+    "type": "WordLevel",
+    "vocab": {
+      "<unk>": 0,
+      "<pad>": 1,
+      "<|end|>": 2,
+      "<|system|>": 3,
+      "<|user|>": 4,
+      "<|assistant|>": 5,
+      "<|tool|>": 6,
+      "alpha": 7,
+      "beta": 8,
+      "gamma": 9,
+      "delta": 10,
+      "evidence": 11,
+      "question": 12,
+      "answer": 13,
+      "first": 14,
+      "second": 15,
+      "third": 16,
+      "one": 17,
+      "two": 18,
+      "three": 19,
+      "four": 20,
+      "five": 21,
+      "six": 22,
+      "seven": 23,
+      "eight": 24,
+      "nine": 25,
+      "zero": 26,
+      "yes": 27,
+      "no": 28,
+      "tool": 29,
+      "result": 30,
+      "beginning": 31,
+      "middle": 32,
+      "end": 33,
+      "context": 34,
+      "reasoning": 35,
+      "code": 36,
+      "search": 37,
+      "solver": 38,
+      "useful": 39,
+      "wrong": 40,
+      "0": 41,
+      "1": 42,
+      "2": 43,
+      "3": 44,
+      "4": 45,
+      "5": 46,
+      "6": 47,
+      "7": 48,
+      "8": 49,
+      "9": 50,
+      "10": 51,
+      "11": 52,
+      "12": 53,
+      "13": 54,
+      "14": 55,
+      "15": 56,
+      "16": 57,
+      "17": 58,
+      "18": 59,
+      "19": 60,
+      "20": 61,
+      "21": 62,
+      "22": 63,
+      "23": 64,
+      "24": 65,
+      "25": 66,
+      "26": 67,
+      "27": 68,
+      "28": 69,
+      "29": 70,
+      "30": 71,
+      "31": 72,
+      "32": 73,
+      "33": 74,
+      "34": 75,
+      "35": 76,
+      "36": 77,
+      "37": 78,
+      "38": 79,
+      "39": 80,
+      "40": 81,
+      "41": 82,
+      "42": 83,
+      "43": 84,
+      "44": 85,
+      "45": 86,
+      "46": 87,
+      "47": 88,
+      "48": 89,
+      "49": 90,
+      "50": 91,
+      "51": 92,
+      "52": 93,
+      "53": 94,
+      "54": 95,
+      "55": 96,
+      "56": 97,
+      "57": 98,
+      "58": 99,
+      "59": 100,
+      "60": 101,
+      "61": 102,
+      "62": 103,
+      "63": 104
+    },
+    "unk_token": "<unk>"
+  }
+}

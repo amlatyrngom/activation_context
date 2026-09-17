@@ -1,0 +1,35 @@
+{
+  "generated_utc": "2026-09-15T17:36:11.029806+00:00",
+  "snapshot": "e35867eccd5213c00e83964a4f74a539ccb96ea1",
+  "prerequisite": "Accepted co-design handoff; use incremental.patch on that state.",
+  "files": [
+    {
+      "path": "activation/dataset/dataset_manager.py",
+      "purpose": "Forward optional QA preparation progress callbacks.",
+      "before_poc_sha256": "56b9ee3cf4169154f825edcb877bcad3e55090dacb9708fe8cf46963724ee1f0",
+      "source_sha256": "56b9ee3cf4169154f825edcb877bcad3e55090dacb9708fe8cf46963724ee1f0",
+      "staged_sha256": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5"
+    },
+    {
+      "path": "activation/dataset/dataset_study.py",
+      "purpose": "Expose QA phase and accepted/rejected/failed item counts.",
+      "before_poc_sha256": "70799b1a4bfde161233df7460d145452003130ce6f1529ac6da58bc96a36abac",
+      "source_sha256": "70799b1a4bfde161233df7460d145452003130ce6f1529ac6da58bc96a36abac",
+      "staged_sha256": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18"
+    },
+    {
+      "path": "activation/ac_model/ac_model_training.py",
+      "purpose": "Report example preparation, model placement and named evaluation progress.",
+      "before_poc_sha256": "cb938e0c04beeae6c27cab29a953b70aacefdbd83eabcfffbdb77dd645462f6d",
+      "source_sha256": "ace6174f494009d5ef304bf6e9dc50f3e64b65ddb085b33dab956d17291764a7",
+      "staged_sha256": "3b02e65517fa409983ffc74a50ac1ffa1833ca6fa4b85cac2e16ab2560ce1df5"
+    },
+    {
+      "path": "activation/ac_model/ac_model_reporter.py",
+      "purpose": "Preserve named evaluation curves and use objective-appropriate labels.",
+      "before_poc_sha256": "4c1bda992d31d834954b5bb089c4ab1cce1ca11ee3dbefbd1fb531bff6c5a63e",
+      "source_sha256": "fdec56d449dd08174e1b33745cfdaea32399cf60893cc3f1863663817ff3e07e",
+      "staged_sha256": "304c2e1541aeac1edc4ab8b371efbbd4ba6adec199d34555ba1c76def2f2278f"
+    }
+  ]
+}

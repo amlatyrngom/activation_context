@@ -177,7 +177,7 @@ def _cluster_record(name: str, *, refresh: bool = False) -> dict | None:
     return next((record for record in records if record["name"] == name), None)
 
 
-def _labels(gpu_type: str, gpu_count: int) -> dict[str, str]:
+def _labels(gpu_type: str, gpu_count: int, use_spot: bool = False) -> dict[str, str]:
     return {
         f"{LABEL_PREFIX}-config": CONFIG_VERSION,
         f"{LABEL_PREFIX}-cloud": "aws",
@@ -185,7 +185,7 @@ def _labels(gpu_type: str, gpu_count: int) -> dict[str, str]:
         f"{LABEL_PREFIX}-gpu-count": str(gpu_count),
         f"{LABEL_PREFIX}-disk-gb": str(DISK_SIZE_GB),
         f"{LABEL_PREFIX}-autostop-minutes": str(AUTOSTOP_MINUTES),
-        f"{LABEL_PREFIX}-spot": "false",
+        f"{LABEL_PREFIX}-spot": "true" if use_spot else "false",
     }
 
 
@@ -195,7 +195,7 @@ def _require_matching_config(
     gpu_count: int,
 ) -> None:
     actual = record.get("labels") or {}
-    expected = _labels(gpu_type, gpu_count)
+    expected = _labels(gpu_type, gpu_count, actual.get(f"{LABEL_PREFIX}-spot") == "true")
     if all(actual.get(key) == value for key, value in expected.items()):
         return
 
@@ -417,10 +417,11 @@ def _task_yaml(
     *,
     image_id: str = IMAGE_ID,
     docker_secrets: dict[str, str] | None = None,
+    use_spot: bool = False,
 ) -> str:
     labels = "\n".join(
         f"    {key}: {json.dumps(value)}"
-        for key, value in _labels(gpu_type, gpu_count).items()
+        for key, value in _labels(gpu_type, gpu_count, use_spot).items()
     )
     secrets = docker_secrets if docker_secrets is not None else {}
     secrets_yaml = ""
@@ -435,7 +436,7 @@ def _task_yaml(
 resources:
   infra: aws
   accelerators: {GPU_TYPES[gpu_type]}:{gpu_count}
-  use_spot: false
+  use_spot: {"true" if use_spot else "false"}
   disk_size: {DISK_SIZE_GB}
   image_id: {image_id}
   labels:
@@ -464,6 +465,7 @@ def setup(
     gpu_type: str,
     gpu_count: int = 1,
     rebuild_image: bool = True,
+    use_spot: bool = False,
 ) -> int:
     gpu_type = gpu_type.lower()
     if gpu_type not in GPU_TYPES:
@@ -505,6 +507,7 @@ def setup(
                 gpu_count,
                 image_id=image_id,
                 docker_secrets=docker_secrets,
+                use_spot=use_spot,
             )
         )
         task_file.flush()
@@ -934,6 +937,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="number of GPUs (default: 1)",
     )
     setup_parser.add_argument(
+        "--spot",
+        action="store_true",
+        help="request a spot instance (cheaper, may be preempted; runs must be restartable)",
+    )
+    setup_parser.add_argument(
         "--no-image-rebuild",
         action="store_true",
         help="do not build/publish a missing lock-tagged image before launch",
@@ -1026,6 +1034,7 @@ def main() -> int:
                 args.gpu,
                 args.gpu_count,
                 rebuild_image=not args.no_image_rebuild,
+                use_spot=args.spot,
             )
         if args.action == "exec":
             return exec_cmd(args.name, args.command, sync=args.sync, watch_paths=[tuple(pair) for pair in args.watch] if args.watch else None,

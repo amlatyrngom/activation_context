@@ -1,0 +1,228 @@
+{
+  "purpose": "Inspected source baselines for the reviewed plan, not an implementation manifest",
+  "local_product_commit": "0a77891",
+  "submodule_registration_commit": "13f19d9",
+  "vllm_commit": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+  "files": {
+    ".gitmodules": {
+      "sha256": "5e3c8ff4b76f9c48bc4f23062574bc9de24182b9c919fa2d081fe4014cd6f3f5",
+      "bytes": 97
+    },
+    ".skyignore": {
+      "sha256": "09e666ecf5086a5cbd0d62680e5e72882cf6bc54bd406df32c56b5de4dfaf923",
+      "bytes": 87
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/ac_model/ac_model.py": {
+      "sha256": "8dcc0080d72f18ae53fe7d06b069dd42b4fd3c564034f3343f7a32f21f337a01",
+      "bytes": 30192
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/ac_model/ac_model_reporter.py": {
+      "sha256": "4c1bda992d31d834954b5bb089c4ab1cce1ca11ee3dbefbd1fb531bff6c5a63e",
+      "bytes": 10964
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/ac_model/ac_model_study.py": {
+      "sha256": "e951ae8518becdbe437b9179901c6ef1c3a12ee1ddc4260f96e2811d0e9d4cd7",
+      "bytes": 41310
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/ac_model/ac_model_training.py": {
+      "sha256": "cb938e0c04beeae6c27cab29a953b70aacefdbd83eabcfffbdb77dd645462f6d",
+      "bytes": 50757
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/ac_model/ac_model_utils.py": {
+      "sha256": "17c8853813fb879a6267ba269d43aa436aaaf78e0b58f74473340f436a22cc3b",
+      "bytes": 30502
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/agent.py": {
+      "sha256": "1d79c345a7008961ae9c48ddefb6aaca691a4baa5edb2901c55018145ee5bef1",
+      "bytes": 44055
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/agent_config.py": {
+      "sha256": "e51e4bc66b2503ad01b9819d26c1e38e821ef939ae2dfff0d82befa9e35b467d",
+      "bytes": 17263
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/agent_utils.py": {
+      "sha256": "a4c3bbab9f0237540bdd3874a097ff73b0764df6dadddb1b2b832757d9e02707",
+      "bytes": 27686
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/rollout_caching.py": {
+      "sha256": "eb7aae61fab3cb88322697e066fa489e64da3399d764243261708c8d3b74d29f",
+      "bytes": 5986
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/rollout_manager.py": {
+      "sha256": "785122086b07b5f7ffd03d7535bc5052679054b6cbad5036978e4ea63161cbdf",
+      "bytes": 21772
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent/rollout_reporter.py": {
+      "sha256": "dfaf8f81113baf03a55a222a689f12efcdf649bf892d4a37e47ae81669d3c576",
+      "bytes": 15784
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent_training/agent_trainer.py": {
+      "sha256": "8811f44a04bd9082cf584214fc061557c3b68b993c2739f31f5ab82bef413c7d",
+      "bytes": 19483
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/agent_training/agent_training_utils.py": {
+      "sha256": "f90b8f3226627f663a3e163df3633832b77ec774ede61cf2df22303b55821526",
+      "bytes": 27760
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/dataset/dataset_utils.py": {
+      "sha256": "aea89a27b24b7693c5989f16e27a0a007ca60525716e3ad3811a166092fdd2bf",
+      "bytes": 5334
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/dataset/loaders/trajectory_utils.py": {
+      "sha256": "3787d51ba8a16cb9caea59287ff4bc2b7a43fecc8c64ff4d45b5968565257646",
+      "bytes": 13022
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/harness/hf_utils.py": {
+      "sha256": "b2f193c44a4b6793a9a47cbf6b86980f0723a3a2d44255c82b4347b6c02ab1f6",
+      "bytes": 11129
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/harness/loaded_model.py": {
+      "sha256": "9ddfe975e2bc26b9bc7296de17d157c86636e3ac6ccdf032bfac378d8737ca36",
+      "bytes": 25461
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/harness/module_manager.py": {
+      "sha256": "4c54d76147c9e5a3ceb6d6c3c471a614f02e7f960f1ccd22128268bc341fc055",
+      "bytes": 19504
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/tests/test_basic_ac_self_distillation.py": {
+      "sha256": "f6553bc81ed4518f6b84b46d9c149c04ef4d7e30eceea9935f17b0109f8476e2",
+      "bytes": 13272
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/tests/test_basic_agent_ac.py": {
+      "sha256": "2d7e9599df836efd5814f3612f103154f4aed7a46553d3b17625b5d05e3456c2",
+      "bytes": 17241
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/activation/tests/test_basic_agent_ac_training.py": {
+      "sha256": "8ca4721c4b0bb777cde0dafecad77ff8e89303f72c2008189158ceec2debf541",
+      "bytes": 8890
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/changes.patch": {
+      "sha256": "4d16ee1d7c897cdee9a703d6015f84589db4945d543253c147b0fcf8dccae07c",
+      "bytes": 180079
+    },
+    "IB/ARTIFACTS/AGENT_AC_PRETRAINING/codesign/source_manifest.json": {
+      "sha256": "9ff3403f2f17b3bf625031d06c67582118f88653a74b3096888e59de8bb89a26",
+      "bytes": 24170
+    },
+    "IB/REPOS/vllm/AGENTS.md": {
+      "sha256": "9405571019fcc06d8ceae4cd5da0c3c8f08959dbfecfe43138cbb1b9b3dbd575",
+      "bytes": 5654
+    },
+    "IB/REPOS/vllm/pyproject.toml": {
+      "sha256": "bd895b6b28d30e395ac295ac8789fc44b8de1d039d3b13e6aa11c1e893757bd2",
+      "bytes": 5368
+    },
+    "IB/REPOS/vllm/setup.py": {
+      "sha256": "a6cd595ba0f19cdc8590b899689d009240f2be5592a0b60a926f9c07e63df967",
+      "bytes": 59432
+    },
+    "IB/REPOS/vllm/vllm/entrypoints/llm.py": {
+      "sha256": "52de4ac99489e004ef6c61d0bedc84aa96020dd58b8bd1ae500814b548b2b83e",
+      "bytes": 41687
+    },
+    "IB/REPOS/vllm/vllm/entrypoints/offline_utils.py": {
+      "sha256": "688fbad0af9c2180b83aa77dcd0dbda85ca076a6c72bffa61840896d950cf458",
+      "bytes": 23674
+    },
+    "IB/REPOS/vllm/vllm/model_executor/models/qwen3_5.py": {
+      "sha256": "d5fa8f7c99c5cac89bfb0c0288bab58c846ee27b9733178bf957ca44b9d1392d",
+      "bytes": 27104
+    },
+    "IB/REPOS/vllm/vllm/model_executor/models/qwen3_next.py": {
+      "sha256": "5aeac6c81bfa7c680e517106aecb7741a0a4e90fa52de77f0be1eadebc7516fa",
+      "bytes": 31935
+    },
+    "IB/REPOS/vllm/vllm/v1/core/kv_cache_utils.py": {
+      "sha256": "088f2201bee86fade694e78141b6e99a5cd0cdd23c5c7ab3526dd119f76e4aec",
+      "bytes": 93945
+    },
+    "IB/REPOS/vllm/vllm/v1/core/sched/output.py": {
+      "sha256": "51643386fab3a56b7747aa784ad657833966ebe823acee1f37222e33c1e5696a",
+      "bytes": 11315
+    },
+    "IB/REPOS/vllm/vllm/v1/engine/__init__.py": {
+      "sha256": "ac6a8de4fb5ffbbb1e30fa414e6d29fa977e425face6faf92439b15e4e35ca76",
+      "bytes": 10004
+    },
+    "IB/REPOS/vllm/vllm/v1/engine/async_llm.py": {
+      "sha256": "bceed0b3f5f0c834fef79525f2462a092f082390f0070526280abc95945837dd",
+      "bytes": 47095
+    },
+    "IB/REPOS/vllm/vllm/v1/engine/input_processor.py": {
+      "sha256": "f9a7946a16acc2374ff2bdfc22f212cb43461d9ef4d99c5e19a536339f11212f",
+      "bytes": 22200
+    },
+    "IB/REPOS/vllm/vllm/v1/engine/llm_engine.py": {
+      "sha256": "415b7d02460984e8678f78420be22dbc336d8bb73734d7a753b2badb62232744",
+      "bytes": 18033
+    },
+    "IB/REPOS/vllm/vllm/v1/request.py": {
+      "sha256": "0287844f70eeaeb077d714e833a4b449a15e045a6516f8530182e357a5bec82f",
+      "bytes": 14932
+    },
+    "IB/REPOS/vllm/vllm/v1/serial_utils.py": {
+      "sha256": "d75c17a098231b2398cbdb7da6f9983e5b9229c0ba138b2874934d45fafd1f28",
+      "bytes": 24093
+    },
+    "IB/REPOS/vllm/vllm/v1/worker/gpu_input_batch.py": {
+      "sha256": "0687f0e38bf889cef454a38ee262a5686c1ea459337c42219cb91c900799305f",
+      "bytes": 48847
+    },
+    "IB/REPOS/vllm/vllm/v1/worker/gpu_model_runner.py": {
+      "sha256": "7f2890eefca1efe25565bf1c7e5906a87948ae922610a7aaac620b28b46f26aa",
+      "bytes": 355498
+    },
+    "activation/ac_model/__init__.py": {
+      "sha256": "28b72f7e3889a72aea8cc40f39c50b96c53b96fbba34d47513d03e8490e2c07d",
+      "bytes": 642
+    },
+    "activation/ac_model/ac_model.py": {
+      "sha256": "32b4155acf05e52accb55415e7b7a30bf46c669643fdda867960f551ff5bc633",
+      "bytes": 29863
+    },
+    "activation/ac_model/ac_model_training.py": {
+      "sha256": "ace6174f494009d5ef304bf6e9dc50f3e64b65ddb085b33dab956d17291764a7",
+      "bytes": 48106
+    },
+    "activation/ac_model/ac_model_utils.py": {
+      "sha256": "76c3cf1f83f0d7d90bd2a895e2967edd011db86399c0f2561a4a84dd6ac9a141",
+      "bytes": 17242
+    },
+    "activation/agent/agent.py": {
+      "sha256": "eab3172665bc93c0ce841cc90cace9144e48fac55b0eaa2733b156920dd11d0f",
+      "bytes": 44545
+    },
+    "activation/agent_training/agent_training_utils.py": {
+      "sha256": "85147b6ffc317a75d83f0cc73a991e4019a8c49708b40eb89d663bfc0e41cbfa",
+      "bytes": 24784
+    },
+    "activation/cloud/Dockerfile": {
+      "sha256": "9a399af1b1a0537d4396400a243519d1f95d92115a2d62a1a0d3bf14dc472cb6",
+      "bytes": 1800
+    },
+    "activation/cloud/sky.py": {
+      "sha256": "fbad68c07a429120204e2537b108eaf3ab28270585ba9be86620fe049f7cb3af",
+      "bytes": 37829
+    },
+    "activation/common/ac_parts.py": {
+      "sha256": "4658e0a32c36aa887f83956ed10dc70a7b8f0d92c561e13a67269eea4fd2ae70",
+      "bytes": 7470
+    },
+    "activation/harness/hf_utils.py": {
+      "sha256": "8cc50da4ab9661c115363bec7bf12859663f04cf9e422873d0bf8065a5fcce12",
+      "bytes": 9483
+    },
+    "activation/harness/loaded_model.py": {
+      "sha256": "1d9c985f21384bbf053f435ea7ff679d9f20b4c64e23d7a70318320204855400",
+      "bytes": 25227
+    },
+    "pyproject.toml": {
+      "sha256": "1d8f20cad65539040c4dda508416a1193a750a366a811cdd73871a691282b660",
+      "bytes": 972
+    },
+    "uv.lock": {
+      "sha256": "a1f0a0d73f7f477f0bf83a6673983c44203888512ebb64a3297827f50c0a7be1",
+      "bytes": 660655
+    }
+  }
+}

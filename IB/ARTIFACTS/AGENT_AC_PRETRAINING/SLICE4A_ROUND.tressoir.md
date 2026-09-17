@@ -1,6 +1,14 @@
 # Agent AC pre-training, slice 4a: first green light handoff
 
-The first green light of slice 4a is implemented and validated: the prototype changes (M0), the benchmark suite with environments and sampled framings (M1), and the rollout probe (M2). The probe ran 35 oracle tasks end to end on one RTX PRO 6000 in 11.6 minutes, replayed all 35 from the cache in 0.1 s, and its report is `PROBE_REPORT.tressoir.md` in this folder, with every trajectory linked. After your probe review the delta also carries the total turn budget, the repeated-call note, the empty-submission refusal, tool argument aliasing and the reasoning-effort variants of the probe, validated by three concurrent probes (`PROBE_COMPARE.tressoir.md`). The product delta is staged below as an exact patch against your source. Since then the delta was reorganized to your source's data model (task kinds, teacher kinds, prompt templates, `AgentTrainingStudy`, the canonical trajectory script) and carries the rollout throughput work of `ROLLOUT_TUNING.tressoir.md` v0.3; the staged patch now covers 36 files. Later rounds added the 12 h teacher campaign with its redo pass (4,279 trajectories), agentic programs and activation content on every tool result; `HANDOFF.tressoir.md` is the comprehensive hand-off.
+The first green light of slice 4a is implemented and validated: the prototype changes (M0), the benchmark suite with environments and sampled framings (M1), and the rollout probe (M2). The probe ran 35 oracle tasks end to end on one RTX PRO 6000 in 11.6 minutes, replayed all 35 from the cache in 0.1 s, and its report is `PROBE_REPORT.tressoir.md` in this folder, with every trajectory linked. After your probe review the delta also carries the total turn budget, the repeated-call note, the empty-submission refusal, tool argument aliasing and the reasoning-effort variants of the probe, validated by three concurrent probes (`PROBE_COMPARE.tressoir.md`). The product delta is staged below as an exact patch against your source. Since then the delta was reorganized to your source's data model (task kinds, teacher kinds, prompt templates, `AgentTrainingStudy`, the canonical trajectory script) and carries the rollout throughput work of `ROLLOUT_TUNING.tressoir.md` v0.3; that intermediate patch covered 36 files; the applied product patch now covers 49 files. Later rounds added the 12 h teacher campaign with its redo pass (4,279 trajectories), agentic programs and activation content on every tool result; `HANDOFF.tressoir.md` is the comprehensive hand-off.
+
+## Applied locally (2026-09-14)
+
+Applied to `/home/ubuntu/activation_context` on top of commit `a839760` and the matching prototype edits. The product patch now contains **49 files**: 47 original product paths plus `pyproject.toml` and `uv.lock`, which supply the handoff's omitted `math-verify` dependency. Eight supplementary test files and `agentic_program_probe.py` remain in `slice4a/` for IB-only validation and are excluded from the product patch and diff cards. The key `test_basic_agentic_program.py` and canonical teacher-generation CLI are included. Unrelated prototype files are preserved.
+
+Local validation: 46 focused tests passed, one real-sandbox test skipped; activation-channel, trajectory-harvest and agentic-program CPU checks passed. The full main suite collected 19 tests. GPU results below are prior staging evidence. The initial IB probe runner needed `runpy.run_module(..., alter_sys=True)` for faithful `__main__` serialization; no product fix was needed. Recovery copies and logs: `IB/TMP/AGENT_AC_PRETRAINING/apply_20260914T182304Z/`.
+
+The patch and hashes describe the pre-application baseline; do not reapply them to this already-updated checkout. No campaign launch, corpus conversion, S3 upload, commit or cloud operation was performed. Existing corpus records still predate P4.
 
 ## What changed
 
@@ -15,7 +23,7 @@ The first green light of slice 4a is implemented and validated: the prototype ch
 
 ## Apply to your source
 
-The implementation is staged under [slice4a](slice4a/README.md). The [product patch](slice4a/changes.patch) and cards below are exact deltas against `/source`. The source itself has not been modified. Check [source hashes](slice4a/source_manifest.json) before applying; preserve unrelated changes.
+The implementation is staged under [slice4a](slice4a/README.md). The [product patch](slice4a/changes.patch) and cards below are exact deltas against `/source`. The original staging source was read-only; the local application described above is complete. Check [source hashes](slice4a/source_manifest.json) before applying; preserve unrelated changes.
 
 ## Validation
 
@@ -37,10 +45,10 @@ The implementation is staged under [slice4a](slice4a/README.md). The [product pa
 - Drifts from the plan: DeepScaleR is not in the suite (its loader in the source is a docstring stub), so math is DAPO alone; RepoQA is not implemented (its data is not retrievable), bug localization carries the repository family; repositories are fetched as GitHub commit tarballs instead of git clones (the node image has no git, and no history is wanted in the sandbox); the general subagent keeps the caller's dataset task so semantic search and setups resolve, instead of clearing it; `tools[name] = None` removes a default tool; a build lock serializes image builds across rollout threads; the run-result counters (`tool_call_counts`, `totals`) were added for the report.
 - The first probe launch ran benchmarks one after another (five agents at a time); it was cancelled by job id and the runner now issues one rollout call for the whole suite.
 - Turn budget, changed after your review of the probe: `max_turns` is now the total over the run (`AgentRunResult.total_turns()` sums the compaction segments; the per-turn sampling seed follows the same count), the suite and probe defaults are 100 turns, and the probe runs the scored benchmarks only unless BRIGHT is named. The probe v2 numbers were produced under the old per-segment 40-turn budget.
-- Deferred with ORCD: nothing in this delta touches training, `orcd.py` or Apptainer. The DDP work (M3) starts after your review of this round.
+- Deferred with ORCD: this delta does not implement distributed training, `orcd.py` or Apptainer. The DDP work (M3) starts after your review of this round.
 - From your probe review: a byte-identical repeat of the previous turn's calls (after argument normalization) is not run; the model gets a note and the turn counts as a tool error. `submit_answer` without an answer is refused. Tool argument names are normalized through per-tool alias tables plus a lone-unknown-key rule; the trajectory keeps the model's original call. The 27B engine context is 64k so an 8k thinking turn fits under the 50k cap. The cache key now includes the call kwargs, so the same task under another reasoning effort is another run (the v2 cache no longer matches, as intended).
 - The repeated-call note does not cure non-thinking degeneration (base still looped in 9 runs and ended them at max_tool_errors); thinking does. The choice of oracle mode for the campaign is yours: medium effort is the strongest and slowest, low is close at two thirds of the tokens.
-- 2026-09-14: the agentic-programs round replaced the prototype `agent_programs.py` note; the activation-content design (parts with the frame, produced always, rendered by the reader) changed the part convention from 3b, so corpus rows and new rows differ in stored format until a training decision settles the upgrade.
+- 2026-09-14: the agentic-programs round added `agentic_program.py`; the unrelated local `agent_programs.py` prototype note is preserved; the activation-content design (parts with the frame, produced always, rendered by the reader) changed the part convention from 3b, so corpus rows and new rows differ in stored format until a training decision settles the upgrade.
 
 ## Exact product diffs
 
@@ -258,8 +266,6 @@ diff --git a/activation/agent/agent_config.py b/activation/agent/agent_config.py
 +        children = [AgentRunResult.deserialize(child, harness, strict=strict) for child in data.pop("subagent_results", [])]
 +        segments = [AgentRunResult.deserialize(segment, harness, agent_config=config, strict=strict) for segment in data.pop("compactions", [])]
          return AgentRunResult(agent_config=config, subagent_results=children, compactions=segments, **data)
- 
- 
 ```
 
 </details>
@@ -1708,8 +1714,6 @@ diff --git a/activation/agent/rollout_reporter.py b/activation/agent/rollout_rep
 -            parts.append(f"score {results.score:.2f}")
 +            parts.append("unscored" if results.score is None else f"score {results.score:.2f}")
      return " · ".join(parts)
- 
- 
 ```
 
 </details>
@@ -4600,7 +4604,6 @@ diff --git a/activation/harness/runtime_config.py b/activation/harness/runtime_c
 +    agent_max_concurrent: int | None = None # Explicit total pool bound; None = per_gpu x replicas.
      agent_env_default_image: str = "docker.io/library/python:3.12-slim" # Sandbox image when a config names no dockerfile.
      agent_env_memory_limit_mb: int | None = 8192 # Address space per sandboxed process (ulimit -v); None = unlimited.
- 
 ```
 
 </details>
@@ -4658,513 +4661,11 @@ diff --git a/activation/harness/loaded_model.py b/activation/harness/loaded_mode
 
 </details>
 
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_agent_env_setups.py">activation/tests/test_basic_agent_env_setups.py</a></span>
-    <span class="card-oneliner">New: setups, subagent inheritance, round trip, image recipe, turn budget, aliases, repeated calls, thinking kwargs (CPU); a real podman setup test (--slow).</span>
-    <span class="card-badge">Diff</span>
-  </summary>
 
-`activation/tests/test_basic_agent_env_setups.py`
 
-```diff
-diff --git a/activation/tests/test_basic_agent_env_setups.py b/activation/tests/test_basic_agent_env_setups.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_agent_env_setups.py
-@@ -0,0 +1,240 @@
-+"""
-+Slice 4a M0, CPU: env setups run once when an agent's env is created, the general subagent inherits the caller
-+without delegation, configs with setups and removed tools round-trip, and the default image recipe is stable.
-+The tiny Qwen3.5 fixture gives a tokenizer; a fake env stands in for podman.
-+
-+    uv run pytest activation/tests/test_basic_agent_env_setups.py -s
-+"""
-+import os
-+import sys
-+from dataclasses import replace
-+
-+import pytest
-+
-+sys.modules.setdefault("fla", None)   # the tiny fixture never runs the FLA kernels
-+
-+from activation.agent import AgentConfig, SubagentTool, SyntheticTurn, synthesize_agent
-+from activation.agent import agent as agent_module
-+from activation.agent.agent_env import CopyTreeSetup, WriteFilesSetup
-+from activation.agent.agent_tools import SUBAGENT_SYSTEM_NOTE, SUBAGENT_TASK_FORMAT
-+from activation.dataset import DatasetTask, DatasetTaskMetricsKind
-+from activation.dataset.environments import default_dockerfile, render_dockerfile
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+
-+
-+class FakeEnv:
-+    """In-memory stand-in for AgentEnv: records writes and copies; no podman."""
-+    instances: list["FakeEnv"] = []
-+
-+    def __init__(self, dockerfile_path=None, env_args=None, default_image="", memory_limit_mb=None):
-+        self.files: dict[str, str] = {}
-+        self.copies: list[tuple[str, str]] = []
-+        self.dockerfile_path = dockerfile_path
-+        self.alive = True
-+        FakeEnv.instances.append(self)
-+
-+    def write_file(self, path, content):
-+        self.files[path] = content
-+        return True
-+
-+    def copy_in(self, local_path, env_path):
-+        self.copies.append((local_path, env_path))
-+
-+    def run_shell(self, script, timeout=None):
-+        return "", True
-+
-+    def run_python_code(self, code, timeout=None):
-+        return "", True
-+
-+    def shutdown(self):
-+        self.alive = False
-+
-+
-+@pytest.fixture(scope="module")
-+def harness():
-+    if "/" in TINY and TINY.startswith(("/", ".")) and not os.path.isdir(TINY):
-+        pytest.skip(f"tiny fixture missing: {TINY}")           # a Hub id (TINY_QWEN35=Qwen/Qwen3.5-0.8B) is loaded instead on nodes
-+    return HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+
-+
-+@pytest.fixture
-+def fake_env(monkeypatch):
-+    FakeEnv.instances.clear()
-+    monkeypatch.setattr(agent_module, "AgentEnv", FakeEnv)
-+    return FakeEnv
-+
-+
-+def _task() -> DatasetTask:
-+    return DatasetTask(task_id="q1", dataset_id="longdoc_fixture", task_datum={"article": "Once upon a time.", "checkout": "/tmp/nonexistent-checkout"},
-+                       reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH, gold_answer="B", agent_prompt="The document is at /workspace/document.txt.")
-+
-+
-+def test_env_setups_run_once_and_subagent_inherits(harness, fake_env):
-+    config = AgentConfig(
-+        system_prompt="You solve tasks.", model_name="tiny", user_prompt="Read the document and answer.", dataset_task=_task(),
-+        env_setups={
-+            "document": (WriteFilesSetup, {"files": {"/workspace/document.txt": {"datum_key": "article"}, "/workspace/note.txt": {"text": "hi"}}}),
-+            "repo": (CopyTreeSetup, {"datum_key": "checkout", "env_path": "/workspace/repo"}),
-+        },
-+        max_turns=6,
-+    )
-+    agent = synthesize_agent(harness, config, [SyntheticTurn("Let me delegate.", [("subagent", {"task": "TASK:\n- read the document"})], ["Subagent finished (simulated, 0 turns). Answer: (none)"])])
-+    assert "subagent" in agent.tools and isinstance(agent.tools["subagent"], SubagentTool)
-+    assert SUBAGENT_TASK_FORMAT in agent.tools["subagent"].tool_definition()["function"]["parameters"]["properties"]["task"]["description"]
-+    assert not fake_env.instances, "step mode must not create an env"
-+    env = agent.agent_env                                                   # first use: the env is created and prepared once
-+    assert env.files == {"/workspace/document.txt": "Once upon a time.", "/workspace/note.txt": "hi"}
-+    assert env.copies == [("/tmp/nonexistent-checkout", "/workspace/repo")]
-+    assert agent.agent_env is env and len(fake_env.instances) == 1
-+    # The general subagent inherits the caller: same model and task, the note, no delegation, no setups, the parent's env.
-+    child_config = agent.tools["subagent"]._inherit_general_config()
-+    assert child_config.model_name == "tiny" and child_config.dataset_task is config.dataset_task
-+    assert child_config.system_prompt.endswith(SUBAGENT_SYSTEM_NOTE) and child_config.env_setups == {}
-+    assert child_config.tools == {"subagent": None} and child_config.agent_name == "general_subagent"
-+    child = agent_module.Agent(harness, replace(child_config, user_prompt="do it"), agent_env=agent._env, parent_agent=agent)
-+    assert "subagent" not in child.tools and set(child.tools) == {"shell", "python", "parallel_tool_call", "submit_answer", "compact"}
-+    assert child.agent_env is env and len(fake_env.instances) == 1      # shared, not re-prepared
-+    child.shutdown()
-+    assert env.alive                                                       # the child does not own the env
-+    agent.shutdown()
-+    assert not env.alive
-+
-+
-+def test_setup_failure_shuts_the_env_down(harness, fake_env):
-+    config = AgentConfig(model_name="tiny", user_prompt="x", env_setups={"bad": (WriteFilesSetup, {"files": {"/x": {"datum_key": "missing"}}})})
-+    agent = agent_module.Agent(harness, config)
-+    with pytest.raises(ValueError, match="needs a dataset task"):
-+        agent.agent_env
-+    assert agent._env is None and len(fake_env.instances) == 1 and not fake_env.instances[0].alive
-+
-+
-+def test_config_round_trip_with_setups_and_removed_tool(harness):
-+    config = AgentConfig(model_name="tiny", user_prompt="x", dataset_task=_task(), tools={"subagent": None},
-+                         env_setups={"document": (WriteFilesSetup, {"files": {"/workspace/document.txt": {"datum_key": "article"}}})})
-+    data = config.serialize()
-+    assert data["tools"] == {"subagent": None}
-+    assert data["env_setups"] == {"document": {"class": "activation.agent.agent_env:WriteFilesSetup",
-+                                               "kwargs": {"files": {"/workspace/document.txt": {"datum_key": "article"}}}}}
-+    back = AgentConfig.deserialize(data, harness)
-+    assert back.tools == {"subagent": None} and back.env_setups == config.env_setups
-+    agent = agent_module.Agent(harness, back)
-+    assert "subagent" not in agent.tools and "compact" in agent.tools
-+
-+
-+def test_default_dockerfile_is_content_addressed(tmp_path, monkeypatch):
-+    monkeypatch.setenv("ACTIVATION_SYNC_ROOT", str(tmp_path))
-+    first = default_dockerfile()
-+    assert first == default_dockerfile() and open(first).read() == render_dockerfile()
-+    other = default_dockerfile(extra_lines=("RUN pip install torch",))
-+    assert other != first and "torch" in open(other).read()
-+    assert render_dockerfile().startswith("FROM docker.io/library/python:3.12-slim\n")
-+
-+
-+@pytest.mark.slow
-+def test_real_env_setups_with_podman(harness, tmp_path):
-+    """On a machine with podman: the default image builds (once, content-addressed), setups write and copy into a real sandbox."""
-+    from activation.agent.agent_env import podman_available
-+    if not podman_available():
-+        pytest.skip("podman not available")
-+    (tmp_path / "repo" / "pkg").mkdir(parents=True)
-+    (tmp_path / "repo" / "pkg" / "mod.py").write_text("VALUE = 7\n")
-+    task = DatasetTask(task_id="q1", dataset_id="fx", task_datum={"article": "Once upon a time.", "checkout": str(tmp_path / "repo")},
-+                       reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH, gold_answer="7")
-+    config = AgentConfig(
-+        model_name="tiny", user_prompt="x", dataset_task=task, env_dockerfile_path=default_dockerfile(),
-+        env_setups={"document": (WriteFilesSetup, {"files": {"/workspace/document.txt": {"datum_key": "article"}}}),
-+                    "repo": (CopyTreeSetup, {"datum_key": "checkout", "env_path": "/workspace/repo"})},
-+    )
-+    agent = agent_module.Agent(harness, config)
-+    try:
-+        output, ok = agent.agent_env.run_shell("cat /workspace/document.txt; ls /workspace/repo/pkg; python -c 'import numpy, scipy, pandas, sympy; print(numpy.__version__)'; rg --version | head -1")
-+        assert ok, output
-+        assert "Once upon a time." in output and "mod.py" in output and "ripgrep" in output, output
-+        output, ok = agent.agent_env.run_python_code("import sys; sys.path.insert(0, '/workspace/repo'); from pkg import mod; print(mod.VALUE)")
-+        assert ok and output.strip() == "7", output
-+    finally:
-+        agent.shutdown()
-+
-+
-+def test_max_turns_counts_every_compaction_segment(harness, fake_env, monkeypatch):
-+    """The turn budget is a total over the run: a compaction restarts the segment, not the counter."""
-+    from activation.agent.agent_utils import ModelDialect
-+    from activation.harness.loaded_model import EngineChatOutput
-+
-+    config = AgentConfig(system_prompt="You solve tasks.", model_name="tiny", user_prompt="Look around.", dataset_task=_task(), max_turns=4)
-+    agent = agent_module.Agent(harness, config)
-+    def call(index, name, **arguments):
-+        return ("", [{"id": f"call_{index}", "name": name, "arguments": arguments}])
-+    script = [call(1, "shell", script="ls"), call(2, "compact", summary="nothing yet"), call(3, "shell", script="ls"),
-+              call(4, "shell", script="ls"), call(5, "shell", script="ls")]
-+    replies = iter(script)
-+    seeds = []
-+
-+    def fake_submit(self, chat_kwargs=None):
-+        seeds.append(self.seed + self.run_results.total_turns())
-+        return EngineChatOutput(text="", token_ids=[1, 2, 3], logprobs=None, prompt_token_count=len(self.prefix), output_token_count=3, lora_name=None)
-+
-+    monkeypatch.setattr(agent_module.Agent, "_submit", fake_submit)
-+    monkeypatch.setattr(ModelDialect, "parse", lambda self, block, parameter_types=None: next(replies))   # begin() installs the model's dialect
-+    original_after_append = agent._after_append
-+
-+    def after_append():
-+        original_after_append()
-+        if agent.run_results.num_turns == 1 and not agent.run_results.compactions:
-+            agent.compaction_due = True                                       # force the demand after the first turn
-+    monkeypatch.setattr(agent, "_after_append", after_append)
-+    results = agent.run()
-+    assert results.finish_reason == "max_turns"
-+    assert len(results.compactions) == 1 and results.compactions[0].num_turns == 2 and results.num_turns == 2
-+    assert results.total_turns() == 4 and results.totals()["turns"] == 4
-+    assert seeds == sorted(set(seeds)), "the per-turn sampling seed never repeats across segments"
-+    agent.shutdown()
-+
-+
-+def test_argument_aliases_and_lone_unknown_key(harness):
-+    from activation.agent.agent_tools import PythonTool, SemanticSearchTool, ShellTool, SubmitAnswerTool
-+    agent = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="u"))
-+    assert agent.tools["shell"].normalize_arguments({"command": "ls"}) == {"script": "ls"}
-+    assert agent.tools["shell"].normalize_arguments({"script": "ls", "command": "pwd"}) == {"script": "ls", "command": "pwd"}   # known names win
-+    assert agent.tools["python"].normalize_arguments({"src": "print(1)"}) == {"code": "print(1)"}                          # lone unknown -> lone missing
-+    assert agent.tools["python"].normalize_arguments({"src": "x", "other": "y"}) == {"src": "x", "other": "y"}             # ambiguous: untouched
-+    assert agent.tools["submit_answer"].normalize_arguments({"final_answer": "B"}) == {"answer": "B"}
-+    assert SemanticSearchTool.aliases["q"] == "query" and ShellTool.aliases["command"] == "script" and PythonTool.aliases["script"] == "code"
-+    assert isinstance(agent.tools["submit_answer"], SubmitAnswerTool)
-+    agent.shutdown()
-+
-+
-+def test_repeated_calls_are_not_run_and_empty_submit_is_refused(harness, fake_env, monkeypatch):
-+    from activation.agent.agent import REPEATED_CALL_NOTE
-+    from activation.agent.agent_utils import ModelDialect
-+    from activation.harness.loaded_model import EngineChatOutput
-+
-+    def call(index, name, **arguments):
-+        return ("", [{"id": f"call_{index}", "name": name, "arguments": arguments}])
-+    script = iter([call(1, "shell", script="ls"), call(2, "shell", command="pwd"), call(3, "shell", script="pwd"),
-+                   call(4, "submit_answer"), call(5, "submit_answer", answer="  "), call(6, "submit_answer", final_answer="B")])
-+    monkeypatch.setattr(agent_module.Agent, "_submit", lambda self, chat_kwargs=None: EngineChatOutput(text="", token_ids=[1, 2], prompt_token_count=len(self.prefix), output_token_count=2))
-+    monkeypatch.setattr(ModelDialect, "parse", lambda self, block, parameter_types=None: next(script))
-+    agent = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="u", dataset_task=_task(), max_turns=10, max_tool_errors=8))
-+    results = agent.run()
-+    outputs = [step["tool_call_results"][0] for step in results.trajectory if step["role"] == "tool"]
-+    assert outputs[0] == "(no output)" or "ls" in outputs[0] or outputs[0] == ""                        # the fake env ran it
-+    assert not outputs[1].startswith("Bad arguments") and not outputs[1].startswith("Not run"), "an aliased argument name runs the call"
-+    assert outputs[2] == REPEATED_CALL_NOTE.format(name="shell")                                       # identical after normalization: not run
-+    assert outputs[3].startswith("Nothing submitted") and outputs[4].startswith("Nothing submitted")
-+    assert results.finish_reason == "submitted" and results.answer == "B" and agent.errors == 3
-+    assert results.trajectory[2]["tool_calls"][0]["arguments"] == {"command": "pwd"}, "the model's original call stays in the trajectory"
-+    agent.shutdown()
-+
-+
-+def test_thinking_template_kwargs_reach_the_prompt(harness):
-+    """Thinking on: the generation prompt the model reads opens a think block (the tiny Qwen3.5 template honours enable_thinking)."""
-+    off = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="u", call_kwargs={"chat_template_kwargs": {"enable_thinking": False}}))
-+    on = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="u",
-+                                                 call_kwargs={"chat_template_kwargs": {"enable_thinking": True, "reasoning_effort": "low"}}))
-+    off.begin(); on.begin()
-+    tokenizer = harness.loaded_models["tiny"].tokenizer
-+    assert tokenizer.decode(off.prefix).rstrip().endswith("</think>") and tokenizer.decode(on.prefix).rstrip().endswith("<think>")
-+    off.shutdown(); on.shutdown()
-```
 
-</details>
 
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_teacher_study.py">activation/tests/test_basic_teacher_study.py</a></span>
-    <span class="card-oneliner">New: templates, weighted seeded sampling and labels, benchmark table, report summary, oracle kwargs, auto-offload (CPU).</span>
-    <span class="card-badge">Diff</span>
-  </summary>
 
-`activation/tests/test_basic_teacher_study.py`
-
-```diff
-diff --git a/activation/tests/test_basic_teacher_study.py b/activation/tests/test_basic_teacher_study.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_teacher_study.py
-@@ -0,0 +1,175 @@
-+"""
-+The teacher study on CPU (tiny fixture, no engine, no sandbox): weighted, seeded sampling of benchmarks, teacher kinds
-+and templates into labelled configs; cache keys that separate templates; the rollout report's per-benchmark summary;
-+the oracle call kwargs; and the auto-offload of very long task texts.
-+
-+    uv run pytest activation/tests/test_basic_teacher_study.py -s
-+"""
-+import json
-+import os
-+import random
-+import sys
-+
-+import pytest
-+
-+sys.modules.setdefault("fla", None)
-+
-+from activation.agent import AgentConfig, SyntheticTurn, synthesize_agent
-+from activation.agent import agent as agent_module
-+from activation.agent.rollout_caching import config_key
-+from activation.agent.rollout_reporter import RolloutReporter
-+from activation.agent_training.agent_training_teacher_study import (
-+    BENCHMARKS, THINKING_SAMPLING, AgentTeacherKind, AgentTrainingStudy, oracle_call_kwargs, template_id,
-+)
-+from activation.agent_training.agent_training_teacher_study_prompts import META_AGENT_PROMPT_TEMPLATES, render_template
-+from activation.dataset import DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, LoadedDataset
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+
-+
-+@pytest.fixture(scope="module")
-+def harness():
-+    if "/" in TINY and TINY.startswith(("/", ".")) and not os.path.isdir(TINY):
-+        pytest.skip(f"tiny fixture missing: {TINY}")
-+    return HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+
-+
-+def _task(task_id="t1", dataset_id="quality___fixture", kind=DatasetTaskKind.FILE_SEARCH):
-+    return DatasetTask(task_id=task_id, dataset_id=dataset_id, task_datum={"article": "x"}, reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH,
-+                       gold_answer="42", agent_prompt="What is six times seven?\n\nWhen you are done, call submit_answer with the number.", task_kind=kind,
-+                       env_setups={"document": {"class": "activation.agent.agent_env:WriteFilesSetup", "kwargs": {"files": {"/workspace/d.txt": {"datum_key": "article"}}}}})
-+
-+
-+def _study(harness, **kwargs):
-+    study = AgentTrainingStudy(harness, {"quality": 0.7, "dapo_math": 0.3}, model_name="tiny", env_dockerfile_path="/nonexistent/Dockerfile", **kwargs)
-+    study.datasets = {
-+        "quality": LoadedDataset(dataset_id="quality___fixture", scorable_tasks={f"q{i}": _task(f"q{i}") for i in range(30)}),
-+        "dapo_math": LoadedDataset(dataset_id="dapo_math___fixture", scorable_tasks={f"m{i}": _task(f"m{i}", "dapo_math___fixture", DatasetTaskKind.MATH) for i in range(6)}),
-+    }
-+    return study
-+
-+
-+def test_templates_cover_every_kind_and_render():
-+    for kind in DatasetTaskKind:
-+        if kind is DatasetTaskKind.CODE_IMPL:
-+            continue
-+        for teacher in AgentTeacherKind:
-+            templates = META_AGENT_PROMPT_TEMPLATES[(kind, teacher)]
-+            assert templates and all("{task}" in template for template in templates)
-+    rendered = render_template(META_AGENT_PROMPT_TEMPLATES[(DatasetTaskKind.MATH, AgentTeacherKind.PARALLEL_MULTI_AGENT)][0], "Compute 1+1.\n\nSubmit the number.")
-+    assert rendered.startswith("Compute 1+1.") and "subagent" in rendered and rendered.endswith("submit.")
-+    assert render_template("{task}", " bare ") == "bare"
-+
-+
-+def test_campaign_sampling_is_weighted_seeded_and_labelled(harness):
-+    study = _study(harness)
-+    configs = study.generate_rollout_campaign_tasks(24, seed=1)
-+    assert len(configs) == 24 and len({c.dataset_task.task_id for c in configs}) == 24                       # no repeats
-+    by_benchmark = {name: sum(c.metadata["benchmark"] == name for c in configs) for name in ("quality", "dapo_math")}
-+    assert by_benchmark["dapo_math"] <= 6 and by_benchmark["quality"] >= 12                                    # math exhausts at 6, the rest is quality
-+    assert study.generate_rollout_campaign_tasks(24, seed=1)[0].user_prompt == configs[0].user_prompt         # seeded
-+    kinds = {c.metadata["teacher_kind"] for c in configs}
-+    assert kinds <= {str(k) for k in AgentTeacherKind} and len(kinds) >= 2
-+    first = configs[0]
-+    assert first.metadata["task_kind"] in ("file_search", "math") and first.metadata["template"] == template_id(DatasetTaskKind(first.metadata["task_kind"]), AgentTeacherKind(first.metadata["teacher_kind"]), int(first.metadata["template"].split("/")[-1]))
-+    assert first.system_prompt and first.call_kwargs["chat_template_kwargs"]["reasoning_effort"] == "medium" and first.max_turns == 100
-+    quality = next(c for c in configs if c.metadata["benchmark"] == "quality")
-+    assert set(quality.tools) == {"semantic_search"} and "document" in quality.env_setups
-+    math = next((c for c in configs if c.metadata["benchmark"] == "dapo_math"), None)
-+    assert math is None or "semantic_search" not in math.tools
-+    # base templates keep the bare prompt; the cache key separates templates of the same task
-+    base = AgentTrainingStudy(harness, {"quality": 1.0}, {(DatasetTaskKind.FILE_SEARCH, AgentTeacherKind.BASE): 1.0}, model_name="tiny", env_dockerfile_path="x")
-+    base.datasets = {"quality": study.datasets["quality"]}
-+    plain = base.generate_rollout_campaign_tasks(1, seed=0)[0]
-+    assert plain.user_prompt == plain.dataset_task.agent_prompt and plain.metadata["teacher_kind"] == "base"
-+    guided = study.config_for_task("quality", plain.dataset_task, random.Random(0))
-+    assert config_key(plain) != config_key(guided) or plain.user_prompt == guided.user_prompt
-+    assert AgentConfig.deserialize(json.loads(json.dumps(guided.serialize())), harness).metadata == guided.metadata
-+
-+
-+def test_only_weighted_benchmarks_load(harness):
-+    study = _study(harness)
-+    assert set(study.dataset_choice_weights) == {"quality", "dapo_math"}
-+    with pytest.raises(KeyError):
-+        AgentTrainingStudy(harness, {"nope": 1.0})
-+    assert BENCHMARKS["lca_bug_localization"].searchable is False and BENCHMARKS["bright"].scored is False
-+
-+
-+def test_rollout_report_summarizes_per_benchmark_and_teacher_kind(harness, tmp_path):
-+    config = AgentConfig(system_prompt="Solve.", model_name="tiny", user_prompt="What is six times seven?", dataset_task=_task(), max_turns=8,
-+                         metadata={"benchmark": "quality", "teacher_kind": "parallel_multi_agent"})
-+    turns = [SyntheticTurn("Let me delegate.", [("parallel_tool_call", {"calls": [{"name": "python", "arguments": {"code": "print(42)"}}, {"name": "subagent", "arguments": {"task": "check"}}]})],
-+                           ["[python] 42\n\n[subagent] Subagent finished (simulated, 0 turns). Answer: (none)"]),
-+             SyntheticTurn("Searching.", [("semantic_search", {"query": "six times seven"})], ["No passage matched the query."]),
-+             SyntheticTurn("Done.", [("submit_answer", {"answer": "42"})], ["Answer submitted: 42"])]
-+    agent = synthesize_agent(harness, config, turns)
-+    results = agent.run_results
-+    results.finish_reason, results.answer, results.score, results.duration = "submitted", "42", 1.0, 12.5
-+    results.num_output_tokens, results.num_turns = 120, 3
-+    agent.finished = True
-+    reporter = RolloutReporter(str(tmp_path / "report"), title="t")
-+    reporter.begin_rollouts(total=1, cached=0)
-+    reporter.report_agent_start(agent)
-+    reporter.report_agent_finish(agent)
-+    reporter.report_agent_scored(agent)
-+    reporter.finish()
-+    rows = reporter.widgets["summary"]["rows"]
-+    assert rows == [{"benchmark": "quality", "teacher kind": "parallel_multi_agent", "tasks": 1, "finish reasons": "submitted 1", "turns mean": "3.0",
-+                     "generated mean": "120", "compactions": 0, "subagents": 1, "search": 1, "shell": 0, "python": 1, "score": "1.00"}]
-+    saved = json.loads((tmp_path / "report" / "summary.json").read_text())
-+    assert saved[0]["benchmark"] == "quality" and saved[0]["scores"] == [1.0]
-+
-+
-+def test_oracle_call_kwargs_and_cache_keys(harness):
-+    assert oracle_call_kwargs(None) == {"sampling_params": {"max_tokens": 4096}}
-+    low = oracle_call_kwargs("low")
-+    assert low["chat_template_kwargs"] == {"enable_thinking": True, "reasoning_effort": "low"} and low["sampling_params"] == THINKING_SAMPLING
-+    with pytest.raises(ValueError):
-+        oracle_call_kwargs("high")
-+    keys = {config_key(AgentConfig(system_prompt="s", model_name="tiny", user_prompt="p", dataset_task=_task(), call_kwargs=oracle_call_kwargs(r))) for r in (None, "low", "medium")}
-+    assert len(keys) == 3
-+
-+
-+def test_long_task_text_is_offloaded_to_the_sandbox(harness, monkeypatch):
-+    written = {}
-+
-+    class FakeEnv:
-+        def write_file(self, path, content):
-+            written[path] = content
-+            return True
-+
-+    long_prompt = "A" * 15_000 + "MIDDLE" + "B" * 15_000
-+    agent = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt=long_prompt, max_turns=1))
-+    agent._env = FakeEnv()
-+    messages = agent.first_user_messages()
-+    text = messages[-1]["content"]
-+    assert written[agent_module.OFFLOAD_PATH] == long_prompt and "MIDDLE" not in text
-+    assert text.startswith("A" * 100) and text.endswith("B" * 100) and agent_module.OFFLOAD_PATH in text and "10,006 characters omitted" in text
-+    assert agent.agent_config.user_prompt == long_prompt                                              # the config is untouched
-+    short = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="short", max_turns=1))
-+    short._env = FakeEnv()
-+    assert short.first_user_messages()[-1]["content"] == "short" and len(written) == 1
-+
-+
-+def test_draw_record_replays_and_head_comes_first(harness, tmp_path):
-+    """A recorded draw replays entry by entry even when a benchmark's task set drifts; head entries lead the first draw."""
-+    study = _study(harness)
-+    record = tmp_path / "draw_tasks.jsonl"
-+    first = study.generate_rollout_campaign_tasks(20, seed=3, record=record)
-+    assert record.exists() and len(record.read_text().splitlines()) == 20
-+    drifted = _study(harness)                                                        # two quality tasks gone, one new
-+    drifted.datasets["quality"] = LoadedDataset(dataset_id="quality___fixture", scorable_tasks={f"q{i}": _task(f"q{i}") for i in range(2, 31)})
-+    replayed = drifted.generate_rollout_campaign_tasks(20, seed=3, record=record)
-+    gone = {c.dataset_task.task_id for c in first} & {"q0", "q1"}
-+    assert len(replayed) == 20 - len(gone)
-+    kept = [c for c in first if c.dataset_task.task_id not in gone]
-+    assert [(c.dataset_task.task_id, c.metadata["template"]) for c in replayed] == [(c.dataset_task.task_id, c.metadata["template"]) for c in kept]
-+    assert [c.user_prompt for c in replayed] == [c.user_prompt for c in kept]
-+    assert study.generate_rollout_campaign_tasks(20, seed=99, record=record)[0].user_prompt == first[0].user_prompt   # the record wins over the seed
-+
-+    head = [study.draw_entry(c) for c in first[5:8]]
-+    fresh = _study(harness).generate_rollout_campaign_tasks(12, seed=0, record=tmp_path / "second.jsonl", head=head)
-+    assert [c.user_prompt for c in fresh[:3]] == [c.user_prompt for c in first[5:8]]
-+    ids = [(c.dataset_task.dataset_id, c.dataset_task.task_id) for c in fresh]
-+    assert len(set(ids)) == 12                                                       # head tasks are not drawn again
-```
-
-</details>
-
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_tool_call_shapes.py">activation/tests/test_basic_tool_call_shapes.py</a></span>
-    <span class="card-oneliner">New: flattened nested-call arguments, subagent without a brief, offload of a None prompt.</span>
-    <span class="card-badge">Diff</span>
-  </summary>
-
-`activation/tests/test_basic_tool_call_shapes.py`
-
-```diff
-diff --git a/activation/tests/test_basic_tool_call_shapes.py b/activation/tests/test_basic_tool_call_shapes.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_tool_call_shapes.py
-@@ -0,0 +1,36 @@
-+"""
-+Tool-call shapes the oracle produces under parallel delegation: nested calls with flattened arguments, a null `task`
-+next to a flattened one, a subagent call without a brief, and a top-level prompt of None (the task travels in
-+messages_input). None of them may crash an agent; the first two must reach the tool as the model meant them.
-+"""
-+from activation.agent.agent import Agent
-+from activation.agent.agent_tools import ParallelCallTool, SubagentTool
-+
-+
-+def test_nested_call_arguments_are_merged_from_flattened_keys():
-+    good = {"name": "subagent", "arguments": {"task": "brief"}}
-+    flat = {"name": "subagent", "task": "brief"}
-+    both = {"name": "subagent", "arguments": {"task": None}, "task": "brief"}
-+    other = {"tool": "shell", "args": {"script": "ls"}, "timeout": 5}
-+    assert ParallelCallTool._call_arguments(good) == {"task": "brief"}
-+    assert ParallelCallTool._call_arguments(flat) == {"task": "brief"}
-+    assert ParallelCallTool._call_arguments(both) == {"task": "brief"}
-+    assert ParallelCallTool._call_arguments(other) == {"script": "ls", "timeout": 5}
-+    assert ParallelCallTool._call_arguments({"name": "shell"}) == {}
-+    assert ParallelCallTool._call_arguments("shell") == {}
-+
-+
-+def test_subagent_without_a_brief_is_a_tool_error_not_a_crash():
-+    class Dummy:
-+        pass
-+    for task in (None, "", "   ", 3):
-+        result = SubagentTool.execute(Dummy(), task=task)          # the guard runs before any agent state is touched
-+        assert result.is_error and "brief" in result.output
-+
-+
-+def test_offloaded_prompt_passes_none_and_short_prompts_through():
-+    class Dummy:
-+        step_mode = False
-+        parent_agent = None
-+    assert Agent._offloaded_prompt(Dummy(), None) is None
-+    assert Agent._offloaded_prompt(Dummy(), "short") == "short"
-```
-
-</details>
 
 <details class="card" data-tressoir-markdown open>
   <summary>
@@ -5671,492 +5172,13 @@ diff --git a/activation/dataset/scoring.py b/activation/dataset/scoring.py
 
 </details>
 
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_scoring_kinds.py">activation/tests/test_basic_scoring_kinds.py</a></span>
-    <span class="card-oneliner">New: math-verify grading cases; UNSCORED tasks score None.</span>
-    <span class="card-badge">Diff</span>
-  </summary>
 
-`activation/tests/test_basic_scoring_kinds.py`
 
-```diff
-diff --git a/activation/tests/test_basic_scoring_kinds.py b/activation/tests/test_basic_scoring_kinds.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_scoring_kinds.py
-@@ -0,0 +1,23 @@
-+"""Scoring kinds added for the campaign: math-verify grading and unscored tasks (score() is None, reporters blank)."""
-+import pytest
-+
-+from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskMetricsKind, bare_prompt
-+from activation.dataset.scoring import math_verify_match
-+
-+
-+@pytest.mark.parametrize("pred, gold, expected", [
-+    ("42", "42", 1.0), ("42.0", "42", 1.0), ("\\frac{1}{2}", "1/2", 1.0), ("0.5", "\\frac{1}{2}", 1.0),
-+    ("$\\sqrt{2}$", "\\sqrt{2}", 1.0), ("x^2 + 1", "x^{2}+1", 1.0), ("Yes", "yes", 1.0), ("No", "Yes", 0.0),
-+    ("43", "42", 0.0), ("", "42", 0.0), ("[0, 1]", "[0,1]", 1.0),
-+])
-+def test_math_verify_match(pred, gold, expected):
-+    assert math_verify_match(pred, [gold]) == expected
-+
-+
-+def test_unscored_task_scores_none_and_math_task_scores():
-+    unscored = DatasetTask(task_id="u", dataset_id="loong___x", task_datum={}, reference_metrics_kind=DatasetTaskMetricsKind.UNSCORED,
-+                           gold_answer="whatever", agent_prompt=bare_prompt("Q", ANSWER_RULES["free"]))
-+    assert unscored.score({"answer": "anything"}) is None and not unscored.is_scored
-+    math = DatasetTask(task_id="m", dataset_id="deepmath___x", task_datum={}, reference_metrics_kind=DatasetTaskMetricsKind.MATH_VERIFY,
-+                       gold_answer="\\frac{3}{4}", agent_prompt=bare_prompt("Q", ANSWER_RULES["math"]))
-+    assert math.score({"answer": "3/4"}) == 1.0 and math.score({"answer": "0.7"}) == 0.0 and math.is_scored
-```
 
-</details>
 
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_loft_loong_loaders.py">activation/tests/test_basic_loft_loong_loaders.py</a></span>
-    <span class="card-oneliner">New: LOFT and Loong loaders (fields, setups, materialized files, no re-download).</span>
-    <span class="card-badge">Diff</span>
-  </summary>
 
-`activation/tests/test_basic_loft_loong_loaders.py`
 
-```diff
-diff --git a/activation/tests/test_basic_loft_loong_loaders.py b/activation/tests/test_basic_loft_loong_loaders.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_loft_loong_loaders.py
-@@ -0,0 +1,84 @@
-+"""
-+LOFT and Loong loaders against the real downloads (small: two LOFT rag zips, the Loong questions and doc.zip). The
-+materialized files land under the synced area (LOFT/, LOONG/) like the LCA checkouts, so a second load reuses them.
-+"""
-+import os
-+
-+import pytest
-+
-+from activation.dataset import DatasetTaskKind, DatasetTaskMetricsKind
-+from activation.dataset.loaders import LoftDataset, LoongDataset
-+from activation.dataset.loaders import loft, loong
-+
-+COPY_TREE_SETUP = "activation.agent.agent_env:CopyTreeSetup"
-+
-+
-+def _assert_copy_tree(task, name: str, datum_key: str, env_path: str) -> str:
-+    setup = task.env_setups[name]
-+    assert setup["class"] == COPY_TREE_SETUP
-+    assert setup["kwargs"] == {"datum_key": datum_key, "env_path": env_path}
-+    local = task.task_datum[datum_key]
-+    assert os.path.isabs(local) and os.path.exists(local)
-+    return local
-+
-+
-+def _no_download(url, target, timeout=0):
-+    raise AssertionError(f"re-download attempted: {url}")
-+
-+
-+def test_loft_loader(monkeypatch):
-+    loaded = LoftDataset.load(None, 4, seed=1, names=("nq", "quest"), sizes=("128k",))
-+    assert loaded.dataset_id == "loft___names_nq+quest__sizes_128k__splits_test+dev__n_4__seed_1"
-+    assert len(loaded.scorable_tasks) == 4
-+    assert len(loaded.documents) == 883 + 328               # every passage of both 128k corpora
-+    assert loaded.stats.total_num_documents == len(loaded.documents)
-+    for task_id, task in loaded.scorable_tasks.items():
-+        name, size, qid = task_id.split("/")
-+        assert name in ("nq", "quest") and size == "128k" and task.task_datum["qid"] == qid
-+        assert task.task_datum["name"] == name and task.task_datum["size"] == size and task.task_datum["split"] in ("test", "dev")
-+        assert task.task_datum["gold_pids"] and all(f"{name}/{size}/{pid}" in loaded.documents for pid in task.task_datum["gold_pids"])
-+        assert task.reference_metrics_kind == DatasetTaskMetricsKind.F1 and task.task_kind == DatasetTaskKind.FILE_SEARCH
-+        assert task.gold_answer
-+        assert "/workspace/corpus.txt" in task.agent_prompt and "Question:" in task.agent_prompt
-+        rule = "every answer, separated by semicolons" if name == "quest" else "a short phrase, no explanation"
-+        assert rule in task.agent_prompt
-+        corpus_path = _assert_copy_tree(task, "corpus", "corpus_path", "/workspace/corpus.txt")
-+        assert corpus_path.endswith(f"/LOFT/{name}/128k/corpus.txt") and os.path.getsize(corpus_path) > 100_000
-+        with open(corpus_path, encoding="utf-8") as handle:
-+            head = handle.readline()
-+        assert head.startswith("### ") and " | " in head
-+        assert all(len(str(value)) < 2000 for value in task.task_datum.values())   # no document text in the datum
-+    # A second load reuses the zips and corpus.txt files: no download, same files.
-+    corpus_paths = {task.task_datum["corpus_path"] for task in loaded.scorable_tasks.values()}
-+    mtimes = {path: os.path.getmtime(path) for path in corpus_paths}
-+    monkeypatch.setattr(loft, "download_file", _no_download)
-+    again = LoftDataset.load(None, 4, seed=1, names=("nq", "quest"), sizes=("128k",))
-+    assert list(again.scorable_tasks) == list(loaded.scorable_tasks)
-+    assert {path: os.path.getmtime(path) for path in corpus_paths} == mtimes
-+
-+
-+def test_loong_loader(monkeypatch):
-+    loaded = LoongDataset.load(None, 3, seed=1)
-+    assert loaded.dataset_id == "loong___n_3__seed_1"
-+    assert len(loaded.scorable_tasks) == 3
-+    assert loaded.documents and loaded.stats.total_document_chars > 0
-+    for task_id, task in loaded.scorable_tasks.items():
-+        assert task.task_id == task_id
-+        assert task.reference_metrics_kind == DatasetTaskMetricsKind.UNSCORED and task.task_kind == DatasetTaskKind.FILE_SEARCH
-+        assert task.task_datum["type"] in ("paper", "financial") and task.task_datum["n_docs"] >= 2
-+        assert set(task.task_datum) == {"docs_path", "level", "set", "type", "n_docs", "length"}
-+        assert task.gold_answer
-+        assert task.agent_prompt.startswith("The documents are in /workspace/docs (") and "complete answer" in task.agent_prompt
-+        docs_path = _assert_copy_tree(task, "docs", "docs_path", "/workspace/docs")
-+        assert f"/LOONG/instances/{task_id}" in docs_path
-+        files = sorted(os.listdir(docs_path))
-+        assert len(files) == task.task_datum["n_docs"] and all(os.path.getsize(os.path.join(docs_path, f)) > 0 for f in files)
-+        assert all(f"loong/{name}" in loaded.documents for name in files)
-+        assert all(name in task.agent_prompt for name in files)
-+    # Second load: nothing downloaded again, the instance folders are reused.
-+    docs_paths = {task.task_datum["docs_path"] for task in loaded.scorable_tasks.values()}
-+    mtimes = {path: os.path.getmtime(path) for path in docs_paths}
-+    monkeypatch.setattr(loong, "download_file", _no_download)
-+    again = LoongDataset.load(None, 3, seed=1)
-+    assert list(again.scorable_tasks) == list(loaded.scorable_tasks)
-+    assert {path: os.path.getmtime(path) for path in docs_paths} == mtimes
-```
 
-</details>
-
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_rollout_tuning.py">activation/tests/test_basic_rollout_tuning.py</a></span>
-    <span class="card-oneliner">New: autotuner rules, config round trip, pool bound, continuous queue with mid-run retune, single index build, think_end strip/keep (CPU).</span>
-    <span class="card-badge">Diff</span>
-  </summary>
-
-`activation/tests/test_basic_rollout_tuning.py`
-
-```diff
-diff --git a/activation/tests/test_basic_rollout_tuning.py b/activation/tests/test_basic_rollout_tuning.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_rollout_tuning.py
-@@ -0,0 +1,192 @@
-+"""
-+Small checks of the rollout tuning subplan (T0/T1) and the thinking-span handling: the rules fire on their conditions,
-+the configuration round-trips by autotune id, the pool bound follows the replicas, the agent records think_end, and
-+the training example builder strips or keeps the span.
-+"""
-+import json
-+import os
-+import sys
-+
-+import pytest
-+
-+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-+
-+from activation.agent import AgentConfig
-+from activation.agent import agent as agent_module
-+from activation.agent.rollout_manager import RolloutManager
-+from activation.agent.rollout_tuning import Autotuner, ProbeMetrics, RolloutTuningConfig, render_tuning_section
-+from activation.agent_training.agent_training_utils import build_example, think_replacement_ids
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+
-+
-+def _metrics(**overrides) -> ProbeMetrics:
-+    base = dict(label="probe", wall_seconds=600.0, runs=100, gpu_count=1, kv_tokens=1_230_000, p50_kv_usage=0.5, p95_kv_usage=0.7,
-+                waiting_share=0.0, preempted=0, prefill_share=0.5, prefix_recompute_share=0.1, prefix_hit_share=0.75,
-+                p50_live_prefix=15_000, p90_live_prefix=30_000, p50_turn_seconds=8.0, p90_turn_seconds=20.0, sandbox_share=0.1,
-+                p50_gpu_utilization=0.8, p95_host_memory=0.5, p95_host_cpu=0.4, tasks_per_hour_per_gpu=120.0,
-+                generated_tokens_per_hour_per_gpu=800_000.0, generation_tokens_per_second=200.0, p95_run_seconds=900.0, mean_score=0.7)
-+    return ProbeMetrics(**(base | overrides))
-+
-+
-+def _defaults() -> RolloutTuningConfig:
-+    return RolloutTuningConfig(model_id="m", gpu_name="g", gpu_count=1)
-+
-+
-+def test_rules_fire_on_their_conditions():
-+    tuner = Autotuner()
-+    quiet = tuner.tune(_metrics(p95_host_memory=0.9), _defaults())
-+    assert quiet.agents_per_gpu == 32 and quiet.max_num_batched_tokens is None and quiet.speculative and quiet.gpu_memory_utilization == 0.9   # 0.8 x 1.23M / 30k
-+    starved = tuner.tune(_metrics(p95_kv_usage=0.4, sandbox_share=0.4, p95_host_memory=0.9), _defaults())
-+    assert starved.agents_per_gpu == 40                                                                                   # 32 x 1.25
-+    evicting = tuner.tune(_metrics(prefix_recompute_share=0.3, p95_host_memory=0.9), _defaults())
-+    assert evicting.agents_per_gpu == 24                                                                                  # 32 x 0.75
-+    prefill = tuner.tune(_metrics(prefill_share=0.8), _defaults())
-+    assert prefill.max_num_batched_tokens == 16_384 and prefill.gpu_memory_utilization == 0.92                            # headroom rule too
-+    saturated = tuner.tune(_metrics(p95_kv_usage=0.9, generation_tokens_per_second=20.0), _defaults())
-+    assert saturated.speculative is False
-+    unknown = tuner.tune(_metrics(kv_tokens=None), _defaults())
-+    assert unknown.agents_per_gpu == 40 and unknown.notes[0].startswith("kv budget unknown")
-+    assert Autotuner.min_agents <= tuner.tune(_metrics(p90_live_prefix=200_000), _defaults()).agents_per_gpu
-+    assert tuner.tune(_metrics(p90_live_prefix=1_000), _defaults()).agents_per_gpu == Autotuner.max_agents
-+
-+
-+def test_config_round_trip_by_autotune_id(tmp_path, monkeypatch):
-+    monkeypatch.setenv("ACTIVATION_SYNC_ROOT", str(tmp_path))
-+    config = RolloutTuningConfig(model_id="m", gpu_name="g", gpu_count=2, agents_per_gpu=48, max_num_batched_tokens=16_384, notes=["x"])
-+    path = config.save("tune_a")
-+    assert path.name == "tune_a.json" and json.loads(path.read_text())["rollout_config_id"] == config.rollout_config_id
-+    assert RolloutTuningConfig.load("tune_a") == config and RolloutTuningConfig.load("tune_b") is None
-+    lines = render_tuning_section({"autotune_id": "tune_a", "config": json.loads(path.read_text()), "phases": [_metrics().__dict__, _metrics(label="tuned").__dict__]})
-+    assert any("48 agents per GPU" in line for line in lines) and any(line.startswith("| tasks_per_hour_per_gpu |") for line in lines)
-+
-+
-+@pytest.fixture(scope="module")
-+def harness():
-+    if "/" in TINY and TINY.startswith(("/", ".")) and not os.path.isdir(TINY):
-+        pytest.skip(f"tiny fixture missing: {TINY}")
-+    return HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+
-+
-+def test_pool_size_follows_replicas(harness):
-+    manager = RolloutManager(harness)
-+    harness.harness_config.agent_max_concurrent_per_gpu = 40
-+    harness.harness_config.agent_max_concurrent = None
-+    assert manager.pool_size(1) == 40 and manager.pool_size(2) == 80
-+    harness.harness_config.agent_max_concurrent = 12
-+    assert manager.pool_size(2) == 12
-+    harness.harness_config.agent_max_concurrent = None
-+
-+
-+def test_think_end_recorded_and_stripped_or_kept(harness, monkeypatch):
-+    from dataclasses import dataclass
-+    from activation.agent.agent_utils import ModelDialect
-+    from activation.harness.loaded_model import EngineChatOutput
-+
-+    tokenizer = harness.loaded_models["tiny"].tokenizer
-+    replacement = think_replacement_ids(tokenizer)
-+    think_end_id = replacement[-1]
-+    reasoning = tokenizer.encode("Let me think.", add_special_tokens=False)
-+    visible = tokenizer.encode("\n\nDone.", add_special_tokens=False)
-+    turn_tokens = reasoning + [think_end_id] + visible
-+    script = iter([("Done.", [{"id": "c1", "name": "submit_answer", "arguments": {"answer": "B"}}])])
-+    monkeypatch.setattr(agent_module.Agent, "_submit", lambda self, chat_kwargs=None: EngineChatOutput(
-+        text="", token_ids=list(turn_tokens), logprobs=[-0.5] * len(turn_tokens), prompt_token_count=len(self.prefix), output_token_count=len(turn_tokens)))
-+    monkeypatch.setattr(ModelDialect, "parse", lambda self, block, parameter_types=None: next(script))
-+    agent = agent_module.Agent(harness, AgentConfig(system_prompt="s", model_name="tiny", user_prompt="u", max_turns=3, record_sampling=True))
-+    results = agent.run()
-+    agent.shutdown()
-+    step = results.trajectory[0]
-+    assert step["role"] == "assistant" and step["think_end"] == len(reasoning) + 1 and step["timing"]["output_tokens"] == len(turn_tokens)
-+    assert results.trajectory[1]["timing"]["tool_seconds"] >= 0.0
-+
-+    @dataclass
-+    class Item:
-+        run_results: object
-+        weight: float = 1.0
-+        ignore_logprobs: bool = False
-+        thinking: str = "keep"
-+
-+    kept = build_example(Item(results), 0, replacement)
-+    prompt = len(results.prompt_token_ids)
-+    assert kept.token_ids[prompt:prompt + len(turn_tokens)] == turn_tokens and sum(kept.loss_mask[prompt:prompt + len(turn_tokens)]) == len(turn_tokens)
-+    stripped = build_example(Item(results, thinking="strip"), 0, replacement)
-+    assert stripped.token_ids[prompt:prompt + len(replacement) + len(visible)] == replacement + visible
-+    assert stripped.loss_mask[prompt:prompt + len(replacement)] == [False] * len(replacement)
-+    assert stripped.loss_mask[prompt + len(replacement):prompt + len(replacement) + len(visible)] == [True] * len(visible)
-+    assert stripped.old_logprobs[prompt + len(replacement)] == -0.5
-+    assert len(stripped.token_ids) == len(kept.token_ids) - len(reasoning) - 1 + len(replacement)
-+    with pytest.raises(ValueError):
-+        build_example(Item(results, thinking="strip"), 0, None)
-+
-+
-+def test_queue_keeps_running_and_retunes_mid_run(harness, monkeypatch):
-+    """The continuous queue: pool 2 until the first 4 submitted tasks have finished, then the tuner's answer (4) applies without a drain."""
-+    import threading
-+    import time
-+    from activation.agent.agent_config import AgentRunResult
-+    from activation.agent.rollout_manager import RolloutManager
-+
-+    state = {"running": 0, "peak_before": 0, "peak_after": 0, "tuned": False}
-+    lock = threading.Lock()
-+
-+    def fake_run_one(self, config, seed, perform_scoring, reporter):
-+        with lock:
-+            state["running"] += 1
-+            key = "peak_after" if state["tuned"] else "peak_before"
-+            state[key] = max(state[key], state["running"])
-+        time.sleep(0.03)
-+        with lock:
-+            state["running"] -= 1
-+        return AgentRunResult(agent_config=config, seed=seed, duration=0.03, finish_reason="submitted")
-+
-+    monkeypatch.setattr(RolloutManager, "_run_one", fake_run_one)
-+    harness.harness_config.agent_max_concurrent = 2
-+    manager = RolloutManager(harness)
-+    jobs = [(AgentConfig(system_prompt="s", model_name="tiny", user_prompt=f"u{i}"), i) for i in range(16)]
-+    results: list = [None] * len(jobs)
-+
-+    def on_probe(metrics: ProbeMetrics) -> int:
-+        assert metrics.label == "probe" and metrics.runs >= 4
-+        with lock:
-+            state["tuned"] = True
-+        harness.harness_config.agent_max_concurrent = 4
-+        return manager.pool_size(1)
-+
-+    class NoCache:
-+        def append(self, result):
-+            pass
-+
-+    phases = manager._run_pending(list(range(16)), jobs, results, NoCache(), False, None, "probe", probe_count=4, on_probe=on_probe)
-+    harness.harness_config.agent_max_concurrent = None
-+    assert all(result is not None for result in results)
-+    assert [phase["label"] for phase in phases] == ["probe", "tuned"] and phases[0]["runs"] + phases[1]["runs"] == 16
-+    assert state["peak_before"] <= 2 and state["peak_after"] == 4
-+
-+
-+def test_bm25_index_builds_once_under_concurrent_searchers(harness, monkeypatch):
-+    import threading
-+    from activation.dataset import dataset_index as index_module
-+    from activation.dataset.dataset import DatasetDocument, LoadedDataset
-+    from activation.dataset.dataset_utils import initialize_dataset_stats
-+
-+    builds = []
-+
-+    class SlowIndex:
-+        build_time = 0.0
-+
-+        def __init__(self, texts):
-+            builds.append(len(texts))
-+            threading.Event().wait(0.05)
-+
-+    monkeypatch.setattr(index_module, "BM25Index", SlowIndex)
-+    loaded = LoadedDataset(dataset_id="d", documents={f"d/{i}": DatasetDocument(doc_id=f"d/{i}", dataset_id="d", text=f"text {i}") for i in range(3)})
-+    loaded.stats = initialize_dataset_stats(loaded, load_time=0.0)
-+    index = index_module.DatasetIndex(harness, loaded)
-+    threads = [threading.Thread(target=index.build_bm25_index) for _ in range(8)]
-+    for thread in threads:
-+        thread.start()
-+    for thread in threads:
-+        thread.join()
-+    assert builds == [len(index.chunks)] and index.bm25_index is not None
-```
-
-</details>
-
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_rollout_deadline.py">activation/tests/test_basic_rollout_deadline.py</a></span>
-    <span class="card-oneliner">New: the wall-clock deadline, grouped rollouts, the S3 wrapper against a fake boto3 (CPU).</span>
-    <span class="card-badge">Diff</span>
-  </summary>
-
-`activation/tests/test_basic_rollout_deadline.py`
-
-```diff
-diff --git a/activation/tests/test_basic_rollout_deadline.py b/activation/tests/test_basic_rollout_deadline.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_rollout_deadline.py
-@@ -0,0 +1,112 @@
-+"""
-+The rollout wall-clock deadline (no job starts after it, started jobs get max_duration clipped, only finished results come
-+back) and the S3 client stub (environment-only settings, the expected S3 API calls) on a fake boto3.
-+"""
-+import os
-+import sys
-+import threading
-+import time
-+import types
-+
-+import pytest
-+
-+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-+
-+from activation.agent import AgentConfig
-+from activation.agent.agent_config import AgentRunResult
-+from activation.agent.rollout_manager import RolloutManager
-+from activation.common import s3_client as s3_module
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+
-+
-+@pytest.fixture(scope="module")
-+def harness():
-+    if "/" in TINY and TINY.startswith(("/", ".")) and not os.path.isdir(TINY):
-+        pytest.skip(f"tiny fixture missing: {TINY}")
-+    return HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+
-+
-+def test_deadline_skips_late_jobs_and_clips_started_ones(harness, monkeypatch):
-+    """12 jobs of 0.2 s on a pool of 2 under a 0.5 s deadline: about six start (each clipped to the time left), the rest are skipped."""
-+    seen: list[float] = []
-+    lock = threading.Lock()
-+
-+    def fake_run_one(self, config, seed, perform_scoring, reporter):
-+        with lock:
-+            seen.append(config.max_duration)
-+        time.sleep(0.2)
-+        return AgentRunResult(agent_config=config, seed=seed, duration=0.2, finish_reason="submitted")
-+
-+    loaded_model = harness.loaded_models["tiny"]
-+    monkeypatch.setattr(RolloutManager, "_run_one", fake_run_one)
-+    monkeypatch.setattr(RolloutManager, "_warm_up", lambda self, *args: None)          # no engine in this test
-+    monkeypatch.setattr(RolloutManager, "_build_indexes", lambda self, *args: None)
-+    monkeypatch.setattr(loaded_model, "ensure_engine_loaded", lambda: None)
-+    harness.harness_config.agent_max_concurrent = 2
-+    try:
-+        manager = RolloutManager(harness)
-+        configs = [AgentConfig(system_prompt="s", model_name="tiny", user_prompt=f"u{i}", max_duration=600) for i in range(12)]
-+        began = time.time()
-+        results = manager.perform_single_rollouts(configs, perform_scoring=False, max_wall_seconds=0.5)
-+        elapsed = time.time() - began
-+    finally:
-+        harness.harness_config.agent_max_concurrent = None
-+    assert elapsed < 3.0
-+    assert all(result is not None for result in results) and 0 < len(results) < 12   # only the finished results, fewer than the jobs
-+    assert len(results) == len(seen)
-+    assert seen and all(max_duration <= 0.5 for max_duration in seen)                  # every started job was clipped to the time left
-+    order = [next(i for i, config in enumerate(configs) if config is result.agent_config) for result in results]
-+    assert order == sorted(order)                                                         # in job order, under the jobs' own configs
-+
-+
-+def test_grouped_rollouts_unchanged_without_deadline(harness, monkeypatch):
-+    monkeypatch.setattr(RolloutManager, "_run_one", lambda self, config, seed, perform_scoring, reporter: AgentRunResult(
-+        agent_config=config, seed=seed, duration=0.0, finish_reason="submitted"))
-+    monkeypatch.setattr(RolloutManager, "_warm_up", lambda self, *args: None)
-+    monkeypatch.setattr(RolloutManager, "_build_indexes", lambda self, *args: None)
-+    monkeypatch.setattr(harness.loaded_models["tiny"], "ensure_engine_loaded", lambda: None)
-+    configs = [AgentConfig(system_prompt="s", model_name="tiny", user_prompt=f"u{i}") for i in range(2)]
-+    groups = RolloutManager(harness).perform_grouped_rollouts(configs, group_count=3, perform_scoring=False)
-+    assert [[r.seed for r in group] for group in groups] == [[0, 1, 2], [0, 1, 2]] and all(r is not None for g in groups for r in g)
-+
-+
-+class _FakeS3:
-+    def __init__(self, missing: set[str]):
-+        self.calls: list[tuple] = []
-+        self.missing = missing
-+
-+    def upload_file(self, filename, bucket, key):
-+        self.calls.append(("upload_file", filename, bucket, key))
-+
-+    def head_object(self, Bucket, Key):
-+        self.calls.append(("head_object", Bucket, Key))
-+        if Key in self.missing:
-+            error = Exception("not found")
-+            error.response = {"Error": {"Code": "404"}}
-+            raise error
-+        return {}
-+
-+
-+def test_s3_client_reads_env_and_calls_the_s3_api(monkeypatch, tmp_path):
-+    fake = _FakeS3(missing={"absent"})
-+    boto3 = types.ModuleType("boto3")
-+    boto3.client = lambda service, **kwargs: fake if service == "s3" else None
-+    monkeypatch.setitem(sys.modules, "boto3", boto3)
-+    monkeypatch.setattr(s3_module, "_load_dotenv_once", lambda: None)   # the environment below is the whole configuration
-+    for name in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_DEFAULT_REGION", "ACTIVATION_S3_BUCKET"):
-+        monkeypatch.delenv(name, raising=False)
-+    with pytest.raises(RuntimeError, match="AWS_ACCESS_KEY_ID"):
-+        s3_module.S3Client()
-+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "id")
-+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secret")
-+    monkeypatch.setenv("ACTIVATION_S3_BUCKET", "bucket-from-env")
-+    client = s3_module.S3Client()
-+    assert client.bucket == "bucket-from-env" and s3_module.DEFAULT_BUCKET == "activation-context-artifacts-bucket"
-+    local = tmp_path / "a.txt"
-+    local.write_text("x")
-+    client.upload_file(local, "folder/a.txt")
-+    assert client.exists("folder/a.txt") is True and client.exists("absent") is False
-+    assert fake.calls == [("upload_file", str(local), "bucket-from-env", "folder/a.txt"),
-+                          ("head_object", "bucket-from-env", "folder/a.txt"), ("head_object", "bucket-from-env", "absent")]
-```
-
-</details>
 
 <details class="card" data-tressoir-markdown open>
   <summary>
@@ -6508,243 +5530,7 @@ new file mode 100644
 
 </details>
 
-<details class="card" data-tressoir-markdown open>
-  <summary>
-    <span class="card-title"><a href="slice4a/activation/bench/agent_probes/agentic_program_probe.py">activation/bench/agent_probes/agentic_program_probe.py</a></span>
-    <span class="card-oneliner">New: CPU probe of lenient deserialization (placeholder, strict, key), __main__ mapping and the runtime API on the tiny fixture. P4: run_tool on a sandbox-free tool, the truncation part with nested parent context, the record round trip and activation_messages_of conversion.</span>
-    <span class="card-badge">Diff</span>
-  </summary>
 
-`activation/bench/agent_probes/agentic_program_probe.py`
-
-```diff
-diff --git a/activation/bench/agent_probes/agentic_program_probe.py b/activation/bench/agent_probes/agentic_program_probe.py
-new file mode 100644
---- /dev/null
-+++ b/activation/bench/agent_probes/agentic_program_probe.py
-@@ -0,0 +1,219 @@
-+"""
-+CPU probe of the agentic-program plumbing (no engine, no sandbox): a record deserializes without the program class
-+present (MissingClass placeholder that errs on construction and re-serializes unchanged), the cache key separates the
-+programmed and plain variants, `__main__` classes serialize under the script's module name, the runtime API
-+(run_tool, augment_context ahead of the task, set_final_answer, run_program error handling) behaves on the tiny
-+fixture, and a base run's record converts to AC-bearing messages (activation_messages_of).
-+
-+    uv run python -m activation.bench.agent_probes.agentic_program_probe
-+"""
-+from __future__ import annotations
-+
-+import os
-+from dataclasses import replace
-+
-+from activation.agent import Agent, AgentConfig, AgenticProgram, AgentRunResult
-+from activation.agent.agent_config import _class_spec
-+from activation.agent.agent_tools import AgentTool, ToolCallResult
-+from activation.agent.rollout_caching import config_key
-+from activation.agent_training.agent_training_utils import activation_messages_of
-+from activation.common.ac_parts import direct_parts
-+from activation.common.utils import MissingClass, MissingClassError
-+from activation.dataset import ANSWER_RULES, DatasetTask, DatasetTaskKind, DatasetTaskMetricsKind, bare_prompt
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+QUESTION = "How many trailing zeroes are there in 100!?"
-+TASK = DatasetTask(
-+    task_id="trailing-zeroes-100", dataset_id="deepmath___fixture", task_datum={"question": QUESTION},
-+    reference_metrics_kind=DatasetTaskMetricsKind.MATH_VERIFY, gold_answer="24",
-+    agent_prompt=bare_prompt(QUESTION, ANSWER_RULES["math"]), task_kind=DatasetTaskKind.MATH,
-+)
-+
-+
-+class AnswerFromKwargs(AgenticProgram):
-+    """Finishes without a model turn: the answer comes from the config."""
-+    name = "answer_from_kwargs"
-+
-+    def __init__(self, agent: Agent, answer: str = "24"):
-+        super().__init__(agent)
-+        self.answer = answer
-+
-+    def execute(self) -> AgentRunResult:
-+        self.agent.augment_context("Programmed context ahead of the task.")
-+        self.agent.set_final_answer(self.answer)
-+        return self.agent.run_results
-+
-+
-+class EchoTool(AgentTool):
-+    """A tool with no sandbox: returns its argument, so run_tool and truncation can be exercised on this host."""
-+    name = "echo"
-+    parameters = {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}
-+
-+    def execute(self, text: str = "") -> ToolCallResult:
-+        return ToolCallResult(output=text)
-+
-+
-+class Broken(AgenticProgram):
-+    def execute(self) -> AgentRunResult:
-+        raise RuntimeError("boom")
-+
-+
-+class WrongReturn(AgenticProgram):
-+    def execute(self) -> AgentRunResult:
-+        return AgentRunResult(agent_config=self.agent.agent_config)
-+
-+
-+def check_serde() -> None:
-+    config = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny",
-+                         agentic_program=(AnswerFromKwargs, {"answer": "24"}), metadata={"program": AnswerFromKwargs.name})
-+    row = AgentRunResult(agent_config=config, seed=0, finish_reason="programmed", answer="24", score=1.0).serialize()
-+    spec = row["agent_config"]["agentic_program"]
-+    assert spec["class"] == f"{AnswerFromKwargs.__module__}:AnswerFromKwargs".replace("__main__", __spec__.name if __spec__ else "__main__"), spec
-+    assert spec["kwargs"] == {"answer": "24"}
-+    live = AgentRunResult.deserialize(row)
-+    live_class = live.agent_config.agentic_program[0]                                  # importable here: the real class (a second module
-+    assert not isinstance(live_class, MissingClass) and live_class.__qualname__ == "AnswerFromKwargs"   # object when run as __main__)
-+
-+    row["agent_config"]["agentic_program"]["class"] = "activation.bench.agent_probes.nowhere:AnswerFromKwargs"
-+    row["agent_config"]["tools"] = {"custom": {"class": "activation.extensions.nowhere:CustomTool", "kwargs": {"k": 1}}}
-+    restored = AgentRunResult.deserialize(row)                                         # lenient by default
-+    placeholder, kwargs = restored.agent_config.agentic_program
-+    assert isinstance(placeholder, MissingClass) and kwargs == {"answer": "24"}, (placeholder, kwargs)
-+    tool_placeholder, tool_kwargs = restored.agent_config.tools["custom"]
-+    assert isinstance(tool_placeholder, MissingClass) and tool_kwargs == {"k": 1}
-+    try:
-+        placeholder(None)
-+        raise AssertionError("a MissingClass must refuse construction")
-+    except MissingClassError as error:
-+        assert "activation.bench.agent_probes.nowhere:AnswerFromKwargs" in str(error)
-+    assert _class_spec(placeholder, kwargs)["class"] == "activation.bench.agent_probes.nowhere:AnswerFromKwargs"   # unchanged on rewrite
-+    assert restored.serialize()["agent_config"]["tools"]["custom"]["class"] == "activation.extensions.nowhere:CustomTool"
-+    assert restored.answer == "24" and restored.score == 1.0
-+    try:
-+        AgentRunResult.deserialize(row, strict=True)
-+        raise AssertionError("strict deserialization must raise")
-+    except (ImportError, AttributeError, ModuleNotFoundError):
-+        pass
-+    plain = replace(config, agentic_program=None, metadata={})
-+    assert config_key(config) != config_key(plain)
-+    labelled = replace(config, metadata={"template": "math/base/0", "program": "answer_from_kwargs"})
-+    assert config_key(labelled) == "deepmath___fixture/trailing-zeroes-100/math/base/0/answer_from_kwargs"
-+    assert config_key(replace(labelled, metadata={"template": "math/base/0"})) == "deepmath___fixture/trailing-zeroes-100/math/base/0"
-+    print("serde: placeholder, strict, key and __main__ mapping OK", flush=True)
-+
-+
-+def check_runtime(harness: HarnessRuntime) -> None:
-+    base = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny", max_duration=30)
-+    agent = Agent(harness, replace(base, agentic_program=(AnswerFromKwargs, {"answer": "24"})), seed=0)
-+    result = agent.run_program()
-+    assert result is agent.run_results and result.finish_reason == "programmed" and result.answer == "24", result.finish_reason
-+    assert result.num_turns == 0 and result.duration >= 0
-+    assert agent.score() == 1.0
-+    assert agent.run_results.injected_input == [ToolCallResult(tool="program", output="Programmed context ahead of the task.").serialize()]
-+    agent.begin()                                                                       # tokenizer only: the recorded prompt
-+    first_user = next(message for message in agent.run_results.prompt_messages if message["role"] == "user")
-+    content = first_user["content"]
-+    assert isinstance(content, list) and content[0]["text"] == "[program]\nProgrammed context ahead of the task.\n\n", content
-+    assert content[-1]["text"].startswith(QUESTION), content
-+    try:
-+        agent.augment_context("late")
-+        raise AssertionError("augment_context after begin must be refused")
-+    except AssertionError as error:
-+        assert "before the first turn" in str(error)
-+    agent.shutdown()
-+
-+    broken = Agent(harness, replace(base, agentic_program=(Broken, {})), seed=0)
-+    result = broken.run_program()
-+    assert result.finish_reason == "error" and "boom" in (result.score_feedback or ""), result.finish_reason
-+    broken.shutdown()
-+
-+    wrong = Agent(harness, replace(base, agentic_program=(WrongReturn, {})), seed=0)
-+    result = wrong.run_program()
-+    assert result.finish_reason == "error" and "own run_results" in (result.score_feedback or "")
-+    wrong.shutdown()
-+
-+    missing = Agent(harness, replace(base, agentic_program=(MissingClass("x.y", "Z", "ModuleNotFoundError"), {})), seed=0)
-+    result = missing.run_program()
-+    assert result.finish_reason == "error" and "x.y:Z is not importable" in (result.score_feedback or "")
-+    missing.shutdown()
-+    print("runtime: programmed finish, context ahead of the task, error handling OK", flush=True)
-+
-+
-+def check_activation_content(harness: HarnessRuntime) -> None:
-+    """run_tool through the model's path; activation content produced without an AC model, recorded, and rendered on conversion."""
-+    base = AgentConfig(system_prompt="s", user_prompt=TASK.agent_prompt, dataset_task=TASK, model_name="tiny", max_duration=30)
-+    agent = Agent(harness, base, seed=0)
-+    long_text = "0123456789" * 5_000                                                    # 50k chars: past the 20k visible limit
-+    result = agent.run_tool(EchoTool(harness, agent), text=long_text)
-+    assert result.tool == "echo" and "truncated" in result.output and len(result.output) < 21_000
-+    assert [part["kind"] for part in result.activation_content] == ["tool_output"]
-+    part = result.activation_content[0]
-+    assert part["messages"][1] == {"role": "tool", "content": long_text} and "compression_target" not in part
-+    context = part["messages"][0]["content"][0]                                       # before the first turn: the first prompt as it stands
-+    assert context["kind"] == "parent_context" and context["messages"][0] == {"role": "system", "content": "s"}
-+    assert context["messages"][1]["content"] == TASK.agent_prompt and context["tools"]
-+    short = agent.run_tool(EchoTool(harness, agent), text="short")
-+    assert short.output == "short" and short.activation_content == [] and short.tool == "echo"
-+    bad = agent.run_tool(EchoTool(harness, agent), text="x", nonsense=1)                 # an unknown extra argument (no alias target)
-+    assert bad.is_error and bad.output.startswith("Bad arguments for echo")
-+    agent.augment_context([result, "Check the echo."])
-+    before = agent.to_activation_context("subagent_prompt")                           # what a solver spawned now would receive
-+    first = before["messages"][1]["content"]
-+    assert [item.get("type") for item in first] == ["activation_context", "text", "text", "text"], [item.get("type") for item in first]
-+    assert first[0]["kind"] == "tool_output" and "ac_name" not in first[0] and first[1]["text"].startswith("[echo]\n")
-+    assert first[2]["text"].startswith("[program]\n") and first[3]["text"].startswith(QUESTION)
-+    agent.begin()
-+    run = agent.run_results
-+    assert [item["tool"] for item in run.injected_input] == ["echo", "program"]
-+    first_user = next(message for message in run.prompt_messages if message["role"] == "user")
-+    assert not direct_parts([first_user]) and first_user["content"][0]["text"].startswith("[echo]\n0123456789")   # nothing rendered: no AC model
-+    # A tool step recorded through the model's path, with a nested parent context now that the segment exists.
-+    tokenizer = agent.loaded_model.tokenizer
-+    call = {"id": "e1", "name": "echo", "arguments": {"text": "again"}}
-+    agent.record_assistant_turn("Echoing.", [call], tokenizer.encode("Echoing."), [])
-+    stepped = agent._finalize_result(call, ToolCallResult(output=long_text))
-+    agent.append_tool_results([call], [stepped])
-+    step = run.trajectory[-1]
-+    assert step["role"] == "tool" and not direct_parts(step["messages"]) and step["tool_results"][0]["tool"] == "echo"
-+    nested = step["tool_results"][0]["activation_content"][0]
-+    assert nested["kind"] == "tool_output" and nested["messages"][0]["role"] == "user"
-+    parent = nested["messages"][0]["content"][0]
-+    assert parent["kind"] == "parent_context" and parent["messages"][0]["role"] == "system" and parent["tools"]
-+    assert parent["messages"][-1]["role"] == "assistant"                                     # the segment through the echoing turn
-+    # The record survives serialization and converts to AC-bearing messages for a reader with an AC model.
-+    restored = AgentRunResult.deserialize(__import__("json").loads(__import__("json").dumps(run.serialize())))
-+    assert restored.injected_input == run.injected_input and restored.trajectory[-1]["tool_results"] == step["tool_results"]
-+    reader = replace(base, ac_model_name="ac_x")
-+    converted = activation_messages_of(restored, reader)
-+    parts = direct_parts(converted)
-+    assert [part["kind"] for part in parts] == ["tool_output", "tool_output"], [part["kind"] for part in parts]
-+    assert direct_parts(parts[0]["messages"])[0]["ac_name"] == "ac_x"                      # the nested pre-turn parent context resolved too
-+    assert all(part["ac_name"] == "ac_x" and part["compression_target"] == reader.ac_tool_output_ratio for part in parts)
-+    first = next(message for message in converted if message["role"] == "user")
-+    assert first["content"][0]["type"] == "activation_context" and first["content"][1]["text"].startswith("[echo]\n")
-+    assert first["content"][2]["text"].startswith("[program]\n") and first["content"][-1]["text"].startswith(QUESTION)
-+    tool_message = converted[-1]
-+    assert tool_message["role"] == "tool" and tool_message["content"][0]["type"] == "activation_context"
-+    inner = direct_parts(tool_message["content"][0]["messages"])[0]
-+    assert inner["kind"] == "parent_context" and inner["compression_target"] == reader.ac_subagent_ratio and inner["ac_name"] == "ac_x"
-+    assert activation_messages_of(restored, base) == restored.prompt_messages + [m for s in restored.trajectory for m in s["messages"]]
-+    assert restored.trajectory[-1]["messages"] == step["messages"]                             # the record itself is untouched
-+    agent.shutdown()
-+    print("activation content: run_tool, truncation part, nested parent context, record and conversion OK", flush=True)
-+
-+
-+def main() -> int:
-+    check_serde()
-+    if not os.path.isdir(TINY):
-+        print(f"tiny fixture missing ({TINY}); runtime checks skipped", flush=True)
-+        return 0
-+    harness = HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+    check_runtime(harness)
-+    check_activation_content(harness)
-+    print("AGENTIC PROGRAM PROBE PASS", flush=True)
-+    return 0
-+
-+
-+if __name__ == "__main__":
-+    raise SystemExit(main())
-```
-
-</details>
 
 <details class="card" data-tressoir-markdown open>
   <summary>
@@ -7133,7 +5919,6 @@ diff --git a/activation/agent/agent_utils.py b/activation/agent/agent_utils.py
 +            content.extend(result_content)
              content.append({"type": "text", "text": "\n</tool_response>"})
          return [{"role": "user", "content": content}]
- 
 ```
 
 </details>
@@ -7282,126 +6067,113 @@ diff --git a/activation/tests/test_basic_agent.py b/activation/tests/test_basic_
 
 </details>
 
+
+
+
 <details class="card" data-tressoir-markdown open>
   <summary>
-    <span class="card-title"><a href="slice4a/activation/tests/test_basic_rollout_redo.py">activation/tests/test_basic_rollout_redo.py</a></span>
-    <span class="card-oneliner">New: the redo policy (cut rows read as absent, new rows supersede, redo-only skips uncached tasks) and the draw guard (CPU).</span>
+    <span class="card-title"><a href="slice4a/pyproject.toml">pyproject.toml</a></span>
+    <span class="card-oneliner">Include the math-verify scoring dependency and its frozen resolution.</span>
     <span class="card-badge">Diff</span>
   </summary>
 
-`activation/tests/test_basic_rollout_redo.py`
-
 ```diff
-diff --git a/activation/tests/test_basic_rollout_redo.py b/activation/tests/test_basic_rollout_redo.py
-new file mode 100644
---- /dev/null
-+++ b/activation/tests/test_basic_rollout_redo.py
-@@ -0,0 +1,104 @@
-+"""
-+The redo policy: cached rows with listed finish reasons (and teacher kinds) read as absent and are rolled out again, the new
-+row superseding the old one at the next load; `only` skips the tasks without a cached row. And the draw guard of the
-+canonical script: a caching id keeps the seed, total, weights, reasoning and model it was first drawn with.
-+"""
-+import json
-+import os
-+import sys
-+
-+import pytest
-+
-+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-+
-+from activation.agent import AgentConfig
-+from activation.agent.agent_config import AgentRunResult
-+from activation.agent.rollout_caching import CACHE_FILENAME, RedoPolicy, RolloutCache, config_key
-+from activation.agent.rollout_manager import RolloutManager
-+from activation.common.data_syncing import SYNC_ROOT_ENV
-+from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-+
-+TINY = os.environ.get("TINY_QWEN35", "/workspace/IB/TMP/AGENT_ROLLOUTS/slice3_apply_20260909T103843Z/tiny_qwen35")
-+
-+
-+def _config(i: int, kind: str) -> AgentConfig:
-+    return AgentConfig(system_prompt="s", model_name="tiny", user_prompt=f"u{i}", max_duration=600, metadata={"teacher_kind": kind})
-+
-+
-+def _row(config: AgentConfig, finish_reason: str, answer: str = "old") -> dict:
-+    result = AgentRunResult(agent_config=config, seed=0, duration=1.0, finish_reason=finish_reason, answer=answer)
-+    return result.serialize() | {"config_key": config_key(config)}
-+
-+
-+def test_redo_policy_reads_matching_rows_as_absent_and_new_rows_supersede(tmp_path, monkeypatch):
-+    monkeypatch.setenv(SYNC_ROOT_ENV, str(tmp_path))
-+    configs = [_config(0, "base"), _config(1, "parallel_multi_agent"), _config(2, "parallel_multi_agent"), _config(3, "sequential_multi_agent")]
-+    rows = [_row(configs[0], "max_duration"), _row(configs[1], "max_duration"), _row(configs[2], "submitted"), _row(configs[3], "max_turns")]
-+    folder = tmp_path / "ROLLOUTS" / "redo_test"
-+    folder.mkdir(parents=True)
-+    (folder / CACHE_FILENAME).write_text("".join(json.dumps(row) + "\n" for row in rows))
-+
-+    plain = RolloutCache("redo_test")
-+    assert all(plain.get(config_key(c), 0) is not None for c in configs)
-+
-+    policy = RedoPolicy(finish_reasons=frozenset({"max_duration", "max_turns"}), teacher_kinds=frozenset({"parallel_multi_agent", "sequential_multi_agent"}))
-+    cache = RolloutCache("redo_test", redo=policy)
-+    assert cache.get(config_key(configs[0]), 0) is not None                        # base: kind not listed, kept
-+    assert cache.get(config_key(configs[1]), 0) is None and cache.is_stale(config_key(configs[1]), 0)
-+    assert cache.get(config_key(configs[2]), 0) is not None                        # submitted, kept
-+    assert cache.get(config_key(configs[3]), 0) is None and cache.is_stale(config_key(configs[3]), 0)
-+    assert not cache.is_stale(config_key(_config(9, "base")), 0)                   # never cached: not stale either
-+
-+    cache.append(AgentRunResult(agent_config=configs[1], seed=0, duration=2.0, finish_reason="submitted", answer="new"))
-+    reloaded = RolloutCache("redo_test", redo=policy)
-+    assert reloaded.get(config_key(configs[1]), 0)["answer"] == "new"               # last row per key wins; the old one stays in the file
-+    assert sum(1 for line in (folder / CACHE_FILENAME).read_text().splitlines() if line) == 5
-+
-+
-+@pytest.fixture(scope="module")
-+def harness():
-+    if not os.path.isdir(TINY):
-+        pytest.skip(f"tiny fixture missing: {TINY}")
-+    return HarnessRuntime(HarnessRuntimeConfig(model_configs={"tiny": ModelConfig("tiny", TINY)}))
-+
-+
-+def test_redo_only_runs_the_stale_rows_alone(harness, monkeypatch, tmp_path):
-+    monkeypatch.setenv(SYNC_ROOT_ENV, str(tmp_path))
-+    ran: list[str] = []
-+
-+    def fake_run_one(self, config, seed, perform_scoring, reporter):
-+        ran.append(config.user_prompt)
-+        return AgentRunResult(agent_config=config, seed=seed, duration=0.1, finish_reason="submitted", answer="redone")
-+
-+    loaded_model = harness.loaded_models["tiny"]
-+    monkeypatch.setattr(RolloutManager, "_run_one", fake_run_one)
-+    monkeypatch.setattr(RolloutManager, "_warm_up", lambda self, *args: None)
-+    monkeypatch.setattr(RolloutManager, "_build_indexes", lambda self, *args: None)
-+    monkeypatch.setattr(loaded_model, "ensure_engine_loaded", lambda: None)
-+    configs = [_config(i, "parallel_multi_agent") for i in range(4)]                # 0 cut, 1 fine, 2 cut, 3 never cached
-+    folder = tmp_path / "ROLLOUTS" / "redo_only"
-+    folder.mkdir(parents=True)
-+    (folder / CACHE_FILENAME).write_text("".join(json.dumps(row) + "\n" for row in
-+                                                 [_row(configs[0], "max_duration"), _row(configs[1], "submitted"), _row(configs[2], "max_turns")]))
-+    harness.harness_config.agent_max_concurrent = 2
-+    try:
-+        policy = RedoPolicy(finish_reasons=frozenset({"max_duration", "max_turns"}), only=True)
-+        results = RolloutManager(harness).perform_single_rollouts(configs, perform_scoring=False, caching_id="redo_only", redo=policy)
-+    finally:
-+        harness.harness_config.agent_max_concurrent = None
-+    assert sorted(ran) == ["u0", "u2"]
-+    assert [r.answer for r in results] == ["redone", "old", "redone"]               # task 3 skipped; cached row 1 replayed
-+    assert RolloutCache("redo_only").get(config_key(configs[0]), 0)["answer"] == "redone"
-+
-+
-+def test_draw_guard_records_then_refuses_a_changed_draw(tmp_path, monkeypatch):
-+    monkeypatch.setenv(SYNC_ROOT_ENV, str(tmp_path))
-+    from activation.bench.canonical_training.generate_agent_teacher_trajectories import check_draw
-+    draw = {"seed": 0, "total": 20000, "dataset_weights": {"musique": 0.2}, "teacher_weights": {"all:base": 0.2}, "reasoning": "medium", "model_id": "m"}
-+    path = check_draw("guard", draw)
-+    assert path.exists() and json.loads(path.read_text())["total"] == 20000
-+    check_draw("guard", dict(draw))                                                 # same draw: fine
-+    with pytest.raises(SystemExit, match="total"):
-+        check_draw("guard", draw | {"total": 30000})
-+    check_draw("guard", draw | {"total": 30000}, allow_change=True)                 # explicit override
-+    assert json.loads(path.read_text())["total"] == 20000                           # the record is never rewritten
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -12,6 +12,7 @@
+     "datasets",
+     "bm25s",
+     "peft>=0.20.0",
++    "math-verify>=0.9.0",       # programmatic grading of math answers (LaTeX, numbers, sets)
+     "flash-linear-attention",   # Triton gated-delta-net kernels for Qwen3.5 training (transformers imports `fla` when present)
+ ]
 ```
 
 </details>
 
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="slice4a/uv.lock">uv.lock</a></span>
+    <span class="card-oneliner">Include the math-verify scoring dependency and its frozen resolution.</span>
+    <span class="card-badge">Diff</span>
+  </summary>
+
+```diff
+diff --git a/uv.lock b/uv.lock
+--- a/uv.lock
++++ b/uv.lock
+@@ -34,6 +34,7 @@
+     { name = "bm25s" },
+     { name = "datasets" },
+     { name = "flash-linear-attention" },
++    { name = "math-verify" },
+     { name = "peft" },
+     { name = "pillow" },
+     { name = "python-dotenv" },
+@@ -54,6 +55,7 @@
+     { name = "bm25s" },
+     { name = "datasets" },
+     { name = "flash-linear-attention" },
++    { name = "math-verify", specifier = ">=0.9.0" },
+     { name = "peft", specifier = ">=0.20.0" },
+     { name = "pillow" },
+     { name = "python-dotenv" },
+@@ -182,6 +184,15 @@
+ sdist = { url = "https://files.pythonhosted.org/packages/c6/40/8249e272c9bba8b4b5802f90717fcdb55996da243a712dca449f2d81c95b/anthropic-1.1.0.tar.gz", hash = "sha256:03d180143ca61177772a35350c78e6ff975b636fd226d221b122b1595f284f3e", size = 1132609, upload-time = "2026-08-26T17:14:53.335Z" }
+ wheels = [
+     { url = "https://files.pythonhosted.org/packages/93/9a/37a5d1913434913ed89bef960693870a1dd9478e76fd12e7b9f2c066270a/anthropic-1.1.0-py3-none-any.whl", hash = "sha256:babf7b217a6f289059a25ba4871c167411c747bbf233a4f1fb8ececc8a22f875", size = 1289646, upload-time = "2026-08-26T17:14:51.773Z" },
++]
++
++[[package]]
++name = "antlr4-python3-runtime"
++version = "4.13.2"
++source = { registry = "https://pypi.org/simple" }
++sdist = { url = "https://files.pythonhosted.org/packages/33/5f/2cdf6f7aca3b20d3f316e9f505292e1f256a32089bd702034c29ebde6242/antlr4_python3_runtime-4.13.2.tar.gz", hash = "sha256:909b647e1d2fc2b70180ac586df3933e38919c85f98ccc656a96cd3f25ef3916", size = 117467, upload-time = "2024-08-03T19:00:12.757Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/89/03/a851e84fcbb85214dc637b6378121ef9a0dd61b4c65264675d8a5c9b1ae7/antlr4_python3_runtime-4.13.2-py3-none-any.whl", hash = "sha256:fe3835eb8d33daece0e799090eda89719dbccee7aa39ef94eed3818cafa5a7e8", size = 144462, upload-time = "2024-08-03T19:00:11.134Z" },
+ ]
+ 
+ [[package]]
+@@ -1415,6 +1426,19 @@
+ ]
+ 
+ [[package]]
++name = "latex2sympy2-extended"
++version = "1.11.0"
++source = { registry = "https://pypi.org/simple" }
++dependencies = [
++    { name = "antlr4-python3-runtime" },
++    { name = "sympy" },
++]
++sdist = { url = "https://files.pythonhosted.org/packages/30/75/456da2da05f6380ea96e6ea804ab2c03e41fc3ed80052307fe8efe6ea20e/latex2sympy2_extended-1.11.0.tar.gz", hash = "sha256:9695657c81b50abba2636638638618db59f4663ed2a4a12d62cef74a40e28fec", size = 207023, upload-time = "2026-01-10T01:43:21.319Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/e9/61/f75cd1fa54d8434276126034aed54dd120747de9a8fa013cdd79545ccbeb/latex2sympy2_extended-1.11.0-py3-none-any.whl", hash = "sha256:aebb77d52ce269e25028e4bea89ddb14d242ba36bcf7b636496fb5fd9728d234", size = 209050, upload-time = "2026-01-10T01:43:19.458Z" },
++]
++
++[[package]]
+ name = "llguidance"
+ version = "1.7.6"
+ source = { registry = "https://pypi.org/simple" }
+@@ -1516,6 +1540,18 @@
+     { url = "https://files.pythonhosted.org/packages/fb/df/5bd7a48c256faecd1d36edc13133e51397e41b73bb77e1a69deab746ebac/markupsafe-3.0.3-cp314-cp314t-win32.whl", hash = "sha256:915c04ba3851909ce68ccc2b8e2cd691618c4dc4c4232fb7982bca3f41fd8c3d", size = 14819, upload-time = "2025-09-27T18:37:26.285Z" },
+     { url = "https://files.pythonhosted.org/packages/1a/8a/0402ba61a2f16038b48b39bccca271134be00c5c9f0f623208399333c448/markupsafe-3.0.3-cp314-cp314t-win_amd64.whl", hash = "sha256:4faffd047e07c38848ce017e8725090413cd80cbc23d86e55c587bf979e579c9", size = 15426, upload-time = "2025-09-27T18:37:27.316Z" },
+     { url = "https://files.pythonhosted.org/packages/70/bc/6f1c2f612465f5fa89b95bead1f44dcb607670fd42891d8fdcd5d039f4f4/markupsafe-3.0.3-cp314-cp314t-win_arm64.whl", hash = "sha256:32001d6a8fc98c8cb5c947787c5d08b0a50663d139f1305bac5885d98d9b40fa", size = 14146, upload-time = "2025-09-27T18:37:28.327Z" },
++]
++
++[[package]]
++name = "math-verify"
++version = "0.9.0"
++source = { registry = "https://pypi.org/simple" }
++dependencies = [
++    { name = "latex2sympy2-extended" },
++]
++sdist = { url = "https://files.pythonhosted.org/packages/4f/12/b8d13b581e110ac2f724a2351a8361a70fa36d057eb945d6379e8747c256/math_verify-0.9.0.tar.gz", hash = "sha256:45ac6c61344ba056b9e99a660a4bc8d044ed408f730aed68c60435aa5eec4645", size = 60329, upload-time = "2026-01-10T01:48:33.056Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/62/76/6b4969bccc842b6567f7e6ee015684b9428a9b7fcbdf479e73716f43597f/math_verify-0.9.0-py3-none-any.whl", hash = "sha256:3703e7c4885354027fa84409d762a596a2906d1fd4deb78361876bd905a76194", size = 29967, upload-time = "2026-01-10T01:48:31.674Z" },
+ ]
+ 
+ [[package]]
+```
+
+</details>
