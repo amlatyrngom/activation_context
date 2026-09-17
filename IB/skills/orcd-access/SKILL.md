@@ -52,6 +52,9 @@ Host orcd
 ## Agent rules
 
 - Before any remote command run `ssh -O check orcd`. It talks only to the local socket. If it fails, stop and ask the user to reopen the channel; do not run `ssh orcd` without a live master.
+- **Unattended loops (monitors, pruners, queue movers, pull scripts) go through `IB/TMP/AGENT_AC_PRETRAINING/ac_recon/orcd_ssh.sh`** (the check above + `BatchMode=yes` + `ControlMaster=no`, exit 97 when the channel is down) and emit one "channel down" line, then stay quiet until it is back. Never write a loop that calls `ssh orcd` directly. Lesson of 2026-09-17: the shared connection dropped at 22:20 UTC; three loops kept retrying, every retry ended in `Permission denied (keyboard-interactive)`, and within half an hour the login nodes refused port 22 to this host's address (lifted on its own at 22:48). One guarded call per cycle, at most one failed attempt per outage.
+- Keep at most one remote call in flight per loop and cycles of 10 minutes or more; the login nodes are shared and slow under load (`du` over hundreds of gigabytes on scratch takes minutes: scope it to the active runs).
+- A channel that keeps dying needs a diagnosed cause, not retries: have the user start the master with a log (`ssh -v -fNM orcd 2> ~/orcd_master.log`) and read the log after the next drop.
 - Run remote commands as `ssh -o BatchMode=yes -o ControlMaster=no orcd '<cmd>'`. BatchMode refuses every interactive prompt and `ControlMaster=no` never spawns a new master, so a cold channel fails fast instead of pushing a Duo notification to the user's phone.
 - File transfer rides the same channel: `rsync -az -e "ssh -o BatchMode=yes -o ControlMaster=no" ...`.
 - Login nodes run nothing heavier than `rsync`, `sbatch`, `squeue`, `scancel`, `sacct`, `cat`. Compute goes through Slurm. Cancel jobs by id (`scancel JOBID`), never by user or `--all`.
