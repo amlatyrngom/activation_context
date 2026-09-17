@@ -336,7 +336,7 @@ def run(label):
             held = [replace(item, kind=passage['source']) for item, passage in zip(held, held_passages)]
         held.sort(key=lambda item: item.info['passage_tokens'] > arm['completion_tokens'] - 32)   # stable: the fixed completion samples (first items) fit the generation budget
         wiki = [replace(item, kind='wiki') for item in study.generate_reconstruction_samples(material['wiki'], ratio=arm['ratio'], variant='reconstruct', seed=SEED + 2)]
-        no_context = [replace(item, item_id=item.item_id + ':no_context', kind='reconstruct', ac_messages=strip_ac_parts(item.ac_messages)) for item in held]
+        no_context = [replace(item, item_id=item.item_id + ':no_context', ac_messages=strip_ac_parts(item.ac_messages)) for item in held]   # kinds kept: per-source floors
         reporting = held + wiki
         r = RunReporter(folder, f'AC reconstruction — {label}: ratio 1/{round(1 / arm["ratio"])}, penalty {arm["penalty_weight"]:g}×{arm["penalty_fraction"]:g}, reader LR {arm["reader_lr"]:g}', arm, start)
         r.set_text('summary', 'Run summary', '\n'.join([
@@ -362,11 +362,15 @@ def run(label):
         base_examples = [trainer.build_example(ac, replace(item, item_id=item.item_id + ':base', in_context_messages=item.ac_messages, in_context_start=item.ac_start), reference=True) for item in no_context]
         trainer._store_teacher_targets(ac, base_examples, torch.device('cuda'), lora=None, reporting_name='base no-context floor')
         base_floor = float(sum(-trainer.teacher_target_logp[e.teacher_cache_key].float().mean() for e in base_examples) / len(base_examples))
+        base_floor_by_source = {}
+        for e in base_examples:
+            base_floor_by_source.setdefault(e.item.kind, []).append(float(-trainer.teacher_target_logp[e.teacher_cache_key].float().mean()))
+        base_floor_by_source = {kind: sum(values) / len(values) for kind, values in base_floor_by_source.items()}
         trainer.teacher_cache.clear(); trainer.teacher_target_logp.clear()
         r.add_data_point('references', {'name': 'base model, no context, held-out novel', 'loss kind': 'sft', 'loss': base_floor, 'measured with': 'no reader adapter; the penalty target'})
         for x in (0, arm['epochs']):
             r._ensure_series('gold_nll', 'base, no context'); r.add_data_point('gold_nll', {'x': x, 'base, no context': base_floor})
-        r.status['base no context'] = f'{base_floor:.4f}'; r.render()
+        r.status['base no context'] = f'{base_floor:.4f}' + (' · ' + ' '.join(f'{k} {v:.2f}' for k, v in sorted(base_floor_by_source.items())) if len(base_floor_by_source) > 1 else ''); r.render()
         shared_references = prep / 'cache' / f"references_{Path(arm['material']).stem}_r{round(1 / arm['ratio'])}_k{TOP_K}_gold1_n{arm['train_items']}.pt"
         if training_config.penalty_active and shared_references.exists():
             try: r.status['shared references'] = f"{trainer._merge_teacher_targets(shared_references, None)} loaded"; r.render(force=True)
@@ -389,7 +393,7 @@ def run(label):
                   'deltas_off_novel': novel_summary(stats.deltas_off or {}), 'deltas_off_wiki': ((stats.deltas_off or {}).get('by_kind') or {}).get('wiki'),
                   'held': {k: v for k, v in last.items() if k not in ('per_item',)},   # blend of both panels; per panel below
                   'held_novel': novel_summary(last), 'held_wiki': (last.get('by_kind') or {}).get('wiki'), 'held_by_source': {k: v for k, v in (last.get('by_kind') or {}).items() if k != 'wiki'}, 'no_context': {k: v for k, v in (stats.epochs[-1].validation or {}).items() if k != 'per_item'} if stats.epochs and stats.epochs[-1].validation else None,
-                  'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor,
+                  'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor, 'base_floor_by_source': base_floor_by_source,
                   'penalty_last': stats.penalty[-1] if stats.penalty else None,
                   'duration_seconds': time.monotonic() - start}
         write_json(folder / 'result.json', result)
@@ -397,9 +401,10 @@ def run(label):
         phase(r, 'complete', run_elapsed=f'{result["duration_seconds"] / 60:.1f} min'); r.finish()
 
 
-def budget(smoke='S', target='A16', hours=None):
+def budget(smoke='S', target='A16', hours=None, scale=None):
     """From a smoke run's rates, the size of `target` (a multiple of 64) whose epochs fit its budget (or `hours`); written to
-    preparation/calibration_<target>.json (calibration.json for the A16 anchor, as before)."""
+    preparation/calibration_<target>.json (calibration.json for the A16 anchor, as before). `scale`: multiplies the per-item rates
+    (a smoke on shorter passages than the target's material: the ratio of the mean passage tokens; None = the materials' ratio)."""
     prep = REPORT_ROOT / 'preparation'; run_folder = REPORT_ROOT / smoke
     stats = json.loads((run_folder / 'training_stats.json').read_text()); result = json.loads((run_folder / 'result.json').read_text())
     arm_s = result['arm']; items = result['train_items']; held = result['held_items'] + result['wiki_items']; epochs = stats['epochs']
@@ -415,6 +420,10 @@ def budget(smoke='S', target='A16', hours=None):
     anchor = arms()[target]; panels_a = round(1 / anchor['reporting_interval'])
     material = json.loads((prep / anchor['material']).read_text())
     available = len(material['train'])
+    if scale is None:
+        smoke_material = json.loads((prep / arm_s['material']).read_text())
+        scale = statistics.mean(p['tokens'] for p in material['train']) / statistics.mean(p['tokens'] for p in smoke_material['train']) if arm_s['material'] != anchor['material'] else 1.0
+    train_s, panel_s, validation_s, reference_s = (x * scale for x in (train_s, panel_s, validation_s, reference_s))
     held_a = len(material['held']) if not anchor['held_per_source'] else sum(min(anchor['held_per_source'], n) for n in collections.Counter(p['source'] for p in material['held']).values())
     wiki_a = len(material['wiki']); budget_seconds = int(hours * 3600) if hours else anchor['budget_seconds']
     def total(n):
@@ -424,7 +433,7 @@ def budget(smoke='S', target='A16', hours=None):
     fitting = [n for n in range(64, min(available, 400000) + 1, 64) if total(n) <= budget_seconds]
     if not fitting: raise RuntimeError(f'No size fits {budget_seconds} s: 64 items would take {total(64):.0f} s')
     size = fitting[-1]
-    record = {'train_items': size, 'prepared_items': available, 'estimated_seconds': round(total(size)), 'budget_seconds': budget_seconds, 'smoke': smoke, 'target': target,
+    record = {'train_items': size, 'prepared_items': available, 'estimated_seconds': round(total(size)), 'budget_seconds': budget_seconds, 'smoke': smoke, 'target': target, 'rate_scale': scale,
               'rates': {'train_s_per_item': train_s, 'panel_s_per_item': panel_s, 'validation_s_per_item': validation_s, 'sample_s_per_item': sample_s,
                         'reference_s_per_item': reference_s, 'checkpoint_s': checkpoint_s, 'load_s': load_s, 'baseline_s': baseline_s}}
     write_json(prep / ('calibration.json' if target == 'A16' else f'calibration_{target}.json'), record); print(json.dumps(record, indent=2))
@@ -443,11 +452,11 @@ def overview():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('command', choices=['prepare', 'run', 'budget', 'overview']); parser.add_argument('--run')
-    parser.add_argument('--smoke', default='S'); parser.add_argument('--target', default='A16'); parser.add_argument('--hours', type=float, default=None)
+    parser.add_argument('--smoke', default='S'); parser.add_argument('--target', default='A16'); parser.add_argument('--hours', type=float, default=None); parser.add_argument('--scale', type=float, default=None)
     args = parser.parse_args()
     try:
         if args.command == 'run': run(args.run)
-        elif args.command == 'budget': budget(args.smoke, args.target, args.hours)
+        elif args.command == 'budget': budget(args.smoke, args.target, args.hours, args.scale)
         else: globals()[args.command]()
     except BaseException as error:
         folder = REPORT_ROOT / (args.run if args.command == 'run' else 'preparation')
