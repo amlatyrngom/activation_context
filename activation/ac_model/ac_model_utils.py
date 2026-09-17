@@ -215,16 +215,12 @@ def validate_paired_histories(teacher: list[dict], teacher_start: int, student: 
 
 
 def validate_part_capacity(ac_model, request, capacity: int) -> None:
-    """Check every recursive side forward, including pooled content and summary rows."""
+    """Check every recursive side forward: content tokens plus summary rows."""
     children = [ac_model._child_request(part, request.compression_ratio) for part in direct_parts(request.messages)]
     lengths = [ac_model.part_view_rows(child.messages, child.compression_ratio, child.tools) for child in children]
     tokenizer = ac_model.side.tokenizer
     ids, _ = tokenize_with_parts(tokenizer, request.messages, lengths, tokenizer.pad_token_id or 0, tools=request.tools)
-    content_length = len(ids)
-    if ac_model.config.input_pooling_stride:
-        window, stride = ac_model.config.input_pooling_window, ac_model.config.input_pooling_stride
-        content_length = 1 if len(ids) <= window else -(-(len(ids) - window) // stride) + 1
-    total = content_length + ac_model.num_view_rows(len(ids), request.compression_ratio)      # the summary rows (kv_transfer_full's reader run is longer, the side forward is not)
+    total = len(ids) + ac_model.num_view_rows(len(ids), request.compression_ratio)      # the content tokens plus the summary rows
     if total > capacity:
         raise ValueError(f"AC side forward needs {total} positions, exceeding supported capacity {capacity}")
     for child in children:
@@ -382,130 +378,38 @@ class BlockedLocalAttentionLayer(nn.Module):
         return x + self.residual_scale * self.ffn(self.norm2(x))
 
 
-class WindowedPooling(nn.Module):
-    """
-    Self-attention on `window`-wide windows with `stride` stride, pooled to one vector per window,
-    then an FFN: the token sequence becomes about 1/stride of its length (the retrieval model's
-    byte pooling, on token rows).
-    """
-
-    def __init__(self, d: int, num_heads: int, window: int, stride: int) -> None:
-        super().__init__()
-        self.window, self.stride = window, stride
-        self.norm = nn.LayerNorm(d)
-        self.attention = nn.MultiheadAttention(d, num_heads, dropout=0.0, batch_first=True)
-        self.ffn = FeedForward(d, 4 * d, d)
-        self.residual_scale = nn.Parameter(torch.tensor(0.1))
-
-    def num_windows(self, length: int) -> int:
-        return 1 if length <= self.window else (length - self.window + self.stride - 1) // self.stride + 1
-
-    def forward(self, x: torch.Tensor, valid: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """x [B, L, d], valid [B, L] bool -> pooled [B, W, d], window mask [B, W] bool (exactly the windows a row gets alone)."""
-        batch_size, length, d = x.shape
-        window, stride = self.window, self.stride
-        pad = (-(length - window)) % stride if length > window else window - length
-        if pad:
-            x = F.pad(x, (0, 0, 0, pad))
-            valid = F.pad(valid, (0, pad), value=False)
-        windows = x.unfold(1, window, stride).permute(0, 1, 3, 2)                                  # [B, W, window, d]
-        window_masks = valid.unfold(1, window, stride)                                              # [B, W, window]
-        num_windows = windows.shape[1]
-        flat = windows.reshape(batch_size * num_windows, window, d)
-        flat_masks = window_masks.reshape(batch_size * num_windows, window)
-        lengths = valid.sum(dim=1)
-        num_valid = torch.where(lengths > window, (lengths - window + stride - 1) // stride + 1, torch.ones_like(lengths))
-        window_valid = (torch.arange(num_windows, device=x.device)[None, :] < num_valid[:, None]).reshape(-1)
-        key_padding = ~flat_masks
-        key_padding[~window_valid] = False                                                          # invalid windows attend harmlessly, masked downstream
-        normed = self.norm(flat)
-        attended, _ = self.attention(normed, normed, normed, key_padding_mask=key_padding, need_weights=False)
-        flat = flat + self.residual_scale * attended
-        weights = flat_masks.to(flat.dtype)[..., None]
-        pooled = (flat * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
-        pooled = pooled + self.residual_scale * self.ffn(pooled)
-        return pooled.view(batch_size, num_windows, d), window_valid.view(batch_size, num_windows)
-
-
 def unit_rows(rows: torch.Tensor) -> torch.Tensor:
     """Normalize fp32 rows without mixing content across positions."""
     rows = rows.float()
     return rows * rows.square().mean(dim=-1, keepdim=True).clamp_min(1e-8).rsqrt()
 
 
-def mass_bins(mass: torch.Tensor, num_rows: int) -> tuple[torch.Tensor, torch.Tensor]:
-    """Ordered bins by cumulative mass: with T = the total mass, bin j spans the tokens holding the mass points [j T / V, (j + 1) T / V].
-    `starts[j]` = the number of tokens whose inclusive cumulative mass is <= j T / V; `ends[j]` = one more than the number whose inclusive
-    cumulative mass is < (j + 1) T / V, clamped to N. With a uniform mass these are floor(j N / V) and ceil((j + 1) N / V), the token-count
-    bins; with a positive mass every bin is nonempty (start < end), consecutive bins overlap by at most one token and their union is every token
-    (the float64 cumulative sum decides the exact boundary tokens). O(V log N)."""
-    if mass.dim() != 1 or mass.shape[0] == 0 or num_rows < 1:
-        raise ValueError("mass bins need one positive mass per token and a positive row count")
-    length = mass.shape[0]
-    cumulative = mass.double().cumsum(0)
-    total = cumulative[-1]
-    ordinal = torch.arange(num_rows, device=mass.device, dtype=torch.float64)
-    low, high = ordinal * total / num_rows, (ordinal + 1) * total / num_rows
-    starts = torch.searchsorted(cumulative, low, right=True)                       # tokens with cumulative mass <= low
-    ends = (torch.searchsorted(cumulative, high, right=False) + 1).clamp_max(length)   # tokens with cumulative mass < high, plus one
-    return starts, ends
-
-
 class AdaptiveSummaryPooling(nn.Module):
-    """V content-derived mean queries, each attending its ordered adaptive bin; O(N + V) source rows.
+    """V content-derived mean queries, each attending its ordered bin of the content (token-count bins); O(N + V) source rows."""
 
-    `surprisal` > 0 (pool_surprisal, the writer-side lever of round 8): the bins are drawn by cumulative mass 1 + surprisal x s_t / mean(s) instead of
-    token count (s_t = the base model's no-context surprisal of content token t: a row covers an equal share of the passage's entropy plus the token-count
-    prior; a bin is at most (1 + surprisal) x the uniform width + 2 tokens; rows per part unchanged), and the pooling attention logits gain the bias
-    surprisal x b_h x s_t / mean(s) with b_h a zero-initialised per-head parameter (`surprisal_bias`, registered only when on). At 0 the module and its
-    state dict are exactly the token-count pooling."""
-
-    def __init__(self, d: int, num_heads: int, surprisal: float = 0.0) -> None:
+    def __init__(self, d: int, num_heads: int) -> None:
         super().__init__()
         self.norm = nn.LayerNorm(d)
         self.attention = nn.MultiheadAttention(d, num_heads, dropout=0.0, batch_first=True)
         self.ffn = FeedForward(d, 4 * d, d)
         self.residual_scale = nn.Parameter(torch.tensor(0.1))
-        self.surprisal = float(surprisal)
-        self.surprisal_bias: nn.Parameter | None = nn.Parameter(torch.zeros(num_heads)) if self.surprisal > 0 else None
 
-    def bins(self, length: int, num_rows: int, surprisal: torch.Tensor | None = None, device: torch.device | None = None) -> tuple[torch.Tensor, torch.Tensor, int, torch.Tensor | None]:
-        """(starts, ends, the widest bin, the relative surprisal s / mean(s) or None): token-count bins, or mass bins when the module is on and a
-        surprisal is given."""
-        ordinal = torch.arange(num_rows, device=device if device is not None else (surprisal.device if surprisal is not None else None))
-        if surprisal is None or self.surprisal_bias is None:
-            starts = ordinal * length // num_rows
-            ends = ((ordinal + 1) * length + num_rows - 1) // num_rows
-            return starts, ends, (length + num_rows - 1) // num_rows + 1, None
-        if surprisal.shape[0] != length:
-            raise ValueError(f"one surprisal per content token: {surprisal.shape[0]} for {length}")
-        relative = surprisal.float() / surprisal.float().mean().clamp_min(1e-6)          # scale-free: mean 1 over the part
-        starts, ends = mass_bins(1.0 + self.surprisal * relative, num_rows)
-        return starts, ends, int((ends - starts).max()), relative
-
-    def forward(self, rows: torch.Tensor, num_rows: int, surprisal: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, rows: torch.Tensor, num_rows: int) -> torch.Tensor:
         # floor/ceil bins cover the input; V>N repeats nonempty bins, never padding.
         length = rows.shape[0]
         if length == 0 or num_rows < 1:
             raise ValueError("Summary pooling needs nonempty content and a positive row count")
-        starts, ends, width, relative = self.bins(length, num_rows, surprisal, device=rows.device)
+        ordinal = torch.arange(num_rows, device=rows.device)
+        starts = ordinal * length // num_rows
+        ends = ((ordinal + 1) * length + num_rows - 1) // num_rows
+        width = (length + num_rows - 1) // num_rows + 1
         indexes = starts[:, None] + torch.arange(width, device=rows.device)[None]
         valid = indexes < ends[:, None]
         bins = rows[indexes.clamp_max(length - 1)]
         weights = valid[..., None].to(rows.dtype)
         means = (bins * weights).sum(dim=1) / weights.sum(dim=1)
         normed = self.norm(bins)
-        if relative is None:
-            update, _ = self.attention(self.norm(means)[:, None], normed, normed,
-                                       key_padding_mask=~valid, need_weights=False)
-        else:
-            # The surprisal bias on the logits: [V, heads, 1, width] -> (V x heads, 1, width), plus the padding as a float mask of the same kind.
-            heads = self.attention.num_heads
-            bias = self.surprisal * self.surprisal_bias[None, :, None, None] * relative[indexes.clamp_max(length - 1)][:, None, None, :]
-            bias = bias.reshape(num_rows * heads, 1, width).to(normed.dtype)
-            padding = torch.zeros(valid.shape, dtype=normed.dtype, device=rows.device).masked_fill(~valid, float("-inf"))
-            update, _ = self.attention(self.norm(means)[:, None], normed, normed,
-                                       key_padding_mask=padding, attn_mask=bias, need_weights=False)
+        update, _ = self.attention(self.norm(means)[:, None], normed, normed, key_padding_mask=~valid, need_weights=False)
         summaries = means + self.residual_scale * update[:, 0]
         return summaries + self.residual_scale * self.ffn(self.norm(summaries))
 
@@ -531,276 +435,86 @@ class RowHead(nn.Module):
         return out / rms * self.scale
 
 
-class RefineAdapter(nn.Module):
-    """Iterative encoder (encoder_passes >= 2): a residual bottleneck d -> r -> d, its output projection zero-initialized, mapping the previous
-    pass's final row states (unit rows) back into the side input space. Pass k >= 2 reads summaries_1 + refine(rows_{k-1}); at init the
-    refinement is exactly 0, so a second pass starts as a plain re-read of the first pass's summaries (bit-identical rows)."""
-
-    def __init__(self, d: int, r: int) -> None:
-        super().__init__()
-        self.down = nn.Linear(d, r)
-        self.up = nn.Linear(r, d)
-        nn.init.zeros_(self.up.weight); nn.init.zeros_(self.up.bias)
-
-    def forward(self, rows: torch.Tensor) -> torch.Tensor:
-        return self.up(F.silu(self.down(rows)))
-
-
 @dataclass
 class ACOutput:
-    """What the encoder emits for one part: rows in the target input space plus, for a deep model, per intervention layer either
-    one residual delta ([V, d_target], `layer_inputs`), one pre-RoPE K/V delta pair ([V, d_kv] each, `kv_inputs`), or one K/V slot
-    tuple (`kv_slots`: the side-computed K and V contributions [V, d_kv] each plus the layer's two 0-d keep factors for the reader's
-    own K and V at the rows; the reader writes keep x own + contribution over the row slices; the K/V transfer targets use the same
-    entry with contribution = takeover x (the side model's own K/V + correction) - `kv_transfer_full` over the whole passage run, its
-    `input_embeds` then being the rows followed by zero fill up to the run length), learned scales included. A
-    cross-attention model carries `cross_passage` instead: the side model's final states at every passage position ([N, d_side]),
-    read by the reader's per-layer cross-attention blocks. Recursive results carry empty maps."""
+    """What the encoder emits for one part: the rows in the reader's input space plus, for a deep model, one residual delta per
+    intervention layer ([V, d_target], `layer_inputs`) that the reader adds to that layer's input at the row positions. Recursive
+    results carry an empty map."""
     input_embeds: torch.Tensor
     layer_inputs: dict[int, torch.Tensor] = field(default_factory=dict)
-    kv_inputs: dict[int, tuple[torch.Tensor, torch.Tensor]] = field(default_factory=dict)
-    kv_slots: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = field(default_factory=dict)
-    cross_passage: torch.Tensor | None = None
 
     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
         move = lambda tensor: tensor.to(device=device, dtype=dtype)
-        return ACOutput(move(self.input_embeds),
-                        {int(layer): move(rows) for layer, rows in self.layer_inputs.items()},
-                        {int(layer): (move(dk), move(dv)) for layer, (dk, dv) in self.kv_inputs.items()},
-                        {int(layer): tuple(move(tensor) for tensor in entry) for layer, entry in self.kv_slots.items()},
-                        None if self.cross_passage is None else move(self.cross_passage))
+        return ACOutput(move(self.input_embeds), {int(layer): move(rows) for layer, rows in self.layer_inputs.items()})
 
     def detach_cpu(self, dtype: torch.dtype = torch.bfloat16) -> "ACOutput":
         cpu = lambda tensor: tensor.detach().to(device="cpu", dtype=dtype).contiguous()
-        return ACOutput(cpu(self.input_embeds), {int(layer): cpu(rows) for layer, rows in self.layer_inputs.items()},
-                        {int(layer): (cpu(dk), cpu(dv)) for layer, (dk, dv) in self.kv_inputs.items()},
-                        {int(layer): tuple(cpu(tensor) for tensor in entry) for layer, entry in self.kv_slots.items()},
-                        None if self.cross_passage is None else cpu(self.cross_passage))
+        return ACOutput(cpu(self.input_embeds), {int(layer): cpu(rows) for layer, rows in self.layer_inputs.items()})
 
     @property
     def has_interventions(self) -> bool:
-        return bool(self.layer_inputs or self.kv_inputs or self.kv_slots or self.cross_passage is not None)
+        return bool(self.layer_inputs)
 
     @property
     def tensors(self) -> list[torch.Tensor]:
-        """The per-row payload tensors (the slot keep factors are per-model scalars, not payload)."""
-        return [self.input_embeds, *self.layer_inputs.values(), *(tensor for pair in self.kv_inputs.values() for tensor in pair),
-                *(tensor for entry in self.kv_slots.values() for tensor in entry[:2]), *([self.cross_passage] if self.cross_passage is not None else [])]
+        return [self.input_embeds, *self.layer_inputs.values()]
 
     @property
     def nbytes(self) -> int:
         return sum(tensor.numel() * tensor.element_size() for tensor in self.tensors)
 
 
-HEAD_STYLES = ("scaled", "lora")
-
-
 class DeltaHead(nn.Module):
-    """Bottleneck FFN (d_in -> r -> d_out, SiLU) into a reader layer's residual stream, in one of two styles.
+    """Bottleneck FFN (d_in -> r -> d_out, SiLU) into a reader layer's residual stream at the row positions. `down` is zero-initialized
+    (weight and bias), so the delta is exactly 0 at init - a deep model starts bit-identical to the input-only model - and the head owns
+    its magnitude from there (no normalization, no learned scale)."""
 
-    "scaled": every row RMS-normalized and scaled by `rms x relative`: `rms` is the layer's residual RMS measured by
-    `ActivationContextModel.calibrate_interventions` (a buffer), `relative` the learned scalar in units of that RMS (initialized
-    to the scale fraction), so one Adam step moves every layer's scale by the same share of its residual whatever the layer's magnitude.
-    "lora": `down(silu(up(z)))` with `down` zero-initialized (weight and bias): the delta is exactly 0 at init and the head owns its
-    magnitude (no unit-RMS normalization, no learned scale). `relative` and `rms` stay registered (the checkpoint keys are the same)
-    but are inert: `relative` never requires gradient and `rms` only feeds the diagnostics."""
-
-    def __init__(self, d_in: int, d_out: int, r: int, relative: float = 0.0, style: str = "scaled") -> None:
+    def __init__(self, d_in: int, d_out: int, r: int) -> None:
         super().__init__()
-        if style not in HEAD_STYLES:
-            raise ValueError(f"delta head style must be one of {HEAD_STYLES}")
-        self.style = style
         self.up = nn.Linear(d_in, r)
         self.down = nn.Linear(r, d_out)
-        self.relative = nn.Parameter(torch.tensor(float(relative)), requires_grad=style == "scaled")
-        self.register_buffer("rms", torch.tensor(0.0))
-        if style == "lora":
-            nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)   # after the draws: the up projection's init is the scaled style's
-
-    @property
-    def scale(self) -> torch.Tensor:
-        """The applied delta RMS in the scaled style: rms x relative (an inert anchor in the lora style)."""
-        return self.rms * self.relative
+        nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)
 
     def forward(self, rows: torch.Tensor) -> torch.Tensor:
-        out = self.down(F.silu(self.up(rows.float())))
-        if self.style == "lora":
-            return out
-        return unit_rows(out) * self.scale
-
-    def scale_parameters(self) -> list[nn.Parameter]:
-        """The learned scale(s): the scaled style's `relative`; nothing in the lora style (the optimizer gets no scale group)."""
-        return [self.relative] if self.style == "scaled" else []
-
-
-class KVDeltaHead(nn.Module):
-    """Bottleneck FFN (d_in -> r -> 2 d_kv, SiLU) into a full-attention reader layer's keys and values at the row positions.
-    "scaled": the two halves are RMS-normalized per row and scaled by their own learned scalars, which calibration sets to a share of the
-    reader's own pre-RoPE K RMS and V RMS at that layer (the same construction as DeltaHead: random bottleneck, unit rows, calibrated
-    scale, so a fresh K/V head starts as a small random perturbation of the row's key and value). "lora": both halves are the raw
-    bottleneck output with `down` zero-initialized (exactly 0 at init, the head owns its magnitude); the scales stay registered but inert."""
-
-    def __init__(self, d_in: int, d_kv: int, r: int, relative: float = 0.0, style: str = "scaled") -> None:
-        super().__init__()
-        if style not in HEAD_STYLES:
-            raise ValueError(f"delta head style must be one of {HEAD_STYLES}")
-        self.style = style
-        self.d_kv = int(d_kv)
-        self.up = nn.Linear(d_in, r)
-        self.down = nn.Linear(r, 2 * self.d_kv)
-        self.relative_k = nn.Parameter(torch.tensor(float(relative)), requires_grad=style == "scaled")
-        self.relative_v = nn.Parameter(torch.tensor(float(relative)), requires_grad=style == "scaled")
-        self.register_buffer("rms_k", torch.tensor(0.0))
-        self.register_buffer("rms_v", torch.tensor(0.0))
-        if style == "lora":
-            nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)
-
-    @property
-    def scale_k(self) -> torch.Tensor:
-        return self.rms_k * self.relative_k
-
-    @property
-    def scale_v(self) -> torch.Tensor:
-        return self.rms_v * self.relative_v
-
-    def forward(self, rows: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        both = self.down(F.silu(self.up(rows.float())))
-        if self.style == "lora":
-            return both[:, :self.d_kv], both[:, self.d_kv:]
-        return unit_rows(both[:, :self.d_kv]) * self.scale_k, unit_rows(both[:, self.d_kv:]) * self.scale_v
-
-    def scale_parameters(self) -> list[nn.Parameter]:
-        return [self.relative_k, self.relative_v] if self.style == "scaled" else []
+        return self.down(F.silu(self.up(rows.float())))
 
 
 class PassageAttention(nn.Module):
-    """One head-input module for candidate A2: each memory row's state queries the passage tokens' states (keys and values) through
-    bottleneck projections (d -> r; `heads` attention heads of r / heads dims) and adds the projected result back: `rows + out(attn)`.
-    `out` is zero-initialized, so at init the module is the identity on the rows (the delta head behind it reads exactly what it
-    read before: the summary readout at depth "final", the layer-matched readout at depth "matched") and the attention path opens
-    only as `out` leaves zero. Both inputs pass one shared LayerNorm before the projections.
+    """The read-out in front of every delta head: each memory row's final side state queries the passage tokens' final side states
+    through bottleneck projections (d -> r; `heads` attention heads of r / heads dims) and adds the projected result back:
+    `rows + out(attn)`. `out` is zero-initialized, so at init the block is the identity on the rows (the head behind it reads the
+    row's own state) and the attention path opens only as `out` leaves zero. One shared LayerNorm normalizes both inputs."""
 
-    The same block serves the reader-side cross-attention ceiling (`intervention_target = "cross_attention"`): `d_passage` gives the
-    passage its own width and LayerNorm when it differs from the query width, `residual=False` returns the projected attention alone
-    (the delta the reader adds at its target positions; exactly 0 at init), and `forward(..., mask)` takes a [M, N] boolean mask
-    (True = the query may read that passage token) for the causal visibility of the passage parts."""
-
-    def __init__(self, d: int, r: int, heads: int | None = None, d_passage: int | None = None, residual: bool = True) -> None:
+    def __init__(self, d: int, r: int, heads: int | None = None) -> None:
         super().__init__()
         self.heads = heads if heads is not None else (4 if r % 4 == 0 and r >= 64 else 1)
         if r % self.heads:
             raise ValueError("the bottleneck width must be a multiple of the head count")
-        self.residual = residual
-        d_passage = d if d_passage is None else int(d_passage)
         self.norm = nn.LayerNorm(d)
-        self.passage_norm = nn.LayerNorm(d_passage) if d_passage != d else None      # registered only when the widths differ (the A2 keys stay as they were)
         self.query = nn.Linear(d, r)
-        self.key = nn.Linear(d_passage, r)
-        self.value = nn.Linear(d_passage, r)
+        self.key = nn.Linear(d, r)
+        self.value = nn.Linear(d, r)
         self.out = nn.Linear(r, d)
         nn.init.zeros_(self.out.weight)
         nn.init.zeros_(self.out.bias)
 
-    def forward(self, rows: torch.Tensor, passage: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
-        """rows [M, d] (queries), passage [N, d_passage] (keys and values), optional mask [M, N] (True = readable) -> [M, d]."""
+    def forward(self, rows: torch.Tensor, passage: torch.Tensor) -> torch.Tensor:
+        """rows [M, d] (queries), passage [N, d] (keys and values) -> [M, d]."""
         rows, passage = rows.float(), passage.float()
         if passage.shape[0] == 0:
-            return rows if self.residual else torch.zeros_like(rows)
-        normed = lambda: (self.norm if self.passage_norm is None else self.passage_norm)(passage)    # applied once per consumer: the A2 op sequence (and its gradients) exactly as before
+            return rows
+        normed = self.norm(passage)
         split = lambda tensor, n: tensor.view(n, self.heads, -1).transpose(0, 1)                   # [heads, n, r / heads]
-        q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(normed()), passage.shape[0]), split(self.value(normed()), passage.shape[0])
-        mixed = F.scaled_dot_product_attention(q, k, v, attn_mask=None if mask is None else mask[None]).transpose(0, 1).reshape(rows.shape[0], -1)
-        projected = self.out(mixed)
-        return rows + projected if self.residual else projected
+        q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(normed), passage.shape[0]), split(self.value(normed), passage.shape[0])
+        mixed = F.scaled_dot_product_attention(q, k, v).transpose(0, 1).reshape(rows.shape[0], -1)
+        return rows + self.out(mixed)
 
 
-class KVSlotHead(nn.Module):
-    """The K/V slot head of `intervention_target = "kv_slots"`: a bottleneck FFN (d_in -> r -> 2 d_kv, SiLU) whose two halves are the
-    side-computed contributions to a full-attention reader layer's pre-RoPE keys and values at the row positions, and two learned
-    takeover scalars (one per half, 0 at init). The reader REPLACES the row slices with `keep x own + contribution`, keep = 1 - takeover.
-
-    Init: `down` is zero-initialized and the takeovers are 0, so the written K/V are exactly the reader's own (bit-identical to no
-    intervention) - the one replacement that starts meaningful without any extra state: a pure side-computed replacement would have
-    to reproduce the reader's own K/V (a function of the reader's forward) before it could help, and a random one starts by wrecking
-    the rows' keys (the silent-phase failure of the scaled heads). From there the head owns its magnitude (no unit-RMS normalisation,
-    no scale on the content) and the takeover lets the layer discard the reader's own K/V at the rows entirely (takeover 1 = the slot
-    is purely side-computed: what an engine injects as a per-request K/V prefix); an additive head cannot cancel a value it never sees.
-    The two takeovers are the head's `scale_parameters()`: they train in the optimizer's scale group at `learning_rate_delta_scales`
-    (a scalar under Adam moves by about its rate per step; at the encoder rate, 1e-4, the sum over an arm's schedule would bound the
-    takeover near 0.05 and the slots could never leave the reader's-own regime), like the scaled heads' relative scales and unlike the
-    lora-style heads, which have none. `rms_k` / `rms_v` are calibration anchors for the diagnostics only (the forward never reads them)."""
-
-    def __init__(self, d_in: int, d_kv: int, r: int) -> None:
-        super().__init__()
-        self.d_kv = int(d_kv)
-        self.up = nn.Linear(d_in, r)
-        self.down = nn.Linear(r, 2 * self.d_kv)
-        self.takeover_k = nn.Parameter(torch.tensor(0.0))
-        self.takeover_v = nn.Parameter(torch.tensor(0.0))
-        self.register_buffer("rms_k", torch.tensor(0.0))
-        self.register_buffer("rms_v", torch.tensor(0.0))
-        nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)
-
-    def forward(self, rows: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """[M, d_in] -> (K contribution [M, d_kv], V contribution [M, d_kv])."""
-        both = self.down(F.silu(self.up(rows.float())))
-        return both[:, :self.d_kv], both[:, self.d_kv:]
-
-    def keep(self) -> tuple[torch.Tensor, torch.Tensor]:
-        """The factors on the reader's own K and V at the rows: 1 - takeover (0-d tensors, graph-attached)."""
-        return 1.0 - self.takeover_k, 1.0 - self.takeover_v
-
-    def scale_parameters(self) -> list[nn.Parameter]:
-        """The takeovers: the scale group's members (the content path has no scale, like a lora-style head)."""
-        return [self.takeover_k, self.takeover_v]
-
-
-class KVTransferHead(nn.Module):
-    """The per-layer module of `intervention_target = "kv_transfer"` / `"kv_transfer_full"`: the reader's row positions' pre-RoPE K and V at a
-    full-attention layer are replaced by the SIDE MODEL'S OWN K and V at the same layer (captured after k_norm / v_proj during the side pass,
-    at the same positions), mixed with the reader's own by a learned takeover t per half:
-        K[rows] = (1 - t_k) x K_reader[rows] + t_k x (K_side[rows] + corr_k(side state))
-    Side and reader share the base model, so the side K/V are in the format the reader's attention heads read natively: the replacement is
-    meaningful at init (t = `takeover_init`, 1.0 = a full replacement; NOT an identity) - unlike a learned slot content, which starts at zero
-    because the reader's heads do not read a fresh representation. `corr_*` is an optional zero-initialized lora-style correction on the side
-    state (`correction`; `down` = 0, so the transferred K/V are exactly the side's at init). The takeovers are the head's `scale_parameters()`
-    (the scale group at `learning_rate_delta_scales`); `rms_k` / `rms_v` are calibration anchors for the diagnostics only. The reader-side
-    operation and the engine mapping are those of `kv_slots`: a per-request K/V write into the row positions' cache entries."""
-
-    def __init__(self, d_in: int, d_kv: int, r: int, takeover_init: float = 1.0, correction: bool = False) -> None:
-        super().__init__()
-        self.d_kv = int(d_kv)
-        self.correction = bool(correction)
-        if self.correction:
-            self.up = nn.Linear(d_in, r)
-            self.down = nn.Linear(r, 2 * self.d_kv)
-            nn.init.zeros_(self.down.weight); nn.init.zeros_(self.down.bias)
-        self.takeover_k = nn.Parameter(torch.tensor(float(takeover_init)))
-        self.takeover_v = nn.Parameter(torch.tensor(float(takeover_init)))
-        self.register_buffer("rms_k", torch.tensor(0.0))
-        self.register_buffer("rms_v", torch.tensor(0.0))
-
-    def forward(self, rows: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor] | None:
-        """[M, d_in] side states -> (K correction [M, d_kv], V correction [M, d_kv]); None without the correction head."""
-        if not self.correction:
-            return None
-        both = self.down(F.silu(self.up(rows.float())))
-        return both[:, :self.d_kv], both[:, self.d_kv:]
-
-    def keep(self) -> tuple[torch.Tensor, torch.Tensor]:
-        """The factors on the reader's own K and V at the rows: 1 - takeover (0-d tensors, graph-attached)."""
-        return 1.0 - self.takeover_k, 1.0 - self.takeover_v
-
-    def scale_parameters(self) -> list[nn.Parameter]:
-        return [self.takeover_k, self.takeover_v]
-
-
-def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool, prefer_attention: bool,
-                                full_attention_layers: t.Iterable[int] | None = None) -> list[int]:
+def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool, full_attention_layers: t.Iterable[int] | None = None) -> list[int]:
     """
     Reader layers whose input receives a delta: `frequency` interior points floor(L*i/(frequency+1)), each snapped to a
-    full-attention block within two indices when asked (the earlier one on a tie), plus L-1 when asked; 0 excluded,
-    sorted, deduplicated. Frequency 0 disables everything, the last-layer flag included. Frequency -1 = every full-attention
+    full-attention block within two indices (the earlier one on a tie), plus L-1 when asked; 0 excluded, sorted,
+    deduplicated. Frequency 0 disables everything, the last-layer flag included. Frequency -1 = every full-attention
     layer of the reader (0 excluded; the last-layer flag and the snapping are moot).
     """
     if frequency == 0:
@@ -815,7 +529,7 @@ def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool,
     chosen = []
     for i in range(1, frequency + 1):
         layer = (num_layers * i) // (frequency + 1)
-        if prefer_attention and full:
+        if full:
             candidates = [index for index in full if abs(index - layer) <= 2]
             if candidates:
                 layer = min(candidates, key=lambda index: (abs(index - layer), index))

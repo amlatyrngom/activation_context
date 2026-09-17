@@ -21,16 +21,12 @@ from ..agent_training.agent_training_utils import (
     disable_dropout, head_logits, optimizer_state_to, persistent_optimizer, set_learning_rates,
 )
 from ..autotuners import get_ac_training_autotuning_variables, configure_fla_runtime
-from ..harness.hf_utils import (DISTILL_SOURCES, SOURCE_DEVICE, TARGET_DEVICE, Interventions, attention_shares, capture_attention_qk,
-                                capture_layer_outputs, contiguous_runs, generate_with_interventions)
+from ..harness.hf_utils import SOURCE_DEVICE, TARGET_DEVICE, Interventions, generate_with_interventions
 from ..common.data_syncing import resolve_path
-from .ac_model import INTERVENTION_MODULE_PREFIXES, ROLLOUT, TRAINING, ActivationContextModel
+from .ac_model import ROLLOUT, TRAINING, ActivationContextModel
 from ..common.ac_parts import strip_ac_parts
 from .ac_model_utils import (ACOutput, EncodeRequest, direct_parts, prepare_training_history,
                              validate_paired_histories, validate_part_capacity)
-
-CALIBRATION_EXAMPLES = 8        # deep models: the first this many training examples (their stripped histories) set the delta scales
-DISTILL_PANEL_ITEMS = 8         # dense supervision: reporting items (with rows) scored at every panel with the rows on and off, and for the rows' attention share
 
 if t.TYPE_CHECKING:
     from ..harness import HarnessRuntime
@@ -68,121 +64,73 @@ class ActivationContextTrainingItem:
 
 @dataclass
 class ActivationContextTrainingConfig:
-    loss_kind: t.Literal["kl", "sft"] = "kl"
-    learning_rate_ac: float = 5e-4             # AC modules and the side LoRA
-    learning_rate_target_lora: float = 2e-5    # the target adapter
+    """
+    The training recipe. The defaults are the ones the reconstruction bench settled on: SFT on the gold target tokens, cosine
+    decay with a linear warm-up, one joint gradient-norm clip over the encoder and the reader adapter, the no-context penalty
+    (λ x KL(base || adapted reader) on the same history with its AC parts removed, at the target positions, on a random
+    quarter of the examples per update and scaled by 1 / fraction) whenever the reader adapter trains, and stored teacher /
+    reference targets that always hold the gold token. `learning_rate_target_lora = 0` freezes the reader adapter (it neither
+    steps nor carries the penalty): the regime that adapts the encoder alone to a dataset or task.
+    """
+    loss_kind: t.Literal["kl", "sft"] = "sft"   # "sft": cross-entropy on the target tokens; "kl": the coarsened KL to the stored teacher (the reader as it is at the
+                                               # call's start, on the in-context history; its top-k log-probs + the remainder mass are stored before the first update)
+    learning_rate_ac: float = 1e-4             # AC modules and the side LoRA
+    learning_rate_target_lora: float = 2e-5    # the target adapter (0 = frozen: no steps, no penalty)
     weight_decay: float = 0.0
     adam_betas: tuple[float, float] = (0.9, 0.95)
     adam_eps: float = 1e-8
     max_grad_norm: float = 1.0
-    learning_rate_gates: float | None = None
-    resume_optimizer: bool = False
-    lr_schedule: str = "constant"              # "constant" (warm-up only) or "cosine": decay to lr_final_fraction of the base rate over the planned updates
+    lr_schedule: str = "cosine"                # "constant" (warm-up only) or "cosine": decay to lr_final_fraction of the base rate over the planned updates
     lr_final_fraction: float = 0.1
+    warmup_updates: int = 50                   # linear warm-up of both learning rates over this many updates (counted across calls)
     schedule_total_updates: int | None = None  # planned updates the cosine spans (default: updates done at the call's start + steps x num_epochs, so a resume stays on the curve)
-    clip_per_group: bool = False               # clip the encoder (with gates) and the reader LoRA separately instead of one joint norm
-    max_grad_norm_reader: float | None = None  # per-group clipping: the reader's bound (default max_grad_norm)
-    penalty_count_exact: bool = False          # exactly round(fraction x examples_per_update) penalty examples per update instead of an i.i.d. draw per example
-    checkpoint_every_updates: int | None = None  # mid-epoch checkpoint (AC_MODELS/<name>/epoch_<n>_step_<s> + optimizer.pt + partial_epoch.json) every this many steps
+    resume_optimizer: bool = False             # load `optimizer.pt` next to the AC checkpoint the model was loaded from (moments + updates done), once per model
     resume_skip_steps: int = 0                 # steps of the first epoch of this call already trained by a previous attempt (resume from a mid-epoch checkpoint)
-    persist_no_context_reference: bool = False # keep the penalty's base references in AC_MODELS/<name>/no_context_reference.pt so a resumed run skips the reference pass
-    loss_weighting: str = "example"            # "example": mean over examples of each example's token mean; "token": every target token of the update weighs the same
-    learning_rate_gates_scope: str = "all"     # gate group (learning_rate_gates): "all" scalar gates, or "row_scale" = target_head.scale only
-    no_context_penalty_reference: str = "stored"   # "stored": the base's top-k references computed once before training (coarsened KL); "live": the base without adapter is run at penalty time and the KL is exact over the vocabulary (no reference pass, ~+8 % step time)      # load `optimizer.pt` next to the AC checkpoint the model was loaded from (moments + updates done), once per model   # the AC modules' scalar gates (row scale, input/position/residual scales) in their own group; None = the AC rate
-    learning_rate_delta_scales: float = 1e-3   # deep models: the heads' relative scales (units of the calibrated RMS) train in their own group at this rate
-    learning_rate_refine: float | None = None  # iterative encoder: the refine adapter's own group at this rate (None = it stays in the encoder group; bit-identical)
+    checkpoint_every_updates: int | None = None  # mid-epoch checkpoint (AC_MODELS/<name>/epoch_<n>_step_<s> + optimizer.pt + partial_epoch.json) every this many steps
+    checkpoint_every_epoch: bool = True        # AC_MODELS/<name>/epoch_<n> (+ latest) and LORAS/<target lora>/epoch_<n>
+    no_context_penalty_weight: float = 1.0     # λ of the no-context penalty (0 = off); applied only while the reader adapter trains
+    no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
+    teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
+                                               # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)
     deltas_off_panel: bool = False             # deep models: evaluate the reporting items a second time at every panel with the rows kept and the deltas removed ("deltas_off"): held minus deltas_off is the deltas' contribution
-    warmup_updates: int = 0                    # linear warm-up of both learning rates over this many updates (counted across calls)
     updates_per_epoch: int = 4                 # maximum gradient steps per epoch when examples_per_update is unset
     examples_per_update: int | None = None     # when set, overrides updates_per_epoch: ceil(items / examples_per_update) steps
+    micro_batch_examples: int = 1              # SFT: examples per right-padded reader forward (1 = one example at a time)
     max_example_tokens: int = 72_000           # explicit error; no dropping or truncation
-    teacher_cache_top_k: int = 256             # KL: before its first update, train() stores the teacher's top-k log-probs (+ the remainder
-                                               # mass) and its log-prob of every target token, for every training, reporting and validation
-                                               # item, with the reader as it is at that moment. That stored teacher is fixed for the whole
-                                               # call: every loss and evaluation reads it, no live teacher forward runs afterwards. The KL
-                                               # is between the k+1-way coarsened distributions (top-k tokens and "everything else"), a
-                                               # lower bound of the exact KL that is tight when the top-k carry the mass; the mean stored
-                                               # coverage is reported. A later train() call stores new targets from its then-current reader.
-    drift_term_weight: float = 0.0
-    no_context_penalty_weight: float = 0.0     # λ: KL(base || adapted reader) on the same history with its AC parts removed, at the target positions
-    no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
-    logits_chunk_tokens: int | None = None           # completion positions per lm_head chunk
-    micro_batch_examples: int = 1                    # SFT only: examples per right-padded reader forward (1 = one example at a time)
-    target_lora_frozen_updates: int = 0              # the reader's LoRA gets learning rate 0 (and no penalty term) for this many first updates: a staged recipe
-    intervention_heads_only_updates: int = 0         # deep models: for this many first updates only the intervention modules (delta heads, passage attention) step; the
-                                                     # encoder, its row modules and gates, the side and reader LoRAs keep their gradients dropped (no penalty term either);
-                                                     # the schedule clock keeps running, so a resume continues the staging where the checkpoint left it
-    teacher_targets_include_gold: bool = False       # stored targets always hold the gold token (its base log-prob replaces the k-th entry when absent), so the coarsened KL sees mass moved onto it
+    logits_chunk_tokens: int | None = None     # completion positions per lm_head chunk
     fp32_head_matmul: bool = False
-    distill_weight: float = 0.0                      # dense supervision: λ of the context-distillation term - the base reader's (no adapters, no rows) per-layer attention outputs on the
-                                                     # full-context view (`in_context_messages`) distilled into the row-fed reader at the target positions; 0 = off (no teacher pass, no hooks)
-    distill_layers: list[int] | int | None = None    # supervised reader layers: a list, -1 = every full-attention layer, None = a deep model's intervention layers, else every full-attention layer
-    distill_source: str = "attn_out"                 # the supervised tensor: "attn_out" = the attention block's output after o_proj (its residual contribution); the only source
-    distill_hold: float = 0.25                       # λ(step) on the LR schedule clock: distill_weight for this fraction of the planned updates, ...
-    distill_decay_end: float = 0.75                  # ... then a linear decay to distill_floor x distill_weight reached at this fraction, then held (resume-safe: updates done / planned total)
-    distill_floor: float = 0.05                      # the floor as a fraction of distill_weight
-    rare_weight: float = 0.0                         # surprisal-weighted terminal loss (SFT): per-token weight w_t = 1 + rare_weight x s_t / mean(s) on the cross-entropy of the
-                                                     # training forwards, s_t = the base's no-context surprisal of target token t (the stored no-context reference, built for every
-                                                     # example with rows), the weights normalised to average 1 per example; the reported losses stay unweighted; 0 = off (bit-identical)
     gradient_checkpointing: bool = True        # on both bases
     gradient_checkpointing_min_tokens: int | None = None
     seed: int = 0
-    checkpoint_every_epoch: bool = True        # AC_MODELS/<name>/epoch_<n> (+ latest) and LORAS/<target lora>/epoch_<n>
     num_epochs: int = 2
     reporting_interval: float = 0.1
     completion_samples: int = 4
     completion_max_new_tokens: int = 64
 
     def __post_init__(self) -> None:
-        if self.loss_kind not in ("kl", "sft") or self.max_example_tokens < 1 or self.teacher_cache_top_k < 0:
-            raise ValueError("Invalid loss kind, example capacity, or teacher cache size")
-        if self.loss_kind == "kl" and self.teacher_cache_top_k < 1:
-            raise ValueError("KL training stores the teacher's top-k targets before the first update; teacher_cache_top_k must be positive")
-        if self.loss_kind == "sft" and self.drift_term_weight != 0:
-            raise ValueError("SFT is incompatible with drift_term_weight")     # teacher_cache_top_k is a KL-only setting SFT ignores
+        if self.loss_kind not in ("kl", "sft") or self.max_example_tokens < 1 or self.teacher_cache_top_k < 1:
+            raise ValueError("Invalid loss kind, example capacity, or teacher cache size (the stored targets need a positive top-k)")
         if self.no_context_penalty_weight < 0 or not 0 < self.no_context_penalty_fraction <= 1:
             raise ValueError("no_context_penalty_weight must be nonnegative and no_context_penalty_fraction in (0, 1]")
-        if self.lr_schedule not in ("constant", "cosine") or not 0 <= self.lr_final_fraction <= 1:
-            raise ValueError("lr_schedule must be 'constant' or 'cosine' with lr_final_fraction in [0, 1]")
-        if self.loss_weighting not in ("example", "token") or self.learning_rate_gates_scope not in ("all", "row_scale"):
-            raise ValueError("loss_weighting must be 'example' or 'token'; learning_rate_gates_scope 'all' or 'row_scale' (the delta scales always have their own group)")
-        if self.learning_rate_delta_scales < 0:
-            raise ValueError("learning_rate_delta_scales must be nonnegative")
-        if self.learning_rate_refine is not None and self.learning_rate_refine < 0:
-            raise ValueError("learning_rate_refine must be nonnegative")
-        if self.no_context_penalty_reference not in ("stored", "live"):
-            raise ValueError("no_context_penalty_reference must be 'stored' or 'live'")
-        if self.no_context_penalty_weight > 0 and self.teacher_cache_top_k < 1:
-            raise ValueError("The no-context penalty stores the base's top-k reference; teacher_cache_top_k must be positive")
+        if self.learning_rate_target_lora < 0 or self.learning_rate_ac < 0:
+            raise ValueError("learning rates must be nonnegative (0 freezes the reader adapter)")
+        if self.lr_schedule not in ("constant", "cosine") or not 0 <= self.lr_final_fraction <= 1 or self.warmup_updates < 0:
+            raise ValueError("lr_schedule must be 'constant' or 'cosine' with lr_final_fraction in [0, 1] and a nonnegative warm-up")
         if self.num_epochs < 1 or self.updates_per_epoch < 1 or not 0 < self.reporting_interval <= 1:
             raise ValueError("Epochs/updates must be positive and reporting_interval must be in (0, 1]")
         if self.examples_per_update is not None and self.examples_per_update < 1:
             raise ValueError("examples_per_update must be positive")
         if self.micro_batch_examples < 1:
             raise ValueError("micro_batch_examples must be positive")
-        if self.target_lora_frozen_updates < 0:
-            raise ValueError("target_lora_frozen_updates must be non-negative")
-        if self.intervention_heads_only_updates < 0:
-            raise ValueError("intervention_heads_only_updates must be non-negative")
         if self.micro_batch_examples > 1 and self.loss_kind != "sft":
             raise ValueError("micro_batch_examples > 1 is only implemented for loss_kind='sft'")
         if self.completion_samples < 0 or self.completion_max_new_tokens < 1:
             raise ValueError("Invalid completion inspection budget")
-        if not math.isfinite(self.distill_weight) or self.distill_weight < 0:
-            raise ValueError("distill_weight must be finite and nonnegative")
-        if self.distill_source not in DISTILL_SOURCES:
-            raise ValueError(f"distill_source must be one of {DISTILL_SOURCES}")
-        if not 0 <= self.distill_hold <= self.distill_decay_end <= 1 or not 0 <= self.distill_floor <= 1:
-            raise ValueError("the distillation schedule needs 0 <= distill_hold <= distill_decay_end <= 1 and distill_floor in [0, 1]")
-        if not math.isfinite(self.rare_weight) or self.rare_weight < 0:
-            raise ValueError("rare_weight must be finite and nonnegative")
-        if self.rare_weight > 0 and self.loss_kind != "sft":
-            raise ValueError("rare_weight weights the SFT cross-entropy per target token: loss_kind 'sft'")
-        if self.distill_layers is not None and self.distill_layers != -1:
-            layers = list(self.distill_layers) if isinstance(self.distill_layers, (list, tuple)) else None
-            if not layers or any(type(layer) is not int or layer < 0 for layer in layers) or len(set(layers)) != len(layers):
-                raise ValueError("distill_layers must be None, -1 (every full-attention layer) or a non-empty list of distinct non-negative reader layers")
-            self.distill_layers = sorted(layers)
+
+    @property
+    def penalty_active(self) -> bool:
+        """The no-context penalty trains the reader adapter only: it is on when λ > 0 and the adapter has a learning rate."""
+        return self.no_context_penalty_weight > 0 and self.learning_rate_target_lora > 0
 
 
 @dataclass(frozen=True)
@@ -199,9 +147,6 @@ class ActivationContextTrainingProgress:
 
 class EvalItemSummary(t.TypedDict, total=False):
     token_accuracy: float                      # teacher-forced argmax accuracy over the target positions
-    rare_token_loss: float | None              # surprisal features on: mean -log p_student over the target tokens whose stored base no-context surprisal is in the item's top 20 %
-    rare_token_accuracy: float | None          # ... and the teacher-forced accuracy on the same tokens
-    rare_positions: int                        # ... how many tokens that is (ceil(0.2 x C), at least 1)
     item_id: str
     kind: str
     loss_kind: str
@@ -219,8 +164,6 @@ class EvalItemSummary(t.TypedDict, total=False):
 
 class EvalKindSummary(t.TypedDict, total=False):
     token_accuracy: float | None
-    rare_token_loss: float | None              # surprisal features on: item mean of the per-item rare-token loss / accuracy (keys present only then)
-    rare_token_accuracy: float | None
     loss_kind: str
     loss: float | None
     kl: float | None
@@ -232,8 +175,6 @@ class EvalKindSummary(t.TypedDict, total=False):
 
 class ActivationContextEvalSummary(t.TypedDict, total=False):
     token_accuracy: float | None
-    rare_token_loss: float | None              # surprisal features on (keys present only then): see EvalItemSummary
-    rare_token_accuracy: float | None
     items: int
     dropped_too_long: int
     loss_kind: str
@@ -269,7 +210,6 @@ class ActivationContextEpochStats:
     reporting: ActivationContextEvalSummary | None = None
     validation: ActivationContextEvalSummary | None = None
     deltas_off: ActivationContextEvalSummary | None = None       # deep models with deltas_off_panel: the reporting items without their deltas
-    passes_off: ActivationContextEvalSummary | None = None       # iterative encoder (encoder_passes > 1): the reporting items with the rows taken from pass 1
     checkpoint_path: str | None = None
     target_lora_checkpoint_path: str | None = None
     samples: list[CompletionSample] = field(default_factory=list)
@@ -303,23 +243,15 @@ class ActivationContextTrainingStats:
     steps: int = 0
     kl: list[float] = field(default_factory=list)               # per step, item-weighted mean of each item’s mean KL
     agreement: list[float] = field(default_factory=list)        # per step, top-1 teacher/student agreement
-    drift: list[float] = field(default_factory=list)
     grad_norm: list[float] = field(default_factory=list)
     grad_norm_ac: list[float] = field(default_factory=list)        # encoder side (AC modules + side LoRA) before clipping
     grad_norm_reader: list[float] = field(default_factory=list)    # reader LoRA before clipping (0 while frozen)
     penalty_counts: list[int] = field(default_factory=list)         # per update: examples that carried the no-context penalty
     gate_trace: list[dict] = field(default_factory=list)           # the scalar gates every 25 updates
-    intervention_trace: list[dict] = field(default_factory=list)   # deep models, every 5 updates for the first 200 then every 25: per layer the delta scale, its ratio to the calibration RMS, the head's gradient norm, the applied delta RMS relative to the row-position RMS
+    intervention_trace: list[dict] = field(default_factory=list)   # deep models, every 5 updates for the first 200 then every 25: per layer the head's gradient norm, the applied delta RMS relative to the
+                                                                    # residual RMS at the row positions, the delta / input-row cosine and the read-out block's output-projection norm
     payload_bytes: int = 0                                          # deep models: delta bytes (bf16) handed to the reader over the call's training forwards
     deltas_off: ActivationContextEvalSummary | None = None          # deep models: the reporting items without their deltas at the last panel
-    passes_off: ActivationContextEvalSummary | None = None          # iterative encoder: the reporting items with encoder_passes forced to 1 at the last panel (held - passes_off = the later passes' worth)
-    encoder_passes: int = 1                                         # the model's encoder_passes / pool_surprisal / this call's rare_weight (the round-8 write-side settings, for the summary)
-    pool_surprisal: float = 0.0
-    rare_weight: float = 0.0
-    encoder_trace: list[dict] = field(default_factory=list)         # write-side diagnostics of the training forwards at the intervention trace cadence: {"update", "refine_rms" (RMS of the refine
-                                                                    # adapter's contribution / RMS of the pass-1 summaries), "pass_cosine" (pass-1 vs last-pass unit rows), "pool_row_mean" / "pool_first" /
-                                                                    # "pool_last" (mean base surprisal of the tokens in a bin), "pool_width_max" / "pool_width_uniform" (tokens)}; only the keys that exist
-    encoder_panel: list[dict] = field(default_factory=list)         # the same on the held-out panel's forwards: {"update", "epoch", ...}
     step_seconds: list[float] = field(default_factory=list)
     step_tokens: list[int] = field(default_factory=list)        # teacher + student tokens per step
     kl_by_kind: dict[str, list[float]] = field(default_factory=dict)   # per example
@@ -334,11 +266,6 @@ class ActivationContextTrainingStats:
     resumed_from: str | None = None                                       # the optimizer.pt this call restored, if any
     no_context_reference: dict = field(default_factory=dict)            # penalty: the same for the base's no-context reference
     penalty: list[float] = field(default_factory=list)                  # per update: mean unweighted no-context KL over the sampled examples (carried forward when none)
-    distill_loss: list[dict[int, float]] = field(default_factory=list)   # dense supervision, per update: per supervised layer the normalised term on the training forwards (rows on; mean over the update's examples, before λ)
-    distill_lambda: list[float] = field(default_factory=list)            # dense supervision, per update: λ(step)
-    distill_layers: list[int] = field(default_factory=list)              # dense supervision: the supervised reader layers of this call
-    distill_panel: list[dict] = field(default_factory=list)              # dense supervision, per panel on DISTILL_PANEL_ITEMS held-out items: {"update", "epoch", "rows_on": {layer: term}, "rows_off": {layer: term},
-                                                                         # "rows_attention_share": {layer: share}} - rows_off = the reader on the stripped history (no rows): the rows-independent part of the fit
     checkpoint_path: str | None = None
     target_lora_checkpoint_path: str | None = None
     peak_memory_bytes: int = 0
@@ -378,12 +305,6 @@ class ActivationContextTrainingStats:
             "peak_memory_gb": round(self.peak_memory_bytes / 2**30, 2), "duration_s": round(self.duration_s, 1),
             "seconds_by_bucket": self.seconds_by_bucket(), "teacher_cache_hits": self.teacher_cache_hits,
             "teacher_cache_mb": round(self.teacher_cache_bytes / 2**20, 1), "teacher_targets": self.teacher_targets,
-            **({"distill_layers": self.distill_layers, "distill_lambda_first": self.distill_lambda[0], "distill_lambda_last": self.distill_lambda[-1],
-                "distill_loss_first": self.distill_loss[0], "distill_loss_last": self.distill_loss[-1], "distill_panel": self.distill_panel} if self.distill_lambda else {}),
-            "encoder_passes": self.encoder_passes, "pool_surprisal": self.pool_surprisal, "rare_weight": self.rare_weight,
-            **({"passes_off": self.passes_off} if self.passes_off is not None else {}),
-            **({"encoder_trace_last": self.encoder_trace[-1]} if self.encoder_trace else {}),
-            **({"encoder_panel": self.encoder_panel} if self.encoder_panel else {}),
         }
 
 
@@ -417,16 +338,10 @@ class ActivationContextTrainer:
         self.teacher_target_logp: dict[tuple[str, str, int], torch.Tensor] = {}   # same identity -> the stored teacher's log-prob of each target token [C], CPU
         self._teacher_texts: dict[str, str] = {}                                   # item id -> the stored teacher's greedy completion, sampled once at baseline
         self._penalty_rng = random.Random(self.config.seed)                        # which training examples carry the no-context penalty
-        self._penalty_forced: set[int] | None = None                                # penalty_count_exact: ids of this update's penalty examples
         self._penalty_term: torch.Tensor | None = None                             # set by _example_loss: the weighted penalty of the last example, if sampled
-        self._distill_term: tuple[torch.Tensor, dict[int, float]] | None = None    # set by _example_loss: (λ x the layer-mean distillation term, the per-layer values) of the last example
-        self._distill_layers: list[int] = []                                       # dense supervision: the supervised reader layers (resolved by train())
-        self._distill_lambda: float = 0.0                                          # λ of the current update (the schedule clock)
         self._last_hits: torch.Tensor | None = None                                # set by the chunked losses: argmax == target per target position
-        self._loss_metric: float | None = None                                     # set by _example_loss under rare_weight: the UNWEIGHTED cross-entropy of the last example (the reported loss)
-        self._encoder_pending: dict[str, list[float]] = {}                         # write-side diagnostics of the training forwards since the last trace point
         self._payload_bytes = 0                                                    # deep models: delta bytes handed to the reader (reset per train call)
-        self._row_rms: dict[int | str, list[torch.Tensor]] = {}                    # deep models: residual RMS at the row positions per layer since the last trace (0-d tensors); K/V targets also "l:k" / "l:v"
+        self._row_rms: dict[int, list[torch.Tensor]] = {}                          # deep models: residual RMS at the row positions per layer since the last trace (0-d tensors)
 
     # ------------------------------------------------------------------------------------------ examples
     def build_example(self, ac_model: ActivationContextModel, item: ActivationContextTrainingItem, reference: bool = False) -> _Example:
@@ -442,15 +357,12 @@ class ActivationContextTrainer:
         student_ids, spans, student_positions = prepare_training_history(tokenizer, item.ac_messages, item.ac_start,
                             item.assistant_token_ids, lengths, tools=item.tools, chat_template_kwargs=chat_kwargs)
         teacher_ids, teacher_positions = [], []
-        distilled = not reference and self.config.distill_weight > 0 and item.in_context_messages is not None   # the distillation teacher reads the full-context view
-        if self.config.loss_kind == "kl" or reference or distilled:
+        if self.config.loss_kind == "kl" or reference:
             if item.in_context_messages is None:
                 raise ValueError(f"{item.item_id}: KL needs an in-context teacher history")
             validate_paired_histories(item.in_context_messages, item.in_context_start, item.ac_messages, item.ac_start)
             teacher_ids, _, teacher_positions = prepare_training_history(tokenizer, item.in_context_messages,
                                 item.in_context_start, item.assistant_token_ids, [], tools=item.tools, chat_template_kwargs=chat_kwargs)
-        if distilled:
-            self._check_target_alignment(item.item_id, teacher_ids, teacher_positions, student_ids, student_positions)
         for view, ids in (("teacher", teacher_ids), ("student", student_ids)):
             if len(ids) > self.config.max_example_tokens:
                 raise ValueError(f"{item.item_id}: {view} history has {len(ids)} tokens, exceeding max_example_tokens={self.config.max_example_tokens}; regenerate or raise the guard")
@@ -458,8 +370,8 @@ class ActivationContextTrainer:
         key = (ac_model.name + ("#base" if reference else ""), digest, self.config.teacher_cache_top_k)
         example = _Example(item, teacher_ids, student_ids, teacher_positions, student_positions,
                            [token for output in item.assistant_token_ids for token in output], spans, requests, key)
-        if not reference and requests and ((self.config.no_context_penalty_weight > 0 and self.config.learning_rate_target_lora > 0) or self._surprisal_active(ac_model)):
-            # The no-context reference: the penalty's, and the surprisal features' source of the base's per-target-token surprisal (the same stored log-probs).
+        if not reference and requests and self.config.penalty_active:
+            # The no-context reference: the same history with its AC parts removed, scored against the base with no adapter.
             stripped = strip_ac_parts(item.ac_messages)
             example.penalty = self.build_example(ac_model, replace(item, item_id=item.item_id + ":no_context_reference", in_context_messages=stripped,
                                                                    ac_messages=stripped, in_context_start=item.ac_start), reference=True)
@@ -552,26 +464,6 @@ class ActivationContextTrainer:
             ac_model._training_gradient_checkpointing = config.gradient_checkpointing
             self._check_capacity(ac_model, [*examples, *reporting_examples, *validation_examples])
             self._payload_bytes = 0
-            self._distill_layers = self._resolve_distill_layers(ac_model) if self._distill_active() else []
-            stats.distill_layers = list(self._distill_layers)
-            stats.encoder_passes, stats.pool_surprisal, stats.rare_weight = ac_model.config.encoder_passes, ac_model.config.pool_surprisal, config.rare_weight
-            surprisal = self._surprisal_active(ac_model)
-            self._encoder_pending = {}
-            if config.rare_weight > 0 and ac_model.kv_transfer_full:
-                raise ValueError("rare_weight with kv_transfer_full: the ceiling measurement is not a candidate to reweight")
-            if ac_model.is_deep and not ac_model.interventions_calibrated:
-                # A fresh deep model: the delta scales start at a share of each layer's residual RMS, measured on a fixed training-only sample.
-                if reporter is not None:
-                    reporter.set_status(phase="calibrating interventions")
-                    reporter.render(force=True)
-                if ac_model.config.intervention_calibration == "row_positions":
-                    # The reader's own inputs: the encoded rows written over the placeholders (no deltas), measured at the row positions.
-                    with_rows = [example for example in examples if example.part_requests][:CALIBRATION_EXAMPLES]
-                    ac_model.calibrate_interventions(None, [example.item.item_id for example in with_rows],
-                                                     row_inputs=[self._calibration_rows(ac_model, example, device) for example in with_rows])
-                else:
-                    sample = [self._calibration_sequence(ac_model, example) for example in examples[:CALIBRATION_EXAMPLES]]
-                    ac_model.calibrate_interventions([ids for ids, _ in sample], [item_id for _, item_id in sample])
             if config.loss_kind == "kl":
                 # The teacher of this call is the reader as it is now; nothing after this line recomputes it.
                 if reporter is not None:
@@ -581,60 +473,28 @@ class ActivationContextTrainer:
                 if reporter is not None:
                     reporter.report_teacher_targets(stats.teacher_targets)
             penalty_examples = [example.penalty for example in examples if example.penalty is not None]
-            if penalty_examples and (config.no_context_penalty_reference == "stored" or surprisal):
-                # The penalty's reference is the base with no adapter on the no-context history: fixed for the whole call. The surprisal features (rare_weight,
-                # pool_surprisal's panel) read the same stored per-target-token log-probs, so they store it whatever the penalty's mode.
+            if penalty_examples:
+                # The penalty's reference is the base with no adapter on the no-context history: fixed for the whole call, and kept next to
+                # the checkpoints so a resumed run skips the reference pass.
                 if reporter is not None:
                     reporter.set_status(phase="no-context reference")
                     reporter.render(force=True)
-                reference_path = resolve_path(f"AC_MODELS/{ac_model.name}/no_context_reference.pt", create=False) if config.persist_no_context_reference else None
-                if reference_path is not None and reference_path.exists():
+                reference_path = resolve_path(f"AC_MODELS/{ac_model.name}/no_context_reference.pt", create=False)
+                if reference_path.exists():
                     loaded = self._merge_teacher_targets(reference_path, {example.teacher_cache_key for example in penalty_examples})
                     print(f"AC resume: {loaded} no-context references loaded from {reference_path}", flush=True)
                 stats.no_context_reference = self._store_teacher_targets(ac_model, penalty_examples, device, reporter, reporting_name="no-context reference", lora=None)
-                if reference_path is not None and (stats.no_context_reference["examples"] or not reference_path.exists()):
+                if stats.no_context_reference["examples"] or not reference_path.exists():
                     keys = {example.teacher_cache_key for example in penalty_examples}
                     reference_path.parent.mkdir(parents=True, exist_ok=True)
                     torch.save({"top_k": config.teacher_cache_top_k, "targets": {k: v for k, v in self.teacher_cache.items() if k in keys},
                                 "target_logp": {k: v for k, v in self.teacher_target_logp.items() if k in keys}}, reference_path)
-            if surprisal:
-                # The held-out items' base surprisal (the rare_token_loss panel): one no-grad base forward per reporting / validation item, once per call.
-                held = [example.penalty for example in [*reporting_examples, *validation_examples] if example.penalty is not None]
-                if held:
-                    if reporter is not None:
-                        reporter.set_status(phase="held-out no-context surprisal")
-                        reporter.render(force=True)
-                    self._store_teacher_targets(ac_model, held, device, reporter, reporting_name="held-out no-context surprisal", lora=None)
             ac_parameters = ac_model.trainable_parameters()
             target_parameters = manager.lora_parameters(target_lora)
             assert ac_parameters and target_parameters
-            if config.intervention_heads_only_updates and not ac_model.is_deep:
-                raise ValueError("intervention_heads_only_updates applies to deep models only")
-            # Heads-only staging: everything but the intervention modules (delta heads, passage attention) drops its gradient for the first updates.
-            intervention_ids = {id(parameter) for name, parameter in ac_model.modules.named_parameters() if name.startswith(INTERVENTION_MODULE_PREFIXES)}
-            staged_parameters = [parameter for parameter in ac_parameters if id(parameter) not in intervention_ids]
-            # The deep heads' relative scales (units of their layer's calibrated RMS) always form the last group, at their own rate:
-            # a scalar in Adam moves by about its rate per step, so the relative units make that step the same share of the
-            # residual at every layer, and the shared parameters train exactly as in the paired input-only arm. The K/V slot heads'
-            # takeovers are their scale parameters (the same group, the same reason); lora-style heads have none (no group).
-            delta_scales = [scale for head in ac_model.modules.delta_heads.values() for scale in head.scale_parameters()] if ac_model.modules.delta_heads is not None else []
-            ac_parameters = [parameter for parameter in ac_parameters if not any(parameter is scale for scale in delta_scales)]
-            gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]
-            if config.learning_rate_gates_scope == "row_scale":
-                gate_parameters = [parameter for parameter in gate_parameters if parameter is ac_model.modules.target_head.scale]
+            gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]     # the scalar gates (row scale, input / position / residual scales): traced
             gate_names = {id(parameter): name for name, parameter in ac_model.modules.named_parameters() if parameter.numel() == 1}
             groups = [{"params": ac_parameters, "lr": config.learning_rate_ac}, {"params": target_parameters, "lr": config.learning_rate_target_lora}]
-            if config.learning_rate_gates is not None and gate_parameters:
-                # Adam moves a scalar by about its rate per step whatever the gradient: the row scale had to climb 15x at 1e-4 (~1,500 steps) before the reader could hear the rows.
-                groups[0] = {"params": [parameter for parameter in ac_parameters if not any(parameter is gate for gate in gate_parameters)], "lr": config.learning_rate_ac}
-                groups.append({"params": gate_parameters, "lr": config.learning_rate_gates})
-            if delta_scales:
-                groups.append({"params": delta_scales, "lr": config.learning_rate_delta_scales})
-            refine_parameters = list(ac_model.modules.refine_adapter.parameters()) if ac_model.modules.refine_adapter is not None and config.learning_rate_refine is not None else []
-            if refine_parameters:
-                # The refine adapter's output projection starts at zero and learns only from its own gradient: at the encoder rate it stayed inert over a warm pass (A32KVTAP2n).
-                groups[0] = {"params": [parameter for parameter in groups[0]["params"] if not any(parameter is refine for refine in refine_parameters)], "lr": groups[0]["lr"]}
-                groups.append({"params": refine_parameters, "lr": config.learning_rate_refine})
             if reset_optimizer:
                 self.optimizers.pop(ac_model_name, None)
             optimizer = persistent_optimizer(self.optimizers, ac_model_name, groups,
@@ -653,7 +513,7 @@ class ActivationContextTrainer:
                         optimizer_state_to(optimizer, device)
                         stats.resumed_from = str(saved)
                     else:
-                        # The group layout changed since the checkpoint (a deep run from the absolute-scale code, a gate group added or removed, a migrated
+                        # The group layout changed since the checkpoint (a checkpoint from the full-featured branch with extra groups, a migrated
                         # checkpoint): the moments cannot be mapped, so the optimizer starts fresh and only the update clock resumes. A requeued run never dies here.
                         print(f"AC resume: optimizer state discarded (layout changed: saved groups {saved_layout}, current {current_layout}); "
                               f"fresh moments, update clock resumed at {int(state['updates_done'])}", flush=True)
@@ -669,36 +529,25 @@ class ActivationContextTrainer:
             baseline = ActivationContextTrainingProgress(0, config.num_epochs, start_epoch - 1, 0, steps,
                         self.updates_done.get(ac_model_name, 0), 0.0, time.monotonic() - started)
             phase = time.monotonic()
-            passes_off_panel = ac_model.config.encoder_passes > 1 and bool(reporting_data)
-            encoder_diagnostics = ac_model.config.encoder_passes > 1 or ac_model.config.pool_surprisal > 0
             if reporting_data:
                 stats.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
                 if reporter is not None:
                     reporter.report_eval(baseline, "reporting", stats.reporting)
-                if encoder_diagnostics:
-                    self._report_encoder_panel(ac_model, baseline, stats, reporter)     # the baseline reporting evaluation's write-side diagnostics
             deltas_off_panel = config.deltas_off_panel and ac_model.is_deep and bool(reporting_data)
             if deltas_off_panel:
                 stats.deltas_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "deltas_off", deltas_off=True)
                 if reporter is not None:
                     reporter.report_eval(baseline, "deltas_off", stats.deltas_off)
-            if passes_off_panel:
-                stats.passes_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "passes_off", passes_off=True)
-                if reporter is not None:
-                    reporter.report_eval(baseline, "passes_off", stats.passes_off)
             if validation_data and list(validation_data) != list(reporting_data):
                 stats.validation_baseline = self._evaluate(ac_model, list(validation_data), device, reporter, "validation")
                 if reporter is not None:
                     reporter.report_eval(baseline, "validation", stats.validation_baseline)
-            if self._distill_active() and reporting_data:
-                self._report_distill_panel(ac_model, list(reporting_data), device, baseline, stats, reporter)
-            if encoder_diagnostics:
-                self._drain_encoder_diagnostics(ac_model)                             # the other baseline evaluations' diagnostics are discarded
             stats.baseline_samples = self._sample_completions(ac_model, fixed_items, baseline)
             stats.baseline_seconds = time.monotonic() - phase
             if reporter is not None and stats.baseline_samples:
                 reporter.report_completions(baseline, stats.baseline_samples)
             planned_total = config.schedule_total_updates or (self.updates_done.get(ac_model_name, 0) + steps * config.num_epochs)
+            reader_frozen = config.learning_rate_target_lora == 0.0     # a frozen reader neither steps nor takes part in the clipping norm
             for epoch in range(1, config.num_epochs + 1):
                 epoch_number = start_epoch + epoch - 1
                 epoch_started = time.monotonic()
@@ -717,16 +566,8 @@ class ActivationContextTrainer:
                     before_side_tokens = ac_model.stats.side_tokens
                     mini = order[(step - 1) * per_step:step * per_step]
                     optimizer.zero_grad(set_to_none=True)
-                    totals = {"loss": 0.0, "agreement": 0.0, "drift": 0.0, "tokens": 0, "penalty": [], "penalty_examples": 0, "distill": []}
-                    self._distill_lambda = self._distill_lambda_at(self.updates_done.get(ac_model_name, 0), planned_total) if self._distill_active() else 0.0
-                    mini_tokens = max(1, sum(examples[index].num_completion for index in mini))
-                    def share(example):     # this example's weight in the update's loss
-                        return example.num_completion / mini_tokens if config.loss_weighting == "token" else 1.0 / len(mini)
+                    totals = {"loss": 0.0, "agreement": 0.0, "tokens": 0, "penalty": []}
                     batched = config.micro_batch_examples > 1 and config.loss_kind == "sft"
-                    if config.penalty_count_exact and config.no_context_penalty_weight > 0:
-                        eligible = [index for index in mini if examples[index].penalty is not None]
-                        count = min(len(eligible), int(math.floor(config.no_context_penalty_fraction * len(mini) + 0.5)))   # round half up: 0.25 x 8 = 2, 0.5 x 1 = 1
-                        self._penalty_forced = {id(examples[index]) for index in self._penalty_rng.sample(eligible, count)}
                     if batched:
                         mini = sorted(mini, key=lambda index: len(examples[index].student_ids))   # same examples, less padding per micro-batch
                         groups = [mini[i:i + config.micro_batch_examples] for i in range(0, len(mini), config.micro_batch_examples)]
@@ -736,23 +577,19 @@ class ActivationContextTrainer:
                         group_examples = [examples[index] for index in group]
                         example_started = time.monotonic()
                         if batched:
-                            outcomes = [(result["objective"], None, torch.zeros((), device=device), result["penalty"], result["distill"], result.get("metric"))
-                                        for result in self._batch_loss(ac_model, group_examples, device)]
+                            outcomes = [(result["objective"], None, result["penalty"]) for result in self._batch_loss(ac_model, group_examples, device)]
                         else:
-                            objective, agreement, drift, _, _ = self._example_loss(ac_model, group_examples[0], device)
-                            outcomes = [(objective, agreement, drift, self._penalty_term, self._distill_term, self._loss_metric)]
-                        loss = sum((objective + config.drift_term_weight * drift + (penalty_term if penalty_term is not None else 0.0)
-                                    + (distill[0] if distill is not None else 0.0)) * (example.item.weight * share(example))
-                                   for example, (objective, _, drift, penalty_term, distill, _) in zip(group_examples, outcomes))
+                            objective, agreement, _, _ = self._example_loss(ac_model, group_examples[0], device)
+                            outcomes = [(objective, agreement, self._penalty_term)]
+                        loss = sum((objective + (penalty_term if penalty_term is not None else 0.0)) * (example.item.weight / len(mini))
+                                   for example, (objective, _, penalty_term) in zip(group_examples, outcomes))
                         loss.backward()
                         seconds_each = (time.monotonic() - example_started) / len(group)
-                        for example, (objective, agreement, drift, penalty_term, distill, metric) in zip(group_examples, outcomes):
-                            cached = config.loss_kind == "kl" and config.teacher_cache_top_k > 0 and example.teacher_cache_key in self.teacher_cache
+                        for example, (objective, agreement, penalty_term) in zip(group_examples, outcomes):
+                            cached = config.loss_kind == "kl" and example.teacher_cache_key in self.teacher_cache
                             if penalty_term is not None:
                                 totals["penalty"].append(float(penalty_term.detach()) * config.no_context_penalty_fraction / config.no_context_penalty_weight)
-                            if distill is not None:
-                                totals["distill"].append(distill[1])
-                            loss_value = float(objective.detach()) if metric is None else float(metric)     # rare_weight: the reported loss stays unweighted
+                            loss_value = float(objective.detach())
                             stats.example_records.append({"kind": example.item.kind, "teacher_tokens": len(example.teacher_ids),
                                 "student_tokens": len(example.student_ids), "seconds": round(seconds_each, 3), "teacher_cached": cached})
                             stats.teacher_cache_hits += int(cached)
@@ -762,43 +599,21 @@ class ActivationContextTrainer:
                                 stats.kl_by_kind.setdefault(example.item.kind, []).append(loss_value)
                                 stats.agreement_by_kind.setdefault(example.item.kind, []).append(agreement)
                                 totals["agreement"] += agreement
-                            totals["drift"] += float(drift.detach()) * example.item.weight
                             totals["tokens"] += len(example.teacher_ids) + len(example.student_ids)
                     stats.penalty_counts.append(len(totals["penalty"]))
-                    self._penalty_forced = None
-                    heads_only = self.updates_done.get(ac_model_name, 0) < config.intervention_heads_only_updates
-                    reader_frozen = config.learning_rate_target_lora == 0.0 or self.updates_done.get(ac_model_name, 0) < config.target_lora_frozen_updates or heads_only
                     if reader_frozen:
                         for parameter in target_parameters:
-                            parameter.grad = None      # a frozen reader neither steps nor takes part in the clipping norm
-                    if heads_only:
-                        for parameter in staged_parameters:
-                            parameter.grad = None      # heads-only staging: the encoder and its gates neither step nor take part in the clipping norm
+                            parameter.grad = None
                     norm_ac = self._grad_norm(ac_parameters); norm_reader = self._grad_norm(target_parameters)
                     head_norms = self._head_grad_norms(ac_model) if ac_model.is_deep else None       # before clipping, like norm_ac
-                    if config.clip_per_group:      # the encoder's transition spikes no longer scale the reader's step (and vice versa)
-                        torch.nn.utils.clip_grad_norm_(ac_parameters, config.max_grad_norm)
-                        if not reader_frozen:
-                            torch.nn.utils.clip_grad_norm_(target_parameters, config.max_grad_norm_reader or config.max_grad_norm)
-                        grad_norm = math.sqrt(norm_ac ** 2 + (0.0 if reader_frozen else norm_reader) ** 2)
-                    else:
-                        grad_norm = float(torch.nn.utils.clip_grad_norm_(ac_parameters + ([] if reader_frozen else target_parameters), config.max_grad_norm))
+                    grad_norm = float(torch.nn.utils.clip_grad_norm_(ac_parameters + ([] if reader_frozen else target_parameters), config.max_grad_norm))
                     set_learning_rates(optimizer, self.updates_done.get(ac_model_name, 0), config.warmup_updates,
                                        total_updates=planned_total, schedule=config.lr_schedule, final_fraction=config.lr_final_fraction)
-                    if self.updates_done.get(ac_model_name, 0) < config.target_lora_frozen_updates or heads_only:
-                        optimizer.param_groups[1]["lr"] = 0.0      # the reader stays put for the staged recipe's first updates
                     stats.grad_norm_ac.append(norm_ac); stats.grad_norm_reader.append(norm_reader)
                     if self.updates_done.get(ac_model_name, 0) % 25 == 0:
                         stats.gate_trace.append({"update": self.updates_done.get(ac_model_name, 0), **{gate_names.get(id(parameter), str(index)): float(parameter.detach()) for index, parameter in enumerate(gate_parameters)}})
                     if ac_model.is_deep and self._intervention_trace_due(self.updates_done.get(ac_model_name, 0)):
                         stats.intervention_trace.append(self._intervention_trace_entry(ac_model, self.updates_done.get(ac_model_name, 0), head_norms))
-                    if encoder_diagnostics:
-                        self._absorb_encoder_diagnostics(ac_model)
-                        if self._intervention_trace_due(self.updates_done.get(ac_model_name, 0)):
-                            entry = {key: sum(values) / len(values) for key, values in self._encoder_pending.items() if values}
-                            self._encoder_pending = {}
-                            if entry:
-                                stats.encoder_trace.append({"update": self.updates_done.get(ac_model_name, 0), **entry})
                     encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters)
                     try:
                         optimizer.step()
@@ -813,12 +628,8 @@ class ActivationContextTrainer:
                     if config.loss_kind == "kl":
                         stats.kl.append(stats.loss[-1])
                         stats.agreement.append(totals["agreement"] / len(mini))
-                        stats.drift.append(totals["drift"] / len(mini))
-                    if config.no_context_penalty_weight > 0:
+                    if config.penalty_active:
                         stats.penalty.append(sum(totals["penalty"]) / len(totals["penalty"]) if totals["penalty"] else (stats.penalty[-1] if stats.penalty else 0.0))
-                    if self._distill_active():
-                        stats.distill_lambda.append(self._distill_lambda)
-                        stats.distill_loss.append({layer: sum(values[layer] for values in totals["distill"]) / len(totals["distill"]) for layer in self._distill_layers} if totals["distill"] else {})
                     stats.grad_norm.append(grad_norm)
                     stats.step_seconds.append(seconds)
                     stats.step_tokens.append(totals["tokens"])
@@ -835,28 +646,15 @@ class ActivationContextTrainer:
                         phase = time.monotonic()
                         if reporter is not None:
                             reporter.report_phase(progress(step), "reporting")
-                        if encoder_diagnostics:
-                            self._absorb_encoder_diagnostics(ac_model)                 # the training forwards' diagnostics stay with the trace
                         record.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
                         stats.reporting = record.reporting
                         if reporter is not None:
                             reporter.report_eval(progress(step), "reporting", record.reporting)
-                        if encoder_diagnostics:
-                            self._report_encoder_panel(ac_model, progress(step), stats, reporter)
-                        if passes_off_panel:
-                            record.passes_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "passes_off", passes_off=True)
-                            stats.passes_off = record.passes_off
-                            if reporter is not None:
-                                reporter.report_eval(progress(step), "passes_off", record.passes_off)
                         if deltas_off_panel:
                             record.deltas_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "deltas_off", deltas_off=True)
                             stats.deltas_off = record.deltas_off
                             if reporter is not None:
                                 reporter.report_eval(progress(step), "deltas_off", record.deltas_off)
-                        if self._distill_active():
-                            self._report_distill_panel(ac_model, list(reporting_data), device, progress(step), stats, reporter)
-                        if encoder_diagnostics:
-                            self._drain_encoder_diagnostics(ac_model)                  # the other panels' diagnostics are discarded
                         record.reporting_seconds += time.monotonic() - phase
                 if validation_data:
                     phase = time.monotonic()
@@ -1037,7 +835,7 @@ class ActivationContextTrainer:
                     if side == "student" and example.part_requests:
                         present = [(span, request) for span, request in zip(example.spans, example.part_requests) if span[1] <= prefix_length]
                         outputs = ac_model.encode_batch([request for _, request in present], with_layers=True) if present else []
-                        embeds, payload = self._assemble_student(embeds, [span for span, _ in present], outputs, embeds.dtype, ac_model=ac_model)
+                        embeds, payload = self._assemble_student(embeds, [span for span, _ in present], outputs, embeds.dtype)
                     lora = ac_model.config.target_model_lora_name
                     peft_model = manager.ensure_lora(lora)
                     budget = min(self.config.completion_max_new_tokens, capacity - prefix_length) if capacity else self.config.completion_max_new_tokens
@@ -1117,10 +915,8 @@ class ActivationContextTrainer:
     # ------------------------------------------------------------------------------------------ internals
     @torch.no_grad()
     def _evaluate(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device,
-                  reporter: "ActivationContextTrainingReporter | None" = None, reporting_name: str = "evaluation", deltas_off: bool = False,
-                  passes_off: bool = False) -> ActivationContextEvalSummary:
-        """`deltas_off`: a deep model's items scored with their rows kept and their per-layer deltas withheld (the deltas' contribution).
-        `passes_off`: an iterative encoder's items scored with the rows of pass 1 (encoder_passes forced to 1: the later passes' contribution)."""
+                  reporter: "ActivationContextTrainingReporter | None" = None, reporting_name: str = "evaluation", deltas_off: bool = False) -> ActivationContextEvalSummary:
+        """`deltas_off`: a deep model's items scored with their rows kept and their per-layer deltas withheld (the deltas' contribution)."""
         if reporter is not None:
             reporter.report_evaluation_progress(reporting_name, 0, len(items))
         examples = [self.build_example(ac_model, item) for item in items]
@@ -1133,9 +929,6 @@ class ActivationContextTrainer:
             base.eval()
         per_item = []
         is_kl = self.config.loss_kind == "kl"
-        surprisal = self._surprisal_active(ac_model)
-        if passes_off:
-            ac_model._encoder_passes_override = 1
         try:
             def row(example, loss, agreement, positions, target_logp, hits):
                 teacher_logp = self.teacher_target_logp.get(example.teacher_cache_key) if is_kl else None
@@ -1146,8 +939,7 @@ class ActivationContextTrainer:
                     "teacher_tokens": len(example.teacher_ids), "student_tokens": len(example.student_ids),
                     "gold_nll": float(-target_logp.mean()), "target_logp": [round(float(value), 4) for value in target_logp],
                     "teacher_gold_nll": float(-teacher_logp.mean()) if teacher_logp is not None else None,
-                    "teacher_target_logp": [round(float(value), 4) for value in teacher_logp] if teacher_logp is not None else None,
-                    **(self._rare_token_stats(example, target_logp, hits) if surprisal else {})}
+                    "teacher_target_logp": [round(float(value), 4) for value in teacher_logp] if teacher_logp is not None else None}
             rows: list[dict | None] = [None] * len(examples)
             done = 0
             if self.config.micro_batch_examples > 1 and not is_kl:
@@ -1161,7 +953,7 @@ class ActivationContextTrainer:
                         reporter.report_evaluation_progress(reporting_name, done, len(examples))
             else:
                 for index, example in enumerate(examples):
-                    loss, agreement, _, positions, target_logp = self._example_loss(ac_model, example, device, with_drift=False, deltas_off=deltas_off)
+                    loss, agreement, positions, target_logp = self._example_loss(ac_model, example, device, with_penalty=False, deltas_off=deltas_off)
                     rows[index] = row(example, loss, agreement, positions, target_logp, self._last_hits)
                     done += 1
                     if reporter is not None:
@@ -1172,16 +964,10 @@ class ActivationContextTrainer:
                 base.train(training)
                 disable_dropout(base)
             ac_model.set_mode(previous_mode)
-            ac_model.__dict__.pop("_encoder_passes_override", None)
         def summarize(rows):
             loss = sum(row["loss"] for row in rows) / len(rows) if rows else None
             teacher_rows = [row["teacher_gold_nll"] for row in rows if row["teacher_gold_nll"] is not None]
-            rare = {}
-            if surprisal:
-                for key in ("rare_token_loss", "rare_token_accuracy"):
-                    values = [row[key] for row in rows if row.get(key) is not None]
-                    rare[key] = sum(values) / len(values) if values else None
-            return {"loss_kind": self.config.loss_kind, "loss": loss, "kl": loss if is_kl else None, **rare,
+            return {"loss_kind": self.config.loss_kind, "loss": loss, "kl": loss if is_kl else None,
                     "agreement": sum(row["agreement"] for row in rows) / len(rows) if is_kl and rows else None,
                     "gold_nll": sum(row["gold_nll"] for row in rows) / len(rows) if rows else None,
                     "gold_nll_token": -sum(sum(row["target_logp"]) for row in rows) / max(1, sum(len(row["target_logp"]) for row in rows)) if rows else None,   # token-weighted: long passages count by their length
@@ -1192,11 +978,11 @@ class ActivationContextTrainer:
                    for kind in dict.fromkeys(row["kind"] for row in per_item)}
         return {**summarize(per_item), "dropped_too_long": 0, "by_kind": by_kind, "per_item": per_item}
 
-    def _example_loss(self, ac_model: ActivationContextModel, example: _Example, device: torch.device, with_drift: bool = True, deltas_off: bool = False) -> tuple[torch.Tensor, float | None, torch.Tensor, int, torch.Tensor]:
+    def _example_loss(self, ac_model: ActivationContextModel, example: _Example, device: torch.device, with_penalty: bool = True, deltas_off: bool = False) -> tuple[torch.Tensor, float | None, int, torch.Tensor]:
         """
-        (loss, agreement, drift, positions, target log-probs) of one example: the student with the rows against the
-        stored teacher targets (KL) or the target tokens (SFT); drift on the in-context tokens when configured.
-        The last value is the student's log-prob of every target token, detached, on `device`.
+        (loss, agreement, positions, target log-probs) of one example: the student with the rows against the stored teacher
+        targets (KL) or the target tokens (SFT). With `with_penalty` (training forwards) the sampled no-context penalty term
+        lands in `_penalty_term`. The last value is the student's log-prob of every target token, detached, on `device`.
         """
         config = self.config
         target = ac_model.target
@@ -1220,55 +1006,28 @@ class ActivationContextTrainer:
         student_ids = torch.tensor(example.student_ids, device=device)
         with torch.no_grad():
             student_embeds = embedding(student_ids)
-        student_embeds, payload = self._assemble_student(student_embeds, example.spans, outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+        student_embeds, payload = self._assemble_student(student_embeds, example.spans, outputs, base_dtype, deltas_off=deltas_off)
         checkpointed = (config.gradient_checkpointing and torch.is_grad_enabled()
                         and len(example.student_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
-        distilled = with_drift and torch.is_grad_enabled() and self._distill_active()      # training forwards only (the panels score under no_grad)
-        teacher_rows = self._distill_teacher(ac_model, [example], device)[0] if distilled else None
-        capture = capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions)], config.distill_source) if distilled else nullcontext()
-        with capture as captured:
-            student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
-                                                    interventions=[payload] if payload is not None else None)[0]
-        self._distill_term = self._distill_terms(captured, 0, teacher_rows) if distilled else None
+        student_hidden = target.decoder_forward(student_embeds[None], None, lora_name=lora, gradient_checkpointing=checkpointed,
+                                                interventions=[payload] if payload is not None else None)[0]
         if torch.is_grad_enabled():
             self._harvest_row_rms([payload])
         student_states = student_hidden[example.student_positions]
-        self._loss_metric = None
-        weights = self._token_weights(example, device) if with_drift and torch.is_grad_enabled() and not is_kl else None   # rare_weight, training forwards only
         if is_kl:
             loss, agreement, target_logp = self._chunked_kl(None, student_states, head, cached=cached, target_ids=target_ids)
-        elif weights is not None:
-            cross_entropy, target_logp, self._last_hits = self._chunked_sft_tokens(student_states, head, target_ids)
-            loss, self._loss_metric, agreement = (cross_entropy * weights).mean(), float(cross_entropy.detach().mean()), None
         else:
             loss, target_logp = self._chunked_sft(student_states, head, target_ids)
             agreement = None
-        drift = torch.zeros((), device=device)
-        if is_kl and with_drift and config.drift_term_weight > 0:
-            # The adapter's in-context behaviour on the last in-context positions, held to the frozen base's (its own reference,
-            # the base with no adapter; unrelated to the stored teacher).
-            teacher_ids = torch.tensor(example.teacher_ids, device=device, dtype=torch.long)
-            prefix = example.teacher_positions[0] + 1
-            window = slice(max(0, prefix - 1024), prefix)
-            with torch.no_grad():
-                frozen_states = target.decoder_forward(embedding(teacher_ids)[None], None, lora_name=None, gradient_checkpointing=False)[0][window]
-            drift_checkpointed = (config.gradient_checkpointing and torch.is_grad_enabled()
-                                  and len(example.teacher_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
-            adapted_states = target.decoder_forward(embedding(teacher_ids)[None], None, lora_name=lora,
-                                                    gradient_checkpointing=drift_checkpointed)[0][window]
-            drift, _, _ = self._chunked_kl(frozen_states, adapted_states, head)
         self._penalty_term = None
-        if with_drift and example.penalty is not None and config.no_context_penalty_weight > 0 and self._penalty_active() and (
-                id(example) in self._penalty_forced if self._penalty_forced is not None else self._penalty_rng.random() < config.no_context_penalty_fraction):
+        if with_penalty and example.penalty is not None and config.penalty_active and self._penalty_rng.random() < config.no_context_penalty_fraction:
             # The reader on the same history without its rows, held to the base's stored no-context distribution: any improvement that
             # does not need the rows (the answer prior, memorizing the question) is charged; decoding the rows is free.
             reference = example.penalty
-            live = config.no_context_penalty_reference == "live"
-            cached_reference = None if live else self.teacher_cache.get(reference.teacher_cache_key)
-            if cached_reference is None and not live:
+            cached_reference = self.teacher_cache.get(reference.teacher_cache_key)
+            if cached_reference is None:
                 raise RuntimeError(f"{reference.item.item_id}: no stored no-context reference; train() stores it before its first update")
-            if cached_reference is not None:
-                cached_reference = tuple(tensor.to(device, non_blocking=True) for tensor in cached_reference)
+            cached_reference = tuple(tensor.to(device, non_blocking=True) for tensor in cached_reference)
             reference_ids = torch.tensor(reference.student_ids, device=device, dtype=torch.long)
             with torch.no_grad():
                 reference_embeds = embedding(reference_ids)
@@ -1276,225 +1035,10 @@ class ActivationContextTrainer:
                                       and len(reference.student_ids) >= getattr(self, "_target_gradient_checkpointing_min_tokens", config.gradient_checkpointing_min_tokens or 0))
             hits = self._last_hits
             reference_states = target.decoder_forward(reference_embeds[None], None, lora_name=lora, gradient_checkpointing=reference_checkpointed)[0][reference.student_positions]
-            if live:        # the base without adapter on the same stripped history, exact KL over the vocabulary
-                with torch.no_grad():
-                    base_states = target.decoder_forward(reference_embeds[None], None, lora_name=None)[0][reference.student_positions]
-                penalty, _, _ = self._chunked_kl(base_states, reference_states, head)
-            else:
-                penalty, _, _ = self._chunked_kl(None, reference_states, head, cached=cached_reference)
+            penalty, _, _ = self._chunked_kl(None, reference_states, head, cached=cached_reference)
             self._last_hits = hits
             self._penalty_term = (config.no_context_penalty_weight / config.no_context_penalty_fraction) * penalty
-        return loss, agreement, drift, num, target_logp
-
-    # ------------------------------------------------------------------------------------------ dense supervision (context distillation)
-    def _distill_active(self) -> bool:
-        return self.config.distill_weight > 0
-
-    # ------------------------------------------------------------------------------------------ round 8: surprisal features and write-side diagnostics
-    def _surprisal_active(self, ac_model: ActivationContextModel) -> bool:
-        """The base's per-target-token no-context surprisal is stored (and the rare-token panel computed) for rare_weight or pool_surprisal runs."""
-        return self.config.rare_weight > 0 or ac_model.config.pool_surprisal > 0
-
-    def _target_surprisal(self, example: _Example) -> torch.Tensor | None:
-        """s_t = -log p_base(target token t | the stripped history) per target token [C], CPU fp32, from the stored no-context reference; None for an
-        example without rows (no reference exists) - a missing reference for one with rows is an error (train() stores them before the first update)."""
-        if example.penalty is None:
-            return None
-        logp = self.teacher_target_logp.get(example.penalty.teacher_cache_key)
-        if logp is None:
-            raise RuntimeError(f"{example.item.item_id}: no stored no-context reference for its surprisal; train() stores it before its first update")
-        return (-logp.float()).clamp_min(0.0)
-
-    def _token_weights(self, example: _Example, device: torch.device) -> torch.Tensor | None:
-        """rare_weight: w_t = 1 + rare_weight x s_t / mean(s), normalised to mean 1 over the example's target tokens (uniform for an example without rows)."""
-        if self.config.rare_weight <= 0:
-            return None
-        surprisal = self._target_surprisal(example)
-        if surprisal is None or surprisal.numel() == 0:
-            return None
-        weights = 1.0 + self.config.rare_weight * surprisal / surprisal.mean().clamp_min(1e-6)
-        return (weights / weights.mean()).to(device)
-
-    def _rare_token_stats(self, example: _Example, target_logp: torch.Tensor, hits: torch.Tensor | None) -> dict:
-        """The held-out rare-token panel: over the target tokens whose stored base no-context surprisal is in the item's top 20 % (ceil(0.2 x C) tokens, at
-        least 1; ties by torch.topk), the student's mean -log p and its teacher-forced accuracy. Empty for an item without a reference."""
-        surprisal = self._target_surprisal(example)
-        if surprisal is None or surprisal.numel() == 0 or target_logp.numel() != surprisal.numel():
-            return {}
-        count = max(1, math.ceil(0.2 * surprisal.numel()))
-        chosen = surprisal.topk(count).indices
-        logp = target_logp.detach().float().cpu()[chosen]
-        stats = {"rare_token_loss": float(-logp.mean()), "rare_positions": int(count)}
-        stats["rare_token_accuracy"] = float(hits.detach().cpu()[chosen].float().mean()) if hits is not None and hits.numel() == surprisal.numel() else None
-        return stats
-
-    def _drain_encoder_diagnostics(self, ac_model: ActivationContextModel) -> dict[str, float]:
-        """The encoder's write-side diagnostics recorded since the last drain (refine_rms, pass_cosine, pool_*), each averaged over the parts; cleared."""
-        store = ac_model.intervention_diagnostics.get("encoder", {})
-        entry = {key: float(torch.stack([torch.as_tensor(value, dtype=torch.float32) for value in values]).mean()) for key, values in store.items() if values}
-        store.clear()
-        return entry
-
-    def _absorb_encoder_diagnostics(self, ac_model: ActivationContextModel) -> None:
-        """Training forwards: the encoder's diagnostics go to the pending trace (averaged per part, then over the parts at the trace point)."""
-        for key, value in self._drain_encoder_diagnostics(ac_model).items():
-            self._encoder_pending.setdefault(key, []).append(value)
-
-    def _report_encoder_panel(self, ac_model: ActivationContextModel, progress: ActivationContextTrainingProgress, stats: ActivationContextTrainingStats, reporter) -> None:
-        """After the reporting evaluation: its forwards' write-side diagnostics as one panel entry."""
-        entry = self._drain_encoder_diagnostics(ac_model)
-        if not entry:
-            return
-        stats.encoder_panel.append({"update": progress.global_step, "epoch": progress.epoch_number, **entry})
-        if reporter is not None:
-            reporter.report_encoder_panel(progress, entry)
-
-    @staticmethod
-    def _check_target_alignment(item_id: str, teacher_ids: list[int], teacher_positions: list[int], student_ids: list[int], student_positions: list[int]) -> None:
-        """The teacher's and the student's target positions (the existing per-token position lists) predict the same tokens from the same tokens: at every
-        aligned pair the token at the predicting position and the target token after it agree (the passage tokens exist only in the teacher, the rows only in
-        the student, so the offsets differ while the target runs match token for token)."""
-        if len(teacher_positions) != len(student_positions):
-            raise ValueError(f"{item_id}: the teacher and the student have {len(teacher_positions)} and {len(student_positions)} target positions")
-        for p, q in zip(teacher_positions, student_positions):
-            if teacher_ids[p] != student_ids[q] or teacher_ids[p + 1] != student_ids[q + 1]:
-                raise ValueError(f"{item_id}: teacher position {p} and student position {q} are not aligned "
-                                 f"(tokens {teacher_ids[p]}->{teacher_ids[p + 1]} vs {student_ids[q]}->{student_ids[q + 1]})")
-
-    def _resolve_distill_layers(self, ac_model: ActivationContextModel) -> list[int]:
-        """The supervised reader layers: `distill_layers` as a list or -1 (every full-attention layer), else a deep model's intervention layers, else every
-        full-attention layer. Every chosen layer must be a full-attention layer of the reader (the attention output lives there)."""
-        from ..harness.model_config import LayerType
-        descriptions = ac_model.target.model_config.model_description.layer_descriptions
-        full = [layer.layer_idx for layer in descriptions if layer.layer_type is LayerType.FULL_ATTENTION]
-        chosen = self.config.distill_layers
-        if chosen is None:
-            chosen = list(ac_model.intervention_layers) if ac_model.is_deep else list(full)
-        elif chosen == -1:
-            chosen = list(full)
-        else:
-            chosen = list(chosen)
-        if not chosen:
-            raise ValueError("dense supervision needs at least one supervised reader layer (the reader describes no full-attention layer)")
-        wrong = [layer for layer in chosen if not 0 <= layer < len(descriptions)]
-        if wrong:
-            raise ValueError(f"distill_layers {wrong} lie outside the reader's layers 0..{len(descriptions) - 1}")
-        wrong = [layer for layer in chosen if layer not in full]
-        if wrong:
-            raise ValueError(f"dense supervision reads the attention output of full-attention reader layers; {wrong} are not (set distill_layers)")
-        return sorted(set(chosen))
-
-    def _distill_lambda_at(self, update: int, planned_total: int | None) -> float:
-        """λ(step) on the schedule clock: `distill_weight` while update / planned_total <= distill_hold, a linear decay to distill_floor x distill_weight
-        reached at distill_decay_end, the floor afterwards. `update` counts the optimizer steps done so far (restored on a resume), like the LR schedule."""
-        config = self.config
-        progress = min(1.0, max(0.0, update / planned_total)) if planned_total else 0.0
-        floor = config.distill_floor * config.distill_weight
-        if progress <= config.distill_hold:
-            return config.distill_weight
-        if progress >= config.distill_decay_end:
-            return floor
-        fraction = (progress - config.distill_hold) / (config.distill_decay_end - config.distill_hold)
-        return config.distill_weight + (floor - config.distill_weight) * fraction
-
-    @torch.no_grad()
-    def _distill_teacher(self, ac_model: ActivationContextModel, batch: t.Sequence[_Example], device: torch.device) -> list[dict[int, torch.Tensor]]:
-        """The teacher: the base reader with every adapter disabled (`lora_name=None`) and no rows on the full-context (in-context) history of each example,
-        one forward (right-padded when several; no checkpointing, no payload, nothing cached), keeping only the supervised tensor at the supervised (target)
-        positions per layer: per example {layer: [C, d]}, detached, in the model's dtype."""
-        target = ac_model.target
-        base = target.model
-        embedding = base.get_input_embeddings()
-        for example in batch:
-            if not example.teacher_ids:
-                raise ValueError(f"{example.item.item_id}: dense supervision needs the item's in-context (full-context) history")
-        embeds = [embedding(torch.tensor(example.teacher_ids, device=device, dtype=torch.long)) for example in batch]
-        runs = [contiguous_runs(example.teacher_positions) for example in batch]
-        with capture_layer_outputs(base, self._distill_layers, runs, self.config.distill_source) as captured:
-            if len(batch) == 1:
-                target.decoder_forward(embeds[0][None], None, lora_name=None, gradient_checkpointing=False)
-            else:
-                self._padded_forward(target, embeds, None)
-        return [{layer: torch.cat(captured[layer][row]).detach() for layer in captured} for row in range(len(batch))]
-
-    def _distill_terms(self, captured: dict, row: int, teacher_rows: dict[int, torch.Tensor]) -> tuple[torch.Tensor, dict[int, float]]:
-        """(λ x the mean over layers of the normalised term, the per-layer values): per layer, the mean over the supervised positions of
-        ||A_student - A_teacher||^2 divided by the teacher's mean squared norm there (d x its RMS^2 over those positions, detached): 1 when the
-        student writes nothing, 0 when it writes the teacher's tensor, O(1) at the start, so λ = 1 is parity with the terminal loss."""
-        terms: dict[int, torch.Tensor] = {}
-        for layer in self._distill_layers:
-            student = torch.cat(captured[layer][row]).float()
-            teacher = teacher_rows[layer].float()
-            if student.shape != teacher.shape:
-                raise RuntimeError(f"layer {layer}: the student captured {tuple(student.shape)} at the target positions, the teacher {tuple(teacher.shape)}")
-            terms[layer] = (student - teacher).pow(2).sum(dim=-1).mean() / teacher.pow(2).sum(dim=-1).mean().clamp_min(1e-12)
-        mean = sum(terms.values()) / len(terms)
-        return self._distill_lambda * mean, {layer: float(term.detach()) for layer, term in terms.items()}
-
-    @torch.no_grad()
-    def _distill_panel(self, ac_model: ActivationContextModel, items: t.Sequence[ActivationContextTrainingItem], device: torch.device) -> dict:
-        """Diagnostics on the first DISTILL_PANEL_ITEMS items with rows (no grad): per supervised layer the normalised term with the rows on (the reader as
-        trained, payload included) and with the rows off (the same reader on the stripped history, no rows: the rows-independent part of the fit - the
-        reader LoRA matching the teacher's conditional mean - which falls first in every arm; the gap between the two is what the rows deliver), and the
-        rows' attention share: the share of the target positions' attention mass on the row positions (a manual attention over the reader's q / k with
-        its RoPE, GQA grouping and scaling; mean over heads, positions and items). {"rows_on", "rows_off", "rows_attention_share"}, each {layer: value}."""
-        examples = [(item, example) for item, example in ((item, self.build_example(ac_model, item)) for item in items)
-                    if example.part_requests and example.teacher_ids][:DISTILL_PANEL_ITEMS]
-        if not examples or not self._distill_layers:
-            return {}
-        target = ac_model.target
-        base = target.model
-        embedding = base.get_input_embeddings()
-        lora = ac_model.config.target_model_lora_name
-        previous_mode = ac_model.mode
-        ac_model.set_mode(TRAINING)
-        bases = list(dict.fromkeys([target.model, ac_model.side.model]))
-        modes = [b.training for b in bases]
-        for b in bases:
-            b.eval()
-        sums = {name: {layer: 0.0 for layer in self._distill_layers} for name in ("rows_on", "rows_off", "rows_attention_share")}
-        try:
-            for item, example in examples:
-                teacher = self._distill_teacher(ac_model, [example], device)[0]
-                outputs = ac_model.encode_batch(example.part_requests, with_layers=True)
-                embeds, payload = self._assemble_student(embedding(torch.tensor(example.student_ids, device=device)), example.spans, outputs,
-                                                         next(base.parameters()).dtype, ac_model=ac_model)
-                rows = [position for start, end in example.spans for position in range(start, end)]
-                with capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions)], self.config.distill_source) as captured, \
-                        capture_attention_qk(base, self._distill_layers) as attention:
-                    target.decoder_forward(embeds[None], None, lora_name=lora, gradient_checkpointing=False, interventions=[payload] if payload is not None else None)
-                for layer, value in self._distill_terms(captured, 0, teacher)[1].items():
-                    sums["rows_on"][layer] += value
-                for layer in self._distill_layers:
-                    sums["rows_attention_share"][layer] += float(attention_shares(base, attention, layer, example.student_positions, rows).mean())
-                stripped = strip_ac_parts(item.ac_messages)
-                reference = self.build_example(ac_model, replace(item, item_id=item.item_id + ":rows_off", in_context_messages=stripped, ac_messages=stripped,
-                                                                 in_context_start=item.ac_start), reference=True)
-                self._check_target_alignment(item.item_id, example.teacher_ids, example.teacher_positions, reference.student_ids, reference.student_positions)
-                with capture_layer_outputs(base, self._distill_layers, [contiguous_runs(reference.student_positions)], self.config.distill_source) as captured:
-                    target.decoder_forward(embedding(torch.tensor(reference.student_ids, device=device))[None], None, lora_name=lora, gradient_checkpointing=False)
-                for layer, value in self._distill_terms(captured, 0, teacher)[1].items():
-                    sums["rows_off"][layer] += value
-        finally:
-            for b, training in zip(bases, modes):
-                b.train(training)
-                disable_dropout(b)
-            ac_model.set_mode(previous_mode)
-        return {name: {layer: value / len(examples) for layer, value in values.items()} for name, values in sums.items()}
-
-    def _report_distill_panel(self, ac_model: ActivationContextModel, items: list[ActivationContextTrainingItem], device: torch.device,
-                              progress: ActivationContextTrainingProgress, stats: ActivationContextTrainingStats, reporter) -> None:
-        panel = self._distill_panel(ac_model, items, device)
-        if not panel:
-            return
-        stats.distill_panel.append({"update": progress.global_step, "epoch": progress.epoch_number, **panel})
-        if reporter is not None:
-            reporter.report_distill_panel(progress, panel)
-
-    def _penalty_active(self) -> bool:
-        """The no-context penalty only trains the reader; while the reader is frozen (the staged recipes' first updates) it is skipped."""
-        done = self.updates_done.get(getattr(self, "_training_ac_name", ""), 0)
-        return done >= self.config.target_lora_frozen_updates and done >= self.config.intervention_heads_only_updates
+        return loss, agreement, num, target_logp
 
     def _batch_loss(self, ac_model: ActivationContextModel, batch: t.Sequence[_Example], device: torch.device, with_penalty: bool = True, deltas_off: bool = False) -> list[dict]:
         """
@@ -1521,56 +1065,36 @@ class ActivationContextTrainer:
                 student_embeds = embedding(student_ids)
             example_outputs = outputs[cursor_rows:cursor_rows + len(example.part_requests)]
             cursor_rows += len(example.part_requests)
-            student_embeds, payload = self._assemble_student(student_embeds, example.spans, example_outputs, base_dtype, deltas_off=deltas_off, ac_model=ac_model)
+            student_embeds, payload = self._assemble_student(student_embeds, example.spans, example_outputs, base_dtype, deltas_off=deltas_off)
             embeds.append(student_embeds)
             payloads.append(payload)
-        distilled = with_penalty and torch.is_grad_enabled() and self._distill_active()      # training forwards only
-        teacher_rows = self._distill_teacher(ac_model, batch, device) if distilled else None
-        capture = (capture_layer_outputs(base, self._distill_layers, [contiguous_runs(example.student_positions) for example in batch], config.distill_source)
-                   if distilled else nullcontext())
-        with capture as captured:
-            hidden = self._padded_forward(target, embeds, lora, payloads)
+        hidden = self._padded_forward(target, embeds, lora, payloads)
         if torch.is_grad_enabled():
             self._harvest_row_rms(payloads)
         states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
         targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
         cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
-        weighted = with_penalty and torch.is_grad_enabled() and config.rare_weight > 0        # rare_weight: training forwards only, the metric stays unweighted
         results, cursor = [], 0
-        for index, example in enumerate(batch):
+        for example in batch:
             num = example.num_completion
-            objective = cross_entropy[cursor:cursor + num].mean()
-            metric = None
-            weights = self._token_weights(example, device) if weighted else None
-            if weights is not None:
-                objective, metric = (cross_entropy[cursor:cursor + num] * weights).mean(), float(objective.detach())
-            results.append({"objective": objective, "num": num, "metric": metric,
-                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None,
-                            "distill": self._distill_terms(captured, index, teacher_rows[index]) if distilled else None})
+            results.append({"objective": cross_entropy[cursor:cursor + num].mean(), "num": num,
+                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
             cursor += num
-        if with_penalty and config.no_context_penalty_weight > 0 and self._penalty_active():
-            sampled = [index for index, example in enumerate(batch) if example.penalty is not None
-                       and (id(example) in self._penalty_forced if self._penalty_forced is not None else self._penalty_rng.random() < config.no_context_penalty_fraction)]
+        if with_penalty and config.penalty_active:
+            sampled = [index for index, example in enumerate(batch) if example.penalty is not None and self._penalty_rng.random() < config.no_context_penalty_fraction]
             if sampled:
                 references = [batch[index].penalty for index in sampled]
-                live = config.no_context_penalty_reference == "live"
                 cached = []
                 for reference in references:
-                    entry = None if live else self.teacher_cache.get(reference.teacher_cache_key)
-                    if entry is None and not live:
+                    entry = self.teacher_cache.get(reference.teacher_cache_key)
+                    if entry is None:
                         raise RuntimeError(f"{reference.item.item_id}: no stored no-context reference; train() stores it before its first update")
-                    cached.append(None if entry is None else tuple(tensor.to(device, non_blocking=True) for tensor in entry))
+                    cached.append(tuple(tensor.to(device, non_blocking=True) for tensor in entry))
                 with torch.no_grad():
                     reference_embeds = [embedding(torch.tensor(reference.student_ids, device=device, dtype=torch.long)) for reference in references]
                 reference_hidden = self._padded_forward(target, reference_embeds, lora)
-                if live:
-                    with torch.no_grad():
-                        base_hidden = self._padded_forward(target, reference_embeds, None)      # the base without adapter: exact full-vocabulary KL
                 for position, (index, reference) in enumerate(zip(sampled, references)):
-                    if live:
-                        penalty, _, _ = self._chunked_kl(base_hidden[position, reference.student_positions], reference_hidden[position, reference.student_positions], head)
-                    else:
-                        penalty, _, _ = self._chunked_kl(None, reference_hidden[position, reference.student_positions], head, cached=cached[position])
+                    penalty, _, _ = self._chunked_kl(None, reference_hidden[position, reference.student_positions], head, cached=cached[position])
                     results[index]["penalty"] = (config.no_context_penalty_weight / config.no_context_penalty_fraction) * penalty
         return results
 
@@ -1585,12 +1109,9 @@ class ActivationContextTrainer:
         return target.decoder_forward(padded, None, lora_name=lora, gradient_checkpointing=checkpointed, interventions=interventions)
 
     def _assemble_student(self, student_embeds: torch.Tensor, spans: list[tuple[int, int]], outputs: list[ACOutput], dtype: torch.dtype,
-                          deltas_off: bool = False, *, ac_model: ActivationContextModel | None = None) -> tuple[torch.Tensor, Interventions | None]:
+                          deltas_off: bool = False) -> tuple[torch.Tensor, Interventions | None]:
         """The rows written over the placeholder runs, and (deep models) one payload: the runs' positions in order with every
-        part's deltas (or K/V slot contents - the K/V transfer targets' side K/V included - with the layers' keep factors) concatenated per layer; a cross-attention model's
-        payload carries every part's passage states, the position each part becomes visible from (its run's start) and the
-        model's blocks (`ac_model` required). `deltas_off` keeps the rows and withholds the payload (K/V slots: the reader's
-        own K/V; cross-attention: no delta)."""
+        part's deltas concatenated per layer. `deltas_off` keeps the rows and withholds the payload."""
         if not outputs:
             return student_embeds, None
         assert [int(output.input_embeds.shape[0]) for output in outputs] == [end - start for start, end in spans], "placeholder runs differ from the encoded rows"
@@ -1604,44 +1125,9 @@ class ActivationContextTrainer:
             return embeds, None
         positions = [position for start, end in spans for position in range(start, end)]
         layer_inputs = {layer: torch.cat([output.layer_inputs[layer] for output in outputs], dim=0) for layer in outputs[0].layer_inputs}
-        kv_inputs = {layer: (torch.cat([output.kv_inputs[layer][0] for output in outputs], dim=0), torch.cat([output.kv_inputs[layer][1] for output in outputs], dim=0))
-                     for layer in outputs[0].kv_inputs}
-        kv_slots = {layer: (torch.cat([output.kv_slots[layer][0] for output in outputs], dim=0), torch.cat([output.kv_slots[layer][1] for output in outputs], dim=0),
-                            outputs[0].kv_slots[layer][2], outputs[0].kv_slots[layer][3])          # the keep factors are the layer's, shared by every part
-                    for layer in outputs[0].kv_slots}
-        payload: Interventions = {"positions": positions, "layer_inputs": layer_inputs, "kv_inputs": kv_inputs, "kv_slots": kv_slots}
-        if outputs[0].cross_passage is not None:
-            if ac_model is None or ac_model.modules.cross_attention is None:
-                raise ValueError("a cross-attention payload needs the AC model whose blocks the reader runs (ac_model=)")
-            payload["cross_inputs"] = {"passage": torch.cat([output.cross_passage for output in outputs], dim=0),
-                                       "visible_from": [start for (start, _), output in zip(spans, outputs) for _ in range(output.cross_passage.shape[0])],
-                                       "blocks": {layer: ac_model.modules.cross_attention[str(layer)] for layer in ac_model.intervention_layers}}
         if torch.is_grad_enabled():                                                          # training forwards only: the panels and the samples run under no_grad
             self._payload_bytes += sum(rows.numel() * 2 for rows in layer_inputs.values())  # bf16 at the reader boundary
-            self._payload_bytes += sum((dk.numel() + dv.numel()) * 2 for dk, dv in kv_inputs.values())
-            self._payload_bytes += sum((k.numel() + v.numel()) * 2 for k, v, _, _ in kv_slots.values())
-            if "cross_inputs" in payload:
-                self._payload_bytes += payload["cross_inputs"]["passage"].numel() * 2       # the whole passage: the honest cost of the ceiling
-        return embeds, payload
-
-    def _calibration_sequence(self, ac_model: ActivationContextModel, example: _Example) -> tuple[list[int], str]:
-        """The example's history with its parts replaced by their plain messages (what the no-context reference reads), tokenized for the reader."""
-        item = example.item
-        stripped = strip_ac_parts(item.ac_messages)
-        reference = self.build_example(ac_model, replace(item, item_id=item.item_id + ":calibration", in_context_messages=stripped,
-                                                         ac_messages=stripped, in_context_start=item.ac_start), reference=True)
-        return reference.student_ids, item.item_id
-
-    def _calibration_rows(self, ac_model: ActivationContextModel, example: _Example, device: torch.device) -> tuple[torch.Tensor, list[int]]:
-        """The example's reader input as a training forward sees it (the encoded rows written over the placeholder runs, no deltas) and
-        its row positions: what the row-position calibration measures on. The encode runs before calibration, under no_grad."""
-        base = ac_model.target.model
-        embedding = base.get_input_embeddings()
-        with torch.no_grad(), ac_model.uncalibrated_encoding():
-            outputs = ac_model.encode_batch(example.part_requests, with_layers=True)
-            student_embeds = embedding(torch.tensor(example.student_ids, device=device))
-            embeds, _ = self._assemble_student(student_embeds, example.spans, outputs, next(base.parameters()).dtype, deltas_off=True, ac_model=ac_model)
-        return embeds, [position for start, end in example.spans for position in range(start, end)]
+        return embeds, {"positions": positions, "layer_inputs": layer_inputs}
 
     @staticmethod
     def _intervention_trace_due(update: int) -> bool:
@@ -1649,79 +1135,39 @@ class ActivationContextTrainer:
         return update % (5 if update < 200 else 25) == 0
 
     def _head_grad_norms(self, ac_model: ActivationContextModel) -> dict:
-        """Per intervention layer, the norm of the head's gradient (weights and scale) as it stands when called: taken before clipping.
-        A2 models also get the passage-attention block's norm under "attn:<layer>", on the same footing."""
-        norms = {layer: self._grad_norm(list(module.parameters())) for layer, module in zip(ac_model.intervention_layers, ac_model.modules.intervention_modules)}
-        blocks = ac_model.modules.passage_attention if ac_model.modules.passage_attention is not None else ac_model.modules.cross_attention
-        if blocks is not None:                     # A2 blocks, or the cross-attention blocks (there the head norm and the block norm coincide)
-            norms.update({f"attn:{layer}": self._grad_norm(list(blocks[str(layer)].parameters())) for layer in ac_model.intervention_layers})
+        """Per intervention layer, the norm of the head's gradient as it stands when called (before clipping), and the read-out
+        block's under "attn:<layer>", on the same footing."""
+        modules = ac_model.modules
+        norms = {layer: self._grad_norm(list(modules.delta_heads[str(layer)].parameters())) for layer in ac_model.intervention_layers}
+        norms.update({f"attn:{layer}": self._grad_norm(list(modules.passage_attention[str(layer)].parameters())) for layer in ac_model.intervention_layers})
         return norms
 
-    def _intervention_trace_entry(self, ac_model: ActivationContextModel, update: int, head_norms: dict[int, float] | None = None) -> dict:
-        """Per layer: the delta scale (scaled style: the applied delta RMS, rows being unit RMS; lora style: an inert anchor), its ratio to
-        the calibration RMS, the head's gradient norm before clipping (`head_norms`, taken next to the encoder norm; when omitted, whatever
-        the gradients hold now), the residual RMS at the row positions, and `delta_rms`: the RMS of the applied delta relative to the
-        row-position RMS measured on the same forwards (K/V targets: per half, against the K or V RMS at the rows), `delta_rms_abs` the
-        absolute value; the real relative magnitude whatever the style."""
+    def _intervention_trace_entry(self, ac_model: ActivationContextModel, update: int, head_norms: dict | None = None) -> dict:
+        """Per layer: the head's gradient norm before clipping (`head_norms`, taken next to the encoder norm; when omitted, whatever the
+        gradients hold now), the residual RMS at the row positions on the training forwards since the last trace, `delta_rms`: the RMS
+        of the applied delta relative to that residual RMS (`delta_rms_abs` the absolute value), the delta / input-row cosine, and the
+        read-out block's output-projection weight norm (0 at init; rising = the attention path opens) with its gradient norm."""
         modules = ac_model.modules
         head_norms = self._head_grad_norms(ac_model) if head_norms is None else head_norms
-        entry = {"update": update, "scale": {}, "relative": {}, "head_grad_norm": {}, "row_rms": {}, "cosine": {}, "attention_out_norm": {}, "attention_grad_norm": {},
-                 "delta_rms": {}, "delta_rms_abs": {}, **({"takeover": {}, "slot_rms": {}} if ac_model.kv_replacement else {})}   # the slot fields exist for the replacement targets only (every other trace is as it was)
+        entry = {"update": update, "head_grad_norm": {}, "row_rms": {}, "cosine": {}, "attention_out_norm": {}, "attention_grad_norm": {}, "delta_rms": {}, "delta_rms_abs": {}}
         def mean_of(values) -> float | None:
             return float(torch.stack([torch.as_tensor(value, dtype=torch.float32) for value in values]).mean()) if values else None
-        blocks = modules.passage_attention if modules.passage_attention is not None else modules.cross_attention
-        for index, layer in enumerate(ac_model.intervention_layers):
-            head = modules.delta_heads[str(layer)] if modules.delta_heads is not None else None
-            if blocks is not None:      # A2 or cross-attention: the out projection's weight norm (0 at init; rising = the attention path opens) and the block's gradient norm (before clipping)
-                block = blocks[str(layer)]
-                entry["attention_out_norm"][layer] = float(block.out.weight.detach().norm())
-                entry["attention_grad_norm"][layer] = head_norms[f"attn:{layer}"]
-            if ac_model.kv_interventions:      # K/V heads: one scale per half, keyed "<layer>:k" / "<layer>:v", each in units of its own calibration RMS
-                pairs = [(f"{layer}:k", head.scale_k, head.relative_k), (f"{layer}:v", head.scale_v, head.relative_v)]
-            elif ac_model.kv_replacement:      # slot / transfer heads: no scales; the takeover of the reader's own K and V, and the written K/V RMS against the reader's own
-                pairs = [(f"{layer}:k", None, None), (f"{layer}:v", None, None)]
-                entry["takeover"][f"{layer}:k"] = float(head.takeover_k.detach()); entry["takeover"][f"{layer}:v"] = float(head.takeover_v.detach())
-            elif ac_model.cross_attention:     # the delta is computed in the reader: its RMS against the residual RMS at the target positions
-                pairs = [(layer, None, None)]
-            else:
-                pairs = [(layer, head.scale, head.relative)]
-            for key, scale, relative in pairs:
-                if scale is not None:
-                    entry["scale"][key] = float(scale.detach())
-                    entry["relative"][key] = float(relative.detach())
+        for layer in ac_model.intervention_layers:
+            entry["attention_out_norm"][layer] = float(modules.passage_attention[str(layer)].out.weight.detach().norm())
+            entry["attention_grad_norm"][layer] = head_norms[f"attn:{layer}"]
             entry["head_grad_norm"][layer] = head_norms[layer]
             entry["row_rms"][layer] = mean_of(self._row_rms.pop(layer, []))                 # 0-d tensors, converted here (one host sync per trace point, not per forward)
             entry["cosine"][layer] = mean_of(ac_model.intervention_diagnostics["cosine"].pop(layer, []))
-            for key, _, _ in pairs:                                                     # the applied delta's RMS against the RMS at the rows of the same forwards
-                if ac_model.cross_attention:
-                    denominator = mean_of(self._row_rms.pop(f"{layer}:cross", []))
-                    applied = mean_of(self._row_rms.pop(f"{layer}:cross_delta", []))
-                else:
-                    denominator = entry["row_rms"][layer] if key == layer else mean_of(self._row_rms.pop(key, []))
-                    applied = mean_of(ac_model.intervention_diagnostics["delta_rms"].pop(key, []))
-                entry["delta_rms_abs"][key] = applied
-                entry["delta_rms"][key] = applied / denominator if applied is not None and denominator else None
-                if ac_model.kv_replacement:
-                    written = mean_of(self._row_rms.pop(f"{key}:slot", []))
-                    entry["slot_rms"][key] = written / denominator if written is not None and denominator else None
+            applied = mean_of(ac_model.intervention_diagnostics["delta_rms"].pop(layer, []))
+            entry["delta_rms_abs"][layer] = applied
+            entry["delta_rms"][layer] = applied / entry["row_rms"][layer] if applied is not None and entry["row_rms"][layer] else None
         return entry
 
     def _harvest_row_rms(self, payloads) -> None:
-        """After a training forward: the reader hooks wrote each payload's residual RMS at its row positions per layer (K/V payloads: the K and V RMS too)."""
+        """After a training forward: the reader hooks wrote each payload's residual RMS at its row positions per layer."""
         for payload in payloads:
             for layer, value in (payload or {}).pop("row_rms", {}).items():
                 self._row_rms.setdefault(int(layer), []).append(value.detach())
-            for layer, (k_rms, v_rms) in (payload or {}).pop("row_kv_rms", {}).items():
-                for key, value in ((f"{layer}:k", k_rms), (f"{layer}:v", v_rms)):
-                    if value is not None:
-                        self._row_rms.setdefault(key, []).append(value.detach())
-            for layer, (k_rms, v_rms) in (payload or {}).pop("slot_kv_rms", {}).items():      # K/V slots: the written (replacement) K/V RMS at the rows
-                for key, value in ((f"{layer}:k:slot", k_rms), (f"{layer}:v:slot", v_rms)):
-                    if value is not None:
-                        self._row_rms.setdefault(key, []).append(value.detach())
-            for layer, (delta_rms, target_rms) in (payload or {}).pop("cross_rms", {}).items():   # cross-attention: the delta and the residual at the target positions
-                self._row_rms.setdefault(f"{layer}:cross_delta", []).append(delta_rms.detach())
-                self._row_rms.setdefault(f"{layer}:cross", []).append(target_rms.detach())
 
     def _chunked_sft_tokens(self, states: torch.Tensor, head: torch.nn.Module, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """(per-token cross-entropy [C] with grad, detached per-token log-probs [C], detached top-1 hits [C])."""
@@ -1797,8 +1243,7 @@ class ActivationContextTrainer:
                 cached = self._teacher_top_k(states, head, k)
                 targets = torch.tensor(example.target_ids, device=device, dtype=torch.long)
                 target_logp = self._target_logp(states, head, targets)
-                if self.config.teacher_targets_include_gold and k > 0:
-                    cached = self._with_gold(cached, targets, target_logp)
+                cached = self._with_gold(cached, targets, target_logp)          # the gold token always among the stored top-k
                 self.teacher_cache[example.teacher_cache_key] = tuple(tensor.cpu() for tensor in cached)
                 self.teacher_target_logp[example.teacher_cache_key] = target_logp.cpu()
             done += len(group)

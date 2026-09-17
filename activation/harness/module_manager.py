@@ -131,7 +131,7 @@ class ModuleManager:
         assert config.base_side_model_name in self.harness.loaded_models, f"Unknown model {config.base_side_model_name!r}."
         assert config.target_model_name in self.harness.loaded_models, f"Unknown model {config.target_model_name!r}."
         if config.base_side_model_lora_name not in self.lora_configs:
-            self.register_lora(config.base_side_model_lora_name, config.base_side_model_name, rank=config.side_lora_rank, target_modules=config.side_lora_target_modules)
+            self.register_lora(config.base_side_model_lora_name, config.base_side_model_name, rank=config.side_lora_rank)
         else:
             side_lora = self.lora_configs[config.base_side_model_lora_name]
             assert side_lora.model_name == config.base_side_model_name, (

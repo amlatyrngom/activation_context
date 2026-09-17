@@ -30,12 +30,14 @@ TOP_K = 32          # top-k of the base at the no-context reference positions (p
 BUDGET_SECONDS = int(os.environ.get('AC_RECON_BUDGET_SECONDS', 27000))
 DEFAULT_ARM = dict(ratio=1 / 16, encoder_lr=1e-4, reader_lr=2e-5, penalty_weight=1.0, penalty_fraction=0.25, continue_share=0.0,
                    train_items=None, epochs=2, reporting_interval=0.125, completion_samples=8, completion_tokens=320, budget_seconds=BUDGET_SECONDS,
-                   final_train_subset=512, micro_batch=1, ckpt_min_tokens=2048, gold_targets=False, reader_frozen_updates=0, material='material.json', gate_lr=None, fresh_initial=False, row_head_skip=False, lora_targets_extra=[], seed=None, lr_schedule='constant', warmup=10, clip_per_group=False, penalty_exact=False, ckpt_every=None, mixer_layers=None, row_scale_init=1.0, loss_weighting='example', gates_scope='all', penalty_ref='stored',
-                   interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual', intervention_attention_depth='final', scale_fraction=0.05, delta_scale_lr=1e-3, heads_frozen=False, detach_source=False, deltas_off=True, head_style='scaled', calibration='no_rows', heads_only_updates=0, transfer_init=1.0, transfer_correction=False, intervention_layers=None,
-                   distill_weight=0.0, distill_layers=None, distill_source='attn_out', distill_hold=0.25, distill_decay_end=0.75, distill_floor=0.05,
-                   encoder_passes=1, rare_weight=0.0, pool_surprisal=0.0, refine_lr=None,
-                   init_ac=None, init_reader=None, note='')   # encoder_passes: iterative encoder (side-decoder passes over [content; summaries]; pass k >= 2 re-reads with summaries_1 + refine_adapter(rows of pass k - 1), zero-init; rows and K/V from the last pass; 1 = today); rare_weight: surprisal-weighted terminal loss (per-token weight 1 + rare_weight x s_t / mean(s), s_t = the base's no-context surprisal from the stored reference; metric unweighted; 0 = off); pool_surprisal: surprisal-weighted summary pooling (bins by cumulative mass 1 + pool_surprisal x s_t / mean(s) + a zero-init per-head logit bias; rows per part unchanged; 0 = today's bins); intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); distill_*: dense supervision - the base reader's full-context attention outputs distilled into the row-fed reader at the target positions (weight 0 = off; layers: list, -1 = every full-attention layer, null = the intervention layers of a deep arm else every full-attention layer; the hold / decay-end fractions and the floor share of the λ schedule)
-                   # interventions: deep inputs (interior reader layers with a delta per row; 0 = embedding channel only; -1 = every full-attention layer); transfer_init / transfer_correction: kv_transfer's takeover init and optional zero-init correction head; deltas_off: the extra panel without the deltas (deep arms only); head_style: 'scaled' (unit rows x calibrated x learned relative scale) or 'lora' (zero-initialized down projection, no scale); calibration: 'no_rows' (stripped histories) or 'row_positions' (real sequences, at the rows); heads_only_updates: first N updates train the intervention modules only
+                   final_train_subset=512, micro_batch=3, ckpt_min_tokens=1700, material='material.json', seed=None, warmup=50, ckpt_every=None, mixer_layers=None,
+                   interventions=0, last_layer_intervention=True, intervention_layers=None, deltas_off=True,
+                   init_ac=None, init_reader=None, note='')
+# interventions: deep inputs (interior reader layers receiving a residual delta per row; 0 = the embedding channel only; -1 = every full-attention layer);
+# intervention_layers: an explicit list of reader layers instead of the frequency rule (with interventions 0); deltas_off: the extra panel without the deltas (deep arms only);
+# init_ac / init_reader: start from another run's adapters (the AC modules are ratio-free); seed: the fresh modules' init and the data order (None = SEED).
+# The recipe is fixed in the trainer's defaults: SFT with the gold token always among the stored targets, cosine to 10 % after the warm-up, joint clip 1.0,
+# the no-context penalty on a stored base reference (off when the reader is frozen), the row head's identity skip.
 ARMS = {
     'S': dict(DEFAULT_ARM, train_items=512, epochs=2, reporting_interval=0.25, completion_samples=8, note='smoke: shape and timing'),
     'A16': dict(DEFAULT_ARM, ratio=1 / 16, note='anchor 1/16'),
@@ -80,31 +82,14 @@ def phase(reporter, name, **values):
     reporter.set_status(phase=name, **values); reporter.render(force=True)
 
 
-def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra=(), ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, row_scale_init=1.0,
-            interventions=0, last_layer_intervention=True, prefer_attention=True, intervention_source='summary', intervention_target='residual',
-            scale_fraction=0.05, heads_frozen=False, detach_source=False, intervention_attention_depth='final', head_style='scaled', calibration='no_rows',
-            transfer_init=1.0, transfer_correction=False, intervention_layers=None, encoder_passes=1, pool_surprisal=0.0):
-    # encoder_passes / pool_surprisal: the round-8 write-side settings of the AC model config (the iterative encoder's passes; the surprisal-weighted summary pooling's strength)
-    # intervention_layers: an explicit list of reader layers (the config's intervention_layers; needs interventions 0, the frequency rule is replaced)
-    # head_style: 'scaled' (today's unit rows x calibrated RMS x learned relative scale) or 'lora' (down(silu(up(z))), down zero-initialized: zero delta at init, no scale group)
-    # calibration: 'no_rows' (median residual RMS of the stripped histories) or 'row_positions' (mean RMS at the row positions of real sequences with the rows present)
-    # intervention_attention_depth: for intervention_source 'passage_attention', 'final' (z queries the passage's final states) or 'matched' (side layer s(l) states)
-    # scale_fraction: the heads' relative scales start at this share of the calibrated RMS; heads_frozen / detach_source: the NDIR / NDID controls
-    # intervention_source: what the delta heads read ('summary' = the final side state, 'side_layers' = the side state at the matching layer);
-    # intervention_target: 'residual' (layer input), 'kv' (pre-RoPE K/V deltas added at the row positions, full-attention layers only), 'kv_slots' (the row
-    #   positions' pre-RoPE K/V REPLACED by keep x the reader's own + a side-computed slot content; zero-init head and takeover 0 at init, so bit-identical to no
-    #   intervention; needs head_style 'lora'), or 'cross_attention' (a MEASUREMENT, not a candidate: every reader position adds a zero-init cross-attention over the
-    #   side model's final states of the whole passage; zero compression, not engine-compatible; needs intervention_source 'summary'), 'kv_transfer' (the row positions'
-    #   pre-RoPE K/V REPLACED by (1 - t) x the reader's own + t x the SIDE MODEL'S OWN K/V at the same layer, t = transfer_init, optional zero-init correction head;
-    #   needs 'side_layers' and head_style 'lora'; the engine mapping is the kv_slots one) or 'kv_transfer_full' (CEILING: the same splice over the whole passage run)
+def harness(with_ac=False, ac_path=None, reader_path=None, seed=SEED, mixer_layers=None, interventions=0, last_layer_intervention=True, intervention_layers=None):
     # interventions: 0 = input channel only; N = N interior layers (+ last); -1 = every full-attention layer of the reader
+    # intervention_layers: an explicit list of reader layers (the config's intervention_layers; needs interventions 0, the frequency rule is replaced)
     # seed: the fresh modules' initialization (replicate arms with their own seed differ in init and data order, not data order only)
-    # ac_path/reader_path: explicit adapter folders (a resume's latest epoch); otherwise the shared `initial` pair
+    # ac_path/reader_path: explicit adapter folders (another run's epoch, or a resume's latest epoch); otherwise seeded fresh adapters
     import torch
     from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
-    from activation.harness.module_manager import DEFAULT_LORA_TARGET_MODULES
     from activation.ac_model import ActivationContextModelConfig
-    targets = [*DEFAULT_LORA_TARGET_MODULES, *lora_targets_extra]
     if intervention_layers is not None and interventions != 0:
         raise ValueError(f'intervention_layers {intervention_layers} replace the frequency rule: set interventions 0 (got {interventions})')
     torch.set_num_threads(4); torch.manual_seed(seed)
@@ -112,18 +97,11 @@ def harness(with_ac=False, initial=None, row_head_skip=False, lora_targets_extra
         model_configs={NAME: ModelConfig(NAME, MODEL, engine_kwargs={'max_model_len': 4096, 'gpu_memory_utilization': .75})},
         doc_chunk_size_chars=2048, doc_chunk_overlap_chars=0))
     if with_ac:
-        h.module_manager.register_lora(READER, NAME, rank=64, dropout=0, checkpoint_path=str(reader_path) if reader_path else (str(initial / 'reader') if initial else None), target_modules=targets)
+        h.module_manager.register_lora(READER, NAME, rank=64, dropout=0, checkpoint_path=str(reader_path) if reader_path else None)
         h.module_manager.register_ac_model(ActivationContextModelConfig(AC, NAME, SIDE, NAME, READER, min_view_rows=2, default_compression_ratio=1 / 16,
-                                                                        checkpoint_path=str(ac_path) if ac_path else (str(initial / 'ac') if initial else None),
-                                                                        row_head_skip=row_head_skip, side_lora_target_modules=targets, row_scale_init=row_scale_init,
-                                                                        intervention_frequency=interventions, add_last_layer_intervention=last_layer_intervention, prefer_attention_interventions=prefer_attention,
-                                                                        intervention_source=intervention_source, intervention_target=intervention_target,
-                                                                        intervention_scale_fraction=scale_fraction, intervention_heads_frozen=heads_frozen, intervention_detach_source=detach_source,
-                                                                        intervention_attention_depth=intervention_attention_depth,
-                                                                        intervention_head_style=head_style, intervention_calibration=calibration,
-                                                                        intervention_transfer_init=transfer_init, intervention_transfer_correction=transfer_correction,
+                                                                        checkpoint_path=str(ac_path) if ac_path else None,
+                                                                        intervention_frequency=interventions, add_last_layer_intervention=last_layer_intervention,
                                                                         intervention_layers=list(intervention_layers) if intervention_layers is not None else None,
-                                                                        encoder_passes=int(encoder_passes), pool_surprisal=float(pool_surprisal),
                                                                         **({'mixer_layers': mixer_layers} if mixer_layers is not None else {})))
     return h
 
@@ -214,13 +192,10 @@ def parameter_hash(ac, h, deep=False):
 def config(arm, **overrides):
     from activation.ac_model import ActivationContextTrainingConfig
     values = dict(loss_kind='sft', learning_rate_ac=arm['encoder_lr'], learning_rate_target_lora=arm['reader_lr'], examples_per_update=8,
-                  num_epochs=arm['epochs'], warmup_updates=arm['warmup'], lr_schedule=arm['lr_schedule'], clip_per_group=arm['clip_per_group'], penalty_count_exact=arm['penalty_exact'], checkpoint_every_updates=arm['ckpt_every'], persist_no_context_reference=True, loss_weighting=arm['loss_weighting'], learning_rate_gates_scope=arm['gates_scope'], no_context_penalty_reference=arm['penalty_ref'], completion_samples=arm['completion_samples'], completion_max_new_tokens=arm['completion_tokens'],
-                  reporting_interval=arm['reporting_interval'], seed=SEED if arm['seed'] is None else arm['seed'], teacher_cache_top_k=TOP_K, gradient_checkpointing_min_tokens=arm['ckpt_min_tokens'], micro_batch_examples=arm['micro_batch'], teacher_targets_include_gold=arm['gold_targets'], target_lora_frozen_updates=arm['reader_frozen_updates'], learning_rate_gates=arm['gate_lr'], deltas_off_panel=arm['deltas_off'], learning_rate_delta_scales=arm['delta_scale_lr'], intervention_heads_only_updates=arm['heads_only_updates'],
-                  no_context_penalty_weight=arm['penalty_weight'] if arm['reader_lr'] > 0 else 0.0, no_context_penalty_fraction=arm['penalty_fraction'],
-                  distill_weight=arm['distill_weight'], distill_layers=arm['distill_layers'], distill_source=arm['distill_source'],
-                  distill_hold=arm['distill_hold'], distill_decay_end=arm['distill_decay_end'], distill_floor=arm['distill_floor'],
-                  rare_weight=arm['rare_weight'], learning_rate_refine=arm['refine_lr'],
-                  checkpoint_every_epoch=True)
+                  num_epochs=arm['epochs'], warmup_updates=arm['warmup'], checkpoint_every_updates=arm['ckpt_every'], checkpoint_every_epoch=True,
+                  completion_samples=arm['completion_samples'], completion_max_new_tokens=arm['completion_tokens'], reporting_interval=arm['reporting_interval'],
+                  seed=SEED if arm['seed'] is None else arm['seed'], teacher_cache_top_k=TOP_K, gradient_checkpointing_min_tokens=arm['ckpt_min_tokens'], micro_batch_examples=arm['micro_batch'],
+                  no_context_penalty_weight=arm['penalty_weight'], no_context_penalty_fraction=arm['penalty_fraction'], deltas_off_panel=arm['deltas_off'])
     values.update(overrides)
     return ActivationContextTrainingConfig(**values)
 
@@ -238,8 +213,7 @@ class RunReporter:
                 super().__init__(str(folder), title,
                                  'The reader sees each passage only through its compressed rows and must reproduce it. Novel = held-out tool outputs from '
                                  'unseen trajectories; wiki = NQ passages the base model has likely memorized. No context = the trained reader without the rows.',
-                                 set_labels={'reporting': 'AC student, held-out', 'validation': 'no context, current reader, held-out novel', 'deltas_off': 'AC student, deltas off, held-out',
-                                             'passes_off': 'AC student, passes off (pass-1 rows), held-out'})
+                                 set_labels={'reporting': 'AC student, held-out', 'validation': 'no context, current reader, held-out novel', 'deltas_off': 'AC student, deltas off, held-out'})
                 self.set_text('summary', 'Run summary', '')
                 self.initialize_line_plot('fidelity', 'Greedy reconstruction fidelity (sampled items)',
                     'Word-level similarity (difflib ratio) between the greedy reconstruction and the passage on the fixed sample items.',
@@ -251,9 +225,9 @@ class RunReporter:
                 super().render(force=force)
             def report_eval(self, progress, name, summary):
                 super().report_eval(progress, name, summary)
-                if not summary['items'] or name not in ('reporting', 'deltas_off', 'passes_off'): return
+                if not summary['items'] or name not in ('reporting', 'deltas_off'): return
                 for kind, values in summary['by_kind'].items():
-                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, kind) + {'deltas_off': ' (deltas off)', 'passes_off': ' (passes off)'}.get(name, '')
+                    label = {'reconstruct': 'novel', 'continue': 'novel (continue)', 'wiki': 'wiki'}.get(kind, kind) + (' (deltas off)' if name == 'deltas_off' else '')
                     for widget, key in (('gold_nll', 'gold_nll'), ('token_accuracy', 'token_accuracy')):
                         if values.get(key) is not None and widget in self.widgets:
                             self._ensure_series(widget, label); self.add_data_point(widget, {'x': self.epoch_x, label: values[key]})
@@ -311,16 +285,9 @@ def run(label):
     with heartbeat(folder):
         phase(boot, 'loading initial checkpoint')
         if resume: phase(boot, f"resuming after epoch {resume['epochs_done']} (attempt {resume['attempt']})")
-        h = harness(True, None if arm['fresh_initial'] else prep / 'initial', arm['row_head_skip'], arm['lora_targets_extra'],   # fresh: seeded new adapters (architecture arms cannot load the shared initial)
-                    ac_path=resume['ac'] if resume else (Path(arm['init_ac']) if arm['init_ac'] else None),   # init_*: start from another run's adapters (the AC modules are ratio-free)
+        h = harness(True, ac_path=resume['ac'] if resume else (Path(arm['init_ac']) if arm['init_ac'] else None),
                     reader_path=resume['reader'] if resume else (Path(arm['init_reader']) if arm['init_reader'] else None), seed=SEED if arm['seed'] is None else arm['seed'],
-                    mixer_layers=arm['mixer_layers'], row_scale_init=arm['row_scale_init'],
-                    interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], prefer_attention=arm['prefer_attention'],
-                    intervention_source=arm['intervention_source'], intervention_target=arm['intervention_target'],
-                    scale_fraction=arm['scale_fraction'], heads_frozen=arm['heads_frozen'], detach_source=arm['detach_source'],
-                    intervention_attention_depth=arm['intervention_attention_depth'], head_style=arm['head_style'], calibration=arm['calibration'],
-                    transfer_init=arm['transfer_init'], transfer_correction=arm['transfer_correction'], intervention_layers=arm['intervention_layers'],
-                    encoder_passes=arm['encoder_passes'], pool_surprisal=arm['pool_surprisal'])
+                    mixer_layers=arm['mixer_layers'], interventions=arm['interventions'], last_layer_intervention=arm['last_layer_intervention'], intervention_layers=arm['intervention_layers'])
         ac = h.module_manager.get_ac_model(AC); ac.prepare(); h.module_manager.ensure_lora(READER)
         initial_hash = parameter_hash(ac, h)
         deep_hash = parameter_hash(ac, h, deep=True) if ac.is_deep else None
@@ -342,28 +309,13 @@ def run(label):
         r.set_text('summary', 'Run summary', '\n'.join([
             f'Arm {label} · {arm["note"]} · compression 1/{round(1 / arm["ratio"])} · encoder LR {arm["encoder_lr"]:g} · reader LR {arm["reader_lr"]:g}'
             + (f' · no-context penalty λ={arm["penalty_weight"]:g} on {arm["penalty_fraction"]:.0%} of the examples' if arm['reader_lr'] > 0 and arm['penalty_weight'] > 0 else ' · no penalty')
-            + (f' · {arm["continue_share"]:.0%} cued-continuation items' if arm['continue_share'] else '')
-            + (f' · dense supervision: the base reader\'s full-context attention outputs (after o_proj, no adapters, no rows) distilled into the row-fed reader at the target positions of '
-               f'{"reader layers " + str(arm["distill_layers"]) if isinstance(arm["distill_layers"], list) else "every full-attention reader layer" if arm["distill_layers"] == -1 or not ac.is_deep else "the intervention layers"}, '
-               f'λ {arm["distill_weight"]:g} held for {arm["distill_hold"]:.0%} of the run then decaying linearly to {arm["distill_floor"]:g} × λ at {arm["distill_decay_end"]:.0%} '
-               f'(the term per layer is mean ||A_student - A_teacher||² / the teacher\'s mean squared norm; panels score it with the rows on and off and the rows\' attention share)' if arm['distill_weight'] > 0 else '')
-            + (f' · iterative encoder: {arm["encoder_passes"]} side-decoder passes (pass k ≥ 2 re-reads [content; summaries_1 + refine_adapter(rows of pass k − 1)], zero-init adapter; rows and side K/V from the last pass; '
-               f'side cost × {arm["encoder_passes"]}; "passes off" panel = the same items with the rows of pass 1)' if arm['encoder_passes'] > 1 else '')
-            + (f' · surprisal-weighted terminal loss: per-token weight 1 + {arm["rare_weight"]:g} × s_t / mean(s) (s_t = the base\'s no-context surprisal of the target token, from the stored reference; '
-               f'weights average 1 per example; the reported losses stay unweighted)' if arm['rare_weight'] > 0 else '')
-            + (f' · surprisal-weighted summary pooling: bins by cumulative mass 1 + {arm["pool_surprisal"]:g} × s_t / mean(s) (s_t = the side base\'s no-context surprisal of the content token) '
-               f'plus a zero-init per-head logit bias × {arm["pool_surprisal"]:g}; rows per part unchanged' if arm['pool_surprisal'] > 0 else '')
-            + (' · rare-token panel: the held-out loss / accuracy on the target tokens in each item\'s top 20 % of base surprisal' if arm['rare_weight'] > 0 or arm['pool_surprisal'] > 0 else ''),
+            + (f' · {arm["continue_share"]:.0%} cued-continuation items' if arm['continue_share'] else ''),
             f'Data · {len(train)} training passages (tool outputs from SWE and deep-research trajectories) × {arm["epochs"]} epochs = {math.ceil(len(train) / 8) * arm["epochs"]} updates of 8 · '
             f'held-out panel every {arm["reporting_interval"]:g} epoch: {len(held)} novel + {len(wiki)} Wikipedia passages · no-context floor on the novel panel',
             f'Initial adapters hash {initial_hash[:12]}… · seed {SEED} · SFT on the passage tokens'
-            + ((f' · deep inputs: {"pre-RoPE K/V deltas at the row positions of" if ac.kv_interventions else "pre-RoPE K/V slots REPLACING the row positions of (keep x the reader's own + side-computed content; takeover 0 at init)" if ac.kv_slots else "CEILING MEASUREMENT (not a candidate): the SIDE MODEL'S OWN pre-RoPE K/V of the WHOLE passage run REPLACING the reader's at" if ac.kv_transfer_full else f"the SIDE MODEL'S OWN pre-RoPE K/V REPLACING the row positions' at ((1 - t) x the reader's own + t x the side's, t init {arm['transfer_init']:g}{', zero-init correction head' if arm['transfer_correction'] else ''})" if ac.kv_transfer else "CEILING MEASUREMENT (not a candidate): cross-attention of every reader position over the whole passage at" if ac.cross_attention else "deltas at the inputs of"} reader layers {ac.intervention_layers}{" (explicit intervention_layers)" if arm["intervention_layers"] is not None else ""}'
-                + (' read from the side model\'s final states of all passage tokens (zero compression, not engine-compatible)' if ac.cross_attention else
-                   f' read from {"the side state at layers " + str(ac.intervention_source_layers) if ac.config.intervention_source == "side_layers" else ("row-over-passage attention at " + ("side layers " + str(ac.intervention_source_layers) if ac.config.intervention_attention_depth == "matched" else "the final side states") + ", zero-initialized out projection") if ac.config.intervention_source == "passage_attention" else "the final side state"}')
-                + f' (heads hash {deep_hash[:12]}…; ' + ('zero-initialized cross-attention blocks, no heads' if ac.cross_attention else f'the side model\'s K/V captured in the side pass, takeovers at {arm["delta_scale_lr"]:g}' if ac.kv_transfer else f'zero-initialized slot heads around the reader\'s own K/V, takeovers at {arm["delta_scale_lr"]:g}' if ac.kv_slots else f'relative scales from {arm["scale_fraction"]:g} x RMS at {arm["delta_scale_lr"]:g}' if arm['head_style'] == 'scaled' else 'lora-style heads: zero-initialized down projection, no scale group')
-                + f'; calibration on {"the row positions of real sequences" if arm["calibration"] == "row_positions" else "stripped histories (no rows)"}'
-                + (f'; first {arm["heads_only_updates"]} updates train the intervention modules only' if arm['heads_only_updates'] else '')
-                + f'{"; heads frozen" if arm["heads_frozen"] else ""}{"; source detached" if arm["detach_source"] else ""}), "deltas off" panel = the same items with the rows kept and the deltas withheld') if ac.is_deep else ''),
+            + (f' · deep inputs: residual deltas at the inputs of reader layers {ac.intervention_layers}{" (explicit intervention_layers)" if arm["intervention_layers"] is not None else ""}, '
+               f'each read by a zero-initialized row-over-passage attention block over the final side states and a zero-initialized head (heads hash {deep_hash[:12]}…); '
+               '"deltas off" panel = the same items with the rows kept and the deltas withheld' if ac.is_deep else ''),
             '',
             'Reading guide · gold NLL is the reconstruction loss per passage token (lower is better); token accuracy is teacher-forced; the no-context line is the same '
             'reader without the rows (the prior; the penalty holds it near the base model, so it may first move toward the base value rather than stay put); wiki above novel means memorized text is being cued rather than compressed.']))
@@ -382,12 +334,12 @@ def run(label):
         for x in (0, arm['epochs']):
             r._ensure_series('gold_nll', 'base, no context'); r.add_data_point('gold_nll', {'x': x, 'base, no context': base_floor})
         r.status['base no context'] = f'{base_floor:.4f}'; r.render()
-        shared_references = prep / 'cache' / f"references_{Path(arm['material']).stem}_r{round(1 / arm['ratio'])}_k{TOP_K}_gold{int(arm['gold_targets'])}_n{arm['train_items']}.pt"
-        if arm['penalty_ref'] == 'stored' and arm['reader_lr'] > 0 and arm['penalty_weight'] > 0 and shared_references.exists():
+        shared_references = prep / 'cache' / f"references_{Path(arm['material']).stem}_r{round(1 / arm['ratio'])}_k{TOP_K}_gold1_n{arm['train_items']}.pt"
+        if training_config.penalty_active and shared_references.exists():
             try: r.status['shared references'] = f"{trainer._merge_teacher_targets(shared_references, None)} loaded"; r.render(force=True)
             except Exception as error: r.status['shared references'] = f'not loaded: {error!r}'
         stats = trainer.train(AC, train, reporting_data=reporting, validation_data=no_context, reporter=r)
-        if arm['penalty_ref'] == 'stored' and stats.no_context_reference.get('examples') and not shared_references.exists():
+        if stats.no_context_reference.get('examples') and not shared_references.exists():
             shared_references.parent.mkdir(parents=True, exist_ok=True); trainer.save_teacher_targets(shared_references)   # the next arm on this material skips the reference pass
         write_json(folder / 'training_stats.json', stats.summarize())
         phase(r, 'final: seen training subset')
@@ -406,14 +358,6 @@ def run(label):
                   'held_novel': (last.get('by_kind') or {}).get('reconstruct'), 'held_wiki': (last.get('by_kind') or {}).get('wiki'), 'no_context': {k: v for k, v in (stats.epochs[-1].validation or {}).items() if k != 'per_item'} if stats.epochs and stats.epochs[-1].validation else None,
                   'seen_training': {k: v for k, v in seen.items() if k != 'per_item'}, 'no_context_reference': stats.no_context_reference, 'base_floor': base_floor,
                   'penalty_last': stats.penalty[-1] if stats.penalty else None,
-                  'distill': {'layers': stats.distill_layers, 'lambda_last': stats.distill_lambda[-1], 'loss_last': stats.distill_loss[-1], 'panel_last': stats.distill_panel[-1] if stats.distill_panel else None} if stats.distill_lambda else None,
-                  'encoder_passes': arm['encoder_passes'], 'rare_weight': arm['rare_weight'], 'pool_surprisal': arm['pool_surprisal'],
-                  'passes_off': {k: v for k, v in (stats.passes_off or {}).items() if k != 'per_item'} if stats.passes_off else None,
-                  'passes_off_novel': ((stats.passes_off or {}).get('by_kind') or {}).get('reconstruct'), 'passes_off_wiki': ((stats.passes_off or {}).get('by_kind') or {}).get('wiki'),
-                  'rare_token': {'held_loss': last.get('rare_token_loss'), 'held_accuracy': last.get('rare_token_accuracy'),
-                                 'novel': {k: (last.get('by_kind') or {}).get('reconstruct', {}).get(k) for k in ('rare_token_loss', 'rare_token_accuracy')},
-                                 'wiki': {k: (last.get('by_kind') or {}).get('wiki', {}).get(k) for k in ('rare_token_loss', 'rare_token_accuracy')}} if last.get('rare_token_loss') is not None else None,
-                  'encoder_trace_last': stats.encoder_trace[-1] if stats.encoder_trace else None, 'encoder_panel_last': stats.encoder_panel[-1] if stats.encoder_panel else None,
                   'duration_seconds': time.monotonic() - start}
         write_json(folder / 'result.json', result)
         r.set_text('result', 'Final result', json.dumps({k: v for k, v in result.items() if k not in ('configuration',)}, indent=2, default=str))
