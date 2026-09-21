@@ -90,7 +90,7 @@ class RolloutManager:
         results: list[AgentRunResult | None] = []
         for config, seed in jobs:
             row = cache.get(config_key(config), seed)
-            results.append(None if row is None else AgentRunResult.deserialize(row, self.harness, agent_config=config))
+            results.append(None if row is None else AgentRunResult.deserialize(row, self.harness, agent_config=config, base_dir=cache.path.parent))
         pending = [index for index, result in enumerate(results) if result is None]
         skipped = 0
         if redo is not None and redo.only:                                       # the rows to redo alone; never-cached tasks stay None
@@ -177,7 +177,10 @@ class RolloutManager:
             try:
                 config, seed = jobs[index]
                 if deadline is None:
-                    return self._run_one(config, seed, perform_scoring, reporter)
+                    result = self._run_one(config, seed, perform_scoring, reporter)
+                    if result.finish_reason != "deadline":
+                        cache.append(result)
+                    return result
                 now = time.time()
                 with counts_lock:
                     counts["skipped" if now >= deadline else "started"] += 1
@@ -192,6 +195,8 @@ class RolloutManager:
                         result.finish_reason = "deadline"
                     if result.agent_config is run_config:
                         result.agent_config = config           # the clip is an execution detail: the result belongs to the job's own config
+                if result.finish_reason != "deadline":
+                    cache.append(result)
                 return result
             finally:
                 limiter.release()
@@ -207,8 +212,6 @@ class RolloutManager:
                             continue
                         results[index] = result
                         finished[index] = (time.time(), result)
-                        if result.finish_reason != "deadline":        # a cut run is not a result: the next launch redoes it
-                            cache.append(result)
                         if probe and on_probe is not None and len(finished) >= len(probe):   # the first N to finish: a straggler must not delay the tuning by its whole duration
                             now = time.time()
                             phases.append(self._phase_metrics(label, started, now, loaded_model, sampler.samples, finished))

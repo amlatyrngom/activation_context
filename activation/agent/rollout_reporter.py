@@ -16,6 +16,7 @@ from collections import deque
 from pathlib import Path
 
 from activation.common.reporting import HtmlReporter, _write_atomic, format_seconds
+from .agent_utils import ac_spans_for_report
 
 if t.TYPE_CHECKING:
     from .agent import Agent
@@ -201,8 +202,9 @@ def trajectory_item(agent: "Agent", state: str, folder: Path | None = None) -> d
         _write_atomic(folder / file, json.dumps({
             "agent_id": agent.agent_id, "state": state, "system_prompt": agent.agent_config.system_prompt,
             "user_prompt": agent.agent_config.user_prompt,
-            "trajectory": [{key: value for key, value in step.items() if key not in ("token_ids", "logprobs", "messages")} for step in results.trajectory],
-            "compactions": len(results.compactions), "prompt_ac_spans": results.prompt_ac_spans,
+            "trajectory": [{key: ac_spans_for_report(value) if key == "ac_spans" else value
+                            for key, value in step.items() if key not in ("token_ids", "logprobs", "messages")} for step in results.trajectory],
+            "compactions": len(results.compactions), "prompt_ac_spans": ac_spans_for_report(results.prompt_ac_spans),
             "answer": results.answer, "finish_reason": results.finish_reason, "score": results.score,
         }, indent=1, default=str))
     steps = []

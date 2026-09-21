@@ -27,7 +27,6 @@ import traceback
 import typing as t
 import uuid
 from copy import deepcopy
-from dataclasses import asdict
 
 import torch
 
@@ -37,7 +36,8 @@ from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
 from .agent_env import AgentEnv
 from .agent_tools import (DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, segment_messages_with_parts,
                           tool_content, truncate_output, subagent_config_of)
-from .agent_utils import PARSE_ERROR_TOOL, ModelDialect, parameter_types_of
+from .agent_utils import (PARSE_ERROR_TOOL, ModelDialect, parameter_types_of, capture_ac_spans,
+                          trajectory_step_dict, load_ac_rows)
 
 MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
 MAX_COMPACTION_REFUSALS = 5         # turns that ignore a due compaction before the run ends with compaction_refused
@@ -275,7 +275,7 @@ class Agent:
         self.segment_start = len(ids)
         self.last_sampled = []
         results.prompt_token_ids, results.prompt_messages = list(ids), deepcopy(messages)
-        results.prompt_ac_spans = [{"start": start, "length": end - start} for start, end in spans]
+        results.prompt_ac_spans = capture_ac_spans(spans, rows)
         self._after_append()
 
     def compact(self, summary: str) -> None:
@@ -312,7 +312,7 @@ class Agent:
         self.messages.append(message)
         self.prefix += list(token_ids)
         self.last_sampled = list(token_ids)
-        self.run_results.trajectory.append(asdict(step))
+        self.run_results.trajectory.append(trajectory_step_dict(step))
 
     def append_user_message(self, text: str) -> None:
         message = {"role": "user", "content": text}
@@ -342,12 +342,12 @@ class Agent:
     def _append_step(self, step: TrajectoryStep, messages: list[dict], spans: list[tuple[int, int]], rows: list[torch.Tensor]) -> None:
         offset = len(self.prefix)
         assert [int(r.shape[0]) for r in rows] == [end - start for start, end in spans], "placeholder runs differ from the encoded rows"
-        step.ac_spans = [{"start": start, "length": end - start} for start, end in spans]
+        step.ac_spans = capture_ac_spans(spans, rows)
         self.messages.extend(messages)
         self.prefix += step.token_ids
         self.spans += [(offset + start, offset + end) for start, end in spans]
         self.rows += rows
-        self.run_results.trajectory.append(asdict(step))
+        self.run_results.trajectory.append(trajectory_step_dict(step))
         self._after_append()
 
     def _after_append(self) -> None:
@@ -641,31 +641,27 @@ class Agent:
     def resume_from_run_result(harness: "HarnessRuntime", run_result: AgentRunResult, reporter: "RolloutReporter | None" = None) -> "Agent":
         """
         An agent positioned exactly after the recorded steps of `run_result`'s current segment: messages,
-        prefix and spans from the record, rows re-encoded from the recorded parts (the record never
-        stores rows). Counters continue from the record.
+        prefix, spans and exact captured rows from the record. Counters continue from the record.
         """
         agent = Agent(harness, run_result.agent_config, reporter=reporter, seed=run_result.seed)
         agent.run_results = run_result
         agent.dialect = ModelDialect.for_tokenizer(agent.loaded_model.tokenizer)
         agent._prepare_tools()
-        if agent.ac_model is not None and run_result.ac_model_version is not None and agent.ac_model.version != run_result.ac_model_version:
-            print(f"Agent {agent.agent_id[:8]} - resuming rows with AC version {agent.ac_model.version}, recorded {run_result.ac_model_version}", flush=True)
         agent.messages = deepcopy(run_result.prompt_messages)
         agent.prefix = list(run_result.prompt_token_ids)
         agent.segment_start = len(agent.prefix)
         spans = [(span["start"], span["start"] + span["length"]) for span in run_result.prompt_ac_spans]
-        parts_messages: list[dict] = list(run_result.prompt_messages)
+        rows = [load_ac_rows(span) for span in run_result.prompt_ac_spans]
         for step in run_result.trajectory:
             offset = len(agent.prefix)
             agent.messages.extend(deepcopy(step["messages"]))
             agent.prefix += list(step["token_ids"])
             spans += [(offset + span["start"], offset + span["start"] + span["length"]) for span in step["ac_spans"]]
-            parts_messages += step["messages"]
+            rows += [load_ac_rows(span) for span in step.get("ac_spans", [])]
             if step["role"] == "assistant":
                 agent.last_sampled = list(step["token_ids"])
         agent.spans = spans
-        agent.rows = agent._encode_parts(parts_messages)
-        assert [int(r.shape[0]) for r in agent.rows] == [end - start for start, end in spans], "recorded spans differ from the re-encoded rows"
+        agent.rows = rows
         agent.started = True
         agent._after_append()
         return agent

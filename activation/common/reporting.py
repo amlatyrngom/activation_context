@@ -2,13 +2,18 @@
 Live HTML report for long-running jobs.
 
 One self-describing JSON document (status, named widgets, their points) rendered into a linear
-Tressoir page with Plotly.js. `report_data.json` is rewritten atomically on every render; the page
-polls it (every `poll_seconds`) and redraws in place, so the HTML file itself is rewritten only
-every `page_rewrite_seconds` (and at the end) and the viewer does not flicker on file changes. Every
-number the page shows is also in the embedded data block, which is the fallback when the poll cannot
-fetch (e.g. a file:// page), so the finished page still works alone. The page renders inside the
-Tressoir VS Code webview (which injects the markup after load, morphs it in place on file changes
-and fires `tressoir:render`) and in a plain browser (timed reload when polling fails).
+Tressoir page with Plotly.js. `report_data.json` is rewritten atomically on every render and is the
+live path: the page polls it (every `poll_seconds`) and updates its existing DOM in place, keeping
+sections by widget name, redrawing plots with Plotly.react (the viewer's zoom and legend state
+survive), rebuilding only table rows and changing text only when it changed. The HTML file itself is
+written on the first render, whenever a widget is added, removed or reordered, when the run finishes,
+and otherwise at most every `page_rewrite_seconds`. Every number the page shows is also in the
+embedded data block, which is what the page shows when the poll cannot fetch (a file:// page, or a
+viewer without the folder as a resource root): the failure is stated in the page's metadata line and
+the fetch is retried with a bounded backoff; the page never reloads itself. Inside the Tressoir
+VS Code webview (which injects the markup after load, morphs it in place on file changes and fires
+`tressoir:render`) repeated render events are harmless: they adopt the embedded data only when it is
+newer than what the page shows. There is one polling loop and one boot per page.
 
 `HtmlReporter` is job-agnostic: widgets are created by name (line plots, bar plots, tables, text
 blocks, rendered trajectories) and fed through `add_data_point`. Job-specific reporters subclass it and own the widget
@@ -54,6 +59,7 @@ _PAGE_TEMPLATE = """<!doctype html>
     .report-plot { width: 100%; height: 22rem; margin-block: var(--space-2) var(--space-3); }
     .report-plot.tall { height: 26rem; }
     .report-footer { color: var(--muted); font-size: 0.85rem; }
+    .report-live-failure { color: var(--warning); }
     .report-table td { font-variant-numeric: tabular-nums; white-space: nowrap; }
     .trajectory { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: var(--space-2) var(--space-3); margin-block: var(--space-2); }
     .trajectory > summary { cursor: pointer; font-weight: 600; }
@@ -116,9 +122,19 @@ _PAGE_TEMPLATE = """<!doctype html>
   <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
   <script>
   (function () {
+    // The page keeps one DOM and updates it in place: sections are kept by widget name, plots are
+    // redrawn with Plotly.react (zoom and legend state survive), tables rebuild only their rows,
+    // text blocks change only when their text changed. There is one polling loop and one boot;
+    // repeated tressoir:render events are harmless; a failed fetch is shown, never a reload.
+    if (window.__reportPageBooted) return;
+    window.__reportPageBooted = true;
     var report = null;
-    var plots = [];
+    var plots = {};            // widget name -> { div, widget }
+    var sections = {};         // widget name -> <section>
     var polling = false;
+    var pollTimer = null;
+    var pollDelay = 0;
+    var fetchFailure = null;   // { at, reason } while live data is unavailable
     var embedded = JSON.parse(document.getElementById("report-data").textContent);
 
     function cssColor(token, fallback) {
@@ -185,6 +201,7 @@ _PAGE_TEMPLATE = """<!doctype html>
         legend: { orientation: "h", x: 0, y: 1.02, yanchor: "bottom", font: { color: t.muted } },
         hovermode: "closest",
         autosize: true,
+        uirevision: widget.name,   // a constant per widget: Plotly.react keeps the viewer's zoom and legend state
       };
       if (widget.log_y) { l.yaxis.type = "log"; l.yaxis.exponentformat = "e"; l.yaxis.showexponent = "all"; }
       if (widget.type === "bar") l.xaxis.type = "category";
@@ -193,7 +210,8 @@ _PAGE_TEMPLATE = """<!doctype html>
     function drawAll() {
       if (!window.Plotly) return;
       var t = theme();
-      plots.forEach(function (p) {
+      Object.keys(plots).forEach(function (name) {
+        var p = plots[name];
         if (!p.div.isConnected) return;
         Plotly.react(p.div, traces(p.widget, t), layout(p.widget, t), { displaylogo: false, responsive: false });
       });
@@ -203,6 +221,9 @@ _PAGE_TEMPLATE = """<!doctype html>
       if (className) node.className = className;
       if (text !== undefined) node.textContent = text;
       return node;
+    }
+    function setText(node, text) {
+      if (node.textContent !== text) node.textContent = text;
     }
     function codeBlock(text) {
       var pre = el("pre", "code-block");
@@ -244,94 +265,189 @@ _PAGE_TEMPLATE = """<!doctype html>
       });
       return details;
     }
-    function build() {
-      if (!report) report = embedded;
-      if (window.Plotly) plots.forEach(function (p) { try { Plotly.purge(p.div); } catch (_) {} });
-      plots = [];
-      document.title = report.title;
+    // Reorder `parent`'s children to match `wanted` (a list of nodes), moving only nodes that are out of place.
+    function reorder(parent, wanted) {
+      var cursor = parent.firstElementChild;
+      for (var i = 0; i < wanted.length; i++) {
+        var node = wanted[i];
+        if (cursor === node) { cursor = cursor.nextElementSibling; continue; }
+        parent.insertBefore(node, cursor);
+      }
+    }
+    function updateMeta() {
       var meta = document.getElementById("report-meta");
-      meta.replaceChildren();
-      ["Updated " + report.updated_at, (polling ? "Polling report_data.json every " + report.poll_seconds + " s" : "Refreshes every " + report.refresh_seconds + " s"), "Self-contained: data embedded, libraries from pinned HTTPS URLs"]
-        .forEach(function (text) { meta.appendChild(el("li", "", text)); });
-      var status = document.getElementById("report-status");
-      status.replaceChildren();
-      Object.keys(report.status).forEach(function (key) {
-        var item = el("div");
-        item.appendChild(el("dt", "", key));
-        item.appendChild(el("dd", "", report.status[key]));
-        status.appendChild(item);
+      var lines = ["Updated " + report.updated_at,
+                   (polling ? "Polling report_data.json every " + report.poll_seconds + " s" : "Showing the data embedded in the page"),
+                   "Self-contained: data embedded, libraries from pinned HTTPS URLs"];
+      if (fetchFailure) {
+        lines.push("Live data unavailable since " + fetchFailure.at + " (" + fetchFailure.reason + "); showing the last data this page has; retrying");
+      }
+      while (meta.children.length > lines.length) meta.removeChild(meta.lastChild);
+      lines.forEach(function (text, i) {
+        var li = meta.children[i];
+        if (!li) { li = el("li"); meta.appendChild(li); }
+        if (i === lines.length - 1 && fetchFailure) li.className = "report-live-failure"; else if (li.className) li.className = "";
+        setText(li, text);
       });
-      var root = document.getElementById("report-widgets");
-      root.replaceChildren();
-      report.widgets.forEach(function (w) {
-        var id = "widget-" + w.name;
-        var section = el("section", "section");
-        section.setAttribute("aria-labelledby", id);
-        var h = el("h2", "", w.title); h.id = id; section.appendChild(h);
-        if (w.description) section.appendChild(el("p", "", w.description));
-        if (w.type === "line" || w.type === "bar") {
+    }
+    function updateStatus() {
+      var status = document.getElementById("report-status");
+      var keys = Object.keys(report.status);
+      var byKey = {};
+      Array.prototype.forEach.call(status.children, function (item) { byKey[item.getAttribute("data-key")] = item; });
+      var wanted = keys.map(function (key) {
+        var item = byKey[key];
+        if (!item) {
+          item = el("div"); item.setAttribute("data-key", key);
+          item.appendChild(el("dt", "", key)); item.appendChild(el("dd", "", ""));
+          status.appendChild(item);
+        }
+        setText(item.lastChild, report.status[key]);
+        delete byKey[key];
+        return item;
+      });
+      Object.keys(byKey).forEach(function (key) { byKey[key].remove(); });
+      reorder(status, wanted);
+    }
+    function updateTable(section, w) {
+      var table = section.querySelector("table");
+      var columnsKey = JSON.stringify(w.columns);
+      if (!table || table.getAttribute("data-columns") !== columnsKey) {
+        var region = section.querySelector(".scroll-region");
+        if (region) region.remove();
+        region = el("div", "scroll-region");
+        table = el("table", "table report-table");
+        table.setAttribute("data-columns", columnsKey);
+        var head = table.createTHead().insertRow();
+        w.columns.forEach(function (c) { head.appendChild(el("th", "", c)); });
+        table.createTBody();
+        region.appendChild(table); section.appendChild(region);
+      }
+      var body = table.tBodies[0];
+      var rowsKey = JSON.stringify(w.rows);
+      if (body.getAttribute("data-rows") === rowsKey) return;
+      body.setAttribute("data-rows", rowsKey);
+      body.replaceChildren();
+      w.rows.forEach(function (row) {
+        var tr = body.insertRow();
+        w.columns.forEach(function (c) { tr.insertCell().textContent = row[c] === undefined || row[c] === null ? "" : row[c]; });
+      });
+    }
+    function updateTrajectories(section, w) {
+      var key = JSON.stringify(w.items);
+      if (section.getAttribute("data-items") === key) return;
+      section.setAttribute("data-items", key);
+      Array.prototype.slice.call(section.children).forEach(function (child) {
+        if (child.tagName !== "H2" && !child.classList.contains("widget-description")) child.remove();
+      });
+      w.items.forEach(function (item) { section.appendChild(trajectory(item)); });
+      if (!w.items.length) section.appendChild(el("p", "", "No trajectories yet."));
+    }
+    function updateWidget(w) {
+      var id = "widget-" + w.name;
+      var section = sections[w.name];
+      if (!section) {
+        section = el("section", "section");
+        section.id = id;
+        section.setAttribute("aria-labelledby", id + "-heading");
+        var h = el("h2", "", w.title); h.id = id + "-heading"; section.appendChild(h);
+        section.appendChild(el("p", "widget-description", ""));
+        sections[w.name] = section;
+        document.getElementById("report-widgets").appendChild(section);
+      }
+      setText(section.firstElementChild, w.title);
+      var description = section.querySelector(".widget-description");
+      setText(description, w.description || "");
+      description.hidden = !w.description;
+      if (w.type === "line" || w.type === "bar") {
+        var p = plots[w.name];
+        if (!p) {
           var div = el("div", "report-plot" + (w.smoothing_window ? " tall" : ""));
           section.appendChild(div);
-          plots.push({ div: div, widget: w });
-        } else if (w.type === "table") {
-          var region = el("div", "scroll-region");
-          var table = el("table", "table report-table");
-          var head = table.createTHead().insertRow();
-          w.columns.forEach(function (c) { head.appendChild(el("th", "", c)); });
-          var body = table.createTBody();
-          w.rows.forEach(function (row) {
-            var tr = body.insertRow();
-            w.columns.forEach(function (c) { tr.insertCell().textContent = row[c] === undefined || row[c] === null ? "" : row[c]; });
-          });
-          region.appendChild(table); section.appendChild(region);
-        } else if (w.type === "text") {
-          var pre = el("pre", "code-block");
-          pre.appendChild(el("code", "", w.text));
-          section.appendChild(pre);
-        } else if (w.type === "trajectories") {
-          w.items.forEach(function (item) { section.appendChild(trajectory(item)); });
-          if (!w.items.length) section.appendChild(el("p", "", "No trajectories yet."));
+          p = plots[w.name] = { div: div, widget: w };
         }
-        root.appendChild(section);
+        p.widget = w;
+      } else if (w.type === "table") {
+        updateTable(section, w);
+      } else if (w.type === "text") {
+        var pre = section.querySelector("pre.code-block");
+        if (!pre) { pre = codeBlock(""); section.appendChild(pre); }
+        setText(pre.firstChild, w.text);
+      } else if (w.type === "trajectories") {
+        updateTrajectories(section, w);
+      }
+      return section;
+    }
+    function update() {
+      if (!report) report = embedded;
+      if (document.title !== report.title) document.title = report.title;
+      setText(document.getElementById("report-title"), report.title);
+      setText(document.getElementById("report-description"), report.description);
+      updateMeta();
+      updateStatus();
+      var root = document.getElementById("report-widgets");
+      var seen = {};
+      var wanted = report.widgets.map(function (w) { seen[w.name] = true; return updateWidget(w); });
+      Object.keys(sections).forEach(function (name) {
+        if (seen[name]) return;
+        var gone = plots[name];
+        if (gone && window.Plotly) { try { Plotly.purge(gone.div); } catch (_) {} }
+        delete plots[name];
+        sections[name].remove();
+        delete sections[name];
       });
-      document.getElementById("report-footer").textContent =
-        "Updated " + report.updated_at + " · refreshes every " + report.refresh_seconds + " s · plots: Plotly.js basic 2.35.2 from cdn.plot.ly · page assets: Tressoir linear v0.1.7 and CodeMirror 5.65.16 from CDNs";
+      reorder(root, wanted);
+      setText(document.getElementById("report-footer"),
+        "Updated " + report.updated_at + " · plots: Plotly.js basic 2.35.2 from cdn.plot.ly · page assets: Tressoir linear v0.1.7 and CodeMirror 5.65.16 from CDNs");
     }
     function render() {
-      build();
+      update();
       var tries = 0;
       (function whenPlotly() {
         if (window.Plotly) return drawAll();
         if (tries++ < 600) setTimeout(whenPlotly, 50);   // up to 30 s for the network
       })();
     }
+    function schedulePoll(seconds) {
+      if (pollTimer !== null) clearTimeout(pollTimer);
+      pollTimer = setTimeout(poll, seconds * 1000);
+    }
     function poll() {
       // report_data.json beside the page is rewritten on every render; the page itself only rarely.
+      if (pollTimer !== null) { clearTimeout(pollTimer); pollTimer = null; }
       if (report && report.finished && polling) return;
+      var base = (report && report.poll_seconds) || 2;
       fetch("report_data.json?t=" + Date.now(), { cache: "no-store" }).then(function (response) {
-        if (!response.ok) throw new Error("status " + response.status);
+        if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
       }).then(function (fresh) {
-        polling = true;
+        var recovered = fetchFailure !== null || !polling;
+        polling = true; fetchFailure = null; pollDelay = 0;
         if (JSON.stringify(fresh) !== JSON.stringify(report)) { report = fresh; render(); }
-        setTimeout(poll, (report.poll_seconds || 2) * 1000);
-      }).catch(function () {
-        // No fetch here (file://, or a viewer without the folder as a resource root): the embedded
-        // data and the occasional file rewrite carry the page instead.
-        if (!polling && /^(https?|file):$/.test(location.protocol) && !window.tressoirNotebook && !report.finished) {
-          setTimeout(function () { location.reload(); }, report.refresh_seconds * 1000);
-        }
+        else if (recovered) updateMeta();
+        schedulePoll(report.poll_seconds || 2);
+      }).catch(function (error) {
+        // No reload: the data already on the page stays, the failure is shown, and the fetch is
+        // retried with a bounded backoff (the extension delivers file changes through
+        // tressoir:render in the meantime).
+        if (!fetchFailure) fetchFailure = { at: new Date().toLocaleTimeString(), reason: (error && error.message) || String(error) };
+        pollDelay = Math.min(60, pollDelay ? pollDelay * 2 : base);
+        updateMeta();
+        schedulePoll(pollDelay);
       });
+    }
+    function onRender() {
+      // Fired by the Tressoir extension after it injects the page and after each in-place morph:
+      // adopt the embedded data only when it is newer than what the page already shows.
+      var fresh = JSON.parse(document.getElementById("report-data").textContent);
+      if (!report || fresh.updated_at > report.updated_at) report = fresh;
+      render();
     }
     function boot() {
       // The Tressoir extension injects this page after load and fires tressoir:render once the
       // scripts have run, and again after it morphs the file in place; a plain browser renders
-      // now. Either way the page then polls report_data.json.
-      document.addEventListener("tressoir:render", function () {
-        var fresh = JSON.parse(document.getElementById("report-data").textContent);
-        if (!report || fresh.updated_at > report.updated_at) report = fresh;
-        render();
-      });
+      // now. Either way the page then polls report_data.json. Everything here runs once.
+      document.addEventListener("tressoir:render", onRender);
       if (!window.tressoirNotebook) render();
       poll();
       if (window.matchMedia) {
@@ -342,7 +458,7 @@ _PAGE_TEMPLATE = """<!doctype html>
         new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-kind"] });
       }
       window.addEventListener("resize", function () {
-        if (window.Plotly) plots.forEach(function (p) { if (p.div.isConnected) Plotly.Plots.resize(p.div); });
+        if (window.Plotly) Object.keys(plots).forEach(function (name) { var p = plots[name]; if (p.div.isConnected) Plotly.Plots.resize(p.div); });
       });
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
@@ -413,6 +529,7 @@ class HtmlReporter:
         self.finished = False
         self.last_render_time = 0.0
         self.last_page_time = 0.0
+        self.last_page_widgets: list[str] | None = None     # widget names as of the last page write
 
     # ----------------------------------------------------------------------------- widgets
     def set_status(self, **fields: str) -> None:
@@ -517,8 +634,10 @@ class HtmlReporter:
 
     def render(self, force: bool = False) -> None:
         """
-        Write report_data.json atomically (throttled unless forced); the page itself is written on the
-        first render, then at most every page_rewrite_seconds, and when the run finishes.
+        Write report_data.json atomically (throttled unless forced): that file is the live path the
+        page polls. The page itself is written on the first render, whenever the set or order of
+        widgets changed since it was last written, when the run finishes, and otherwise at most every
+        page_rewrite_seconds so a page opened without polling is not too stale.
         """
         now = time.time()
         if not force and now - self.last_render_time < self.min_render_interval_seconds:
@@ -527,9 +646,12 @@ class HtmlReporter:
         report = self.document()
         _write_atomic(self.folder / DATA_FILENAME, json.dumps(report, indent=1))
         page = self.folder / REPORT_FILENAME
-        if self.finished or not page.exists() or now - self.last_page_time >= self.page_rewrite_seconds:
+        widget_names = [widget["name"] for widget in report["widgets"]]
+        structure_changed = widget_names != self.last_page_widgets
+        if self.finished or not page.exists() or structure_changed or now - self.last_page_time >= self.page_rewrite_seconds:
             _write_atomic(page, render_report_page(report))
             self.last_page_time = now
+            self.last_page_widgets = widget_names
         self.last_render_time = now
 
     def finish(self) -> None:

@@ -60,6 +60,7 @@ class DatasetManager:
         study_context: str | None = None,
         caching_id: str | None = None,
         modality: DataModality | None = None,
+        *, progress: t.Callable[[dict], None] | None = None,
     ) -> list[DatasetQAExample]:
         """
         Synthesize study questions from the dataset's chunks (see DatasetStudyGenerator.generate_examples_qa).
@@ -67,7 +68,7 @@ class DatasetManager:
         """
         study_generator = self._get_or_create_study_generator(dataset_id)
         seed = self.harness.harness_config.dataset_study_seed if base_seed is None else base_seed
-        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality)
+        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress)
 
 
     def label_study_examples(

@@ -1,22 +1,4 @@
-"""
-Training items for the AC model, three kinds (ac_model_training.ActivationContextTrainingItem):
-
-- compaction: a trajectory cut at depth d (1-2) into segments of `threshold` tokens; the in-context
-  prefix is the real messages up to the last cut (an assistant turn may be cut mid-text), the AC
-  prefix nests the segments (`AC_d{AC_{d-1}{...}, segment d}`) in one user message followed by the
-  compaction instructions; the completion is the rest of the cut turn or the next assistant turn.
-  Trains the model to "see" its own compactions.
-- traj_qa: a study question about a trajectory chunk (dataset_study, `traj_qa`); the in-context
-  prefix holds the transcript window around the chunk, the AC prefix the window and 0-2 distractor
-  trajectories (bm25 top documents for the question, the source excluded) as separate parts, each
-  with the task text first so the compressor knows what the reader is after. Trains "seeing" a
-  subagent or parent.
-- rag_qa: a study question about a text chunk; the in-context prefix holds the gold passage, the AC
-  prefix one part with the gold and bm25 distractor passages shuffled to a token budget.
-
-Every item's completion is real text (the trajectory's own continuation, the gold answer): no
-sampling is needed at generation time. Token budgets are counted with the target tokenizer.
-"""
+"""Paired whole-history compaction/QA items and exact recorded-run self-distillation."""
 from __future__ import annotations
 
 import json
@@ -30,9 +12,10 @@ from ..agent.agent_utils import ModelDialect
 from ..dataset.dataset import DataModality, DatasetDocument, DatasetDocumentChunk, DatasetQAExample
 from ..dataset.loaders.trajectory_utils import submit_answer_definition
 from ..dataset.dataset_utils import message_text, render_messages
-from .ac_model_training import ActivationContextTrainingItem
-from .ac_model_utils import AC_PART_TYPE, direct_parts, is_ac_part
-from ..common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part   # shared with the agent loop (agent_tools)
+from .ac_model_training import ActivationContextTrainingItem, ActivationContextTrainer, ActivationContextTrainingConfig
+from .ac_model_utils import (AC_PART_TYPE, direct_parts, is_ac_part, assistant_target_ids,
+                             prepare_training_history, normalize_public_assistants, complete_public_turns)
+from ..common.ac_parts import COMPACTION_INSTRUCTIONS, ac_part, tools_in_system_text
 
 if t.TYPE_CHECKING:
     from ..agent.agent_config import AgentRunResult
@@ -40,6 +23,42 @@ if t.TYPE_CHECKING:
 
 TRAJ_QA_SYSTEM_PROMPT = "You answer questions about agent trajectories (transcripts of an agent's reasoning, tool calls and tool results)."
 TRAJ_QA_INSTRUCTIONS = "Answer the question from the trajectories above (some may be unrelated). Call submit_answer with the answer."
+RECONSTRUCTION_SYSTEM_PROMPT = "You are a careful assistant. You reproduce text exactly when asked."
+RECONSTRUCTION_INSTRUCTION = "Reproduce the passage above exactly, word for word, and stop at its end."
+
+
+def _cue_cut(text: str, fraction: float) -> int:
+    """Character offset near `fraction` of the text, moved forward to the next whitespace so the cue ends on a word."""
+    cut = max(1, int(len(text) * fraction))
+    while cut < len(text) and not text[cut].isspace():
+        cut += 1
+    return cut
+
+
+def _segment_content(segments: list[dict], ac_name: str) -> list[dict]:
+    """The content list of a nested passage: its text segments verbatim and one activation_context part per child segment, in order."""
+    content = []
+    for segment in segments:
+        if segment["kind"] == "child":
+            content.append(ac_part([{"role": "user", "content": segment["text"]}], ac_name, segment["ratio"]))
+        elif segment["kind"] == "text":
+            if segment["text"]:
+                content.append({"type": "text", "text": segment["text"]})
+        else:
+            raise ValueError(f"unknown segment kind {segment['kind']!r}")
+    return content
+
+
+def _first_child_span(segments: list[dict]) -> tuple[int, int] | None:
+    """Character span of the first child segment inside the concatenation of the segment texts (None without a child)."""
+    offset = 0
+    for segment in segments:
+        if segment["kind"] == "child":
+            return offset, offset + len(segment["text"])
+        offset += len(segment["text"])
+    return None
+
+
 RAG_QA_SYSTEM_PROMPT = "You answer questions from the passages you are given."
 RAG_QA_INSTRUCTIONS = "Answer the question from the passages above (some may be unrelated). Call submit_answer with the answer."
 MESSAGE_TOKEN_OVERHEAD = 8                    # template tokens per message, on top of its text (estimate)
@@ -101,259 +120,212 @@ class ActivationContextStudyGenerator:
 
     # ------------------------------------------------------------------------------------------ compaction
     def generate_compaction_samples(
-        self,
-        dataset_id: str,
-        num_samples: int,
-        seed: int = 0,
+        self, dataset_id: str, num_samples: int, seed: int = 0,
         depth_range: tuple[int, int] = (1, 2),
         threshold_range_tokens: tuple[int, int] = (8192, 32768),
         ratios_range: tuple[float, float] = (1.0 / 8.0, 1.0 / 16.0),
         max_post_compaction_tokens: int = 8192,
-        immediate_continuation_ratio: float = 0.25, # Still bias towards many trajectories being immediate continuations, as that's most important.
-        completion_max_tokens: int = 512,
         max_total_tokens: int = 72_000,
         min_trajectory_tokens: int = MIN_COMPACTION_TOKENS,
+        *, max_assistant_tokens: int | None = None,
     ) -> list[ActivationContextTrainingItem]:
-        """
-        One item per sampled trajectory document (documents are drawn with replacement once every
-        document was used; a document shorter than `min_trajectory_tokens` before its completion is
-        skipped). Segment thresholds are scaled down to fit the trajectory and `max_total_tokens`.
-        """
-        if max_post_compaction_tokens < 0 or not 0 <= immediate_continuation_ratio <= 1 or completion_max_tokens < 1:
-            raise ValueError("Invalid continuation budget or immediate mixture")
+        """Complete public continuations; every assistant output is a target, within both exact budgets."""
+        if max_post_compaction_tokens < 1 or max_total_tokens < 1 or min(depth_range) < 1:
+            raise ValueError("Invalid compaction depth or token budgets")
+        if max_assistant_tokens is None:
+            from ..harness.vllm_wrapper import VLLMWrapper
+            defaults = VLLMWrapper.recommended_chat_kwargs(self.ac_model.target.model_config.model_id)
+            max_assistant_tokens = (defaults.get("sampling_params") or {}).get("max_tokens", 1024)
+        if max_assistant_tokens < 1:
+            raise ValueError("max_assistant_tokens must be positive")
         rng = random.Random(seed)
         documents = self._documents(dataset_id, DataModality.TRAJECTORY)
         assert documents, f"{dataset_id} holds no trajectory documents"
-        order = list(documents)
-        rng.shuffle(order)
-        items: list[ActivationContextTrainingItem] = []
-        attempts = 0
-        requested_immediate = rng.random() < immediate_continuation_ratio
-        while len(items) < num_samples and attempts < 4 * num_samples + len(order):
-            document = order[attempts % len(order)]
-            attempts += 1
-            item = self._compaction_item(document, dataset_id, rng, len(items), seed, depth_range, threshold_range_tokens,
-                                         ratios_range, completion_max_tokens, max_total_tokens, min_trajectory_tokens,
-                                         max_post_compaction_tokens, requested_immediate)
+        rng.shuffle(documents)
+        items = []
+        for attempt in range(4 * num_samples + len(documents)):
+            if len(items) >= num_samples:
+                break
+            item = self._compaction_item(documents[attempt % len(documents)], dataset_id, rng, len(items), seed,
+                        depth_range, threshold_range_tokens, ratios_range, max_total_tokens, min_trajectory_tokens,
+                        max_post_compaction_tokens, max_assistant_tokens)
             if item is not None:
                 items.append(item)
-                requested_immediate = rng.random() < immediate_continuation_ratio
         if len(items) < num_samples:
-            print(f"AC study - produced {len(items)}/{num_samples} compaction items; continuation candidates exhausted")
+            print(f"AC study - produced {len(items)}/{num_samples} compaction items; complete candidates exhausted")
         return items
 
-    def _compaction_item(self, document: DatasetDocument, dataset_id: str, rng: random.Random, index: int, seed: int,
-                         depth_range: tuple[int, int], threshold_range_tokens: tuple[int, int], ratios_range: tuple[float, float],
-                         completion_max_tokens: int, max_total_tokens: int, min_trajectory_tokens: int,
-                         max_post_compaction_tokens: int = 8192, immediate: bool = True) -> ActivationContextTrainingItem | None:
-        messages = document.trajectory or []
-        if len(messages) < 3 or messages[0]["role"] != "user":
+    def _compaction_item(self, document, dataset_id, rng, index, seed, depth_range, threshold_range_tokens,
+                         ratios_range, max_total_tokens, min_trajectory_tokens, max_post_compaction_tokens,
+                         max_assistant_tokens) -> ActivationContextTrainingItem | None:
+        source = document.trajectory or []
+        if len(source) < 2 or source[0].get("role") != "user":
             return None
-        tools = (document.trajectory_kwargs or {}).get("tools") or None
+        try:
+            messages, tools = normalize_public_assistants(self.tokenizer, source,
+                        (document.trajectory_kwargs or {}).get("tools"), max_assistant_tokens)
+            first = next((index for index, message in enumerate(messages) if message.get("role") == "assistant"), len(messages))
+            initial = messages[:first]
+            groups = complete_public_turns(messages[first:])
+        except ValueError:                    # an indivisible public call/reply cannot be a complete candidate
+            return None
+        if len(groups) < 2:
+            return None
         system = self._system_messages(document)
-        task = messages[0]
-        body = messages[1:]
-        tokens = [self.message_tokens(message) for message in body]
-        # The completion must be an assistant turn after the last cut: the body up to the last assistant turn is cuttable.
-        last_assistant = max((i for i, message in enumerate(body) if message["role"] == "assistant"), default=-1)
-        if last_assistant < 1:
+        depth = min(rng.randint(min(depth_range), max(depth_range)), len(groups) - 1)
+        if depth < min(depth_range):
             return None
-        available = sum(tokens[:last_assistant + 1])                            # the last assistant turn may be cut mid-text
-        if available < min_trajectory_tokens:
-            return None
-        depth = rng.randint(min(depth_range), max(depth_range))
-        thresholds = [rng.randint(min(threshold_range_tokens), max(threshold_range_tokens)) for _ in range(depth)]
-        budget = min(max_total_tokens - completion_max_tokens - self.message_tokens(task) - 256, int(available * 0.9))
-        if budget < 256:
-            return None
-        if sum(thresholds) > budget:
-            scale = budget / sum(thresholds)
-            thresholds = [max(256, int(threshold * scale)) for threshold in thresholds]
-        # Cuts: (message index, character offset in that assistant text or None for a boundary).
-        cuts: list[tuple[int, int | None]] = []
-        cumulative = 0
-        target_total = 0
-        position = 0
-        for threshold in thresholds:
-            target_total += threshold
-            while position < len(body) and cumulative + tokens[position] <= target_total:
-                cumulative += tokens[position]
-                position += 1
-            if position >= len(body):
+        costs = [sum(self.message_tokens(message) for message in group) for group in groups]
+        budget = min(sum(costs[:-1]), max_total_tokens - max_post_compaction_tokens)
+        threshold = min(rng.randint(min(threshold_range_tokens), max(threshold_range_tokens)), max(1, budget // depth))
+        cuts, offset = [], 0
+        for level in range(depth):
+            total, end = 0, offset
+            limit = len(groups) - (depth - level)
+            while end < limit and (total < threshold or end == offset):
+                total += costs[end]
+                end += 1
+            cuts.append(end)
+            offset = end
+        before = [message for group in groups[:cuts[-1]] for message in group]
+        prefix = system + initial + before
+        chat_kwargs = {"enable_thinking": True}
+        continuation, targets, exact_tokens, post_tokens = [], [], 0, 0
+        for group in groups[cuts[-1]:]:
+            proposed = continuation + group
+            proposed_targets = targets + [assistant_target_ids(self.tokenizer, group[0], tools, chat_kwargs)]
+            ids, _, positions = prepare_training_history(self.tokenizer, prefix + proposed, len(prefix), proposed_targets, [], tools=tools,
+                                                        chat_template_kwargs=chat_kwargs)
+            if positions[0] + 1 < min_trajectory_tokens:
                 return None
-            message = body[position]
-            text = message_text(message)
-            if message["role"] == "assistant" and not message.get("tool_calls") and len(text) > 200 and cumulative < target_total:
-                fraction = (target_total - cumulative) / max(1, tokens[position])
-                full_ids = self.tokenizer.encode(text, add_special_tokens=False)
-                cut_tokens = max(1, min(len(full_ids) - 1, int(len(full_ids) * min(0.9, max(0.1, fraction)))))
-                partial, remainder, cut_tokens = self._token_boundary(text, full_ids, cut_tokens)
-                offset = len(partial)
-                cuts.append((position, offset))
-                break                                                              # a mid-turn cut ends the chain (the rest of the turn is the completion)
-            cuts.append((position, None))
-        if not cuts:
+            cost = len(ids) - (positions[0] + 1)
+            if cost > max_post_compaction_tokens or len(ids) > max_total_tokens:
+                break
+            continuation, targets, exact_tokens, post_tokens = proposed, proposed_targets, len(ids), cost
+        if not targets:
             return None
-        # Segments between cuts, the completion after the last one.
-        segments: list[list[dict]] = []
-        start = 0
-        partial_text = ""
-        for cut_index, (position, offset) in enumerate(cuts):
-            if offset is None:
-                segments.append(body[start:position])
-                start = position
-            else:
-                message = body[position]
-                text = message_text(message)
-                segments.append(body[start:position] + [{"role": "assistant", "content": text[:offset]}])
-                partial_text = text[:offset]
-                start = position
-        segments = [segment for segment in segments if segment]
-        if not segments:
-            return None
-        last_position, last_offset = cuts[-1]
-        visible: list[dict] = []
-        teacher_partial_ids: list[int] | None = None
-        if last_offset is not None:
-            turn_text = message_text(body[last_position])
-            full_ids = self.tokenizer.encode(turn_text, add_special_tokens=False)
-            # The cut was selected at an exact target-token boundary above.
-            teacher_partial_ids = full_ids[:cut_tokens]
-            completion_ids = full_ids[cut_tokens:]
-            immediate_target = last_position
-            visible_after_cut = [{**body[last_position], "content": turn_text[last_offset:]}]
-        else:
-            immediate_target = next((i for i in range(last_position, len(body)) if body[i]["role"] == "assistant"), None)
-            if immediate_target is None:
-                return None
-            visible_after_cut = []
-        if immediate:
-            target_position = immediate_target
-            if last_offset is None:
-                visible = body[last_position:target_position]
-                completion_ids = self.tokenizer.encode(self.assistant_text(body[target_position]), add_special_tokens=False)
-            in_context_tail = body[:target_position]
-        else:
-            candidates = []
-            for target_position in range(immediate_target + 1, len(body)):
-                if body[target_position]["role"] != "assistant":
-                    continue
-                suffix = (visible_after_cut + body[last_position + 1:target_position] if last_offset is not None
-                          else body[last_position:target_position])
-                suffix_tokens = sum(self.message_tokens(message) for message in suffix)
-                teacher_tokens = sum(tokens[:target_position]) + self.message_tokens(task)
-                if suffix_tokens <= max_post_compaction_tokens and teacher_tokens + completion_max_tokens + 256 <= max_total_tokens:
-                    candidates.append((target_position, suffix))
-            if not candidates:
-                return None
-            target_position, visible = rng.choice(candidates)
-            in_context_tail = body[:target_position]
-            partial_text, teacher_partial_ids = "", None
-            completion_ids = self.tokenizer.encode(self.assistant_text(body[target_position]), add_special_tokens=False)
-        if not completion_ids:
-            return None
-        complete = len(completion_ids) <= completion_max_tokens
-        completion_ids = completion_ids[:completion_max_tokens]
-        # Avoid a cap ending inside a multibyte character; preserve original IDs.
-        while completion_ids and self.tokenizer.decode(completion_ids, clean_up_tokenization_spaces=False).endswith("\ufffd"):
-            completion_ids = completion_ids[:-1]
-        completion_text = self.tokenizer.decode(completion_ids, clean_up_tokenization_spaces=False)
-        if not completion_text.strip():
-            return None
-        visible_tokens = self._visible_tokens(visible, tools)
-        if visible_tokens > max_post_compaction_tokens:
-            return None
-        if sum(tokens[:target_position]) + len(teacher_partial_ids or []) + len(completion_ids) + self.message_tokens(task) + 256 > max_total_tokens:
-            return None
-        ratio = self._sample_ratio(rng, ratios_range)
-        nested: dict | None = None
-        for segment in segments:
-            inner = [{"role": "user", "content": [nested]}] if nested is not None else [task]   # the innermost segment carries the task: what the reader is after
-            nested = ac_part(deepcopy(system) + inner + segment, self.ac_name, ratio)           # a segment part carries its system message first
+        ratio, nested, offset = self._sample_ratio(rng, ratios_range), None, 0
+        for end in cuts:
+            frame = [{"role": "user", "content": [nested]}] if nested is not None else initial
+            segment = [message for group in groups[offset:end] for message in group]
+            nested = ac_part(deepcopy(system + frame + segment), self.ac_name, ratio, kind="compaction")
             if tools:
                 nested["tools"] = deepcopy(tools)
-        ac_user = {"role": "user", "content": [nested, {"type": "text", "text": "\n\n" + COMPACTION_INSTRUCTIONS}]}
+            offset = end
+        student_prefix = system + initial + [{"role": "user", "content": [nested,
+                            {"type": "text", "text": "\n\n" + COMPACTION_INSTRUCTIONS}]}]
         item = ActivationContextTrainingItem(
-            item_id=f"compaction:{dataset_id}:{seed}:{index}",
-            kind="compaction",
-            in_context_prefix=system + [task] + in_context_tail,
-            ac_prefix=system + [task, ac_user] + deepcopy(visible),
-            completion_text=completion_text,
-            completion_complete=complete,
-            teacher_partial_text=partial_text,
-            teacher_partial_token_ids=teacher_partial_ids,
-            completion_token_ids=completion_ids,
-            tools=tools,
-            dataset_id=dataset_id,
-            doc_ids=[document.doc_id],
-            info={"depth": len(segments), "thresholds": thresholds, "ratio": ratio, "in_context_tokens": sum(tokens[:len(in_context_tail)]),
-                  "immediate": immediate, "visible_suffix_tokens": visible_tokens,
-                  "delay_turns": target_position - immediate_target,
-                  "target_position": target_position, "mid_turn_cut": last_offset is not None,   # the completion's body message; run harvesting maps it back
-                  "observed_terminal_answer": (document.trajectory_kwargs or {}).get("observed_terminal_answer")},
-        )
-        prefix = self.tokenizer.apply_chat_template(item.in_context_prefix, tools=tools, add_generation_prompt=True, tokenize=True)
-        prefix = prefix["input_ids"] if hasattr(prefix, "keys") else prefix
-        eot = self.ac_model.target.model_config.model_description.eot_token
-        end_tokens = len(self.tokenizer.encode(eot, add_special_tokens=False)) if complete and eot else 0
-        exact_tokens = len(prefix) + len(teacher_partial_ids or []) + len(completion_ids) + end_tokens
-        if exact_tokens > max_total_tokens:
-            return None
-        item.info["in_context_tokens"] = exact_tokens
+            item_id=f"compaction:{dataset_id}:{seed}:{index}", kind="compaction",
+            in_context_messages=prefix + continuation, ac_messages=deepcopy(student_prefix + continuation),
+            in_context_start=len(prefix), ac_start=len(student_prefix), assistant_token_ids=targets,
+            tools=tools, dataset_id=dataset_id, doc_ids=[document.doc_id],
+            info={"depth": depth, "thresholds": [threshold] * depth, "ratio": ratio,
+                  "chat_template_kwargs": chat_kwargs,
+                  "in_context_tokens": exact_tokens, "post_compaction_tokens": post_tokens,
+                  "max_assistant_tokens": max_assistant_tokens, "assistant_turns": len(targets),
+                  "observed_terminal_answer": (document.trajectory_kwargs or {}).get("observed_terminal_answer")})
+        # Student wrappers and row counts also count against the overall guard.
+        try:
+            ActivationContextTrainer(self.harness, ActivationContextTrainingConfig(max_example_tokens=max_total_tokens)).build_example(self.ac_model, item)
+        except ValueError as error:
+            if "max_example_tokens" in str(error):
+                return None
+            raise
         return item
-
-    def _visible_tokens(self, visible: list[dict], tools: list[dict] | None) -> int:
-        if not visible:
-            return 0
-        anchor = [{"role": "user", "content": ""}]
-        def count(messages: list[dict]) -> int:
-            ids = self.tokenizer.apply_chat_template(messages, tools=tools, add_generation_prompt=True, tokenize=True)
-            return len(ids["input_ids"] if hasattr(ids, "keys") else ids)
-        return max(0, count(anchor + visible) - count(anchor))
 
     # ------------------------------------------------------------------------------------------ run-result harvesting
     def items_from_run_results(
-        self,
-        runs: list["AgentRunResult"],
-        *,
+        self, runs: list["AgentRunResult"], *, loss_kind: t.Literal["kl", "sft"] = "kl",
+        selection: t.Literal["score_1", "score_1_or_unscored", "all"] | None = None,
         weight_of: t.Callable[["AgentRunResult"], float] | None = None,
-        seed: int = 0,
-        completion_max_tokens: int | None = None,
-        text_run_kwargs: dict | None = None,
-        items_per_text_run: int = 1,
     ) -> list[ActivationContextTrainingItem]:
-        """
-        Self-distillation items from agent run results: the target reading a run as plain text (teacher)
-        against the same target reading the run's real activation-context prompt (student), on the turn
-        the agent actually sampled. Every run recorded with this AC model yields one item per assistant
-        turn whose prompt holds a part (compaction trees, subagent prompts and returns, tool-output and
-        search parts); the run's compacted segments and every subagent beneath it are visited. A run
-        without an AC model is converted to a trajectory document and cut by the 3a1 generator
-        (`text_run_kwargs` override its defaults), with the recorded sampled tokens as the completion
-        where the cut lands on a whole turn. Weights multiply a KL and must be finite and nonnegative;
-        `weight_of(run)` defaults to the run's score, zero-weight runs are skipped. Records are not
-        mutated; `harvest_report` holds candidate/accepted/skip counts.
-        """
-        rng = random.Random(seed)
-        report = self.harvest_report = {"roots": len(runs), "runs": 0, "candidates": 0, "accepted": 0, "skipped": {}}
-        items: list[ActivationContextTrainingItem] = []
+        """One whole-history item per nonempty segment, preserving every selected recorded output."""
+        from ..agent_training.agent_training_utils import activation_messages_of
+        from ..agent.rollout_caching import config_key
+        if loss_kind not in ("kl", "sft"):
+            raise ValueError(loss_kind)
+        selection = selection or ("all" if loss_kind == "kl" else "score_1")
+        if selection not in ("all", "score_1", "score_1_or_unscored"):
+            raise ValueError(selection)
+        report = self.harvest_report = {"roots": len(runs), "runs": 0, "candidates": 0, "accepted": 0,
+                                      "loss_kind": loss_kind, "selection": selection, "skipped": {}}
+        items = []
         for root in runs:
-            weight = float(root.score if weight_of is None else weight_of(root))
+            if selection != "all" and root.score != 1 and not (selection == "score_1_or_unscored" and root.score is None):
+                self._harvest_skip("selection")
+                continue
+            weight = 1.0 if weight_of is None else float(weight_of(root))
             if not math.isfinite(weight) or weight < 0:
-                raise ValueError("AC distillation item weights must be finite and nonnegative: the KL target has no sign to flip "
-                                 "(negative advantages belong to the policy-gradient path)")
-            if weight == 0.0:
+                raise ValueError("AC item weights must be finite and nonnegative")
+            if weight == 0:
                 self._harvest_skip("zero_weight")
                 continue
-            for source_key, run in self._rollout_sources(root):
+            root_key = f"{config_key(root.agent_config)}:{root.seed}"
+            for source_key, run in self._rollout_sources(root, root_key):
                 report["runs"] += 1
-                if run.ac_model_name is None:
-                    for index in range(items_per_text_run):
-                        items += self._items_from_text_run(run, f"{source_key}.{index}", weight, rng, completion_max_tokens, text_run_kwargs)
-                elif run.ac_model_name == self.ac_name:
-                    items += self._items_from_ac_run(run, source_key, weight, completion_max_tokens)
-                else:
-                    raise ValueError(f"run recorded with AC model {run.ac_model_name!r}; this generator is bound to {self.ac_name!r}")
+                source_model = self.harness.loaded_models.get(run.agent_config.model_name)
+                if source_model is None:
+                    raise ValueError(f"Unknown recorded tokenizer source {run.agent_config.model_name!r}")
+                source_tokenizer = source_model.tokenizer
+                if (source_tokenizer.get_vocab() != self.tokenizer.get_vocab()
+                        or source_tokenizer.special_tokens_map != self.tokenizer.special_tokens_map
+                        or source_tokenizer.chat_template != self.tokenizer.chat_template):
+                    raise ValueError("Recorded assistant tokens require a compatible tokenizer and chat template")
+                tools = self._run_tools(run)
+                for segment_index, segment in enumerate([*run.compactions, run]):
+                    report["candidates"] += 1
+                    targets = []
+                    for step in segment.trajectory:
+                        assistants = [message for message in step.get("messages") or [] if message.get("role") == "assistant"]
+                        if step.get("role") == "assistant":
+                            ids = list(step.get("token_ids") or [])
+                            if len(assistants) != 1 or not ids:
+                                raise ValueError("Recorded assistant step needs one message and its nonempty sampled token IDs; regenerate this run")
+                            targets.append(ids)
+                        elif assistants:
+                            raise ValueError("Recorded input step contains an assistant output")
+                    if not targets:
+                        self._harvest_skip("empty_segment")
+                        continue
+                    config = replace(segment.agent_config, ac_model_name=self.ac_name)
+                    student = activation_messages_of(segment, config)
+                    start = len(segment.prompt_messages)
+                    if segment.ac_model_name:
+                        recorded = [(student[:start], segment.prompt_ac_spans)]
+                        cursor = start
+                        for step in segment.trajectory:
+                            end = cursor + len(step.get("messages") or [])
+                            recorded.append((student[cursor:end], step.get("ac_spans") or []))
+                            cursor = end
+                        if any(len(direct_parts(messages)) != len(spans) for messages, spans in recorded):
+                            raise ValueError("Recorded AC spans need matching raw activation parts; regenerate this run")
+                    teacher_prefix = self._expand_parts(student[:start]) if loss_kind == "kl" else None
+                    if not segment.ac_model_name:
+                        # Text runs also compress their complete initial frame, retaining raw injected parts within it.
+                        frame, suffix = student[:start], student[start:]
+                        system = [message for message in frame if message.get("role") == "system"]
+                        part = ac_part(deepcopy(frame), self.ac_name, self.ac_model.config.default_compression_ratio)
+                        if tools:
+                            part["tools"] = deepcopy(tools)
+                        student = system + [{"role": "user", "content": [part]}] + suffix
+                        start = len(system) + 1
+                    teacher = None
+                    teacher_start = 0
+                    if loss_kind == "kl":
+                        teacher = teacher_prefix + self._expand_parts(student[start:])
+                        teacher_start = len(teacher_prefix)
+                    item = ActivationContextTrainingItem(
+                        item_id=f"rollout:{source_key}:{segment_index}", kind="compaction",
+                        in_context_messages=teacher, ac_messages=deepcopy(student),
+                        in_context_start=teacher_start, ac_start=start, assistant_token_ids=targets,
+                        tools=tools, weight=weight, dataset_id="agent_runs", doc_ids=[root_key],
+                        info={"source": "agent_run", "source_key": source_key, "root_key": root_key,
+                              "chat_template_kwargs": source_model.chat_template_kwargs(segment.agent_config.call_kwargs),
+                              "segment": segment_index, "score": root.score, "completion_source": "recorded",
+                              "channels": sorted({part.get("kind") or "unknown" for part in direct_parts(student)}),
+                              "ac_model_name": segment.ac_model_name, "ac_model_version": segment.ac_model_version})
+                    ActivationContextTrainer(self.harness, ActivationContextTrainingConfig(loss_kind=loss_kind)).build_example(self.ac_model, item)
+                    items.append(item)
         report["accepted"] = len(items)
         return items
 
@@ -361,70 +333,18 @@ class ActivationContextStudyGenerator:
         skipped = self.harvest_report["skipped"]
         skipped[reason] = skipped.get(reason, 0) + 1
 
-    def _rollout_sources(self, root: "AgentRunResult", key: str | None = None) -> t.Iterator[tuple[str, "AgentRunResult"]]:
-        """The run, then every subagent attached to any of its segments (recursively), each once with a path key."""
-        key = f"{root.agent_config.agent_name}:{root.seed}" if key is None else key
+    def _rollout_sources(self, root: "AgentRunResult", key: str) -> t.Iterator[tuple[str, "AgentRunResult"]]:
         yield key, root
-        for segment_index, segment in enumerate(list(root.compactions) + [root]):
+        for segment_index, segment in enumerate([*root.compactions, root]):
             for child_index, child in enumerate(segment.subagent_results):
                 yield from self._rollout_sources(child, f"{key}/s{segment_index}c{child_index}")
 
     def _run_tools(self, run: "AgentRunResult") -> list[dict] | None:
-        """The tool definitions the run's prompts were templated with (None under the inline rendering, whose listing is in the system prompt)."""
         from ..agent.agent import Agent
         agent = Agent(self.harness, run.agent_config)
         agent.dialect = self.dialect
         agent._prepare_tools()
         return agent.template_tools
-
-    def _rollout_completion(self, recorded_ids: list[int], max_tokens: int | None = None) -> tuple[list[int], bool]:
-        """
-        Recorded sampled ids as completion fields: exactly one terminal end-of-turn sequence is stripped
-        (the trainer appends it again when `completion_complete`), the rest is kept verbatim; a cap marks
-        the completion incomplete. No cap by default: a run's turn is bounded by its own sampling max_tokens.
-        """
-        eot = self.ac_model.target.model_config.model_description.eot_token or ""
-        eot_ids = self.tokenizer.encode(eot, add_special_tokens=False) if eot else []
-        ids = list(recorded_ids)
-        complete = bool(eot_ids) and len(ids) >= len(eot_ids) and ids[-len(eot_ids):] == eot_ids
-        if complete:
-            ids = ids[:-len(eot_ids)]
-        if max_tokens is not None and len(ids) > max_tokens:
-            return ids[:max_tokens], False
-        return ids, complete
-
-    def _items_from_ac_run(self, run: "AgentRunResult", source_key: str, weight: float, completion_max_tokens: int | None) -> list[ActivationContextTrainingItem]:
-        """One item per assistant turn whose student prefix (its segment's real prompt plus the steps before it) holds a part."""
-        tools = self._run_tools(run)
-        items: list[ActivationContextTrainingItem] = []
-        for k, segment in enumerate(list(run.compactions) + [run]):
-            system = [message for message in segment.prompt_messages if message.get("role") == "system"]
-            base = [message for message in segment.prompt_messages if message.get("role") != "system"]
-            history: list[dict] = []
-            for t_index, step in enumerate(segment.trajectory):
-                if step.get("role") == "assistant":
-                    student = base + history
-                    self.harvest_report["candidates"] += 1
-                    parts = direct_parts(student)
-                    if not parts:
-                        self._harvest_skip("no_parts")
-                    else:
-                        ids, complete = self._rollout_completion(step.get("token_ids") or [], completion_max_tokens)
-                        if not ids:
-                            self._harvest_skip("empty_completion")
-                        else:
-                            items.append(ActivationContextTrainingItem(
-                                item_id=f"rollout:{source_key}:{k}:{t_index}", kind="compaction",
-                                in_context_prefix=system + self._expand_parts(student), ac_prefix=deepcopy(system + student),
-                                completion_text=self.tokenizer.decode(ids, clean_up_tokenization_spaces=False),
-                                completion_token_ids=ids, completion_complete=complete, tools=tools, weight=weight,
-                                dataset_id="agent_runs", doc_ids=[source_key],
-                                info={"source": "agent_run", "source_key": source_key, "segment": k, "turn": t_index, "score": run.score,
-                                      "channels": sorted({part.get("kind") or "unknown" for part in parts}), "completion_source": "recorded",
-                                      "ac_model_name": run.ac_model_name, "ac_model_version": run.ac_model_version},
-                            ))
-                history += deepcopy(step.get("messages") or [])
-        return items
 
     def _expand_parts(self, messages: list[dict]) -> list[dict]:
         """
@@ -442,6 +362,15 @@ class ActivationContextStudyGenerator:
             tree = next((part for part in content if is_ac_part(part) and part.get("kind") == "compaction"), None)
             if tree is not None:
                 expanded = self._expand_tree(tree)
+                # A nested source frame must remain visible even when the reader has another system prompt.
+                framed = []
+                for entry in expanded:
+                    if entry.get("role") == "system" and out:
+                        if entry in out:
+                            continue
+                        entry = {"role": "user", "content": "Source system frame:\n" + message_text(entry)}
+                    framed.append(entry)
+                expanded = framed
                 if out and expanded and out[-1] == expanded[0]:
                     out.pop()                                                       # the tree starts with the task the prompt already shows
                 out.extend(expanded)
@@ -458,9 +387,9 @@ class ActivationContextStudyGenerator:
                     elif kind == "search":
                         pieces.append("\n\n" + next((m.get("content", "") for m in inner if m.get("role") == "tool"), ""))
                     elif kind == "subagent_return":
-                        pieces.append("Subagent transcript:\n" + render_messages(self._expand_parts(inner)) + "\n\n")
+                        pieces.append("Subagent transcript:\n" + render_messages(self._expand_parts(tools_in_system_text(inner, part.get("tools")))) + "\n\n")
                     else:                                                           # subagent_prompt, parent_context, untagged: a transcript
-                        pieces.append("Parent transcript:\n" + render_messages(self._expand_parts(inner)) + "\n\n")
+                        pieces.append("Parent transcript:\n" + render_messages(self._expand_parts(tools_in_system_text(inner, part.get("tools")))) + "\n\n")
                 elif isinstance(part, dict):
                     if drop_next_text and part.get("type") == "text":
                         drop_next_text = False
@@ -473,75 +402,11 @@ class ActivationContextStudyGenerator:
 
     def _expand_tree(self, tree: dict) -> list[dict]:
         """The history a compaction tree holds, as text: its first user message (recursively) then the segment through the compact call."""
-        inner = [message for message in tree.get("messages") or [] if message.get("role") != "system"]   # the frame is the reader's own
+        inner = tools_in_system_text(tree.get("messages") or [], tree.get("tools"))
         if not inner:
             return []
         expanded = self._expand_parts([inner[0]]) + self._expand_parts(inner[1:])
-        last = expanded[-1] if expanded else None
-        if last is not None and last.get("role") == "assistant" and last.get("tool_calls"):
-            expanded.append({"role": "tool", "content": "Context compacted."})        # the compact call's result, so the transcript stays well formed
         return expanded
-
-    def _rollout_document(self, run: "AgentRunResult", key: str, tools: list[dict] | None) -> tuple[DatasetDocument | None, list[tuple[int, int] | None]]:
-        """A text-only run as a trajectory document (task first, every segment's steps as text, compaction messages dropped) with each body message's (segment, step) origin."""
-        segments = list(run.compactions) + [run]
-        first = segments[0].prompt_messages
-        task = next((message for message in first if message.get("role") == "user"), None)
-        if task is None:
-            return None, []
-        system = next((message.get("content") for message in first if message.get("role") == "system"), None)
-        trajectory = self._expand_parts([task])
-        origins: list[tuple[int, int] | None] = []
-        for k, segment in enumerate(segments):
-            for t_index, step in enumerate(segment.trajectory):
-                expanded = self._expand_parts(step.get("messages") or [])
-                trajectory += expanded
-                origins += [(k, t_index)] * len(expanded)
-            if k < len(segments) - 1 and trajectory and trajectory[-1].get("role") == "assistant" and trajectory[-1].get("tool_calls"):
-                trajectory.append({"role": "tool", "content": "Context compacted."})
-                origins.append(None)
-        document = DatasetDocument(doc_id=key, dataset_id="agent_runs", trajectory=trajectory,
-                                   trajectory_kwargs={"tools": tools, "system_prompt": system, "answer": run.answer}, modality=DataModality.TRAJECTORY)
-        return document, origins
-
-    def _items_from_text_run(self, run: "AgentRunResult", source_key: str, weight: float, rng: random.Random,
-                             completion_max_tokens: int | None, text_run_kwargs: dict | None) -> list[ActivationContextTrainingItem]:
-        """A text-only run cut by the 3a1 generator; a whole-turn completion takes the recorded sampled tokens, a mid-turn cut keeps the re-encoded rest of the turn."""
-        tools = self._run_tools(run)
-        document, origins = self._rollout_document(run, source_key, tools)
-        self.harvest_report["candidates"] += 1
-        if document is None:
-            self._harvest_skip("no_task")
-            return []
-        kwargs = dict(depth_range=(1, 2), threshold_range_tokens=(8192, 32768), ratios_range=(1.0 / 8.0, 1.0 / 16.0), completion_max_tokens=512,
-                      max_total_tokens=72_000, min_trajectory_tokens=MIN_COMPACTION_TOKENS, max_post_compaction_tokens=8192,
-                      immediate_continuation_ratio=0.25) | dict(text_run_kwargs or {})
-        immediate = rng.random() < kwargs.pop("immediate_continuation_ratio")
-        item = self._compaction_item(document, "agent_runs", rng, 0, 0, kwargs["depth_range"], kwargs["threshold_range_tokens"],
-                                     kwargs["ratios_range"], kwargs["completion_max_tokens"], kwargs["max_total_tokens"],
-                                     kwargs["min_trajectory_tokens"], kwargs["max_post_compaction_tokens"], immediate)
-        if item is None:
-            self._harvest_skip("no_cut")
-            return []
-        item.item_id = f"rollout_text:{source_key}"
-        item.weight = weight
-        item.doc_ids = [source_key]
-        item.info.update({"source": "agent_run_text", "source_key": source_key, "score": run.score})
-        position = item.info.get("target_position")
-        origin = origins[position] if position is not None and position < len(origins) else None
-        if item.info.get("mid_turn_cut") or origin is None:
-            item.info["completion_source"] = "reencoded" if item.info.get("mid_turn_cut") else "reencoded_unmapped"
-            return [item]
-        segment = (list(run.compactions) + [run])[origin[0]]
-        step = segment.trajectory[origin[1]]
-        ids, complete = self._rollout_completion(step.get("token_ids") or [], completion_max_tokens)
-        if not ids:
-            self._harvest_skip("empty_completion")
-            return []
-        item.completion_token_ids, item.completion_complete = ids, complete
-        item.completion_text = self.tokenizer.decode(ids, clean_up_tokenization_spaces=False)
-        item.info["completion_source"] = "recorded"
-        return [item]
 
     # ------------------------------------------------------------------------------------------ trajectory QA
     def _study_examples(self, dataset_id: str, num_samples: int, seed: int, modality: DataModality, caching_id: str | None) -> list[DatasetQAExample]:
@@ -592,6 +457,7 @@ class ActivationContextStudyGenerator:
             if start != 0 or end != len(text):
                 message["content"] = text[start:end]
                 message.pop("reasoning", None)
+                message.pop("reasoning_content", None)
             if not calls:
                 message.pop("tool_calls", None)
             result.append(message)
@@ -648,6 +514,8 @@ class ActivationContextStudyGenerator:
                 kwargs = source.trajectory_kwargs or {}                              # the frame the trajectory ran with, when the loader kept it
                 frame = [{"role": "system", "content": kwargs["system_prompt"]}] if kwargs.get("system_prompt") else []
                 part = ac_part(frame + messages, self.ac_name, ratio)
+                if kwargs.get("tools"):
+                    part["tools"] = deepcopy(kwargs["tools"])
                 if depth >= 2:
                     part = ac_part(frame + [messages[0], {"role": "user", "content": [part]}], self.ac_name, ratio)
                 if kwargs.get("tools"):
@@ -661,16 +529,18 @@ class ActivationContextStudyGenerator:
             for number, (_, part) in enumerate(parts, start=1):
                 content.extend([{"type": "text", "text": f"Trajectory {number}:\n"}, part, {"type": "text", "text": "\n\n"}])
             content.append({"type": "text", "text": f"{TRAJ_QA_INSTRUCTIONS}\nQuestion: {question}"})
-            in_context_user = {"role": "user", "content": f"Trajectory:\n{render_messages(window)}\n\n{TRAJ_QA_INSTRUCTIONS}\nQuestion: {question}"}
+            source_frame = tools_in_system_text(self._system_messages(document) + window, (document.trajectory_kwargs or {}).get("tools"))
+            in_context_user = {"role": "user", "content": f"Trajectory:\n{render_messages(source_frame)}\n\n{TRAJ_QA_INSTRUCTIONS}\nQuestion: {question}"}
             system = [{"role": "system", "content": TRAJ_QA_SYSTEM_PROMPT}]
+            output = self.dialect.rendering.assistant_message("", [{"id": "answer", "name": "submit_answer", "arguments": {"answer": example.gold_answers[0].strip()}}])
             items.append(ActivationContextTrainingItem(
                 item_id=f"traj_qa:{dataset_id}:{seed}:{item_index}",
                 kind="traj_qa",
-                in_context_prefix=system + [in_context_user],
-                ac_prefix=system + [{"role": "user", "content": content}],
-                completion_text=self.dialect.preferred_format.render("submit_answer", {"answer": example.gold_answers[0].strip()}),
+                in_context_messages=system + [in_context_user, output],
+                ac_messages=system + [{"role": "user", "content": content}, deepcopy(output)],
+                in_context_start=len(system) + 1, ac_start=len(system) + 1,
+                assistant_token_ids=[assistant_target_ids(self.tokenizer, output, [submit_answer_definition()])],
                 tools=[submit_answer_definition()],
-                completion_complete=True,
                 dataset_id=dataset_id,
                 doc_ids=[document.doc_id] + [candidate.doc_id for candidate in candidates[:num_distractors]],
                 info={"depth": depth, "budget": budget, "distractors": num_distractors, "ratio": ratio,
@@ -727,18 +597,88 @@ class ActivationContextStudyGenerator:
                        {"type": "text", "text": f"\n\n{RAG_QA_INSTRUCTIONS}\nQuestion: {question}"}]
             in_context_user = {"role": "user", "content": f"Passage:\n{gold.chunk_text}\n\n{RAG_QA_INSTRUCTIONS}\nQuestion: {question}"}
             system = [{"role": "system", "content": RAG_QA_SYSTEM_PROMPT}]
+            output = self.dialect.rendering.assistant_message("", [{"id": "answer", "name": "submit_answer", "arguments": {"answer": example.gold_answers[0].strip()}}])
             items.append(ActivationContextTrainingItem(
                 item_id=f"rag_qa:{dataset_id}:{seed}:{item_index}",
                 kind="rag_qa",
-                in_context_prefix=system + [in_context_user],
-                ac_prefix=system + [{"role": "user", "content": content}],
-                completion_text=self.dialect.preferred_format.render("submit_answer", {"answer": example.gold_answers[0].strip()}),
+                in_context_messages=system + [in_context_user, output],
+                ac_messages=system + [{"role": "user", "content": content}, deepcopy(output)],
+                in_context_start=len(system) + 1, ac_start=len(system) + 1,
+                assistant_token_ids=[assistant_target_ids(self.tokenizer, output, [submit_answer_definition()])],
                 tools=[submit_answer_definition()],
-                completion_complete=True,
                 dataset_id=dataset_id,
                 doc_ids=sorted({passage.doc_id for passage in passages}),
                 info={"depth": depth, "budget": budget, "passages": len(passages), "ratio": ratio,
                       "gold_position": passages.index(gold), "example_id": example.example_id, "gold_chunk_text": gold.chunk_text, "answer": example.gold_answers[0]},
+            ))
+        return items
+
+    def generate_reconstruction_samples(
+        self,
+        passages: list[dict],
+        ratio: float = 1.0 / 16.0,
+        variant: str = "reconstruct",
+        cue_fraction: float = 0.2,
+        seed: int = 0,
+        system_prompt: str = RECONSTRUCTION_SYSTEM_PROMPT,
+    ) -> list[ActivationContextTrainingItem]:
+        """
+        Dense, oracle-free items: the reader sees a passage only through its compressed rows and reproduces it.
+        `passages` are {"text", "doc_id", "source"} (any text; no dataset registration needed). Variants:
+        "reconstruct" (the whole passage is the target) and "continue" (the first `cue_fraction` of the passage stays
+        in plain text after the part and the rest is the target). The in-context view holds the plain passage, so a
+        KL teacher would copy; these items are meant for SFT. Kind is the variant name.
+
+        Nested (two-level) passages carry `segments` instead of `text`: an ordered list of {"kind": "text", "text"} and
+        {"kind": "child", "text", "ratio"} entries, plus `ratio` (the passage's own compression; the call's `ratio` when
+        absent) and optionally `variant_only` (the passage is rendered in that variant alone). The part's message content
+        is then a list: the text segments verbatim and one activation_context part per child segment (the child's text
+        at the child's ratio), in order, so the encoder reads its own rows next to text. The plain view and the targets
+        use the concatenation of all segment texts; the "continue" cue ends `cue_fraction` into the first child, so the
+        continuation crosses from the child's rows into the parent's text. Flat passages render as before.
+        """
+        if variant not in ("reconstruct", "continue"):
+            raise ValueError("variant must be 'reconstruct' or 'continue'")
+        if not 0 < cue_fraction < 1:
+            raise ValueError("cue_fraction must be in (0, 1)")
+        items = []
+        for index, passage in enumerate(passages):
+            if passage.get("variant_only") not in (None, variant):
+                continue
+            segments = passage.get("segments")
+            text = "".join(segment["text"] for segment in segments) if segments else passage["text"].strip()
+            if not text:
+                continue
+            child = _first_child_span(segments) if segments else None
+            part_ratio = passage.get("ratio", ratio) if segments else ratio
+            nested_info = {"children": sum(1 for s in segments if s["kind"] == "child"), "child_ratios": [s["ratio"] for s in segments if s["kind"] == "child"]} if segments else {}
+            if variant == "continue":
+                cut = _cue_cut(text, cue_fraction) if child is None else child[0] + _cue_cut(text[child[0]:child[1]], cue_fraction)
+                cue, target = text[:cut].rstrip(), text[cut:].lstrip()
+                if not cue or not target or (child is not None and not child[0] < cut < child[1]):
+                    continue
+                instruction = f"The passage above begins with:\n{cue}\n\nContinue the passage from there, exactly as written, and stop at its end."
+                output_text = target
+                if segments:
+                    nested_info["cue_chars"] = cut
+            else:
+                instruction = RECONSTRUCTION_INSTRUCTION
+                output_text = text
+            part = ac_part([{"role": "user", "content": _segment_content(segments, self.ac_name) if segments else text}], self.ac_name, part_ratio)
+            content = [{"type": "text", "text": "Passage:\n"}, part, {"type": "text", "text": f"\n\n{instruction}"}]
+            output = {"role": "assistant", "content": output_text}
+            system = [{"role": "system", "content": system_prompt}]
+            items.append(ActivationContextTrainingItem(
+                item_id=f"{variant}:{passage.get('source', 'text')}:{seed}:{index}",
+                kind=variant,
+                in_context_messages=system + [{"role": "user", "content": f"Passage:\n{text}\n\n{instruction}"}, output],
+                ac_messages=system + [{"role": "user", "content": content}, deepcopy(output)],
+                in_context_start=len(system) + 1, ac_start=len(system) + 1,
+                assistant_token_ids=[assistant_target_ids(self.tokenizer, output)],
+                tools=None,
+                dataset_id=passage.get("source", ""),
+                doc_ids=[passage["doc_id"]] if passage.get("doc_id") else [],
+                info={"ratio": part_ratio, "variant": variant, "chars": len(text), "passage_tokens": self.count_tokens(text), **nested_info},
             ))
         return items
 
@@ -749,7 +689,7 @@ class ActivationContextStudyGenerator:
             raise ValueError(kind)
         output = []
         for item in items:
-            messages = deepcopy(item.ac_prefix)
+            messages = deepcopy(item.ac_messages)
             part_index = 0
             for message in messages:
                 if not isinstance(message.get("content"), list):
@@ -771,7 +711,7 @@ class ActivationContextStudyGenerator:
                         pieces.append(self.tokenizer.decode(ids))
                     part_index += 1
                 message["content"] = "".join(pieces)
-            output.append(replace(item, item_id=item.item_id + ":" + kind, ac_prefix=messages,
+            output.append(replace(item, item_id=item.item_id + ":" + kind, ac_messages=messages,
                                   info=dict(item.info, reference_label="oracle gold text" if kind == "recent_text" and item.kind != "compaction" else kind)))
         return output
 

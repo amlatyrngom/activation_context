@@ -51,6 +51,8 @@ class ModelDescription:
     d_ff: int
     """Feed-forward width, for batch sizing."""
     is_multimodal: bool
+    d_kv: int | None = None
+    """num_key_value_heads x head_dim of the full-attention layers (the width of one token's K, and of its V); None when unknown."""
     layer_descriptions: list[LayerDescription] = field(default_factory=list)
     dtype: torch.dtype = torch.bfloat16
     eos_token: str | None = None

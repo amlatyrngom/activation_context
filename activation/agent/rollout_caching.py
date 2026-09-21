@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from activation.common.data_syncing import resolve_path
 
 from .agent_config import AgentConfig, AgentRunResult, _class_spec
+from .agent_utils import release_ac_rows
 
 CACHE_FILENAME = "rollouts.jsonl"
 
@@ -100,9 +101,16 @@ class RolloutCache:
     def append(self, result: AgentRunResult) -> None:
         if self.path is None:
             return
-        row = result.serialize() | {"config_key": config_key(result.agent_config)}
+        row = result.serialize(base_dir=self.path.parent) | {"config_key": config_key(result.agent_config)}
         with self.lock:
-            self.rows[(row["config_key"], int(result.seed))] = row
             with open(self.path, "a") as handle:
-                handle.write(json.dumps(row, ensure_ascii=False, default=repr) + "\n")
-                handle.flush()
+                offset = handle.tell()
+                try:
+                    handle.write(json.dumps(row, ensure_ascii=False, default=repr) + "\n")
+                    handle.flush()
+                except Exception:
+                    handle.seek(offset)
+                    handle.truncate()
+                    raise
+            self.rows[(row["config_key"], int(result.seed))] = row
+            release_ac_rows(result, row, base_dir=self.path.parent)

@@ -29,6 +29,7 @@ from .hf_utils import (
 from .vllm_wrapper import VLLMWrapper
 
 if t.TYPE_CHECKING:
+    from .hf_utils import Interventions
     from .runtime import HarnessRuntime
 
 @dataclass
@@ -487,11 +488,15 @@ class LoadedModel:
         attention_mask: torch.Tensor | None,
         position_ids: torch.Tensor|None = None,
         lora_name: str|None = None,
+        gradient_checkpointing: bool | None = None,
+        interventions: "list[Interventions | None] | None" = None,
         **kwargs,
     ) -> torch.Tensor:
         """
         Last hidden state [B, S, d_model] of the causal decoder without the language-model head.
         Extra keywords reach every decoder layer (e.g. `cu_seq_lens_q` for packed rows).
+        `interventions`: one payload (or None) per physical row of `inputs_embeds`, positions already in that
+        row's coordinates; the deltas are added to the named layers' inputs by the persistent hooks.
         With a LoRA name the module manager activates that adapter for this pass (PEFT injects the
         adapters into the base's own linear layers, so self.model is the LoRA'd module tree; the
         wrapper only routes and manages adapters); with None any injected adapters are disabled.
@@ -500,7 +505,14 @@ class LoadedModel:
         assert self.model is not None, f"{self.model_config.model_name} - Model is not loaded."
         model = self.model
         decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
-        with self.harness.module_manager.lora_context(self.model_config.model_name, lora_name):
+        from .hf_utils import INTERVENTIONS_KWARG, checkpoint_adapter_scope, install_intervention_hooks
+        if interventions is not None:
+            if len(interventions) != inputs_embeds.shape[0]:
+                raise ValueError(f"{len(interventions)} intervention payloads for {inputs_embeds.shape[0]} physical rows")
+            install_intervention_hooks(model)
+            kwargs = {**kwargs, INTERVENTIONS_KWARG: list(interventions)}
+        adapter_context = lambda: self.harness.module_manager.lora_context(self.model_config.model_name, lora_name)
+        with adapter_context(), checkpoint_adapter_scope(model, adapter_context, gradient_checkpointing):
             outputs = decoder(
                 inputs_embeds=inputs_embeds,
                 attention_mask=attention_mask,

@@ -3,6 +3,7 @@ HF-facing code for model configuration parsing, message formatting, etc.
 Stores overly detailed/specific logic to keep the rest of code cleaner.
 """
 from collections import Counter
+from contextlib import contextmanager
 import typing as t
 import torch
 import torch.nn.functional as F
@@ -42,6 +43,175 @@ _LINEAR_ATTENTION_NAMES = frozenset(
 )
 _FFN_ONLY_NAMES = frozenset({"mlp", "moe"})
 
+
+@contextmanager
+def checkpoint_adapter_scope(model, adapter_context, enabled: bool | None = None):
+    """Bind each layer's recomputation to the adapter used for its original forward."""
+    previous = [(module, module.gradient_checkpointing, getattr(module, "_gradient_checkpointing_func", None))
+                for module in model.modules() if hasattr(module, "gradient_checkpointing")]
+    was_enabled = model.is_gradient_checkpointing
+    if enabled is not None and enabled != was_enabled:
+        if enabled:
+            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        else:
+            model.gradient_checkpointing_disable()
+    try:
+        for module in model.modules():
+            if not getattr(module, "gradient_checkpointing", False) or not hasattr(module, "_gradient_checkpointing_func"):
+                continue
+            original = module._gradient_checkpointing_func
+            def scoped(function, *args, _checkpoint=original, **kwargs):
+                return _checkpoint(function, *args, **(kwargs | {
+                    "use_reentrant": False, "context_fn": lambda: (adapter_context(), adapter_context())}))
+            module._gradient_checkpointing_func = scoped
+        yield
+    finally:
+        for module, checkpointed, original in previous:
+            module.gradient_checkpointing = checkpointed
+            if original is not None:
+                module._gradient_checkpointing_func = original
+            elif hasattr(module, "_gradient_checkpointing_func"):
+                del module._gradient_checkpointing_func
+
+
+
+# --------------------------------------------------------------------------------------- deep AC inputs (interventions)
+INTERVENTIONS_KWARG = "interventions"
+_HOOKS_ATTRIBUTE = "_activation_intervention_hooks"
+
+
+class Interventions(t.TypedDict, total=False):
+    """One logical sequence's deltas: `positions` index the unpadded physical row (prompt indices, sorted, unique); every
+    `layer_inputs[layer]` is [M, d_model], added to that decoder layer's input at those positions. None means no intervention."""
+    positions: list[int]
+    layer_inputs: dict[int, torch.Tensor]
+    row_rms: dict[int, torch.Tensor]     # written by the reader hooks: residual RMS at the row positions per intervened layer (0-d tensors; diagnostic)
+
+
+class BoundInterventions:
+    """The payloads of one decoder forward bound to that forward's cache offset (set once by the text-model pre-hook);
+    travels in the layer kwargs, so a checkpointed layer recomputes with exactly the same tensors."""
+
+    __slots__ = ("payloads", "offset")
+
+    def __init__(self, payloads: list[Interventions | None], offset: int) -> None:
+        self.payloads = payloads
+        self.offset = offset
+
+
+def text_decoder(model) -> torch.nn.Module:
+    """The text decoder that owns `.layers` (below a multimodal wrapper's `language_model`); never a vision tower."""
+    decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
+    for name in ("language_model", "text_model"):
+        inner = getattr(decoder, name, None)
+        if inner is not None and hasattr(inner, "layers"):
+            return inner
+    if not hasattr(decoder, "layers"):
+        raise ValueError(f"{type(decoder).__name__} has no decoder layers to intervene on")
+    return decoder
+
+
+def decoder_layers(model) -> torch.nn.ModuleList:
+    return text_decoder(model).layers
+
+
+def _cache_offset(kwargs: dict) -> int:
+    cache = kwargs.get("past_key_values")
+    if cache is None:
+        cache = kwargs.get("past_key_value")
+    if cache is None or not hasattr(cache, "get_seq_length"):
+        return 0
+    return int(cache.get_seq_length())
+
+
+def install_intervention_hooks(model) -> None:
+    """
+    Persistent, parameter-free hooks (installed once per model): the text model's pre-hook binds the forward's
+    `interventions=` list to the cache offset before any layer runs; every decoder layer's pre-hook takes the kwarg
+    out (so no attention or recurrence kernel ever sees it) and, when a payload names this layer, adds the delta
+    rows to the layer input out of place. A forward without the kwarg is untouched. The engine mapping is this same
+    operation: a per-request scatter-add on the hidden state entering the named layers, at the rows' prompt positions.
+    """
+    if getattr(model, _HOOKS_ATTRIBUTE, None) is not None:
+        return
+    text = text_decoder(model)
+    handles = []
+
+    def bind(module, args, kwargs):
+        payloads = kwargs.get(INTERVENTIONS_KWARG)
+        if payloads is None or isinstance(payloads, BoundInterventions):
+            return None
+        return args, {**kwargs, INTERVENTIONS_KWARG: BoundInterventions(list(payloads), _cache_offset(kwargs))}
+    handles.append(text.register_forward_pre_hook(bind, with_kwargs=True))
+
+    def layer_hook(index: int):
+        def hook(module, args, kwargs):
+            bound = kwargs.get(INTERVENTIONS_KWARG)
+            if bound is None:
+                return None
+            kwargs = {key: value for key, value in kwargs.items() if key != INTERVENTIONS_KWARG}
+            if not isinstance(bound, BoundInterventions):
+                raise TypeError("interventions must reach the decoder layers through the text model's forward")
+            hidden = args[0]
+            if hidden.shape[0] != len(bound.payloads):
+                raise ValueError(f"{len(bound.payloads)} intervention payloads for {hidden.shape[0]} physical rows")
+            length = hidden.shape[1]
+            output = None
+            for row, payload in enumerate(bound.payloads):
+                if not payload:
+                    continue
+                rows = payload["layer_inputs"].get(index)
+                if rows is None:
+                    continue
+                positions = torch.as_tensor(payload["positions"], device=hidden.device, dtype=torch.long)
+                if positions.numel() != rows.shape[0]:
+                    raise ValueError("positions and delta rows differ in count")
+                local = positions - bound.offset
+                keep = (local >= 0) & (local < length)
+                if not bool(keep.any()):
+                    continue
+                # Diagnostic for the producer: the residual RMS at this forward's row positions (the deltas' true denominator).
+                payload.setdefault("row_rms", {})[index] = hidden[row, local[keep]].detach().float().pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
+                if output is None:
+                    output = hidden.clone()
+                output[row].index_add_(0, local[keep], rows[keep].to(device=hidden.device, dtype=hidden.dtype))
+            return ((output if output is not None else hidden, *args[1:]), kwargs)
+        return hook
+    for index, layer in enumerate(decoder_layers(model)):
+        handles.append(layer.register_forward_pre_hook(layer_hook(index), with_kwargs=True))
+    setattr(model, _HOOKS_ATTRIBUTE, handles)
+
+
+def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, interventions: list[Interventions | None], **generate_kwargs):
+    """
+    Greedy, single-sequence `generate` from embeddings whose prompt rows carry deltas. HF validates generate's kwargs
+    against the model signature (an `interventions=` kwarg is rejected), so the payload is bound for this call only by
+    wrapping the base model's `prepare_inputs_for_generation` (the one HF's loop calls every step under a PEFT wrapper
+    too; the wrapper keeps the original signature for HF's validation and is removed in `finally`). The layer hooks
+    map every step's cache offset, so the row deltas land on the prompt at prefill and on nothing afterwards.
+    """
+    import functools
+    if inputs_embeds.dim() != 3 or inputs_embeds.shape[0] != 1 or len(interventions) != 1:
+        raise ValueError("generate_with_interventions takes one sequence and one payload")
+    if generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("do_sample", False) or generate_kwargs.get("num_return_sequences", 1) != 1:
+        raise ValueError("generate_with_interventions supports greedy single-sequence decoding only")
+    base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
+    install_intervention_hooks(base_model)
+    previous = base_model.__dict__.get("prepare_inputs_for_generation")
+    original = base_model.prepare_inputs_for_generation
+    @functools.wraps(original)
+    def bound(*args, **kwargs):
+        model_inputs = original(*args, **kwargs)
+        model_inputs[INTERVENTIONS_KWARG] = interventions
+        return model_inputs
+    base_model.prepare_inputs_for_generation = bound
+    try:
+        return peft_model.generate(inputs_embeds=inputs_embeds, **generate_kwargs)
+    finally:
+        if previous is None:
+            del base_model.__dict__["prepare_inputs_for_generation"]
+        else:
+            base_model.prepare_inputs_for_generation = previous
 
 
 def canonical_layer_type(raw_type: object) -> LayerType:
@@ -159,10 +329,14 @@ def model_description_and_tokenizer_from_hf(
     else:
         eos_token = canonical_eos_token(hf_config, tokenizer)
     # Finalize.
+    num_heads = getattr(text_config, "num_attention_heads", None)
+    head_dim = getattr(text_config, "head_dim", None) or (text_config.hidden_size // num_heads if num_heads else None)
+    kv_heads = getattr(text_config, "num_key_value_heads", None) or num_heads
     description = ModelDescription(
         d_model=text_config.hidden_size,
         d_ff=getattr(text_config, "intermediate_size", None) or 4 * text_config.hidden_size,
         is_multimodal=is_multimodal,
+        d_kv=int(kv_heads * head_dim) if kv_heads and head_dim else None,
         dtype=dtype,
         layer_descriptions=layers,
         eos_token=eos_token,

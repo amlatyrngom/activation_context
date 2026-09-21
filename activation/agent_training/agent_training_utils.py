@@ -7,10 +7,12 @@ sequence (16k positions x a 250k vocabulary would not fit).
 from __future__ import annotations
 
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+import math
 import torch
 import torch.utils.checkpoint
+from ..agent.agent_utils import load_ac_rows
 
 if t.TYPE_CHECKING:
     from .agent_trainer import AgentTrainingItem
@@ -25,6 +27,7 @@ class TrainingExample:
     weight: float                  # the advantage A of the whole trajectory
     item_index: int
     needs_old_logprobs: bool       # teacher / hinted items (or runs recorded without log-probs): pi_old comes from a no-grad pass
+    ac_spans: list[dict] = field(default_factory=list)  # absolute sequence offsets; captured rows or resolved file references
 
     @property
     def num_loss_tokens(self) -> int:
@@ -54,18 +57,23 @@ def build_example(item: "AgentTrainingItem", item_index: int, think_replacement:
     replaced by `think_replacement` (no loss on it), so the student never conditions on reasoning it will not have.
     """
     run = item.run_results
-    if run.prompt_ac_spans or any(step.get("ac_spans") for step in run.trajectory):
-        # Placeholder ids at part positions would be embedded as pad tokens: training on AC-bearing sequences
-        # needs the rows rebuilt from the recorded parts (deferred to the training-recipe slices).
-        raise ValueError("Training on AC-bearing runs awaits the fixed-row trainer integration")
     token_ids = list(run.prompt_token_ids)
     if not token_ids:
         return None
     loss_mask = [False] * len(token_ids)
     old_logprobs = [0.0] * len(token_ids)
+    ac_spans = [dict(span) for span in run.prompt_ac_spans]
+    if any(span["start"] < 0 or span["start"] + span["length"] > len(token_ids) for span in ac_spans):
+        raise ValueError("AC span lies outside its recorded prompt")
     any_recorded = False
     for step in run.trajectory:
         segment = list(step.get("token_ids") or [])
+        if step.get("ac_spans") and step.get("role") == "assistant":
+            raise ValueError("Sampled assistant tokens cannot contain AC input rows")
+        for span in step.get("ac_spans", []):
+            if span["start"] < 0 or span["start"] + span["length"] > len(segment):
+                raise ValueError("AC span lies outside its recorded token segment")
+            ac_spans.append(dict(span, start=len(token_ids) + span["start"]))
         if step.get("role") == "assistant":
             logprobs = [float(value) for value in (step.get("logprobs") or [])]
             think_end = step.get("think_end")
@@ -94,9 +102,16 @@ def build_example(item: "AgentTrainingItem", item_index: int, think_replacement:
     loss_mask[0] = False                                                   # the first token is never predicted
     if not any(loss_mask):
         return None
+    previous_end = 0
+    for span in ac_spans:
+        start, end = span["start"], span["start"] + span["length"]
+        if start < previous_end or end <= start or end > len(token_ids) or any(loss_mask[start:end]):
+            raise ValueError("AC spans must be ordered, nonoverlapping input-only positions within the trajectory")
+        previous_end = end
     return TrainingExample(
         token_ids=token_ids, loss_mask=loss_mask, old_logprobs=old_logprobs, weight=float(item.weight), item_index=item_index,
         needs_old_logprobs=item.ignore_logprobs or not any_recorded,
+        ac_spans=ac_spans,
     )
 
 
@@ -141,6 +156,7 @@ class Collated:
     segment_offsets: list[int]     # where each example starts in its row (0 unless packed)
     model_attention_mask: torch.Tensor | None = None   # what the decoder gets: None = causal only (right padding never reaches a real token)
     cu_seq_lens: torch.Tensor | None = None            # packed: int32 [E + 1] boundaries, for the linear-attention kernels (fla varlen)
+    ac_spans: list[tuple[int, dict]] = field(default_factory=list)  # batch row and span at its padded/packed offset
 
     @property
     def packed(self) -> bool:
@@ -191,6 +207,7 @@ def collate(examples: list[TrainingExample], indices: list[int], pad_token_id: i
         segment_ids=torch.arange(len(indices), device=device)[:, None].expand(len(indices), length).contiguous(),
         segment_offsets=[0] * len(indices),
         model_attention_mask=None if causal_only else attention_mask.to(device),
+        ac_spans=[(row, span) for row, index in enumerate(indices) for span in examples[index].ac_spans],
     )
 
 
@@ -236,7 +253,44 @@ def _collate_packed(examples: list[TrainingExample], indices: list[int], pad_tok
         segment_offsets=offsets,
         model_attention_mask=None,
         cu_seq_lens=torch.tensor(boundaries, dtype=torch.int32, device=device),
+        ac_spans=[(0, dict(span, start=offset + span["start"]))
+                  for index, offset in zip(indices, offsets) for span in examples[index].ac_spans],
     )
+
+
+def fixed_rows_for_model(span: dict, embedding: torch.nn.Module) -> torch.Tensor:
+    rows = load_ac_rows(span)
+    if rows.shape[1] != embedding.weight.shape[1] or rows.dtype != embedding.weight.dtype:
+        raise ValueError(f"Captured AC rows {tuple(rows.shape)}/{rows.dtype} do not match reader embeddings "
+                         f"{embedding.weight.shape[1]}/{embedding.weight.dtype}")
+    return rows
+
+
+def validate_fixed_rows(items, examples: list[TrainingExample], loaded_model) -> None:
+    """Preflight payloads one at a time without retaining a dataset of loaded tensors."""
+    for example in examples:
+        if not example.ac_spans:
+            continue
+        source_name = items[example.item_index].run_results.agent_config.model_name
+        if source_name != loaded_model.model_config.model_name:
+            source = loaded_model.harness.loaded_models.get(source_name)
+            if source is None or source.model_config.model_id != loaded_model.model_config.model_id:
+                raise ValueError("Captured AC rows belong to a different reader model")
+        for span in example.ac_spans:
+            fixed_rows_for_model(span, loaded_model.model.get_input_embeddings())
+
+
+def training_inputs_embeds(model, batch: Collated) -> torch.Tensor:
+    """Replay the recorded observation for both reference and policy passes; no encoder."""
+    embedding = model.get_input_embeddings()
+    inputs = embedding(batch.input_ids)
+    if batch.ac_spans:
+        inputs = inputs.clone()
+        for row, span in batch.ac_spans:
+            rows = fixed_rows_for_model(span, embedding)
+            start = span["start"]
+            inputs[row, start:start + span["length"]] = rows.to(inputs.device)
+    return inputs
 
 
 class _HeadMatmul(torch.autograd.Function):
@@ -421,9 +475,15 @@ def optimizer_state_to(optimizer: torch.optim.Optimizer, device) -> None:
                 state[key] = value.to(target)
 
 
-def set_learning_rates(optimizer: torch.optim.Optimizer, updates_done: int, warmup_updates: int) -> float:
-    """Linear warm-up: every group's lr = base_lr x min(1, (updates_done + 1) / warmup_updates); the configured rate once past it. Returns the factor."""
+def set_learning_rates(optimizer: torch.optim.Optimizer, updates_done: int, warmup_updates: int, *, total_updates: int | None = None,
+                       schedule: str = "constant", final_fraction: float = 0.1) -> float:
+    """Linear warm-up: every group's lr = base_lr x min(1, (updates_done + 1) / warmup_updates); the configured rate once past it.
+    schedule="cosine": after the warm-up the factor follows a half cosine from 1 to final_fraction over total_updates. Returns the factor."""
     factor = min(1.0, (updates_done + 1) / warmup_updates) if warmup_updates > 0 else 1.0
+    if schedule == "cosine" and total_updates:
+        span = max(1, total_updates - warmup_updates)
+        progress = min(1.0, max(0.0, (updates_done - warmup_updates) / span))
+        factor *= final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
     for group in optimizer.param_groups:
         group["lr"] = group["base_lr"] * factor
     return factor

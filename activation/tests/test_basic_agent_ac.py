@@ -175,8 +175,9 @@ def test_ac_agent_channels_simulated():
         _probe_engine(agent, "search")
 
         # --- resume: the serialized record rebuilds the same prefix, spans and rows.
-        data = json.loads(json.dumps(agent.run_results.serialize()))
-        resumed = Agent.resume_from_run_result(harness, AgentRunResult.deserialize(data, harness))
+        base_dir = resolve_path("AGENT_AC_TEST/roundtrip")
+        data = json.loads(json.dumps(agent.run_results.serialize(base_dir=base_dir)))
+        resumed = Agent.resume_from_run_result(harness, AgentRunResult.deserialize(data, harness, base_dir=base_dir))
         assert resumed.prefix == agent.prefix and resumed.spans == agent.spans
         assert [tuple(r.shape) for r in resumed.rows] == [tuple(r.shape) for r in agent.rows]
         assert all(torch.equal(a, b) for a, b in zip(resumed.rows, agent.rows))

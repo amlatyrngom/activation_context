@@ -21,20 +21,175 @@ generation-prompt form the model actually read, which is what training must see.
 from __future__ import annotations
 
 import json
+import hashlib
+import os
 import re
+import tempfile
 import typing as t
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
+from pathlib import Path
+
+import torch
 
 from activation.common.ac_parts import encode_with_part_sentinels, flatten_with_sentinels
 
 if t.TYPE_CHECKING:
     from .agent import Agent
     from .agent_config import AgentConfig
+    from .agent_config import AgentRunResult, TrajectoryStep
     from .agent_tools import ToolCallResult
     from activation.harness import HarnessRuntime
 
 PARSE_ERROR_TOOL = "parse_error"
+
+
+def capture_ac_spans(spans: list[tuple[int, int]], rows: list[torch.Tensor]) -> list[dict]:
+    """Keep the exact final-cast observation; already contiguous CPU rows are not copied."""
+    if len(spans) != len(rows):
+        raise ValueError("AC spans and captured rows differ in count")
+    captured = []
+    for (start, end), tensor in zip(spans, rows):
+        span = {"start": start, "length": end - start, "rows": tensor.detach().cpu().contiguous()}
+        load_ac_rows(span)
+        captured.append(span)
+    return captured
+
+
+def trajectory_step_dict(step: "TrajectoryStep") -> dict:
+    """Convert the existing record without asdict's recursive tensor deepcopy."""
+    return {entry.name: getattr(step, entry.name) for entry in fields(step)}
+
+
+def _map_ac_records(data, convert) -> dict:
+    """Visit only owned row fields; raw parts and arbitrary tool payloads are untouched."""
+    record = dict(data if isinstance(data, dict) else vars(data))
+    config = record.get("agent_config")
+    if config is not None and not isinstance(config, dict):
+        record["agent_config"] = config.serialize()
+    if "prompt_ac_spans" in record:
+        record["prompt_ac_spans"] = [convert(span) for span in record["prompt_ac_spans"]]
+    if "trajectory" in record:
+        record["trajectory"] = [dict(step, ac_spans=[convert(span) for span in step["ac_spans"]])
+                                if "ac_spans" in step else dict(step) for step in record["trajectory"]]
+    for key in ("compactions", "subagent_results"):
+        if key in record:
+            record[key] = [_map_ac_records(child, convert) for child in record[key]]
+    return record
+
+
+def _ac_rows_digest(rows: torch.Tensor) -> str:
+    digest = hashlib.sha256(f"{rows.dtype}:{tuple(rows.shape)}:".encode())
+    digest.update(rows.contiguous().view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
+def load_ac_rows(span: dict) -> torch.Tensor:
+    """Read captured rows or a resolved tensor file, preserving the recorded CPU dtype."""
+    rows = span.get("rows")
+    path = None
+    if rows is None:
+        if not span.get("row_path"):
+            raise ValueError("AC span has no captured rows; regenerate the rollout")
+        path = Path(span["row_path"])
+        if not path.is_absolute():
+            raise ValueError("AC row path is unresolved; deserialize with the JSONL parent as base_dir")
+        try:
+            rows = torch.load(path, map_location="cpu", weights_only=True)
+        except FileNotFoundError:
+            raise
+        except Exception as exc:
+            raise ValueError(f"Cannot read AC rows from {path}: {exc}") from exc
+    if not isinstance(rows, torch.Tensor) or rows.ndim != 2 or not rows.is_floating_point():
+        raise ValueError("AC rows must be a floating-point matrix")
+    if rows.device.type != "cpu" or rows.requires_grad or not rows.is_contiguous():
+        raise ValueError("Captured AC rows must be detached contiguous CPU tensors")
+    if rows.shape[0] != span.get("length") or rows.shape[0] < 1 or rows.shape[1] < 1:
+        raise ValueError("AC row shape does not match its span")
+    if path is not None and len(path.stem) == 64 and _ac_rows_digest(rows) != path.stem:
+        raise ValueError(f"AC row content hash mismatch: {path}")
+    return rows
+
+
+def serialize_ac_rows(data: dict, *, base_dir: Path | None = None) -> dict:
+    """Publish folder-local tensor files and return relative references; retain input buffers."""
+    destination = None if base_dir is None else Path(base_dir).resolve()
+
+    def save(span: dict) -> dict:
+        if destination is None:
+            raise ValueError("Serializing AC rows requires the JSONL parent as base_dir")
+        source = dict(span)
+        if source.get("row_path") and not Path(source["row_path"]).is_absolute():
+            source["row_path"] = str(destination / source["row_path"])
+        rows = load_ac_rows(source)
+        digest = _ac_rows_digest(rows)
+        folder = destination / "saved_tensors"
+        folder.mkdir(parents=True, exist_ok=True)
+        target = folder / f"{digest}.pt"
+        if target.exists():
+            load_ac_rows({"length": span["length"], "row_path": str(target)})
+        else:
+            temporary = None
+            try:
+                with tempfile.NamedTemporaryFile(dir=folder, prefix=f".{digest}.", suffix=".tmp", delete=False) as handle:
+                    temporary = Path(handle.name)
+                    torch.save(rows, handle)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.replace(temporary, target)
+            finally:
+                if temporary is not None:
+                    temporary.unlink(missing_ok=True)
+        return {key: value for key, value in span.items() if key not in ("rows", "row_path")} | {
+            "row_path": f"saved_tensors/{digest}.pt"}
+
+    return _map_ac_records(data, save)
+
+
+def deserialize_ac_rows(data: dict, *, base_dir: Path | None = None) -> dict:
+    """Resolve references once, without loading tensor payloads."""
+    def resolve(span: dict) -> dict:
+        span = dict(span)
+        if span.get("row_path"):
+            path = Path(span["row_path"])
+            if not path.is_absolute():
+                if base_dir is None:
+                    raise ValueError("Relative AC row references require the JSONL parent as base_dir")
+                path = Path(base_dir) / path
+            span["row_path"] = str(path.resolve())
+        return span
+    return _map_ac_records(data, resolve)
+
+
+def release_ac_rows(result: "AgentRunResult", serialized: dict, *, base_dir: Path) -> None:
+    """After JSONL publication, replace tensors in the actual retained span dictionaries."""
+    def release(record, saved):
+        data = record if isinstance(record, dict) else vars(record)
+        pairs = [(data.get("prompt_ac_spans", []), saved.get("prompt_ac_spans", []))]
+        pairs += [(step.get("ac_spans", []), saved_step.get("ac_spans", []))
+                  for step, saved_step in zip(data.get("trajectory", []), saved.get("trajectory", []))]
+        for spans, saved_spans in pairs:
+            for span, saved_span in zip(spans, saved_spans):
+                span["row_path"] = str((Path(base_dir) / saved_span["row_path"]).resolve())
+                span.pop("rows", None)
+        for key in ("compactions", "subagent_results"):
+            for child, saved_child in zip(data.get(key, []), saved.get(key, [])):
+                release(child, saved_child)
+    release(result, serialized)
+
+
+def ac_spans_for_report(spans: list[dict]) -> list[dict]:
+    """Inspection metadata only; reports are not another tensor dataset."""
+    result = []
+    for span in spans:
+        item = {key: value for key, value in span.items() if key not in ("rows", "row_path")}
+        rows = span.get("rows")
+        if rows is not None:
+            item.update(shape=list(rows.shape), dtype=str(rows.dtype))
+        if span.get("row_path"):
+            item["saved_tensor"] = Path(span["row_path"]).name
+        result.append(item)
+    return result
 ASSISTANT_SENTINEL = "\u241f TRESSOIR_ASSISTANT_TURN \u241f"   # never in real text; marks where the sampled tokens sit in a rendering
 TOOL_CALL_BLOCK = re.compile(r"<tool_call>\s*(.*?)\s*</tool_call>", re.S)
 TOOL_CALL_OPEN = re.compile(r"<tool_call>(?!.*</tool_call>)(.*)$", re.S)   # an unterminated block (max_tokens hit)

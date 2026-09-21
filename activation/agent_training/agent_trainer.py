@@ -55,6 +55,8 @@ from .agent_training_utils import (
     set_checkpointing,
     set_learning_rates,
     sampled_logprobs,
+    training_inputs_embeds,
+    validate_fixed_rows,
 )
 
 if t.TYPE_CHECKING:
@@ -114,6 +116,8 @@ class AgentTrainer:
         training_data: list[AgentTrainingItem],
         reporting_data: t.Sequence[AgentTrainingItem] = (),
         reporter: AgentTrainingReporter | None = None,
+        *,
+        reset_optimizer: bool = False,
     ) -> AgentTrainingStats:
         """
         One round on `lora_name`: engine to sleep, base + adapter on the GPU, one clipped-surrogate pass
@@ -162,6 +166,8 @@ class AgentTrainer:
                             "gradient_checkpointing_min_tokens": variables["gradient_checkpointing_min_tokens"]}
         module_manager.ensure_lora(lora_name)
         base = loaded_model.model
+        validate_fixed_rows(training_data, examples, loaded_model)
+        validate_fixed_rows(reporting_data, reporting_examples, loaded_model)
         device = next(base.parameters()).device
         base.train()
         previous_attn = base.config._attn_implementation
@@ -175,6 +181,8 @@ class AgentTrainer:
         disable_dropout(base)
         parameters = module_manager.lora_parameters(lora_name)
         assert parameters, f"LoRA {lora_name!r} has no trainable parameters"
+        if reset_optimizer:
+            self.optimizers.pop(lora_name, None)
         optimizer = persistent_optimizer(self.optimizers, lora_name, [{"params": parameters, "lr": config.learning_rate}], device,
                                          betas=config.adam_betas, eps=config.adam_eps, weight_decay=config.weight_decay)
         pad_token_id = loaded_model.tokenizer.pad_token_id
@@ -278,7 +286,7 @@ class AgentTrainer:
     # ----------------------------------------------------------------------------- internals
     def _hidden_and_logprobs(self, loaded_model, lora_name: str, batch: Collated) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         base = loaded_model.model
-        inputs_embeds = base.get_input_embeddings()(batch.input_ids)
+        inputs_embeds = training_inputs_embeds(base, batch)
         kwargs = dict(self.config.decoder_kwargs)
         attention_mask = batch.model_attention_mask
         if batch.packed:

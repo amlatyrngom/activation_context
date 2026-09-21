@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import typing as t
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 
 from activation.common.utils import class_spec_name, resolve_class_name
 
@@ -129,7 +130,7 @@ class TrajectoryStep:
                                                                # (recorded whether or not it was rendered), subagent_index. Empty on old records.
     messages: list[dict] = field(default_factory=list)         # the dialect messages this step appended, activation_context parts inline and in
                                                                # order: one assistant message, the tool messages, or the nudge
-    ac_spans: list[dict] = field(default_factory=list)         # [{"start", "length"}] placeholder runs inside token_ids, one per part of `messages`
+    ac_spans: list[dict] = field(default_factory=list)         # {start, length, rows (CPU) | row_path}, relative to this step's token_ids
     # Token segment (slice 2): the prompt the model read is AgentRunResult.prompt_token_ids + every step's token_ids in order.
     token_ids: list[int] = field(default_factory=list)         # assistant: the sampled tokens verbatim; tool/user: the template's wrapper up to the next generation prompt
     logprobs: list[float] = field(default_factory=list)        # assistant only: the engine's log-prob of each sampled token (pi_old); empty when not recorded
@@ -161,7 +162,7 @@ class AgentRunResult:
     seed: int = 0
     prompt_token_ids: list[int] = field(default_factory=list)  # the segment's first prompt (system + first messages + tools, templated once)
     prompt_messages: list[dict] = field(default_factory=list)  # the dialect messages of that prompt, parts inline (a compaction tree lives here)
-    prompt_ac_spans: list[dict] = field(default_factory=list)  # [{"start", "length"}] placeholder runs inside prompt_token_ids
+    prompt_ac_spans: list[dict] = field(default_factory=list)  # {start, length, rows (CPU) | row_path}, relative to prompt_token_ids
     ac_model_name: str | None = None                           # the encoder that produced the rows, and its version at run time
     ac_model_version: int | None = None
     source: str = "policy"                                     # "policy" | "hinted:<model>" | "oracle:<model>": who produced this run
@@ -201,20 +202,18 @@ class AgentRunResult:
                 total[key] = total.get(key, 0) + value
         return total
 
-    def serialize(self) -> dict:
-        data = {key: value for key, value in self.__dict__.items()
-                if key not in ("agent_config", "subagent_results", "compactions", "trajectory", "answer")}
+    def serialize(self, *, base_dir: Path | None = None) -> dict:
+        from .agent_utils import serialize_ac_rows
+        data = dict(self.__dict__)
         data["agent_config"] = self.agent_config.serialize()
-        data["answer"] = _jsonable(self.answer)
-        data["trajectory"] = _jsonable(self.trajectory)
-        data["subagent_results"] = [result.serialize() for result in self.subagent_results]
-        data["compactions"] = [result.serialize() for result in self.compactions]
-        return data
+        return _jsonable(serialize_ac_rows(data, base_dir=base_dir))
 
     @staticmethod
     def deserialize(data: dict, harness: "HarnessRuntime | None" = None, agent_config: AgentConfig | None = None,
-                    strict: bool = False) -> "AgentRunResult":
+                    strict: bool = False, *, base_dir: Path | None = None) -> "AgentRunResult":
         """With agent_config given (the caller's live config), the stored config is not rebuilt. `strict`: see AgentConfig.deserialize."""
+        from .agent_utils import deserialize_ac_rows
+        data = deserialize_ac_rows(data, base_dir=base_dir)
         fields = {field_.name for field_ in AgentRunResult.__dataclass_fields__.values()}
         data = {key: value for key, value in data.items() if key in fields}          # cache rows carry extra keys
         config_data = data.pop("agent_config")

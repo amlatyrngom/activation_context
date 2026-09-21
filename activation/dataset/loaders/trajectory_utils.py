@@ -14,7 +14,7 @@ and a list of tool definitions in the OpenAI function shape. `reformat_trajector
 into our messages: the source system prompt is dropped (a short domain prompt rides in
 `trajectory_kwargs["system_prompt"]`), tool names and argument keys are mapped onto our tools
 (`shell(script)`, `python(code)`; unknown tools keep their names and definitions), reasoning stays
-as plain text ahead of the reply (`reasoning="keep"`, since the math `cot` rows are nothing but
+in its separate field (`reasoning="keep"`, since the math `cot` rows are nothing but
 reasoning) or is dropped, calls become structured `tool_calls` (the shape `MessageRendering.assistant_message`
 produces), and every tool result is one `tool` message.
 """
@@ -25,6 +25,7 @@ import re
 import typing as t
 
 from ...agent.agent_utils import parse_tool_calls
+from ..dataset_utils import message_text
 
 TOOL_MAP: dict[str, tuple[str, dict[str, str]]] = {
     "bash": ("shell", {"command": "script"}),
@@ -206,9 +207,9 @@ def reformat_trajectory(
             calls = [map_call(call, tool_map) for call in message.get("tool_calls") or []]
             text = str(message.get("content") or "").strip()
             reasoning_text = (message.get("reasoning") or "").strip()
-            if reasoning == "keep" and reasoning_text:
-                text = f"{reasoning_text}\n\n{text}".strip() if text else reasoning_text
             out: dict = {"role": "assistant", "content": text}
+            if reasoning == "keep" and reasoning_text:
+                out["reasoning"] = reasoning_text
             if calls:
                 out["tool_calls"] = []
                 for call in calls:
@@ -253,7 +254,7 @@ def trajectory_chars(messages: list[dict]) -> int:
     """Characters of content and arguments, the cheap size measure loaders filter on."""
     total = 0
     for message in messages:
-        total += len(str(message.get("content") or ""))
+        total += len(message_text(message))
         for call in message.get("tool_calls") or []:
             total += len(json.dumps(call.get("function", call).get("arguments", {}), ensure_ascii=False))
     return total

@@ -69,19 +69,18 @@ def normalize_split_name(split: str) -> DataSplit:
 def message_text(message: dict) -> str:
     """The text of a message whose content is a string or a list of parts (activation_context parts render as a marker)."""
     content = message.get("content")
-    if content is None:
-        return ""
-    if isinstance(content, str):
-        return content
-    pieces = []
-    for part in content:
-        if not isinstance(part, dict):
-            pieces.append(str(part))
-        elif part.get("type") == "text":
-            pieces.append(part.get("text", ""))
-        elif part.get("type") == "activation_context":
-            pieces.append("[activation context]")
-    return "".join(pieces)
+    if isinstance(content, list):
+        pieces = []
+        for part in content:
+            if not isinstance(part, dict):
+                pieces.append(str(part))
+            elif part.get("type") == "text":
+                pieces.append(part.get("text", ""))
+            elif part.get("type") == "activation_context":
+                pieces.append("[activation context]")
+        content = "".join(pieces)
+    reasoning = message.get("reasoning") or message.get("reasoning_content") or ""
+    return "\n\n".join(piece for piece in (str(reasoning), str(content or "")) if piece)
 
 
 def render_message(message: dict) -> str:

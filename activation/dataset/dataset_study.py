@@ -202,6 +202,7 @@ class DatasetStudyGenerator:
         study_context: str | None = None,
         caching_id: str | None = None,
         modality: DataModality | None = None,
+        *, progress: t.Callable[[dict], None] | None = None,
     ) -> list[DatasetQAExample]:
         """
         One question per sampled chunk (num_samples chunks of the given modality, or of every modality
@@ -230,6 +231,12 @@ class DatasetStudyGenerator:
                 examples.append(self._example_from_row(row, kind, base_seed))
         stats.study_num_cached += len(cached_rows)
         pending = list(enumerate(study_samples))[len(cached_rows):]
+        def report(completed: int, phase: str) -> None:
+            if progress is not None:
+                progress({"phase": phase, "completed": completed, "total": len(study_samples),
+                          "accepted": len(examples), "cached": len(cached_rows),
+                          "rejected": stats.study_num_junk_skipped, "failed": stats.study_num_parse_failures})
+        report(len(cached_rows), "loading QA model" if pending else "QA complete")
         if not pending:
             return examples
         # vllm batches a whole conversation list inside one chat() call, so a
@@ -258,6 +265,7 @@ class DatasetStudyGenerator:
                     },
                 ])
             batch_start_time = time.time()
+            report(len(cached_rows) + batch_start, "generating QA")
             outputs = loaded_model.engine_chat_many(conversations, chat_kwargs=chat_kwargs)
             elapsed = time.time() - batch_start_time
             total_generation_time += elapsed
@@ -284,6 +292,7 @@ class DatasetStudyGenerator:
                 examples.append(self._example_from_row(row, kind, base_seed))
             if key is not None:
                 self.cache.append(key, new_rows)
+            report(len(cached_rows) + batch_start + len(batch), "generating QA")
             if reporting_interval <= 0:
                 print(
                     f"{self.dataset_id} - Study ({kind}): {batch_start + len(batch)}/{len(pending)} chunks, "
@@ -291,6 +300,7 @@ class DatasetStudyGenerator:
                 )
                 reporting_interval = max(1, len(pending) // 20)
             reporting_interval -= len(batch)
+        report(len(study_samples), "QA complete")
         return examples
 
 

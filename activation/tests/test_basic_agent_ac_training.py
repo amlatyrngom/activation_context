@@ -32,7 +32,7 @@ TARGET_NAME, TARGET_ID = "qwen3.5-4b", "Qwen/Qwen3.5-4B"
 AC_NAME, SIDE_LORA, TARGET_LORA = "ac_dev", "ac_side", "ac_target"
 QA_MODEL_NAME = "RedHatAI/Qwen3.5-9B-FP8-dynamic"
 ITEMS, HELD = 48, 8
-CACHING_ID = "ac_training_test_3a1_9b"
+CACHING_ID = "ac_training_test_codesign_v3_9b"
 
 
 def _harness(with_study: bool) -> HarnessRuntime:
@@ -46,7 +46,16 @@ def _harness(with_study: bool) -> HarnessRuntime:
 
 
 def _trainer(harness: HarnessRuntime) -> ActivationContextTrainer:
-    return ActivationContextTrainer(harness, ActivationContextTrainingConfig(examples_per_update=8, num_epochs=2))
+    return ActivationContextTrainer(harness, ActivationContextTrainingConfig(loss_kind="kl", examples_per_update=8, num_epochs=2))
+
+
+def _print_item(item: ActivationContextTrainingItem, tokenizer) -> None:
+    messages = item.in_context_messages or item.ac_messages
+    question = next((message.get("content", "") for message in reversed(messages) if message.get("role") == "user"), "")
+    if isinstance(question, list):
+        question = "".join(piece.get("text", "") for piece in question if isinstance(piece, dict))
+    answer = "\n".join(tokenizer.decode(ids, skip_special_tokens=False) for ids in item.assistant_token_ids)
+    print(f"  [{item.item_id}] Q: {str(question)[-160:]!r} A: {answer[:80]!r}; assistant spans={len(item.assistant_token_ids)}")
 
 
 def _run(harness: HarnessRuntime, items: list[ActivationContextTrainingItem], name: str) -> None:
@@ -59,9 +68,12 @@ def _run(harness: HarnessRuntime, items: list[ActivationContextTrainingItem], na
     trainer = _trainer(harness)
     reporter = ActivationContextTrainingReporter(str(resolve_path(f"AC_TRAINING_TEST/{name}")), f"AC training test: {name}")
     try:
-        before = trainer.eval(AC_NAME, held, release=False, reporter=reporter, reference_name="untrained_ac")
-        no_context = trainer.eval(AC_NAME, references, release=False, reporter=reporter, reporting_name="initial_no_context", reference_name="no_context")
-        stats = trainer.train(AC_NAME, train, reporting_data=held, reporter=reporter)
+        # Before training the reader is the teacher train() will store, so these two evaluations may take targets from it.
+        before = trainer.eval(AC_NAME, held, release=False, reporter=reporter, reference_name="untrained_ac", teacher="current")
+        no_context = trainer.eval(AC_NAME, references, release=False, reporter=reporter, reporting_name="initial_no_context", reference_name="no_context", teacher="current")
+        # The no-context items ride along as validation data so the call stores their targets; the evaluation after
+        # training then compares the no-context student to the same training-start teacher as everything else.
+        stats = trainer.train(AC_NAME, train, reporting_data=held, validation_data=references, reporter=reporter)
         after = stats.reporting
         matched_no_context = trainer.eval(AC_NAME, references, reporter=reporter, reporting_name="final_no_context")
         assert len(stats.epochs) == 2
@@ -98,7 +110,10 @@ def test_ac_compaction() -> None:
     math = NemotronMathDataset.load(harness, max_examples=ITEMS, subset="tir", excluded_problems=aime_problem_statements(), min_chars=40_000, min_tool_calls=1)
     generator = ActivationContextStudyGenerator(harness, AC_NAME)
     items = generator.generate_compaction_samples(swe.dataset_id, ITEMS // 2, seed=0) + generator.generate_compaction_samples(math.dataset_id, ITEMS // 2, seed=0)
-    print(f"\n{len(items)} compaction items; depths {sorted({item.info['depth'] for item in items})}; mid-turn cuts {sum(bool(item.teacher_partial_text) for item in items)}")
+    print(f"\n{len(items)} compaction items; depths {sorted({item.info['depth'] for item in items})}; "
+          f"assistant spans {sum(len(item.assistant_token_ids) for item in items)}; "
+          f"assistant targets {sum(len(ids) for item in items for ids in item.assistant_token_ids)}")
+    assert all(item.assistant_token_ids and all(item.assistant_token_ids) for item in items)
     _run(harness, items, "compaction")
 
 
@@ -115,7 +130,7 @@ def test_ac_trajectory_qa() -> None:
     harness.loaded_models[QA_MODEL_NAME].engine_to_device(FREE_DEVICE)
     print(f"\n{len(items)} traj_qa items; distractors {sorted({item.info['distractors'] for item in items})}")
     for item in items[:3]:
-        print(f"  [{item.item_id}] Q: {item.ac_prefix[-1]['content'][-1]['text'][-160:]!r} A: {item.completion_text[:80]!r}")
+        _print_item(item, harness.loaded_models[TARGET_NAME].tokenizer)
     _run(harness, items, "traj_qa")
 
 
@@ -130,5 +145,5 @@ def test_ac_rag_qa() -> None:
     harness.loaded_models[QA_MODEL_NAME].engine_to_device(FREE_DEVICE)
     print(f"\n{len(items)} rag_qa items; passages per item {sorted({item.info['passages'] for item in items})}")
     for item in items[:3]:
-        print(f"  [{item.item_id}] Q: {item.in_context_prefix[-1]['content'][-160:]!r} A: {item.completion_text[:80]!r}")
+        _print_item(item, harness.loaded_models[TARGET_NAME].tokenizer)
     _run(harness, items, "rag_qa")
