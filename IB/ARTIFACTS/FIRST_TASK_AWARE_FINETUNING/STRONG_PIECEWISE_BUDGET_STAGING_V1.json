@@ -1,0 +1,13 @@
+{
+  "status": "staged_and_remote_SHA_verified",
+  "utc": "2026-09-22T23:36:45.717104+00:00",
+  "remote_directory": "/home/ngom/orcd/pool/activation/taskaware/bench",
+  "sha256": {
+    "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381",
+    "probe_strong_piecewise_budget_v1.sbatch": "843b68c00bd7960bafe597cf4965d5ce326ed4d01e9831f06b3bb116ee8852c0",
+    "STRONG_PIECEWISE_BUDGET_PARENT_V1.json": "fad49337c29ef6269d9c5a89d349ccec7fff7e7d6ca05a3b33fea27d1d1bc13b"
+  },
+  "transport": "Live shared ControlMaster check; rsync ControlMaster=no/ProxyCommand=false/BatchMode=yes; guarded light sha256sum of three small files.",
+  "GPU_submissions": 0,
+  "parent_review": "PASS before staging; parent owns queue"
+}

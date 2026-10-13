@@ -1,0 +1,8 @@
+{
+  "utc": "2026-09-24T01:30:54.340258+00:00",
+  "job_id": 23604378,
+  "submit": "sbatch --parsable --output=/home/ngom/orcd/pool/activation/trajectory_compaction/logs/material_%j.log /home/ngom/orcd/pool/activation/trajectory_compaction/bench/prepare_trajectory_material.sbatch",
+  "source_manifest_sha256": "6ba16fd62f3052e4d8890a6bf543620e60e9fb8875bf03dc7604bcc51189a455",
+  "worker_sha256": "f76fdd328ef8ac8d4aaab21b6d3703ae78d535d7867d04f770422ffd222eb76a",
+  "scope": "CPU preparation;50ktrajectory target;100-row atomicreleases;questionindependent windows;noGPU"
+}

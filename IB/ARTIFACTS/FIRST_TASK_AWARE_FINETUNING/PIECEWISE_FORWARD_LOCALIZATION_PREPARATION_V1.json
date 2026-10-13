@@ -1,0 +1,53 @@
+{
+  "status": "prepared_CPU_pass_GPU_unrun",
+  "created_utc": "2026-09-23T00:40:04.840671+00:00",
+  "files_sha256": {
+    "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa",
+    "probe_piecewise_forward_localization_v1.sbatch": "2fdeb2fff0a413911b393dd7cd43c872b385a35b10a1f0281de61256c3fc2407",
+    "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381"
+  },
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "validation": {
+    "PIECEWISE_FORWARD_LOCALIZATION_CPU_PROOF.json": {
+      "path": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/PIECEWISE_FORWARD_LOCALIZATION_CPU_PROOF.json",
+      "sha256": "7774d78159e2f32180b6f04e1fe43ded546cd31088104c441cc064daeb276627"
+    },
+    "FORWARD_LOCALIZATION_RECEIPT_CHECK.json": {
+      "path": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/FORWARD_LOCALIZATION_RECEIPT_CHECK.json",
+      "sha256": "c085a1278fe8d100c73d3fdb213fdb1d19bf80df07650baca930fa3c98a3b3de"
+    }
+  },
+  "resources": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "cpus": 8,
+    "host_memory_GiB": 64,
+    "wall_minutes": 15
+  },
+  "proof_scope": {
+    "affected_passages": 24,
+    "captured_passages": 2,
+    "budgets": [
+      65536,
+      65536,
+      32768
+    ],
+    "grad_enabled": true,
+    "checkpoint_threshold": 0,
+    "precision": "original",
+    "reader_forward": false,
+    "backward": false,
+    "optimizer_updates": 0,
+    "checkpoints_saved": false,
+    "offload": false
+  },
+  "result_semantics": "Diagnostic completion never establishes equivalence; existing failed gate remains failed.",
+  "output_directory": "~/orcd/pool/activation/taskaware/reports/piecewise_forward_localization_v1",
+  "remote_staging": "not performed",
+  "GPU_submission": "not performed",
+  "L40S_fit": "unmeasured; RTX launcher only"
+}

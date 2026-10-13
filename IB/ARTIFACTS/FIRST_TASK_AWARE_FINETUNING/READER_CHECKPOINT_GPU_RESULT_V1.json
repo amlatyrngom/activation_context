@@ -1,0 +1,286 @@
+{
+  "status": "passed receipt audit; no adoption",
+  "job_id": "23533352",
+  "scope": "One recorded eight-question batch at 8k evidence, original32k final pair and Adam4000; deterministic proof plus one warmup/three ordinary timings per threshold.",
+  "raw_file_sha256": {
+    "proof/policy.json": "63c9651fc9e2e4123587821616ca51fbf24aad376dae67cd04c732af73dbc00d",
+    "proof/proof.json": "3729c748ebbeeb4cf8595417cd2384344372b87370dd280a00924913f60adee5",
+    "proof/worker.log": "cd6ab68f2b585014f8a3e85e5f257475f9f8b2697f1393dbd62e3dd424681b08",
+    "reader0/failing_65536.json": "417bb9589c49da098e54024b8f7e951066bbd7072698db015ab6817d26ecf28b",
+    "reader0/policy.json": "d17804e84f08f9b1356cea730038be62b4ebaaf5360ecee37d0d72d442531696",
+    "reader0/worker.log": "4e6d67061bc12e3a32fb2a275bc19598d7777cd05fe2ea4465d36628de677540",
+    "reader4096/failing_65536.json": "e449623720f9289a592d009304c77eb09fa2437fa0cb2adbfedd57b43f56dab9",
+    "reader4096/policy.json": "dd770831f82990171768c38efce7f066f7bcf837cdd57c2ffdcc0abda57faaa2",
+    "reader4096/worker.log": "ed76455f8f3efbf8146cebe75127c003b7eaef35eef6b5a94c322f3e5f595226",
+    "summary.json": "cb1a668d953357eb59461fd3e4076a474dacb8bb2e5a9401d9e5228e639caf66"
+  },
+  "worker_sha256": "0e0b3d33989882194ba0278ecaf79b224620536a351dfbadded8113f2011edbb",
+  "launcher_sha256": "f63f63ede6a5acb9be8ece8501ffefbdb3c3a978a4871cac474ac36a7fc3aa3b",
+  "shared_receipt_identity": {
+    "script_sha256": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381",
+    "design_sha256": "86fcaad5db4b24d8b5f4972567a78e7e2f3d4e821b18b3d5ca4e55ae4ed98e08",
+    "parent_receipt_sha256": "fad49337c29ef6269d9c5a89d349ccec7fff7e7d6ca05a3b33fea27d1d1bc13b",
+    "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+    "builder_sha256": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+    "source_sha256": {
+      "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+    },
+    "pair": {
+      "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/oracle_27b_32k/AC_MODELS/rag_poc/epoch_001",
+      "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/oracle_27b_32k/LORAS/rag_reader/epoch_001"
+    },
+    "publication": {
+      "result.json": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+      "run_identity.json": "db1954f46f514587f1ab6cee5a480466b6611414f6ddd7efcb7ee8b319417e0a",
+      "training_config.json": "630c858a80322fb8a87a5b96825b91b9eceb921e4bdbb16ba6706fded83afb26",
+      "material_ids.json": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980",
+      "completed_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+    },
+    "payload_sha256": {
+      "ac_modules": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+      "encoder_config": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+      "encoder_weights": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+      "reader_config": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+      "reader_weights": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b"
+    },
+    "optimizer_sha256": "475e99170d7dd8c1bb09e7cafca7891e18f04815252a9f4fa1e444325f709a9c",
+    "memory_case_receipt_sha256": "721f78cdf844d530cf23eb05bfe466971019785828601e7fdf0b14fa6aaded4f",
+    "optimizer_guard": {
+      "states": 615,
+      "parameter_step_min": 4000.0,
+      "parameter_step_max": 4000.0,
+      "updates_done": 4000,
+      "epoch_number": 1,
+      "group_sizes": [
+        374,
+        256
+      ]
+    },
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+  },
+  "input_metadata_sha256": "1421af1b504437da462b359ad920d9b782f3a9df10a6c52d4cf1a0c679932a62",
+  "inputs": [
+    {
+      "item_id": "d0dab0b2ec2113437aff3f0ce6186097c100b0ecc50cf784a4ccdea5d383edaa",
+      "full_sha256": "0a179f2a5682bf53a7a7d39bfba122c759701100c2d0acc7b9b11989ca52f389",
+      "target_sha256": "803f0b918e75bfdc476c5ce3fce6dc9a5197ec5b1f4d66474c36335a1b012985",
+      "compressed_rows": 351,
+      "encoder_tokens": 6151
+    },
+    {
+      "item_id": "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce",
+      "full_sha256": "5fca77e3852a5ef5293035eb8cf85c1495ec7b3dc0a8f62cecb8fb711f785a79",
+      "target_sha256": "ca9b33dcc3ff16b82b4b5e398f819f1d857553d3a94ab659daad42932c05f1b9",
+      "compressed_rows": 510,
+      "encoder_tokens": 8489
+    },
+    {
+      "item_id": "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b",
+      "full_sha256": "0b3ce6019f0fdeffdc77b170443df9ff2cdef8758335c7974a88b5412f433955",
+      "target_sha256": "e3debc3882e8e308c5a5297ec21f1b343a4271518f3a408262d9f352ae0ee15a",
+      "compressed_rows": 520,
+      "encoder_tokens": 8989
+    },
+    {
+      "item_id": "028fbeaae5c3298a65dfa9ac7707d8e9134d16a49a060a76f26062831a400aa9",
+      "full_sha256": "6177356e5675e5b3f9d6384e49ce80aa128ba30aeffed72ea04cd04786d988ff",
+      "target_sha256": "5877ac6eee35e84439914aa55810afae5f17c23ee5da8e3500f9e7ad6a925671",
+      "compressed_rows": 511,
+      "encoder_tokens": 8377
+    },
+    {
+      "item_id": "79fe48ae598739f8bfc295401b7cb75750877eb3dc93b4296403ad44635b3f9a",
+      "full_sha256": "495d79a3cdde80d1e9fe804e8af0b473c63aebdf91decc13838ffbfab438fbd0",
+      "target_sha256": "c8e3d66327e3fe6ad53aa5d3060d657c812b6a499cfbf22f702a795a70df7a7c",
+      "compressed_rows": 301,
+      "encoder_tokens": 5559
+    },
+    {
+      "item_id": "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+      "full_sha256": "b5c9fa8d6d6661324ab24586432b8f966df8c65a6e9d83972805bdd4aec5027f",
+      "target_sha256": "10ea9ff918ad175fca94e38f43780b1f240a47ad8323bbd7e32cee584ec6614d",
+      "compressed_rows": 503,
+      "encoder_tokens": 8714
+    },
+    {
+      "item_id": "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+      "full_sha256": "f77d993f975a34a9ec9b672031c260d63ed1fa0283b81c0ae2a19f16c3908014",
+      "target_sha256": "062ad78c728bbc5c48b19d90072887ce9fe32d6543f6bb04e13461063775d1a8",
+      "compressed_rows": 507,
+      "encoder_tokens": 8274
+    },
+    {
+      "item_id": "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f",
+      "full_sha256": "4478fc782c398859f117be7634c57c4ea0ca99ae77073313215da02ca8820506",
+      "target_sha256": "6a8d4b27bd8546403be9f8316ff1f601e9a4454cac46998a4aed25d6450cd76b",
+      "compressed_rows": 508,
+      "encoder_tokens": 8259
+    }
+  ],
+  "proof": {
+    "unchanged_repeat": {
+      "joint_loss_abs_difference": 0.0,
+      "active_gradient_tensors": 615,
+      "ac_gradient_tensors": 359,
+      "reader_gradient_tensors": 256,
+      "absent_recursive_entries": 15,
+      "output_and_gold_logp_tensors": 764,
+      "maximum_recorded_tensor_difference": 0.0,
+      "recomputations": {
+        "side_encoder": 4,
+        "reader": 7
+      }
+    },
+    "reader4096": {
+      "joint_loss_abs_difference": 0.0,
+      "active_gradient_tensors": 615,
+      "ac_gradient_tensors": 359,
+      "reader_gradient_tensors": 256,
+      "absent_recursive_entries": 15,
+      "output_and_gold_logp_tensors": 764,
+      "maximum_recorded_tensor_difference": 0.0,
+      "recomputations": {
+        "side_encoder": 4,
+        "reader": 0
+      }
+    }
+  },
+  "unchanged_tolerances": {
+    "relative_rms": 0.03,
+    "absolute_rms_floor": 2e-06,
+    "joint_loss_abs": 0.001
+  },
+  "timing": {
+    "control_step_seconds": [
+      27.985948357731104,
+      24.95369105692953,
+      23.38318771403283,
+      24.612456623930484
+    ],
+    "candidate_step_seconds": [
+      21.72158512286842,
+      20.166836003772914,
+      20.011172748636454,
+      20.209814890753478
+    ],
+    "control_steady_median_seconds": 24.612456623930484,
+    "candidate_steady_median_seconds": 20.166836003772914,
+    "time_reduction_fraction": 0.18062482295388305,
+    "throughput_ratio": 1.2204421466672244,
+    "control_peak_allocated_gib": 49.812814712524414,
+    "candidate_peak_allocated_gib": 62.79454708099365,
+    "extra_peak_allocated_gib": 12.981732368469238,
+    "encoding_summary": {
+      "actual_side_encoder_forward_batches": 16,
+      "logical_updates_including_warmup": 4,
+      "useful_side_encoder_positions": 266092,
+      "padded_side_encoder_positions": 650288,
+      "padding_fraction": 0.5908089953989617,
+      "max_padded_side_encoder_batch": 60168,
+      "note": "Forward batches; checkpoint backward recomputation is enabled but not counted by this method-level counter."
+    },
+    "reader_forward_summary_control": {
+      "grad_enabled_calls": 21,
+      "checkpointed_calls": 21,
+      "padded_positions": 32258,
+      "checkpointed_padded_positions": 32258
+    },
+    "reader_forward_summary_candidate": {
+      "grad_enabled_calls": 21,
+      "checkpointed_calls": 0,
+      "padded_positions": 32258,
+      "checkpointed_padded_positions": 0
+    },
+    "selected_penalty_ids_by_update": [
+      [
+        "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+        "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+        "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f"
+      ],
+      [
+        "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce"
+      ],
+      [],
+      [
+        "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b"
+      ]
+    ],
+    "learning_rates_by_update": [
+      [
+        5e-06,
+        2.0000000000000003e-06
+      ],
+      [
+        5e-06,
+        2.0000000000000003e-06
+      ],
+      [
+        5e-06,
+        2.0000000000000003e-06
+      ],
+      [
+        5e-06,
+        2.0000000000000003e-06
+      ]
+    ],
+    "runtime_update_clock": [
+      4000,
+      4004
+    ],
+    "sft_loss_control": [
+      0.11414869787404314,
+      0.10734681627945974,
+      0.0958537207916379,
+      0.08673886326141655
+    ],
+    "sft_loss_candidate": [
+      0.11414869787404314,
+      0.10732093942351639,
+      0.0959725632565096,
+      0.0862870694254525
+    ],
+    "sft_loss_delta": [
+      0.0,
+      -2.5876855943351984e-05,
+      0.00011884246487170458,
+      -0.00045179383596405387
+    ],
+    "grad_norm_ac_control": [
+      4.25795841217041,
+      2.071249485015869,
+      2.8605639934539795,
+      3.1674463748931885
+    ],
+    "grad_norm_ac_candidate": [
+      4.264988899230957,
+      2.386395215988159,
+      2.3752777576446533,
+      2.920231580734253
+    ],
+    "grad_norm_reader_control": [
+      0.9000502228736877,
+      0.7701022028923035,
+      0.6013153195381165,
+      0.7688151597976685
+    ],
+    "grad_norm_reader_candidate": [
+      0.9001604914665222,
+      0.7766984701156616,
+      0.594217836856842,
+      0.6521554589271545
+    ]
+  },
+  "limits": [
+    "No full-run throughput, quality or all-batch memory claim; one saved batch, three steady timings, fixed control-then-candidate order.",
+    "Timing uses frozen trainer wall-clock step_seconds, with synchronous scalar telemetry but no explicit final CUDA-event barrier; these are production-path timings, not isolated kernel benchmarks.",
+    "Deterministic proof is exact; ordinary-kernel update trajectories are not: initial SFT matches, later losses differ by at most0.00045179383596405387 and gradient norms differ. No unchanged ordinary timing repeat isolated that source.",
+    "All615 incoming Adam parameter clocks/moments and group layout were checked at4000; four actual optimizer steps and the trainer clock4004 are recorded. Final per-parameter Adam clocks/moment tensors were not serialized/rechecked.",
+    "Recorded runtime flags cover deterministic mode, CUBLAS workspace, TF32 and FLA; the BF16 reduction default was not separately recorded. Source and launch precision settings are unchanged.",
+    "Peak is torch.cuda.max_memory_allocated, not total device reservation; candidate62.79GiB does not fit an L40S.",
+    "4096 is a conditional B\u00d7padded-length reader threshold, not a universal disable; longer reader inputs can re-enable checkpointing."
+  ],
+  "blocking_defects": [],
+  "next_check": "For a future frozen training pool, inspect exact geometry of every planned microbatch on CPU; select a small worst-case set covering maximum uncheckpointed reader B\u00d7L below4096, concurrent encoder padding/row payload, and largest actual no-context penalty group. Run candidate-only ordinary forward/backward with mature Adam residency, fixed real penalty draws, no parameter updates, stop on OOM. This screens the actual pool without another threshold sweep; it is not a proof of memory safety for every unseen input."
+}

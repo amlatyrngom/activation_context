@@ -1,0 +1,97 @@
+{
+  "checked_utc": "2026-09-23T04:36:31.866859+00:00",
+  "status": "all_four_context_cells_complete",
+  "same100_questions": true,
+  "shared_inputs_and_total_rows_match_between_layouts": true,
+  "results": {
+    "piecewise_27b_4k_8k": {
+      "8k": {
+        "sha256": "fe06cc4502bc80eba5f43b89d3cdeab0495cdbcc548b58736fbe32b8451eb206",
+        "identity": {
+          "condition": "piecewise_27b_4k_8k",
+          "context": "8k",
+          "update": 500,
+          "micro_batch_examples": 2,
+          "passage_parts": true
+        },
+        "nll": {
+          "AC": 1.018062524390749,
+          "full context": 0.5842254881005962,
+          "no context": 1.8420814359562485
+        },
+        "questions": 100,
+        "mean_selected100_rows": 502.89,
+        "fingerprint": "6ffc199f008d329773af7bc09594ca3cbadca619f50b9fe72d7a540b2c643069",
+        "total_rows_fingerprint": "6a1bd4e0650d1ebf0620df8e038f633a163fe0b5e1edd37940636fea127e6f2d"
+      },
+      "32k": {
+        "sha256": "10570c41f20926a24339ba8eab4c6cb9194d291ce9f08e1e2446362556f98744",
+        "identity": {
+          "condition": "piecewise_27b_4k_8k",
+          "context": "32k",
+          "update": 500,
+          "micro_batch_examples": 1,
+          "passage_parts": true
+        },
+        "nll": {
+          "AC": 1.0252913586116121,
+          "full context": 0.5447277908125147,
+          "no context": 1.8441392190289543
+        },
+        "questions": 100,
+        "mean_selected100_rows": 2055.33,
+        "fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+        "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb"
+      }
+    },
+    "merged_27b_4k_8k": {
+      "8k": {
+        "sha256": "b9aa5296e458b9fe6e389656fc567dead35214c5100f8b4ad7531e72d8288fb4",
+        "identity": {
+          "condition": "merged_27b_4k_8k",
+          "context": "8k",
+          "update": 500,
+          "micro_batch_examples": 2,
+          "passage_parts": false
+        },
+        "nll": {
+          "AC": 1.3616625231240445,
+          "full context": 0.586267610509863,
+          "no context": 1.8413655524740162
+        },
+        "questions": 100,
+        "mean_selected100_rows": 502.89,
+        "fingerprint": "6ffc199f008d329773af7bc09594ca3cbadca619f50b9fe72d7a540b2c643069",
+        "total_rows_fingerprint": "6a1bd4e0650d1ebf0620df8e038f633a163fe0b5e1edd37940636fea127e6f2d"
+      },
+      "32k": {
+        "sha256": "5efaa14cd3498aae26cd514c817f197b9b07ccff14c8a13a55916e51690a8313",
+        "identity": {
+          "condition": "merged_27b_4k_8k",
+          "context": "32k",
+          "update": 500,
+          "micro_batch_examples": 1,
+          "passage_parts": false
+        },
+        "nll": {
+          "AC": 1.3635895618314462,
+          "full context": 0.557268231971093,
+          "no context": 1.842497258074985
+        },
+        "questions": 100,
+        "mean_selected100_rows": 2055.33,
+        "fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+        "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb"
+      }
+    }
+  },
+  "scope": "Both final4k\u00d71 matched runs trained at8k.32k adds retrieved distractors, with no additional training.32k measures NLL only.8k scoring uses microbatch2,32k microbatch1.",
+  "semantic_8k": {
+    "supported": 87,
+    "piecewise_correct": 34,
+    "merged_correct": 18,
+    "piecewise_only_wins": 18,
+    "merged_only_wins": 2
+  },
+  "limitation": "One development run per layout; no semantic32k or distributed-required-evidence conclusion."
+}

@@ -1,0 +1,211 @@
+{
+  "version": 2,
+  "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+  "builder_sha256": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+  "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "P2_pair_sha256": {
+    "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+    "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+    "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+    "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+    "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+  },
+  "arms": {
+    "piecewise_27b_4k_8k": {
+      "passage_parts": true,
+      "encode_batch_max_tokens": 65536,
+      "micro_batch_examples": 2
+    },
+    "merged_27b_4k_8k": {
+      "passage_parts": false,
+      "encode_batch_max_tokens": 65536,
+      "micro_batch_examples": 2
+    }
+  },
+  "training": {
+    "unique_questions": 4000,
+    "epochs": 1,
+    "evidence_tokens": 8192,
+    "max_passages": 16,
+    "ratio": 0.0625,
+    "logical_batch_examples": 8,
+    "learning_rate_ac": 5e-05,
+    "learning_rate_reader": 2e-05,
+    "fresh_optimizer": true,
+    "initialization": "Original paired P2 reconstruction",
+    "reporting_fraction": 0.1,
+    "gradient_checkpointing_min_tokens": 0
+  },
+  "source_decision": "Original frozen train_ws_night_v1, original masks and encode budget65536 for both arms. Only existing checkpoint-threshold config changes to0. Strict deterministic diagnostic proves gradient equivalence; production ordinary-kernel memory/timing is measured separately.",
+  "readout": {
+    "selection": "Originaldevelopment100; no confirmation",
+    "8k": "Replayall400, decodefixed100; frozenP2full/noctx onidenticalevidence",
+    "32k": "Samefixed100, NLLonly"
+  },
+  "launcher_sha256": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+  "evaluator_sha256": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30",
+  "evaluator_launcher_sha256": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+  "status": "frozen",
+  "frozen_utc": "2026-09-22T19:48:47.580892+00:00",
+  "parent_design_sha256": "d2635ea1499267c1c454a0d7eaf870bba41ae4dc49b8d425a0c41e4af66cda81",
+  "restart_launcher_sha256": "63569ceee66fb6e2174821663a3a2a73632c7b1ebe5bad4660becaeeab539edf",
+  "unchanged_recipe": {
+    "loss": "gold-token SFT",
+    "optimizer": "AdamW",
+    "adam_betas": [
+      0.9,
+      0.95
+    ],
+    "adam_eps": 1e-08,
+    "weight_decay": 0,
+    "gradient_clip": "joint norm1 across AC/encoder and reader",
+    "warmup_updates": 50,
+    "schedule_total_updates": 500,
+    "lr_schedule": "cosine",
+    "lr_final_fraction": 0.1,
+    "seed": 20260921,
+    "train_order": "Existing frozen weighted interleave; original per-epoch seed+epoch shuffle; reader-length sort within each logical8.",
+    "no_context_penalty": {
+      "reference": "frozen bare reader base, adapters disabled",
+      "weight": 1,
+      "fraction": 0.25,
+      "top_k": 32
+    },
+    "source_mask": "Original frozen side decoder padding mask and reader path; rejected mask optimization remains unused.",
+    "row_budget": "Separate passage parts allocate exactly the merged 1/16 total row budget per question.",
+    "development_questions": 400,
+    "fixed_learning_questions": 32,
+    "final_qualitative_selection": "Original fixed100,50 per generator; no confirmation."
+  },
+  "amendment": {
+    "change": "Use existing gradient_checkpointing_min_tokens=0 for BOTH layouts instead of1700; no product/source patch.",
+    "reason": "The old side gate counts maximum sequence length and can disable checkpointing for a many-short-passage batch. Exact failed logicalbatch16 includes32 parts with maximum593 decoder positions and18976 padded positions; threshold0 explicitly checkpoints it.",
+    "initialization": "Discard failed15-update attempt after archiving. Start BOTH arms from original paired P2 with fresh QA optimizer; reuse only independent copied frozen no-context references.",
+    "restart_policy": "Archive failed run/report and retain old receipts before same-name fresh start. Old V1 pending jobs must remain inactive; parent owns queue transaction. Future preemptions use the existing paired optimizer/order/schedule resume guards.",
+    "preserved_v1_fields": [
+      "material_sha256",
+      "selection_sha256",
+      "source_sha256",
+      "P2_pair_sha256",
+      "arms",
+      "training except added checkpoint threshold",
+      "readout"
+    ],
+    "ordinary_kernel_limit": "Ordinary retained-graph backward was not bitwise repeatable. Do not claim deterministic production gradients or rewrite that failed gate."
+  },
+  "checkpoint_validation": {
+    "deterministic_proof_sha256": "887793fb187c9bf50d4b6e5aff79ad136734a1c767bbb9c820a772da58453d9f",
+    "deterministic_settings_sha256": "0dcb5722736dd3e6fa8d0e303b42666bfe74ffe51c1826547ae65f76a36e74e6",
+    "deterministic_settings": {
+      "scope": "One deterministic diagnostic; production ordinary-kernel fits are separate. Original tolerances unchanged.",
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "deterministic_algorithms": true,
+      "warn_only": false,
+      "worker_sha256": "fb0fc3c64c505defc623ebc5e154306387c1fabb970fec51fc499298af7ae76c",
+      "status": "complete",
+      "deterministic_algorithms_at_exit": true,
+      "warn_only_at_exit": false
+    },
+    "memory_case_sha256": {
+      "pieces_failing": "feca85cde8bfd5ca953c20bf5eb53f40d1f9f6f90dc8f3639de5ca7d7658b3ed",
+      "pieces_quantiles": "360b211028acfa1f7f17beaeb7a01a8101e3187886aaa9b5b5d7f166ce51dc22",
+      "merged_failing": "e7ef2451d9ac5012631e26b963950750ff8cf6c7acf656b389c3483fc01e4840",
+      "merged_quantiles": "e87971a27269a24dbda32930c37a01daa7704208b5de6f9fa68ac89d7c7dda0b"
+    },
+    "memory_aggregate_sha256": "721f78cdf844d530cf23eb05bfe466971019785828601e7fdf0b14fa6aaded4f",
+    "worker_sha256": {
+      "probe_piecewise_checkpoint_v1.py": "12df00c8fcac924cf7a11525006c626d8ef572b6fdefa809468124512fba2139",
+      "probe_piecewise_backward_v1.py": "fb0fc3c64c505defc623ebc5e154306387c1fabb970fec51fc499298af7ae76c",
+      "probe_piecewise_original_v1.py": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+      "probe_piecewise_backward_deterministic_v1.sbatch": "703d6b7821f1aefbda35bbd12ff5630baf3e306201aef92407d4883a94802027",
+      "probe_piecewise_memory_only_v1.sbatch": "8991c607904e3ece4e91e405218e45ea75a30266e18eee5f2ed92f317c47b351",
+      "probe_piecewise_memory_remaining_v1.sbatch": "d060b36e61098e43591ad865016047d90b710a01f9efcf02ed13a15a360bc558"
+    },
+    "strict_thresholds": {
+      "relative_rms": 0.03,
+      "absolute_rms_floor": 2e-06,
+      "joint_loss_abs": 0.001
+    },
+    "result": {
+      "loss_bitwise_equal": true,
+      "ac_outputs_bitwise_equal": 18,
+      "named_parameters": 630,
+      "present_gradients_bitwise_equal": 615,
+      "consistently_absent_gradients": 15,
+      "parameter_state_checks": 11,
+      "actual_side_and_reader_recomputation": true
+    },
+    "memory_cases": {
+      "pieces_failing": {
+        "raw_path": "piecewise_memory_only_v1/pieces_failing.json",
+        "peak_allocated_gib": 49.812814712524414,
+        "steady_median_seconds_per_eight_questions": 23.11104644741863,
+        "actual_updates": 3,
+        "no_context_penalty_counts": [
+          3,
+          1,
+          0
+        ],
+        "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+      },
+      "pieces_quantiles": {
+        "raw_path": "piecewise_memory_only_v1/pieces_quantiles.json",
+        "peak_allocated_gib": 52.283939361572266,
+        "steady_median_seconds_per_eight_questions": 24.127016390906647,
+        "actual_updates": 3,
+        "no_context_penalty_counts": [
+          4,
+          2,
+          0
+        ],
+        "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+      },
+      "merged_failing": {
+        "raw_path": "piecewise_memory_remaining_v1/merged_failing.json",
+        "peak_allocated_gib": 37.38048839569092,
+        "steady_median_seconds_per_eight_questions": 14.119214886100963,
+        "actual_updates": 3,
+        "no_context_penalty_counts": [
+          3,
+          1,
+          0
+        ],
+        "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+      },
+      "merged_quantiles": {
+        "raw_path": "piecewise_memory_remaining_v1/merged_quantiles.json",
+        "peak_allocated_gib": 37.54957103729248,
+        "steady_median_seconds_per_eight_questions": 14.995984449749812,
+        "actual_updates": 3,
+        "no_context_penalty_counts": [
+          4,
+          2,
+          0
+        ],
+        "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+      }
+    },
+    "diagnostic_vs_production": "Deterministic algorithms and CUBLAS_WORKSPACE_CONFIG are diagnostic-only. Production keeps original ordinary kernels/TF32/FLA; same-model equivalence and standard-path memory fit are separately labeled.",
+    "failed_receipts_preserved": [
+      {
+        "path": "piecewise_checkpoint_probe_v1/proof.json",
+        "sha256": "f2e91add11a7cada2748e5ac7e6490d6bb3f707d037d22f6ba0cfad467cee128"
+      },
+      {
+        "path": "piecewise_backward_probe_v1/proof.json",
+        "sha256": "0638f9b1d89f9baa7200f2638d741438091f299507fa8e9044b1011711ef787d"
+      }
+    ],
+    "limits": [
+      "Two real short passage parts establish checkpoint-only numerical equivalence under deterministic execution.",
+      "Fit covers exact previously failing batch plus eight training-source-length quantiles, three real updates each; it is not an exhaustive4000-question memory proof.",
+      "Fits reload original P2 and fresh optimizer; they do not reproduce lost15-update weights/moments.",
+      "Memory-aggregate receipt was written before deterministic proof and honestly retains equivalence_approved=false; this amendment links later passing proof without editing old evidence."
+    ]
+  }
+}

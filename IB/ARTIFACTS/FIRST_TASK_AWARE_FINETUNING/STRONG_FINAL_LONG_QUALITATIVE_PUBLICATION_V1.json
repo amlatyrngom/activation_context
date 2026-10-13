@@ -1,0 +1,74 @@
+{
+  "status": "published and verified",
+  "updated_utc": "2026-09-23T13:59:20.226831+00:00",
+  "questions": 100,
+  "answer_cards": 900,
+  "new_manually_reviewed_answers": 200,
+  "training_total_unique": 40000,
+  "frozen_reference_split": {
+    "supported": 87,
+    "concerns": 13
+  },
+  "sequential_preservation": {
+    "700": {
+      "prior_evidence_sha256": "ec17f380b7aaf2c51564aaac047c5c18cff40df49b2e853406ead890c114deee",
+      "all_answer_records_and_summary_unchanged": true,
+      "all_source_input_fields_unchanged": true
+    },
+    "800": {
+      "prior_evidence_sha256": "42cccc2f38ef0601b31e02e6d3b012397d992bb168e932326d5842e896d43d29",
+      "all_answer_records_and_summary_unchanged": true,
+      "all_source_input_fields_unchanged": true
+    }
+  },
+  "new_raw_records_exact": 200,
+  "actual32k_condition_binding_verified": true,
+  "generation": {
+    "eos": 200,
+    "caps": 0,
+    "tails": 0,
+    "observed_loops": 0
+  },
+  "source_spotcheck_agreed_indices": [
+    34,
+    55,
+    56,
+    73
+  ],
+  "pytest32k_passage26_announces_7_2_0_confirmed": true,
+  "files": {
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json": {
+      "sha256": "25a6da62c35ec0e99810399539fb5fe3639c67fc737c426238022e1411d04024",
+      "bytes": 36859957
+    },
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.tressoir.html": {
+      "sha256": "56195c2cc1b9db19ce429e86f9715c89a8a41915fa1f3b60d67e9e6cfd712eb0",
+      "bytes": 19048022
+    },
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_FINAL_LONG_QUALITATIVE_RESULT_V1.md": {
+      "sha256": "db270b88a36b63cd6e3920ffcd74c84168ca1444b09436025fb9915b97e21ac6",
+      "bytes": 4281
+    },
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_FINAL_LONG_QUALITATIVE_RESULT_V1.json": {
+      "sha256": "2bee7aa2dce2e2c7207ff249cf8329704bbf4f3d516fd2e41afb14cc88e92777",
+      "bytes": 60525
+    },
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/build_strong_long_cohort100.py": {
+      "sha256": "6046cebf43a131414a3b396bdad2c99bdf245b8a991698d1ead851757adfdddd",
+      "bytes": 43876
+    },
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/strong_final_long_review/browser_check.json": {
+      "sha256": "a997dbc490fa58ea67a86dea85715bf3f3753a741caa756dad551879a5299030",
+      "bytes": 1053
+    },
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/strong_final_long_review/review_final40k_8k_receipt.json": {
+      "sha256": "c09857e07a39481eb99eeddb12759f964672ba92095875c2b83d339456a1d023",
+      "bytes": 2160
+    },
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/strong_final_long_review/review_final40k_32k_receipt.json": {
+      "sha256": "b4b6d8296fef4ea9959a4f8e2a8bb6a3a25a3c25ec50d650dbe1c159d0b3511b",
+      "bytes": 2165
+    }
+  },
+  "browser_scope": "Standalone Chromium light/dark/mobile;900 cards, new counts/cohorts and all pair filters, render-event filter persistence, actual32k panel and anchors. No JS errors or page overflow. Actual VSCode integration not exercised."
+}

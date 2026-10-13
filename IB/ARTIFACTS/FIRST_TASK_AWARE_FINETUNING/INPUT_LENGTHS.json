@@ -1,0 +1,58 @@
+{
+  "train": {
+    "items": 4000,
+    "encoder_input_tokens": {
+      "min": 151,
+      "mean": 1974.8215,
+      "median": 1953.0,
+      "p90": 2565,
+      "p95": 2956,
+      "max": 6118
+    },
+    "evidence_tokens": {
+      "min": 95,
+      "mean": 1920.301,
+      "median": 1898.5,
+      "p90": 2519,
+      "p95": 2908,
+      "max": 6072
+    },
+    "compressed_rows": {
+      "min": 10,
+      "mean": 123.89575,
+      "median": 123.0,
+      "p90": 161,
+      "p95": 185,
+      "max": 383
+    },
+    "evidence_over2048": 1093
+  },
+  "development": {
+    "items": 100,
+    "encoder_input_tokens": {
+      "min": 232,
+      "mean": 1643.46,
+      "median": 1761.0,
+      "p90": 2042,
+      "p95": 2061,
+      "max": 2096
+    },
+    "evidence_tokens": {
+      "min": 175,
+      "mean": 1585.6,
+      "median": 1696.5,
+      "p90": 1991,
+      "p95": 2006,
+      "max": 2039
+    },
+    "compressed_rows": {
+      "min": 15,
+      "mean": 103.14,
+      "median": 110.5,
+      "p90": 128,
+      "p95": 129,
+      "max": 131
+    },
+    "evidence_over2048": 0
+  }
+}

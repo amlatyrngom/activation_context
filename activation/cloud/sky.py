@@ -418,6 +418,7 @@ def _task_yaml(
     image_id: str = IMAGE_ID,
     docker_secrets: dict[str, str] | None = None,
     use_spot: bool = False,
+    instance_type: str | None = None,
 ) -> str:
     labels = "\n".join(
         f"    {key}: {json.dumps(value)}"
@@ -431,13 +432,15 @@ def _task_yaml(
         )
         secrets_yaml = f"secrets:\n{secret_lines}\n"
     workdir = json.dumps(str(PROJECT_ROOT))
+    # An explicit instance type (another size carrying the same GPU) when the cheapest one has no capacity.
+    instance_yaml = f"  instance_type: {instance_type}\n" if instance_type else ""
 
     return f"""\
 resources:
   infra: aws
   accelerators: {GPU_TYPES[gpu_type]}:{gpu_count}
   use_spot: {"true" if use_spot else "false"}
-  disk_size: {DISK_SIZE_GB}
+{instance_yaml}  disk_size: {DISK_SIZE_GB}
   image_id: {image_id}
   labels:
 {labels}
@@ -466,6 +469,7 @@ def setup(
     gpu_count: int = 1,
     rebuild_image: bool = True,
     use_spot: bool = False,
+    instance_type: str | None = None,
 ) -> int:
     gpu_type = gpu_type.lower()
     if gpu_type not in GPU_TYPES:
@@ -508,6 +512,7 @@ def setup(
                 image_id=image_id,
                 docker_secrets=docker_secrets,
                 use_spot=use_spot,
+                instance_type=instance_type,
             )
         )
         task_file.flush()
@@ -517,6 +522,8 @@ def setup(
             name,
             "--idle-minutes-to-autostop",
             str(AUTOSTOP_MINUTES),
+            # A spot instance cannot be stopped, so idle spot nodes are torn down instead.
+            *(["--down"] if use_spot else []),
             "--yes",
             task_file.name,
         )
@@ -942,6 +949,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="request a spot instance (cheaper, may be preempted; runs must be restartable)",
     )
     setup_parser.add_argument(
+        "--instance-type",
+        default=None,
+        help="pin the AWS instance type, e.g. another 1x RTX PRO 6000 size (g7e.4xlarge) when the cheapest has no capacity",
+    )
+    setup_parser.add_argument(
         "--no-image-rebuild",
         action="store_true",
         help="do not build/publish a missing lock-tagged image before launch",
@@ -1035,6 +1047,7 @@ def main() -> int:
                 args.gpu_count,
                 rebuild_image=not args.no_image_rebuild,
                 use_spot=args.spot,
+                instance_type=args.instance_type,
             )
         if args.action == "exec":
             return exec_cmd(args.name, args.command, sync=args.sync, watch_paths=[tuple(pair) for pair in args.watch] if args.watch else None,

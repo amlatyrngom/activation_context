@@ -1,0 +1,3803 @@
+{
+  "recorded_utc": "2026-09-22T04:10:28.751045+00:00",
+  "primary_cutoff_update": 600,
+  "interpretation": "Exploratory matched-run telemetry, not a causal module diagnosis.",
+  "arms": {
+    "r8": {
+      "source": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/RAW_REPORTS/oracle_27b_16k_r8/report_data.json",
+      "snapshot": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/stability_1_8/report_r8.json",
+      "sha256": "b1384cf720506ef0130995a6ae6f9cf71b8ba2a0a662be539a0580e101995ff6",
+      "updated_at": "2026-09-22 04:09:57 UTC",
+      "last_observed_update": 760,
+      "windows": [
+        {
+          "updates": [
+            1,
+            200
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 5.7544801235198975,
+            "max": 72.81890106201172,
+            "above_100": 0,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.4512992869131267,
+          "unweighted_sampled_noctx_penalty_median": 0.010703983716666698
+        },
+        {
+          "updates": [
+            201,
+            400
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 5.139228105545044,
+            "max": 95.27253723144531,
+            "above_100": 0,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.39231312193442136,
+          "unweighted_sampled_noctx_penalty_median": 0.009884427767246962
+        },
+        {
+          "updates": [
+            401,
+            600
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 9.262902736663818,
+            "max": 644.4006958007812,
+            "above_100": 9,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.3443896535318345,
+          "unweighted_sampled_noctx_penalty_median": 0.008656363992486149
+        }
+      ],
+      "row_budget": [
+        {
+          "split": "training",
+          "questions": 16000,
+          "passage tokens": 31882665,
+          "encoder input tokens": 32938594,
+          "compressed rows": 4124307,
+          "rows / passage token": 0.12936,
+          "rows / encoder token": 0.12521,
+          "extra rows vs merged": 0
+        },
+        {
+          "split": "development",
+          "questions": 400,
+          "passage tokens": 786623,
+          "encoder input tokens": 811299,
+          "compressed rows": 101590,
+          "rows / passage token": 0.12915,
+          "rows / encoder token": 0.12522,
+          "extra rows vs merged": 0
+        }
+      ],
+      "panels": {
+        "answer_nll": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.236563509292844
+            },
+            {
+              "update": 200,
+              "nll": 1.2088060927010382
+            },
+            {
+              "update": 400,
+              "nll": 0.9052148379473927
+            },
+            {
+              "update": 600,
+              "nll": 0.9719982649802994
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.7662113585727731
+            },
+            {
+              "update": 200,
+              "nll": 0.6306240374154181
+            },
+            {
+              "update": 400,
+              "nll": 0.6095384476200042
+            },
+            {
+              "update": 600,
+              "nll": 0.607105675573781
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.7922518564882832
+            },
+            {
+              "update": 200,
+              "nll": 1.778890051887138
+            },
+            {
+              "update": 400,
+              "nll": 1.7836557705227154
+            },
+            {
+              "update": 600,
+              "nll": 1.8145356697722352
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.8851808414789835
+            },
+            {
+              "update": 200,
+              "nll": 1.1287276699786803
+            },
+            {
+              "update": 400,
+              "nll": 0.8189500720116978
+            },
+            {
+              "update": 600,
+              "nll": 0.9324631495706618
+            }
+          ]
+        },
+        "cohort_9b": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.4700122898473613
+            },
+            {
+              "update": 200,
+              "nll": 1.3183734826126554
+            },
+            {
+              "update": 400,
+              "nll": 0.9654729724091042
+            },
+            {
+              "update": 600,
+              "nll": 1.058171704965313
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.8487810879381535
+            },
+            {
+              "update": 200,
+              "nll": 0.717615739857061
+            },
+            {
+              "update": 400,
+              "nll": 0.6957680567855842
+            },
+            {
+              "update": 600,
+              "nll": 0.6868900248654076
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.957150191697781
+            },
+            {
+              "update": 200,
+              "nll": 1.9504469830063562
+            },
+            {
+              "update": 400,
+              "nll": 1.9568174771717006
+            },
+            {
+              "update": 600,
+              "nll": 1.9817687565552005
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.8851808414789835
+            },
+            {
+              "update": 200,
+              "nll": 1.1287276699786803
+            },
+            {
+              "update": 400,
+              "nll": 0.8189500720116978
+            },
+            {
+              "update": 600,
+              "nll": 0.9324631495706618
+            }
+          ]
+        },
+        "cohort_27b": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.0031147287383266
+            },
+            {
+              "update": 200,
+              "nll": 1.099238702789421
+            },
+            {
+              "update": 400,
+              "nll": 0.8449567034856813
+            },
+            {
+              "update": 600,
+              "nll": 0.8858248249952855
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.6836416292073926
+            },
+            {
+              "update": 200,
+              "nll": 0.5436323349737752
+            },
+            {
+              "update": 400,
+              "nll": 0.5233088384544241
+            },
+            {
+              "update": 600,
+              "nll": 0.5273213262821544
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.627353521278786
+            },
+            {
+              "update": 200,
+              "nll": 1.6073331207679202
+            },
+            {
+              "update": 400,
+              "nll": 1.6104940638737304
+            },
+            {
+              "update": 600,
+              "nll": 1.64730258298927
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.8851808414789835
+            },
+            {
+              "update": 200,
+              "nll": 1.1287276699786803
+            },
+            {
+              "update": 400,
+              "nll": 0.8189500720116978
+            },
+            {
+              "update": 600,
+              "nll": 0.9324631495706618
+            }
+          ]
+        }
+      },
+      "aligned_sampled_head_norms": [
+        {
+          "trace_x": 400,
+          "gradient_update": 401,
+          "combined_preclip_grad": 10.266284942626953,
+          "eight_delta_heads_l2": 1.0131511896129062,
+          "fraction_squared_norm_in_delta_heads": 0.009739168715911281
+        },
+        {
+          "trace_x": 425,
+          "gradient_update": 426,
+          "combined_preclip_grad": 4.1572418212890625,
+          "eight_delta_heads_l2": 0.9865397565153177,
+          "fraction_squared_norm_in_delta_heads": 0.056314289346986436
+        },
+        {
+          "trace_x": 450,
+          "gradient_update": 451,
+          "combined_preclip_grad": 4.939279079437256,
+          "eight_delta_heads_l2": 1.0212371869531873,
+          "fraction_squared_norm_in_delta_heads": 0.04274901481745302
+        },
+        {
+          "trace_x": 475,
+          "gradient_update": 476,
+          "combined_preclip_grad": 4.249477863311768,
+          "eight_delta_heads_l2": 0.7992040260020645,
+          "fraction_squared_norm_in_delta_heads": 0.0353707430653219
+        },
+        {
+          "trace_x": 500,
+          "gradient_update": 501,
+          "combined_preclip_grad": 9.124855995178223,
+          "eight_delta_heads_l2": 0.7157496001087384,
+          "fraction_squared_norm_in_delta_heads": 0.006152763039140354
+        },
+        {
+          "trace_x": 525,
+          "gradient_update": 526,
+          "combined_preclip_grad": 7.78120231628418,
+          "eight_delta_heads_l2": 1.0153687571133718,
+          "fraction_squared_norm_in_delta_heads": 0.017027628926600157
+        },
+        {
+          "trace_x": 550,
+          "gradient_update": 551,
+          "combined_preclip_grad": 18.36794662475586,
+          "eight_delta_heads_l2": 1.8461907067164571,
+          "fraction_squared_norm_in_delta_heads": 0.010102570820394723
+        },
+        {
+          "trace_x": 575,
+          "gradient_update": 576,
+          "combined_preclip_grad": 9.005294799804688,
+          "eight_delta_heads_l2": 0.717744134358665,
+          "fraction_squared_norm_in_delta_heads": 0.006352481878499647
+        }
+      ],
+      "largest_gradients_through_600": [
+        {
+          "update": 553,
+          "combined_preclip_grad": 644.4006958007812,
+          "assistant_sft": 0.3209260986186564,
+          "noctx_penalty": 0.0029573719948530197
+        },
+        {
+          "update": 547,
+          "combined_preclip_grad": 618.2142333984375,
+          "assistant_sft": 0.3155518861312885,
+          "noctx_penalty": 0.007029897067695856
+        },
+        {
+          "update": 568,
+          "combined_preclip_grad": 391.519775390625,
+          "assistant_sft": 0.2981874542310834,
+          "noctx_penalty": 0.008520714240148664
+        },
+        {
+          "update": 546,
+          "combined_preclip_grad": 284.7749938964844,
+          "assistant_sft": 0.3789275586605072,
+          "noctx_penalty": 0.0052072131074965
+        },
+        {
+          "update": 534,
+          "combined_preclip_grad": 224.01805114746094,
+          "assistant_sft": 0.46645617485046387,
+          "noctx_penalty": 0.021931100636720657
+        },
+        {
+          "update": 554,
+          "combined_preclip_grad": 183.41702270507812,
+          "assistant_sft": 0.375082627258962,
+          "noctx_penalty": 0.010823802556842566
+        },
+        {
+          "update": 572,
+          "combined_preclip_grad": 145.8362274169922,
+          "assistant_sft": 0.3488690098747611,
+          "noctx_penalty": 0.006303581913622717
+        },
+        {
+          "update": 475,
+          "combined_preclip_grad": 107.4530258178711,
+          "assistant_sft": 0.5441073104739189,
+          "noctx_penalty": 0.013282548636198044
+        },
+        {
+          "update": 586,
+          "combined_preclip_grad": 105.29624938964844,
+          "assistant_sft": 0.584532106295228,
+          "noctx_penalty": 0.01064108859281987
+        },
+        {
+          "update": 560,
+          "combined_preclip_grad": 98.40380096435547,
+          "assistant_sft": 0.47436294285580516,
+          "noctx_penalty": 0.03154091536998749
+        }
+      ],
+      "trace_575": {
+        "intervention_delta_rms": {
+          "layer 3": 0.27058790402772026,
+          "layer 7": 0.1957307264029333,
+          "layer 11": 0.2050179712170944,
+          "layer 15": 0.1663916845922606,
+          "layer 19": 0.16315936533025263,
+          "layer 23": 0.13463465853083292,
+          "layer 27": 0.15536849264134744,
+          "layer 31": 0.07486359736387194
+        },
+        "intervention_row_rms": {
+          "layer 3": 0.4215116500854492,
+          "layer 7": 0.4318902790546417,
+          "layer 11": 0.4795825779438019,
+          "layer 15": 0.5937822461128235,
+          "layer 19": 0.6418299674987793,
+          "layer 23": 0.9856164455413818,
+          "layer 27": 1.3283010721206665,
+          "layer 31": 2.0318498611450195
+        },
+        "intervention_cosine": {
+          "layer 3": 0.1258557289838791,
+          "layer 7": 0.0615539625287056,
+          "layer 11": 0.033873409032821655,
+          "layer 15": 0.038310304284095764,
+          "layer 19": 0.01463909912854433,
+          "layer 23": 0.014306293800473213,
+          "layer 27": -0.008167830295860767,
+          "layer 31": -0.0004759115108754486
+        },
+        "intervention_attention": {
+          "layer 3": 4.873599529266357,
+          "layer 7": 4.783034801483154,
+          "layer 11": 4.735732078552246,
+          "layer 15": 4.669589042663574,
+          "layer 19": 4.399906635284424,
+          "layer 23": 4.496985912322998,
+          "layer 27": 4.365778923034668,
+          "layer 31": 4.352118015289307,
+          "row read-out": 0.9422528147697449,
+          "recursive read-out": 0.0
+        }
+      },
+      "attention_out_weight_norm_initial_to_575": {
+        "layer 3": {
+          "initial": 4.846904754638672,
+          "trace_575": 4.873599529266357
+        },
+        "layer 7": {
+          "initial": 4.721510887145996,
+          "trace_575": 4.783034801483154
+        },
+        "layer 11": {
+          "initial": 4.668820381164551,
+          "trace_575": 4.735732078552246
+        },
+        "layer 15": {
+          "initial": 4.602259635925293,
+          "trace_575": 4.669589042663574
+        },
+        "layer 19": {
+          "initial": 4.316106796264648,
+          "trace_575": 4.399906635284424
+        },
+        "layer 23": {
+          "initial": 4.4138288497924805,
+          "trace_575": 4.496985912322998
+        },
+        "layer 27": {
+          "initial": 4.298413276672363,
+          "trace_575": 4.365778923034668
+        },
+        "layer 31": {
+          "initial": 4.284195899963379,
+          "trace_575": 4.352118015289307
+        },
+        "row read-out": {
+          "initial": 0.0,
+          "trace_575": 0.9422528147697449
+        },
+        "recursive read-out": {
+          "initial": 0.0,
+          "trace_575": 0.0
+        }
+      }
+    },
+    "r16": {
+      "source": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/RAW_REPORTS/oracle_27b_16k_r16/report_data.json",
+      "snapshot": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/stability_1_8/report_r16.json",
+      "sha256": "da816a87566ffd239634009e938a2dde37ed25ea3c5737c8ba4cf40b6813e05b",
+      "updated_at": "2026-09-22 04:09:56 UTC",
+      "last_observed_update": 761,
+      "windows": [
+        {
+          "updates": [
+            1,
+            200
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 4.717703819274902,
+            "max": 323.3395080566406,
+            "above_100": 1,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.4508835876767989,
+          "unweighted_sampled_noctx_penalty_median": 0.011166471987962723
+        },
+        {
+          "updates": [
+            201,
+            400
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 3.667646050453186,
+            "max": 33.70046615600586,
+            "above_100": 0,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.41783754399511963,
+          "unweighted_sampled_noctx_penalty_median": 0.00944925390649587
+        },
+        {
+          "updates": [
+            401,
+            600
+          ],
+          "combined_preclip_grad": {
+            "count": 200,
+            "median": 4.314242839813232,
+            "max": 234.1045379638672,
+            "above_100": 1,
+            "all_finite": true
+          },
+          "training_assistant_sft_median": 0.3438424321357161,
+          "unweighted_sampled_noctx_penalty_median": 0.0080439638113603
+        }
+      ],
+      "row_budget": [
+        {
+          "split": "training",
+          "questions": 16000,
+          "passage tokens": 31882665,
+          "encoder input tokens": 32938594,
+          "compressed rows": 2066141,
+          "rows / passage token": 0.0648,
+          "rows / encoder token": 0.06273,
+          "extra rows vs merged": 0
+        },
+        {
+          "split": "development",
+          "questions": 400,
+          "passage tokens": 786623,
+          "encoder input tokens": 811299,
+          "compressed rows": 50898,
+          "rows / passage token": 0.0647,
+          "rows / encoder token": 0.06274,
+          "extra rows vs merged": 0
+        }
+      ],
+      "panels": {
+        "answer_nll": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.2530745156748404
+            },
+            {
+              "update": 200,
+              "nll": 1.1827988788357728
+            },
+            {
+              "update": 400,
+              "nll": 0.9969434025556886
+            },
+            {
+              "update": 600,
+              "nll": 0.8939713940668053
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.7662113585727731
+            },
+            {
+              "update": 200,
+              "nll": 0.6778005467941344
+            },
+            {
+              "update": 400,
+              "nll": 0.652146016292634
+            },
+            {
+              "update": 600,
+              "nll": 0.6529868720035167
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.7922518564882832
+            },
+            {
+              "update": 200,
+              "nll": 1.8062140132507019
+            },
+            {
+              "update": 400,
+              "nll": 1.7840457144207928
+            },
+            {
+              "update": 600,
+              "nll": 1.8178591961223831
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.935764598512917
+            },
+            {
+              "update": 200,
+              "nll": 0.9840391217344427
+            },
+            {
+              "update": 400,
+              "nll": 0.9063766996438956
+            },
+            {
+              "update": 600,
+              "nll": 0.7275784120475267
+            }
+          ]
+        },
+        "cohort_9b": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.503210117789832
+            },
+            {
+              "update": 200,
+              "nll": 1.2815573557329687
+            },
+            {
+              "update": 400,
+              "nll": 1.0774215571391685
+            },
+            {
+              "update": 600,
+              "nll": 0.9888939537985264
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.8487810879381535
+            },
+            {
+              "update": 200,
+              "nll": 0.7690962526972811
+            },
+            {
+              "update": 400,
+              "nll": 0.7424739904343738
+            },
+            {
+              "update": 600,
+              "nll": 0.7363439603335574
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.957150191697781
+            },
+            {
+              "update": 200,
+              "nll": 1.9745927437154025
+            },
+            {
+              "update": 400,
+              "nll": 1.9536986149755784
+            },
+            {
+              "update": 600,
+              "nll": 1.9838003577795198
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.935764598512917
+            },
+            {
+              "update": 200,
+              "nll": 0.9840391217344427
+            },
+            {
+              "update": 400,
+              "nll": 0.9063766996438956
+            },
+            {
+              "update": 600,
+              "nll": 0.7275784120475267
+            }
+          ]
+        },
+        "cohort_27b": {
+          "held AC": [
+            {
+              "update": 0,
+              "nll": 2.002938913559849
+            },
+            {
+              "update": 200,
+              "nll": 1.0840404019385768
+            },
+            {
+              "update": 400,
+              "nll": 0.9164652479722087
+            },
+            {
+              "update": 600,
+              "nll": 0.7990488343350841
+            }
+          ],
+          "held full context": [
+            {
+              "update": 0,
+              "nll": 0.6836416292073926
+            },
+            {
+              "update": 200,
+              "nll": 0.5865048408909876
+            },
+            {
+              "update": 400,
+              "nll": 0.561818042150894
+            },
+            {
+              "update": 600,
+              "nll": 0.5696297836734757
+            }
+          ],
+          "held no context": [
+            {
+              "update": 0,
+              "nll": 1.627353521278786
+            },
+            {
+              "update": 200,
+              "nll": 1.6378352827860017
+            },
+            {
+              "update": 400,
+              "nll": 1.6143928138660073
+            },
+            {
+              "update": 600,
+              "nll": 1.6519180344652462
+            }
+          ],
+          "training AC": [
+            {
+              "update": 0,
+              "nll": 1.935764598512917
+            },
+            {
+              "update": 200,
+              "nll": 0.9840391217344427
+            },
+            {
+              "update": 400,
+              "nll": 0.9063766996438956
+            },
+            {
+              "update": 600,
+              "nll": 0.7275784120475267
+            }
+          ]
+        }
+      },
+      "aligned_sampled_head_norms": [
+        {
+          "trace_x": 400,
+          "gradient_update": 401,
+          "combined_preclip_grad": 2.4945647716522217,
+          "eight_delta_heads_l2": 0.6776957941702373,
+          "fraction_squared_norm_in_delta_heads": 0.07380401881850024
+        },
+        {
+          "trace_x": 425,
+          "gradient_update": 426,
+          "combined_preclip_grad": 4.96129846572876,
+          "eight_delta_heads_l2": 0.9634278677606628,
+          "fraction_squared_norm_in_delta_heads": 0.03770923307684274
+        },
+        {
+          "trace_x": 450,
+          "gradient_update": 451,
+          "combined_preclip_grad": 6.786622047424316,
+          "eight_delta_heads_l2": 0.9402671830981246,
+          "fraction_squared_norm_in_delta_heads": 0.019195314418563977
+        },
+        {
+          "trace_x": 475,
+          "gradient_update": 476,
+          "combined_preclip_grad": 2.1381659507751465,
+          "eight_delta_heads_l2": 0.6104301986594642,
+          "fraction_squared_norm_in_delta_heads": 0.08150592909060558
+        },
+        {
+          "trace_x": 500,
+          "gradient_update": 501,
+          "combined_preclip_grad": 2.5784552097320557,
+          "eight_delta_heads_l2": 1.010263270894931,
+          "fraction_squared_norm_in_delta_heads": 0.1535146917048762
+        },
+        {
+          "trace_x": 525,
+          "gradient_update": 526,
+          "combined_preclip_grad": 3.9900920391082764,
+          "eight_delta_heads_l2": 0.7836878163907015,
+          "fraction_squared_norm_in_delta_heads": 0.03857628155793795
+        },
+        {
+          "trace_x": 550,
+          "gradient_update": 551,
+          "combined_preclip_grad": 11.136765480041504,
+          "eight_delta_heads_l2": 0.8477648904871145,
+          "fraction_squared_norm_in_delta_heads": 0.005794723321108546
+        },
+        {
+          "trace_x": 575,
+          "gradient_update": 576,
+          "combined_preclip_grad": 3.37457537651062,
+          "eight_delta_heads_l2": 0.6486577044694078,
+          "fraction_squared_norm_in_delta_heads": 0.03694816676496588
+        }
+      ],
+      "largest_gradients_through_600": [
+        {
+          "update": 1,
+          "combined_preclip_grad": 323.3395080566406,
+          "assistant_sft": 1.2686648070812225,
+          "noctx_penalty": 0.009786176728084683
+        },
+        {
+          "update": 586,
+          "combined_preclip_grad": 234.1045379638672,
+          "assistant_sft": 0.4452855419367552,
+          "noctx_penalty": 0.011130740749649704
+        },
+        {
+          "update": 108,
+          "combined_preclip_grad": 80.99131774902344,
+          "assistant_sft": 0.4821176156401634,
+          "noctx_penalty": 0.01828605169430375
+        },
+        {
+          "update": 468,
+          "combined_preclip_grad": 45.19084548950195,
+          "assistant_sft": 0.34197650803253055,
+          "noctx_penalty": 0.00785001926124096
+        },
+        {
+          "update": 114,
+          "combined_preclip_grad": 41.93370819091797,
+          "assistant_sft": 0.38628484681248665,
+          "noctx_penalty": 0.005083021125756204
+        },
+        {
+          "update": 263,
+          "combined_preclip_grad": 33.70046615600586,
+          "assistant_sft": 0.4083140529692173,
+          "noctx_penalty": 0.012425724416971207
+        },
+        {
+          "update": 445,
+          "combined_preclip_grad": 22.87563133239746,
+          "assistant_sft": 0.5985320778563619,
+          "noctx_penalty": 0.008935010759159923
+        },
+        {
+          "update": 3,
+          "combined_preclip_grad": 21.85639190673828,
+          "assistant_sft": 1.0337013825774193,
+          "noctx_penalty": 0.010609510587528348
+        },
+        {
+          "update": 2,
+          "combined_preclip_grad": 20.86732292175293,
+          "assistant_sft": 1.0550181306898594,
+          "noctx_penalty": 0.010609510587528348
+        },
+        {
+          "update": 392,
+          "combined_preclip_grad": 20.313119888305664,
+          "assistant_sft": 0.4394595194607973,
+          "noctx_penalty": 0.006473967805504799
+        }
+      ],
+      "trace_575": {
+        "intervention_delta_rms": {
+          "layer 3": 0.2734226434226961,
+          "layer 7": 0.2765634055118033,
+          "layer 11": 0.205501903733731,
+          "layer 15": 0.16818449723647927,
+          "layer 19": 0.20416663299654855,
+          "layer 23": 0.17094876790874944,
+          "layer 27": 0.16696007798631232,
+          "layer 31": 0.11638417325294416
+        },
+        "intervention_row_rms": {
+          "layer 3": 0.44132041931152344,
+          "layer 7": 0.45758146047592163,
+          "layer 11": 0.5078844428062439,
+          "layer 15": 0.6170387864112854,
+          "layer 19": 0.6417168974876404,
+          "layer 23": 0.9626356363296509,
+          "layer 27": 1.2641459703445435,
+          "layer 31": 1.8740524053573608
+        },
+        "intervention_cosine": {
+          "layer 3": 0.10776177793741226,
+          "layer 7": 0.06055270507931709,
+          "layer 11": 0.03431501239538193,
+          "layer 15": 0.03949136286973953,
+          "layer 19": 0.024139124900102615,
+          "layer 23": 0.014891440980136395,
+          "layer 27": -0.003970995079725981,
+          "layer 31": -0.01830960437655449
+        },
+        "intervention_attention": {
+          "layer 3": 4.876342296600342,
+          "layer 7": 4.771007061004639,
+          "layer 11": 4.737310409545898,
+          "layer 15": 4.676883697509766,
+          "layer 19": 4.399529933929443,
+          "layer 23": 4.493022918701172,
+          "layer 27": 4.371041774749756,
+          "layer 31": 4.357320308685303,
+          "row read-out": 0.9557545781135559,
+          "recursive read-out": 0.0
+        }
+      },
+      "attention_out_weight_norm_initial_to_575": {
+        "layer 3": {
+          "initial": 4.846904754638672,
+          "trace_575": 4.876342296600342
+        },
+        "layer 7": {
+          "initial": 4.721510887145996,
+          "trace_575": 4.771007061004639
+        },
+        "layer 11": {
+          "initial": 4.668820381164551,
+          "trace_575": 4.737310409545898
+        },
+        "layer 15": {
+          "initial": 4.602259635925293,
+          "trace_575": 4.676883697509766
+        },
+        "layer 19": {
+          "initial": 4.316106796264648,
+          "trace_575": 4.399529933929443
+        },
+        "layer 23": {
+          "initial": 4.4138288497924805,
+          "trace_575": 4.493022918701172
+        },
+        "layer 27": {
+          "initial": 4.298413276672363,
+          "trace_575": 4.371041774749756
+        },
+        "layer 31": {
+          "initial": 4.284195899963379,
+          "trace_575": 4.357320308685303
+        },
+        "row read-out": {
+          "initial": 0.0,
+          "trace_575": 0.9557545781135559
+        },
+        "recursive read-out": {
+          "initial": 0.0,
+          "trace_575": 0.0
+        }
+      }
+    }
+  },
+  "source_receipts": {
+    "ac_model/ac_model.py": {
+      "snapshot_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "workspace_identical": true
+    },
+    "ac_model/ac_model_training.py": {
+      "snapshot_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "workspace_identical": true
+    },
+    "ac_model/ac_model_utils.py": {
+      "snapshot_sha256": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c",
+      "workspace_identical": true
+    },
+    "ac_model/ac_model_reporter.py": {
+      "snapshot_sha256": "57fd719f037917eb163bbd7b164eb40b56125be9530d30a8ef19568183f1b256",
+      "workspace_identical": true
+    },
+    "harness/hf_utils.py": {
+      "snapshot_sha256": "25c1e3f6708524ac9201d42e2b10a0905a5e168062b1463c594212a7003dc5a9",
+      "workspace_identical": true
+    },
+    "harness/module_manager.py": {
+      "snapshot_sha256": "4c54d76147c9e5a3ceb6d6c3c471a614f02e7f960f1ccd22128268bc341fc055",
+      "workspace_identical": true
+    }
+  },
+  "diagnostic_correction": {
+    "file": "activation/ac_model/ac_model.py",
+    "line": 551,
+    "before": "if self.mode == TRAINING:",
+    "after": "if self.mode == TRAINING and torch.is_grad_enabled():",
+    "scope": "Detached encoder cosine/delta-RMS diagnostics only; do not gate actual delta computation.",
+    "placement": "Guard is outside the inner torch.no_grad() block.",
+    "training_changes_applied": false,
+    "workspace_applied_by_parent": true,
+    "experimental_snapshots_changed": false,
+    "workspace_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3",
+    "review_verdict": "pass",
+    "proof_receipts": [
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/stability_1_8/diagnostic_guard_cpu_check.json",
+        "sha256": "a3570544315ccd05bfbaf198442364c767489037d37ebffb73df9ed8e5a76c6e"
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/check_training_diagnostic_scope.py",
+        "sha256": "45bf9de3fc19910635caa182b7e742408bef6a9ceeb290633ca07632a0628f17"
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/diagnostic_scope_old.log",
+        "sha256": "a68c017ea264e57abbaeb248e39b301d7321401e6d16d647abf16048d58c3e3d"
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/diagnostic_scope_fixed.log",
+        "sha256": "1477cafe09c177e295612cbe06cdecfe1e2741a8555d6699597adb00191a8bf2"
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/diagnostic_scope/old.pt",
+        "sha256": "0f9482b24825195b573e268d85cb54271e66e35f42d41bed483af420bec8465c"
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/diagnostic_scope/fixed.pt",
+        "sha256": "6bb07b0daad3d970a420f14f13d15a43b0c0401e0329121f542887ba8f78deaf"
+      }
+    ]
+  },
+  "next_step": "Wait for existing final result.json grad_norm_ac/grad_norm_reader arrays and full intervention_trace; align trace update k to per-step gradient at k+1. No GPU diagnostic requested.",
+  "source_receipts_note": "Workspace equality was checked at telemetry capture, before the parent applied the one-line diagnostic correction.",
+  "completed_run_gradient_supplement": {
+    "recorded_utc": "2026-09-22T06:06:53.138184+00:00",
+    "norm_semantics": "Separate AC/readout/encoder-LoRA and reader-LoRA L2 norms recorded before a single joint clip at1.0; joint norm reconstructed as hypot. Interventions trace k aligns to completed-step index k+1.",
+    "excluded_diagnostics": "No delta_rms/delta_rms_abs/row_rms/cosine buffers used; known post-panel mixing cannot affect parameter gradient records.",
+    "arms": {
+      "r16": {
+        "status": "complete",
+        "result_path": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_27b_16k_r16/result.json",
+        "snapshot_path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/stability_1_8/final_result_r16.json",
+        "result_sha256": "0a5c69746ccdef1cdea249b973d594f48e5a2edcecfe5473b48072416f196e27",
+        "questions": 16000,
+        "updates": 2000,
+        "all_norms_finite": true,
+        "over_100_count": 2,
+        "over_100_ac_squared_share_min": 0.9980355549006757,
+        "whole_pass": {
+          "ac_norm": {
+            "n": 2000,
+            "median": 6.091336965560913,
+            "p95": 15.814031600952148,
+            "max": 323.02178955078125
+          },
+          "reader_norm": {
+            "n": 2000,
+            "median": 1.2377051711082458,
+            "p95": 1.9354392290115356,
+            "max": 16.364852905273438
+          },
+          "joint_norm": {
+            "n": 2000,
+            "median": 6.23632204240397,
+            "p95": 16.0902636344392,
+            "max": 323.3395370613782
+          },
+          "ac_squared_norm_share": {
+            "n": 2000,
+            "median": 0.9609127591589413,
+            "p95": 0.9939517650526184,
+            "max": 0.9999385435678633
+          },
+          "approx_reader_norm_after_joint_clip": {
+            "n": 2000,
+            "median": 0.19770490347756275,
+            "p95": 0.5686427163088378,
+            "max": 0.9483022826167856
+          }
+        },
+        "windows": [
+          {
+            "questions_seen_range": [
+              1,
+              1600
+            ],
+            "pass_fraction_range": [
+              0.0,
+              0.1
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 4.296117782592773,
+              "p95": 12.876424789428711,
+              "max": 323.02178955078125
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.6965985894203186,
+              "p95": 2.8210015296936035,
+              "max": 16.364852905273438
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 4.717703735442866,
+              "p95": 13.611399186102936,
+              "max": 323.3395370613782
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.82796298437695,
+              "p95": 0.9756103575792039,
+              "max": 0.9993717273408839
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.41473994558210436,
+              "p95": 0.7995311350237078,
+              "max": 0.9483022826167856
+            },
+            "median_learning_rates": [
+              4.971728100129581e-05,
+              1.9886912400518323e-05
+            ],
+            "over_100_count": 1,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              1601,
+              3200
+            ],
+            "pass_fraction_range": [
+              0.1,
+              0.2
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 3.4360986948013306,
+              "p95": 9.578152656555176,
+              "max": 33.681278228759766
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.3809457421302795,
+              "p95": 1.837145209312439,
+              "max": 3.5406382083892822
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 3.6676459733863593,
+              "p95": 9.679461765754958,
+              "max": 33.70046780277315
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.8588370224550527,
+              "p95": 0.9788433698840313,
+              "max": 0.9988614929202938
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.37571649739586277,
+              "p95": 0.6617262991608869,
+              "max": 0.9109186708633873
+            },
+            "median_learning_rates": [
+              4.82066282749819e-05,
+              1.9282651309992758e-05
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              3201,
+              4800
+            ],
+            "pass_fraction_range": [
+              0.2,
+              0.3
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 4.072915554046631,
+              "p95": 12.124255180358887,
+              "max": 234.0973358154297
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.3051273226737976,
+              "p95": 1.8788892030715942,
+              "max": 4.957732200622559
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 4.314242528749654,
+              "p95": 12.223832174763173,
+              "max": 234.10452954052286
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9000331266875367,
+              "p95": 0.9870224894550884,
+              "max": 0.9999385435678633
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.31617530845729613,
+              "p95": 0.5671245150463954,
+              "max": 0.8427541858810362
+            },
+            "median_learning_rates": [
+              4.435349971541931e-05,
+              1.7741399886167726e-05
+            ],
+            "over_100_count": 1,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              4801,
+              6400
+            ],
+            "pass_fraction_range": [
+              0.3,
+              0.4
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 5.716001749038696,
+              "p95": 17.856918334960938,
+              "max": 56.8128776550293
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.2529431581497192,
+              "p95": 1.7130553722381592,
+              "max": 4.413661479949951
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 5.8827837074149265,
+              "p95": 17.896179402421218,
+              "max": 56.82602342230565
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9507875523490805,
+              "p95": 0.9951108078674332,
+              "max": 0.9995373863608231
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.22183867664973456,
+              "p95": 0.4428290387279292,
+              "max": 0.7530816493748185
+            },
+            "median_learning_rates": [
+              3.876568903386023e-05,
+              1.550627561354409e-05
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              6401,
+              8000
+            ],
+            "pass_fraction_range": [
+              0.4,
+              0.5
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 6.242562294006348,
+              "p95": 17.206132888793945,
+              "max": 93.8612289428711
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.2396759390830994,
+              "p95": 1.647102952003479,
+              "max": 4.489744186401367
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 6.371623737283276,
+              "p95": 17.24902799736989,
+              "max": 93.87708815547322
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9594191014305564,
+              "p95": 0.9951925813105634,
+              "max": 0.9996621566919396
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.20144691968849116,
+              "p95": 0.3563308924269861,
+              "max": 0.4327870072317058
+            },
+            "median_learning_rates": [
+              3.20183334691022e-05,
+              1.2807333387640883e-05
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              8001,
+              9600
+            ],
+            "pass_fraction_range": [
+              0.5,
+              0.6
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 7.26463508605957,
+              "p95": 17.496435165405273,
+              "max": 82.75708770751953
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.2007341980934143,
+              "p95": 1.6516999006271362,
+              "max": 3.2987060546875
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 7.367869573298307,
+              "p95": 17.548195126223174,
+              "max": 82.76761171306514
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9749800272647247,
+              "p95": 0.995618452133904,
+              "max": 0.9997457136612364
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.15817611380555385,
+              "p95": 0.2773421027603943,
+              "max": 0.6445789610311009
+            },
+            "median_learning_rates": [
+              2.4805918870765586e-05,
+              9.922367548306234e-06
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              9601,
+              11200
+            ],
+            "pass_fraction_range": [
+              0.6,
+              0.7
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 7.434342384338379,
+              "p95": 16.320253372192383,
+              "max": 32.24392318725586
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.2005147337913513,
+              "p95": 1.6696728467941284,
+              "max": 7.027981758117676
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 7.62344394461372,
+              "p95": 16.365438133953322,
+              "max": 32.27378220265857
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9755496285763428,
+              "p95": 0.993576372184284,
+              "max": 0.9982051203207994
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.15636359633188482,
+              "p95": 0.29063541912095253,
+              "max": 0.7132565545576902
+            },
+            "median_learning_rates": [
+              1.7870798273615873e-05,
+              7.148319309446349e-06
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              11201,
+              12800
+            ],
+            "pass_fraction_range": [
+              0.7,
+              0.8
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 8.010600566864014,
+              "p95": 18.091381072998047,
+              "max": 54.47669982910156
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1127380728721619,
+              "p95": 1.5298999547958374,
+              "max": 5.789649963378906
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 8.089863501479183,
+              "p95": 18.11847356236521,
+              "max": 54.51069408294258
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9797294021937775,
+              "p95": 0.9960004543882212,
+              "max": 0.9992586313192
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.14237244542845945,
+              "p95": 0.23550297450521054,
+              "max": 0.5116803515318101
+            },
+            "median_learning_rates": [
+              1.1926783640562999e-05,
+              4.770713456225199e-06
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              12801,
+              14400
+            ],
+            "pass_fraction_range": [
+              0.8,
+              0.9
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 7.258241891860962,
+              "p95": 18.15070152282715,
+              "max": 40.11896514892578
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1198856234550476,
+              "p95": 1.6121294498443604,
+              "max": 2.2953248023986816
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 7.390106616174755,
+              "p95": 18.191830500527285,
+              "max": 40.135841326578976
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.974338513872349,
+              "p95": 0.9959408489886195,
+              "max": 0.9991592238220228
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.1601874668553392,
+              "p95": 0.2837617343937716,
+              "max": 0.48225838185565606
+            },
+            "median_learning_rates": [
+              7.585675255877222e-06,
+              3.0342701023508886e-06
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              14401,
+              16000
+            ],
+            "pass_fraction_range": [
+              0.9,
+              1.0
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 6.8564841747283936,
+              "p95": 12.33546257019043,
+              "max": 31.337430953979492
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.0909398198127747,
+              "p95": 1.4340494871139526,
+              "max": 6.524521350860596
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 7.041638026235516,
+              "p95": 12.40085565690715,
+              "max": 31.357237328020975
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9740474916298534,
+              "p95": 0.992378072889269,
+              "max": 0.9987371260662747
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.16109764193864695,
+              "p95": 0.3014351338968582,
+              "max": 0.7751339397842473
+            },
+            "median_learning_rates": [
+              5.2942908862965586e-06,
+              2.1177163545186233e-06
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          }
+        ],
+        "largest_joint_norms": [
+          {
+            "step": 1,
+            "questions_seen": 8,
+            "pass_fraction": 0.0005,
+            "ac_norm": 323.02178955078125,
+            "reader_norm": 14.331074714660645,
+            "joint_norm": 323.3395370613782,
+            "learning_rates": [
+              1.0000000000000002e-06,
+              4.0000000000000003e-07
+            ],
+            "ac_squared_norm_share": 0.9980355549006757,
+            "approx_reader_norm_after_joint_clip": 0.044322060953585686
+          },
+          {
+            "step": 586,
+            "questions_seen": 4688,
+            "pass_fraction": 0.293,
+            "ac_norm": 234.0973358154297,
+            "reader_norm": 1.8352426290512085,
+            "joint_norm": 234.10452954052286,
+            "learning_rates": [
+              4.214700651665534e-05,
+              1.6858802606662138e-05
+            ],
+            "ac_squared_norm_share": 0.9999385435678633,
+            "approx_reader_norm_after_joint_clip": 0.007839415259558733
+          },
+          {
+            "step": 856,
+            "questions_seen": 6848,
+            "pass_fraction": 0.428,
+            "ac_norm": 93.8612289428711,
+            "reader_norm": 1.7255091667175293,
+            "joint_norm": 93.87708815547322,
+            "learning_rates": [
+              3.358560191678789e-05,
+              1.3434240766715156e-05
+            ],
+            "ac_squared_norm_share": 0.9996621566919396,
+            "approx_reader_norm_after_joint_clip": 0.0183805141620854
+          },
+          {
+            "step": 1047,
+            "questions_seen": 8376,
+            "pass_fraction": 0.5235,
+            "ac_norm": 82.75708770751953,
+            "reader_norm": 1.319841980934143,
+            "joint_norm": 82.76761171306514,
+            "learning_rates": [
+              2.673891314847013e-05,
+              1.0695565259388052e-05
+            ],
+            "ac_squared_norm_share": 0.9997457136612364,
+            "approx_reader_norm_after_joint_clip": 0.01594635797349513
+          },
+          {
+            "step": 108,
+            "questions_seen": 864,
+            "pass_fraction": 0.054,
+            "ac_norm": 80.96587371826172,
+            "reader_norm": 2.0300772190093994,
+            "joint_norm": 80.99132003169626,
+            "learning_rates": [
+              4.9905195809154695e-05,
+              1.9962078323661877e-05
+            ],
+            "ac_squared_norm_share": 0.9993717273408839,
+            "approx_reader_norm_after_joint_clip": 0.02506536741405812
+          },
+          {
+            "step": 1041,
+            "questions_seen": 8328,
+            "pass_fraction": 0.5205,
+            "ac_norm": 62.135032653808594,
+            "reader_norm": 1.8438782691955566,
+            "joint_norm": 62.16238549123957,
+            "learning_rates": [
+              2.6956315732187032e-05,
+              1.0782526292874813e-05
+            ],
+            "ac_squared_norm_share": 0.9991201489683739,
+            "approx_reader_norm_after_joint_clip": 0.029662282503510558
+          },
+          {
+            "step": 687,
+            "questions_seen": 5496,
+            "pass_fraction": 0.3435,
+            "ac_norm": 56.8128776550293,
+            "reader_norm": 1.2222399711608887,
+            "joint_norm": 56.82602342230565,
+            "learning_rates": [
+              3.918659879504249e-05,
+              1.5674639518016996e-05
+            ],
+            "ac_squared_norm_share": 0.9995373863608231,
+            "approx_reader_norm_after_joint_clip": 0.02150845468403256
+          },
+          {
+            "step": 1483,
+            "questions_seen": 11864,
+            "pass_fraction": 0.7415,
+            "ac_norm": 54.47669982910156,
+            "reader_norm": 1.9248234033584595,
+            "joint_norm": 54.51069408294258,
+            "learning_rates": [
+              1.239076287401429e-05,
+              4.956305149605716e-06
+            ],
+            "ac_squared_norm_share": 0.998753138092533,
+            "approx_reader_norm_after_joint_clip": 0.035310931193037985
+          },
+          {
+            "step": 468,
+            "questions_seen": 3744,
+            "pass_fraction": 0.234,
+            "ac_norm": 45.17500305175781,
+            "reader_norm": 1.1965126991271973,
+            "joint_norm": 45.19084579165896,
+            "learning_rates": [
+              4.5110563839140755e-05,
+              1.8044225535656305e-05
+            ],
+            "ac_squared_norm_share": 0.9992989747106278,
+            "approx_reader_norm_after_joint_clip": 0.026476881582755428
+          },
+          {
+            "step": 864,
+            "questions_seen": 6912,
+            "pass_fraction": 0.432,
+            "ac_norm": 43.72557830810547,
+            "reader_norm": 1.1322789192199707,
+            "joint_norm": 43.7402360982331,
+            "learning_rates": [
+              3.330591963416771e-05,
+              1.3322367853667085e-05
+            ],
+            "ac_squared_norm_share": 0.9993298923165959,
+            "approx_reader_norm_after_joint_clip": 0.025886437622115895
+          },
+          {
+            "step": 1548,
+            "questions_seen": 12384,
+            "pass_fraction": 0.774,
+            "ac_norm": 43.296241760253906,
+            "reader_norm": 3.5681917667388916,
+            "joint_norm": 43.44302640294041,
+            "learning_rates": [
+              1.0730817483889647e-05,
+              4.292326993555859e-06
+            ],
+            "ac_squared_norm_share": 0.9932538463384929,
+            "approx_reader_norm_after_joint_clip": 0.08213497032891821
+          },
+          {
+            "step": 1587,
+            "questions_seen": 12696,
+            "pass_fraction": 0.7935,
+            "ac_norm": 43.09566879272461,
+            "reader_norm": 1.1738477945327759,
+            "joint_norm": 43.11165257023845,
+            "learning_rates": [
+              9.8219566702949e-06,
+              3.92878266811796e-06
+            ],
+            "ac_squared_norm_share": 0.9992586313192,
+            "approx_reader_norm_after_joint_clip": 0.02722808561773947
+          },
+          {
+            "step": 910,
+            "questions_seen": 7280,
+            "pass_fraction": 0.455,
+            "ac_norm": 42.49900817871094,
+            "reader_norm": 1.532607078552246,
+            "joint_norm": 42.52663377968408,
+            "learning_rates": [
+              3.1680467048078016e-05,
+              1.2672186819231207e-05
+            ],
+            "ac_squared_norm_share": 0.9987012078960358,
+            "approx_reader_norm_after_joint_clip": 0.03603875751025582
+          },
+          {
+            "step": 114,
+            "questions_seen": 912,
+            "pass_fraction": 0.057,
+            "ac_norm": 41.903175354003906,
+            "reader_norm": 1.5998879671096802,
+            "joint_norm": 41.93370656471596,
+            "learning_rates": [
+              4.98842046076174e-05,
+              1.9953681843046962e-05
+            ],
+            "ac_squared_norm_share": 0.9985443644939814,
+            "approx_reader_norm_after_joint_clip": 0.03815279067896836
+          },
+          {
+            "step": 1782,
+            "questions_seen": 14256,
+            "pass_fraction": 0.891,
+            "ac_norm": 40.11896514892578,
+            "reader_norm": 1.1637845039367676,
+            "joint_norm": 40.135841326578976,
+            "learning_rates": [
+              6.385993876579055e-06,
+              2.554397550631622e-06
+            ],
+            "ac_squared_norm_share": 0.9991592238220228,
+            "approx_reader_norm_after_joint_clip": 0.02899614002036479
+          }
+        ],
+        "sampled_gradient_trace": {
+          "n": 112,
+          "over_100_count": 1,
+          "largest_joint_norms": [
+            {
+              "step": 1,
+              "questions_seen": 8,
+              "pass_fraction": 0.0005,
+              "ac_norm": 323.02178955078125,
+              "reader_norm": 14.331074714660645,
+              "joint_norm": 323.3395370613782,
+              "learning_rates": [
+                1.0000000000000002e-06,
+                4.0000000000000003e-07
+              ],
+              "ac_squared_norm_share": 0.9980355549006757,
+              "approx_reader_norm_after_joint_clip": 0.044322060953585686,
+              "trace_record_update": 0,
+              "delta_heads_norm": 5.735750398638963,
+              "passage_and_row_readouts_norm": 0.9242523498515424,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00032348169294911446,
+              "attention_grad_norm": {
+                "3": 0.8282591700553894,
+                "7": 0.3204927146434784,
+                "11": 0.12339939922094345,
+                "15": 0.15241488814353943,
+                "19": 0.09884266555309296,
+                "23": 0.034730564802885056,
+                "27": 0.027151338756084442,
+                "31": 0.03512338548898697,
+                "row": 0.11878102272748947,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1451,
+              "questions_seen": 11608,
+              "pass_fraction": 0.7255,
+              "ac_norm": 23.840991973876953,
+              "reader_norm": 1.2790215015411377,
+              "joint_norm": 23.87527579526297,
+              "learning_rates": [
+                1.3269979049104014e-05,
+                5.307991619641606e-06
+              ],
+              "ac_squared_norm_share": 0.9971301519892276,
+              "approx_reader_norm_after_joint_clip": 0.05357096014044557,
+              "trace_record_update": 1450,
+              "delta_heads_norm": 1.1588769255457334,
+              "passage_and_row_readouts_norm": 0.05891949947310043,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.002368902285745057,
+              "attention_grad_norm": {
+                "3": 0.032782185822725296,
+                "7": 0.030045825988054276,
+                "11": 0.02254432439804077,
+                "15": 0.015071917325258255,
+                "19": 0.010153016075491905,
+                "23": 0.00719572464004159,
+                "27": 0.005494255572557449,
+                "31": 0.003290356369689107,
+                "row": 0.023723391816020012,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1401,
+              "questions_seen": 11208,
+              "pass_fraction": 0.7005,
+              "ac_norm": 23.078123092651367,
+              "reader_norm": 1.7255339622497559,
+              "joint_norm": 23.142541626503466,
+              "learning_rates": [
+                1.4718543198548998e-05,
+                5.887417279419599e-06
+              ],
+              "ac_squared_norm_share": 0.9944406384891238,
+              "approx_reader_norm_after_joint_clip": 0.07456112278145392,
+              "trace_record_update": 1400,
+              "delta_heads_norm": 1.2471714018015843,
+              "passage_and_row_readouts_norm": 0.08162316303345896,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00293296945936271,
+              "attention_grad_norm": {
+                "3": 0.040526412427425385,
+                "7": 0.04132081940770149,
+                "11": 0.029005249962210655,
+                "15": 0.023771030828356743,
+                "19": 0.02088882587850094,
+                "23": 0.012798124924302101,
+                "27": 0.013804829679429531,
+                "31": 0.005496522877365351,
+                "row": 0.03294319286942482,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1701,
+              "questions_seen": 13608,
+              "pass_fraction": 0.8505,
+              "ac_norm": 22.809654235839844,
+              "reader_norm": 1.2209573984146118,
+              "joint_norm": 22.842308625165494,
+              "learning_rates": [
+                7.57723942280278e-06,
+                3.030895769121112e-06
+              ],
+              "ac_squared_norm_share": 0.9971429290094452,
+              "approx_reader_norm_after_joint_clip": 0.0534515737878571,
+              "trace_record_update": 1700,
+              "delta_heads_norm": 0.9080037429328633,
+              "passage_and_row_readouts_norm": 0.04760781718696246,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0015890228008883546,
+              "attention_grad_norm": {
+                "3": 0.022309711202979088,
+                "7": 0.025802377611398697,
+                "11": 0.017971346154808998,
+                "15": 0.014521745033562183,
+                "19": 0.010148245841264725,
+                "23": 0.007574140559881926,
+                "27": 0.006770421285182238,
+                "31": 0.0030175819993019104,
+                "row": 0.018811408430337906,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1726,
+              "questions_seen": 13808,
+              "pass_fraction": 0.863,
+              "ac_norm": 21.9959716796875,
+              "reader_norm": 0.9968265295028687,
+              "joint_norm": 22.018547483054718,
+              "learning_rates": [
+                7.172365221266403e-06,
+                2.8689460885065614e-06
+              ],
+              "ac_squared_norm_share": 0.9979504343051413,
+              "approx_reader_norm_after_joint_clip": 0.0452721272825962,
+              "trace_record_update": 1725,
+              "delta_heads_norm": 0.9335508970502745,
+              "passage_and_row_readouts_norm": 0.04461828555852143,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0018054298447927994,
+              "attention_grad_norm": {
+                "3": 0.02281089872121811,
+                "7": 0.021033981814980507,
+                "11": 0.019474580883979797,
+                "15": 0.014358717016875744,
+                "19": 0.008905019611120224,
+                "23": 0.004485911224037409,
+                "27": 0.0038539350498467684,
+                "31": 0.0018847840838134289,
+                "row": 0.01802126131951809,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 76,
+              "questions_seen": 608,
+              "pass_fraction": 0.038,
+              "ac_norm": 15.04985237121582,
+              "reader_norm": 1.6261296272277832,
+              "joint_norm": 15.137448726913608,
+              "learning_rates": [
+                4.998175245886032e-05,
+                1.999270098354413e-05
+              ],
+              "ac_squared_norm_share": 0.9884600226939702,
+              "approx_reader_norm_after_joint_clip": 0.10742427929168336,
+              "trace_record_update": 75,
+              "delta_heads_norm": 1.1702897839541764,
+              "passage_and_row_readouts_norm": 0.08825827617011477,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.006081145788445999,
+              "attention_grad_norm": {
+                "3": 0.055248647928237915,
+                "7": 0.045521922409534454,
+                "11": 0.0347951240837574,
+                "15": 0.023019885644316673,
+                "19": 0.010503792203962803,
+                "23": 0.008257794193923473,
+                "27": 0.006282519549131393,
+                "31": 0.0035910261794924736,
+                "row": 0.02633178047835827,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1826,
+              "questions_seen": 14608,
+              "pass_fraction": 0.913,
+              "ac_norm": 14.802460670471191,
+              "reader_norm": 1.1384202241897583,
+              "joint_norm": 14.846172655189307,
+              "learning_rates": [
+                5.888342488294125e-06,
+                2.3553369953176502e-06
+              ],
+              "ac_squared_norm_share": 0.9941200153673551,
+              "approx_reader_norm_after_joint_clip": 0.07668105268267807,
+              "trace_record_update": 1825,
+              "delta_heads_norm": 0.906497324745231,
+              "passage_and_row_readouts_norm": 0.05672708897152989,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.003764979520309247,
+              "attention_grad_norm": {
+                "3": 0.03147349879145622,
+                "7": 0.02693210355937481,
+                "11": 0.021256987005472183,
+                "15": 0.016507690772414207,
+                "19": 0.009251274168491364,
+                "23": 0.007341552991420031,
+                "27": 0.005572637543082237,
+                "31": 0.0022584369871765375,
+                "row": 0.02453651651740074,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1076,
+              "questions_seen": 8608,
+              "pass_fraction": 0.538,
+              "ac_norm": 14.599419593811035,
+              "reader_norm": 0.9994276762008667,
+              "joint_norm": 14.633588355427722,
+              "learning_rates": [
+                2.5689502203873672e-05,
+                1.027580088154947e-05
+              ],
+              "ac_squared_norm_share": 0.995335543198634,
+              "approx_reader_norm_after_joint_clip": 0.06829682396617004,
+              "trace_record_update": 1075,
+              "delta_heads_norm": 0.8036315191743155,
+              "passage_and_row_readouts_norm": 0.04645387453877432,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.003040125275218992,
+              "attention_grad_norm": {
+                "3": 0.023893259465694427,
+                "7": 0.02337743528187275,
+                "11": 0.018763970583677292,
+                "15": 0.016159912571310997,
+                "19": 0.009956121444702148,
+                "23": 0.005890919826924801,
+                "27": 0.004763951525092125,
+                "31": 0.002391653135418892,
+                "row": 0.016281837597489357,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 226,
+              "questions_seen": 1808,
+              "pass_fraction": 0.113,
+              "ac_norm": 14.538971900939941,
+              "reader_norm": 1.4638075828552246,
+              "joint_norm": 14.61247537469082,
+              "learning_rates": [
+                4.911165751170588e-05,
+                1.964466300468235e-05
+              ],
+              "ac_squared_norm_share": 0.9899649301317213,
+              "approx_reader_norm_after_joint_clip": 0.10017518901796663,
+              "trace_record_update": 225,
+              "delta_heads_norm": 0.8018510142885106,
+              "passage_and_row_readouts_norm": 0.05779372406563218,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0030575265106746767,
+              "attention_grad_norm": {
+                "3": 0.03354426100850105,
+                "7": 0.02353372611105442,
+                "11": 0.02322325110435486,
+                "15": 0.015801506116986275,
+                "19": 0.011975022964179516,
+                "23": 0.008542184717953205,
+                "27": 0.006876262836158276,
+                "31": 0.0037138056941330433,
+                "row": 0.024384593591094017,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1226,
+              "questions_seen": 9808,
+              "pass_fraction": 0.613,
+              "ac_norm": 13.89301586151123,
+              "reader_norm": 1.224305272102356,
+              "joint_norm": 13.946856747220869,
+              "learning_rates": [
+                2.0374970139466877e-05,
+                8.14998805578675e-06
+              ],
+              "ac_squared_norm_share": 0.9922940398461317,
+              "approx_reader_norm_after_joint_clip": 0.08778359213897612,
+              "trace_record_update": 1225,
+              "delta_heads_norm": 1.1925042780901118,
+              "passage_and_row_readouts_norm": 0.05801458542854229,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.007385050771689844,
+              "attention_grad_norm": {
+                "3": 0.033212482929229736,
+                "7": 0.030179211869835854,
+                "11": 0.022314036265015602,
+                "15": 0.016471359878778458,
+                "19": 0.00969564076513052,
+                "23": 0.006540184840559959,
+                "27": 0.005034837871789932,
+                "31": 0.002052680356428027,
+                "row": 0.02040278911590576,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1376,
+              "questions_seen": 11008,
+              "pass_fraction": 0.688,
+              "ac_norm": 13.098433494567871,
+              "reader_norm": 1.4190906286239624,
+              "joint_norm": 13.175081716022328,
+              "learning_rates": [
+                1.5474518912124476e-05,
+                6.18980756484979e-06
+              ],
+              "ac_squared_norm_share": 0.9883985137647054,
+              "approx_reader_norm_after_joint_clip": 0.10771018742054608,
+              "trace_record_update": 1375,
+              "delta_heads_norm": 1.087666917608302,
+              "passage_and_row_readouts_norm": 0.06858802403096746,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.006922718658547519,
+              "attention_grad_norm": {
+                "3": 0.042040083557367325,
+                "7": 0.03316371887922287,
+                "11": 0.025111667811870575,
+                "15": 0.018460899591445923,
+                "19": 0.009670515544712543,
+                "23": 0.01023750752210617,
+                "27": 0.006482385564595461,
+                "31": 0.0039042863063514233,
+                "row": 0.024700714275240898,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 201,
+              "questions_seen": 1608,
+              "pass_fraction": 0.1005,
+              "ac_norm": 12.536884307861328,
+              "reader_norm": 1.1802958250045776,
+              "joint_norm": 12.592321723305153,
+              "learning_rates": [
+                4.9346190892086174e-05,
+                1.973847635683447e-05
+              ],
+              "ac_squared_norm_share": 0.9912144264311279,
+              "approx_reader_norm_after_joint_clip": 0.09373138307678167,
+              "trace_record_update": 200,
+              "delta_heads_norm": 0.7780674708486327,
+              "passage_and_row_readouts_norm": 0.04132770934377357,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0038625919240900465,
+              "attention_grad_norm": {
+                "3": 0.02314923331141472,
+                "7": 0.019742900505661964,
+                "11": 0.01655210740864277,
+                "15": 0.010771360248327255,
+                "19": 0.009467422030866146,
+                "23": 0.006580737419426441,
+                "27": 0.006672012619674206,
+                "31": 0.0032373168505728245,
+                "row": 0.014296216890215874,
+                "recursive": 0.0
+              }
+            }
+          ],
+          "fraction_of_ac_squared_norm_in_heads_and_readouts": {
+            "n": 112,
+            "median": 0.02356426140126513,
+            "p95": 0.13304720447790555,
+            "max": 0.233655097661414
+          }
+        },
+        "gate_first_last": [
+          {
+            "update": 0,
+            "position_scale": 0.03367546945810318,
+            "input_scale": 0.01611701399087906,
+            "mixer.0.residual_scale": 0.02243635058403015,
+            "mixer.1.residual_scale": 0.023859553039073944,
+            "summary_pooling.residual_scale": 0.09847819805145264,
+            "recursive_adapter.scale": 0.01464406680315733,
+            "target_head.scale": 0.06538860499858856
+          },
+          {
+            "update": 1975,
+            "position_scale": 0.03385644406080246,
+            "input_scale": 0.016332117840647697,
+            "mixer.0.residual_scale": 0.020051265135407448,
+            "mixer.1.residual_scale": 0.021603934466838837,
+            "summary_pooling.residual_scale": 0.09891144931316376,
+            "recursive_adapter.scale": 0.01464406680315733,
+            "target_head.scale": 0.0644475519657135
+          }
+        ],
+        "panels": [
+          {
+            "questions_seen": 0,
+            "pass_fraction": 0.0,
+            "ac_nll": 2.2530745156748404,
+            "full_nll": 0.7662113585727731,
+            "noctx_nll": 1.7922518564882832,
+            "learning_nll": 1.935764598512917,
+            "cohorts": {
+              "9b": {
+                "held AC": 2.503210117789832,
+                "held full context": 0.8487810879381535,
+                "held no context": 1.957150191697781,
+                "training AC": 1.935764598512917
+              },
+              "27b": {
+                "held AC": 2.002938913559849,
+                "held full context": 0.6836416292073926,
+                "held no context": 1.627353521278786,
+                "training AC": 1.935764598512917
+              }
+            }
+          },
+          {
+            "questions_seen": 1600,
+            "pass_fraction": 0.1,
+            "ac_nll": 1.1827988788357728,
+            "full_nll": 0.6778005467941344,
+            "noctx_nll": 1.8062140132507019,
+            "learning_nll": 0.9840391217344427,
+            "cohorts": {
+              "9b": {
+                "held AC": 1.2815573557329687,
+                "held full context": 0.7690962526972811,
+                "held no context": 1.9745927437154025,
+                "training AC": 0.9840391217344427
+              },
+              "27b": {
+                "held AC": 1.0840404019385768,
+                "held full context": 0.5865048408909876,
+                "held no context": 1.6378352827860017,
+                "training AC": 0.9840391217344427
+              }
+            }
+          },
+          {
+            "questions_seen": 3200,
+            "pass_fraction": 0.2,
+            "ac_nll": 0.9969434025556886,
+            "full_nll": 0.652146016292634,
+            "noctx_nll": 1.7840457144207928,
+            "learning_nll": 0.9063766996438956,
+            "cohorts": {
+              "9b": {
+                "held AC": 1.0774215571391685,
+                "held full context": 0.7424739904343738,
+                "held no context": 1.9536986149755784,
+                "training AC": 0.9063766996438956
+              },
+              "27b": {
+                "held AC": 0.9164652479722087,
+                "held full context": 0.561818042150894,
+                "held no context": 1.6143928138660073,
+                "training AC": 0.9063766996438956
+              }
+            }
+          },
+          {
+            "questions_seen": 4800,
+            "pass_fraction": 0.3,
+            "ac_nll": 0.8939713940668053,
+            "full_nll": 0.6529868720035167,
+            "noctx_nll": 1.8178591961223831,
+            "learning_nll": 0.7275784120475267,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.9888939537985264,
+                "held full context": 0.7363439603335574,
+                "held no context": 1.9838003577795198,
+                "training AC": 0.7275784120475267
+              },
+              "27b": {
+                "held AC": 0.7990488343350841,
+                "held full context": 0.5696297836734757,
+                "held no context": 1.6519180344652462,
+                "training AC": 0.7275784120475267
+              }
+            }
+          },
+          {
+            "questions_seen": 6400,
+            "pass_fraction": 0.4,
+            "ac_nll": 0.7969471907527661,
+            "full_nll": 0.6591609765762594,
+            "noctx_nll": 1.812462333171589,
+            "learning_nll": 0.6168960069792488,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.8598173583443769,
+                "held full context": 0.7447015939530757,
+                "held no context": 1.981412910811034,
+                "training AC": 0.6168960069792488
+              },
+              "27b": {
+                "held AC": 0.7340770231611554,
+                "held full context": 0.5736203591994431,
+                "held no context": 1.6435117555321441,
+                "training AC": 0.6168960069792488
+              }
+            }
+          },
+          {
+            "questions_seen": 8000,
+            "pass_fraction": 0.5,
+            "ac_nll": 0.714590944940221,
+            "full_nll": 0.6328666549272507,
+            "noctx_nll": 1.7991802260810354,
+            "learning_nll": 0.5731152020858885,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.7767499698519422,
+                "held full context": 0.709455804903749,
+                "held no context": 1.9645754263485953,
+                "training AC": 0.5731152020858885
+              },
+              "27b": {
+                "held AC": 0.6524319200284997,
+                "held full context": 0.5562775049507525,
+                "held no context": 1.6337850258134756,
+                "training AC": 0.5731152020858885
+              }
+            }
+          },
+          {
+            "questions_seen": 9600,
+            "pass_fraction": 0.6,
+            "ac_nll": 0.6961557493510249,
+            "full_nll": 0.6130323866362781,
+            "noctx_nll": 1.7874179934622174,
+            "learning_nll": 0.49935413664501344,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.7677157619510545,
+                "held full context": 0.696884608061046,
+                "held no context": 1.956889345819169,
+                "training AC": 0.49935413664501344
+              },
+              "27b": {
+                "held AC": 0.6245957367509952,
+                "held full context": 0.5291801652115102,
+                "held no context": 1.6179466411052656,
+                "training AC": 0.49935413664501344
+              }
+            }
+          },
+          {
+            "questions_seen": 11200,
+            "pass_fraction": 0.7,
+            "ac_nll": 0.6740096610389287,
+            "full_nll": 0.5979461819704622,
+            "noctx_nll": 1.7829310472272442,
+            "learning_nll": 0.4839642019379834,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.7414835388192722,
+                "held full context": 0.6821828848972963,
+                "held no context": 1.9550127162695676,
+                "training AC": 0.4839642019379834
+              },
+              "27b": {
+                "held AC": 0.6065357832585854,
+                "held full context": 0.5137094790436281,
+                "held no context": 1.6108493781849205,
+                "training AC": 0.4839642019379834
+              }
+            }
+          },
+          {
+            "questions_seen": 12800,
+            "pass_fraction": 0.8,
+            "ac_nll": 0.6367709261334962,
+            "full_nll": 0.6223926580580645,
+            "noctx_nll": 1.802132824752445,
+            "learning_nll": 0.45165410967193725,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.6877863398999436,
+                "held full context": 0.707681941374,
+                "held no context": 1.9717388432027823,
+                "training AC": 0.45165410967193725
+              },
+              "27b": {
+                "held AC": 0.5857555123670487,
+                "held full context": 0.537103374742129,
+                "held no context": 1.632526806302108,
+                "training AC": 0.45165410967193725
+              }
+            }
+          },
+          {
+            "questions_seen": 14400,
+            "pass_fraction": 0.9,
+            "ac_nll": 0.6310745316515723,
+            "full_nll": 0.6220317018898797,
+            "noctx_nll": 1.7990391835139596,
+            "learning_nll": 0.430340125830852,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.6817907759418671,
+                "held full context": 0.7046596156669748,
+                "held no context": 1.968033866619146,
+                "training AC": 0.430340125830852
+              },
+              "27b": {
+                "held AC": 0.5803582873612775,
+                "held full context": 0.5394037881127847,
+                "held no context": 1.6300445004087731,
+                "training AC": 0.430340125830852
+              }
+            }
+          },
+          {
+            "questions_seen": 16000,
+            "pass_fraction": 1.0,
+            "ac_nll": 0.603263836029209,
+            "full_nll": 0.6436801356868012,
+            "noctx_nll": 1.8134317390199919,
+            "learning_nll": 0.42436562932548455,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.6429122099595753,
+                "held full context": 0.7284269805773342,
+                "held no context": 1.9830182036969892,
+                "training AC": 0.42436562932548455
+              },
+              "27b": {
+                "held AC": 0.5636154620988426,
+                "held full context": 0.5589332907962681,
+                "held no context": 1.6438452743429945,
+                "training AC": 0.42436562932548455
+              }
+            }
+          }
+        ]
+      },
+      "r8": {
+        "status": "complete",
+        "result_path": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_27b_16k_r8/result.json",
+        "snapshot_path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/stability_1_8/final_result_r8.json",
+        "result_sha256": "7a799b05f01da6e33e65548115765ae7b2e83a1625e9800ceaaaa55e68fe9f68",
+        "questions": 16000,
+        "updates": 2000,
+        "all_norms_finite": true,
+        "over_100_count": 174,
+        "over_100_ac_squared_share_min": 0.9984748224812857,
+        "whole_pass": {
+          "ac_norm": {
+            "n": 2000,
+            "median": 11.530506134033203,
+            "p95": 170.6134796142578,
+            "max": 6601.8603515625
+          },
+          "reader_norm": {
+            "n": 2000,
+            "median": 1.2677261233329773,
+            "p95": 1.972523808479309,
+            "max": 16.696287155151367
+          },
+          "joint_norm": {
+            "n": 2000,
+            "median": 11.624654624717332,
+            "p95": 170.61842318219652,
+            "max": 6601.8606304895875
+          },
+          "ac_squared_norm_share": {
+            "n": 2000,
+            "median": 0.9880285213892259,
+            "p95": 0.9999453213029077,
+            "max": 0.9999999559341812
+          },
+          "approx_reader_norm_after_joint_clip": {
+            "n": 2000,
+            "median": 0.10941423890137589,
+            "p95": 0.4346824450671411,
+            "max": 0.7958966916838788
+          }
+        },
+        "windows": [
+          {
+            "questions_seen_range": [
+              1,
+              1600
+            ],
+            "pass_fraction_range": [
+              0.0,
+              0.1
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 5.510353088378906,
+              "p95": 20.252458572387695,
+              "max": 72.79652404785156
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.6965473294258118,
+              "p95": 2.7646312713623047,
+              "max": 16.696287155151367
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 5.754479801212531,
+              "p95": 21.30871152718444,
+              "max": 72.81890809537792
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9054198678330968,
+              "p95": 0.9919834200614124,
+              "max": 0.9993853078064984
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.3075384184566414,
+              "p95": 0.6359026737576592,
+              "max": 0.7958966916838788
+            },
+            "median_learning_rates": [
+              4.971728100129581e-05,
+              1.9886912400518323e-05
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              1601,
+              3200
+            ],
+            "pass_fraction_range": [
+              0.1,
+              0.2
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 4.884804725646973,
+              "p95": 17.81049346923828,
+              "max": 95.26289367675781
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.4588462710380554,
+              "p95": 1.9417186975479126,
+              "max": 2.3903019428253174
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 5.139228162483217,
+              "p95": 17.878842111532897,
+              "max": 95.27253654375919
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.915479762099471,
+              "p95": 0.9928794951061627,
+              "max": 0.9997975832415719
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.29072318816449294,
+              "p95": 0.5611075245346603,
+              "max": 0.6590439035013024
+            },
+            "median_learning_rates": [
+              4.82066282749819e-05,
+              1.9282651309992758e-05
+            ],
+            "over_100_count": 0,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              3201,
+              4800
+            ],
+            "pass_fraction_range": [
+              0.2,
+              0.3
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 9.11024808883667,
+              "p95": 65.08409881591797,
+              "max": 644.39990234375
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.3530666828155518,
+              "p95": 1.855636715888977,
+              "max": 4.764898300170898
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 9.26290271083578,
+              "p95": 65.1002222361098,
+              "max": 644.4006826340988
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9775929218251788,
+              "p95": 0.9995047198615187,
+              "max": 0.9999975782462763
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.14968973225402904,
+              "p95": 0.37601592771180326,
+              "max": 0.4578770293012283
+            },
+            "median_learning_rates": [
+              4.435349971541931e-05,
+              1.7741399886167726e-05
+            ],
+            "over_100_count": 9,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              4801,
+              6400
+            ],
+            "pass_fraction_range": [
+              0.3,
+              0.4
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 10.257389545440674,
+              "p95": 164.3255615234375,
+              "max": 3788.918212890625
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.2802001237869263,
+              "p95": 1.6593008041381836,
+              "max": 3.315375328063965
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 10.374435510366482,
+              "p95": 164.33116818473079,
+              "max": 3788.918530484168
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9858116570570077,
+              "p95": 0.9999503051283242,
+              "max": 0.9999998323566331
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.11911265547548792,
+              "p95": 0.339984041180026,
+              "max": 0.5055563612807608
+            },
+            "median_learning_rates": [
+              3.876568903386023e-05,
+              1.550627561354409e-05
+            ],
+            "over_100_count": 18,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              6401,
+              8000
+            ],
+            "pass_fraction_range": [
+              0.4,
+              0.5
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 19.072546005249023,
+              "p95": 182.4580078125,
+              "max": 1421.592529296875
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.240581750869751,
+              "p95": 1.7704123258590698,
+              "max": 2.507831335067749
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 19.116048739107605,
+              "p95": 182.46337001746286,
+              "max": 1421.5932799954899
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9953855903876567,
+              "p95": 0.9999520358894614,
+              "max": 0.9999989438633016
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.06792919457978443,
+              "p95": 0.24708768103050507,
+              "max": 0.39576994684662203
+            },
+            "median_learning_rates": [
+              3.20183334691022e-05,
+              1.2807333387640883e-05
+            ],
+            "over_100_count": 28,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              8001,
+              9600
+            ],
+            "pass_fraction_range": [
+              0.5,
+              0.6
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 17.565279006958008,
+              "p95": 189.85614013671875,
+              "max": 6006.2021484375
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1976359486579895,
+              "p95": 1.7078144550323486,
+              "max": 4.334944725036621
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 17.62330986588148,
+              "p95": 189.86043651101878,
+              "max": 6006.202396205455
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9939602358360413,
+              "p95": 0.9999641517456852,
+              "max": 0.9999999174959703
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.07769728896398526,
+              "p95": 0.271188703968251,
+              "max": 0.44856362505827335
+            },
+            "median_learning_rates": [
+              2.4805918870765586e-05,
+              9.922367548306234e-06
+            ],
+            "over_100_count": 23,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              9601,
+              11200
+            ],
+            "pass_fraction_range": [
+              0.6,
+              0.7
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 9.446582317352295,
+              "p95": 121.197021484375,
+              "max": 664.9699096679688
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1718212366104126,
+              "p95": 1.7101041078567505,
+              "max": 9.332738876342773
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 9.531207170164095,
+              "p95": 121.20298554951252,
+              "max": 664.970595212496
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9851224552967234,
+              "p95": 0.9998951627560582,
+              "max": 0.9999979381218391
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.12196957734077674,
+              "p95": 0.3295988095985763,
+              "max": 0.5992891575741583
+            },
+            "median_learning_rates": [
+              1.7870798273615873e-05,
+              7.148319309446349e-06
+            ],
+            "over_100_count": 13,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              11201,
+              12800
+            ],
+            "pass_fraction_range": [
+              0.7,
+              0.8
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 19.75105571746826,
+              "p95": 202.26300048828125,
+              "max": 6601.8603515625
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1633852124214172,
+              "p95": 1.7409610748291016,
+              "max": 4.308784484863281
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 19.799036299824134,
+              "p95": 202.26447707212552,
+              "max": 6601.8606304895875
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9956416874741958,
+              "p95": 0.9999818906145596,
+              "max": 0.9999999559341812
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.06601698631605993,
+              "p95": 0.23482699140666374,
+              "max": 0.44522214754243583
+            },
+            "median_learning_rates": [
+              1.1926783640562999e-05,
+              4.770713456225199e-06
+            ],
+            "over_100_count": 29,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              12801,
+              14400
+            ],
+            "pass_fraction_range": [
+              0.8,
+              0.9
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 26.61366081237793,
+              "p95": 300.68621826171875,
+              "max": 1525.2718505859375
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.197491705417633,
+              "p95": 1.6823176145553589,
+              "max": 4.759151458740234
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 26.63531160892513,
+              "p95": 300.6895958994787,
+              "max": 1525.2722778153454
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9979926968047891,
+              "p95": 0.9999869176983792,
+              "max": 0.9999994397992354
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.044783058895177696,
+              "p95": 0.2120241532144369,
+              "max": 0.3699577658356617
+            },
+            "median_learning_rates": [
+              7.585675255877222e-06,
+              3.0342701023508886e-06
+            ],
+            "over_100_count": 31,
+            "clipped_count": 200
+          },
+          {
+            "questions_seen_range": [
+              14401,
+              16000
+            ],
+            "pass_fraction_range": [
+              0.9,
+              1.0
+            ],
+            "ac_norm": {
+              "n": 200,
+              "median": 20.56937885284424,
+              "p95": 214.8952178955078,
+              "max": 2896.161376953125
+            },
+            "reader_norm": {
+              "n": 200,
+              "median": 1.1369768381118774,
+              "p95": 1.6381621360778809,
+              "max": 2.637861967086792
+            },
+            "joint_norm": {
+              "n": 200,
+              "median": 20.586936997871316,
+              "p95": 214.89867537457326,
+              "max": 2896.1616318528872
+            },
+            "ac_squared_norm_share": {
+              "n": 200,
+              "median": 0.9969036868913718,
+              "p95": 0.9999737265326117,
+              "max": 0.9999998239740847
+            },
+            "approx_reader_norm_after_joint_clip": {
+              "n": 200,
+              "median": 0.055637257891254885,
+              "p95": 0.21198708493153967,
+              "max": 0.5622225168740358
+            },
+            "median_learning_rates": [
+              5.2942908862965586e-06,
+              2.1177163545186233e-06
+            ],
+            "over_100_count": 23,
+            "clipped_count": 200
+          }
+        ],
+        "largest_joint_norms": [
+          {
+            "step": 1533,
+            "questions_seen": 12264,
+            "pass_fraction": 0.7665,
+            "ac_norm": 6601.8603515625,
+            "reader_norm": 1.9190819263458252,
+            "joint_norm": 6601.8606304895875,
+            "learning_rates": [
+              1.1098205883018244e-05,
+              4.4392823532072984e-06
+            ],
+            "ac_squared_norm_share": 0.9999999155004635,
+            "approx_reader_norm_after_joint_clip": 0.00029068803985230754
+          },
+          {
+            "step": 1042,
+            "questions_seen": 8336,
+            "pass_fraction": 0.521,
+            "ac_norm": 6006.2021484375,
+            "reader_norm": 1.7251924276351929,
+            "joint_norm": 6006.202396205455,
+            "learning_rates": [
+              2.6920077891682365e-05,
+              1.0768031156672947e-05
+            ],
+            "ac_squared_norm_share": 0.9999999174959703,
+            "approx_reader_norm_after_joint_clip": 0.00028723514686049945
+          },
+          {
+            "step": 1460,
+            "questions_seen": 11680,
+            "pass_fraction": 0.73,
+            "ac_norm": 5228.82666015625,
+            "reader_norm": 1.0976279973983765,
+            "joint_norm": 5228.826775362518,
+            "learning_rates": [
+              1.3018774822994198e-05,
+              5.207509929197679e-06
+            ],
+            "ac_squared_norm_share": 0.9999999559341812,
+            "approx_reader_norm_after_joint_clip": 0.0002099186001648254
+          },
+          {
+            "step": 752,
+            "questions_seen": 6016,
+            "pass_fraction": 0.376,
+            "ac_norm": 3788.918212890625,
+            "reader_norm": 1.5513452291488647,
+            "joint_norm": 3788.918530484168,
+            "learning_rates": [
+              3.7112820821199536e-05,
+              1.4845128328479813e-05
+            ],
+            "ac_squared_norm_share": 0.9999998323566331,
+            "approx_reader_norm_after_joint_clip": 0.0004094427516078534
+          },
+          {
+            "step": 1963,
+            "questions_seen": 15704,
+            "pass_fraction": 0.9815,
+            "ac_norm": 2896.161376953125,
+            "reader_norm": 1.215097427368164,
+            "joint_norm": 2896.1616318528872,
+            "learning_rates": [
+              5.042151651025658e-06,
+              2.0168606604102635e-06
+            ],
+            "ac_squared_norm_share": 0.9999998239740847,
+            "approx_reader_norm_after_joint_clip": 0.0004195544245820364
+          },
+          {
+            "step": 1643,
+            "questions_seen": 13144,
+            "pass_fraction": 0.8215,
+            "ac_norm": 1525.2718505859375,
+            "reader_norm": 1.1416138410568237,
+            "joint_norm": 1525.2722778153454,
+            "learning_rates": [
+              8.639789692407521e-06,
+              3.4559158769630085e-06
+            ],
+            "ac_squared_norm_share": 0.9999994397992354,
+            "approx_reader_norm_after_joint_clip": 0.0007484656063791422
+          },
+          {
+            "step": 887,
+            "questions_seen": 7096,
+            "pass_fraction": 0.4435,
+            "ac_norm": 1421.592529296875,
+            "reader_norm": 1.460950255393982,
+            "joint_norm": 1421.5932799954899,
+            "learning_rates": [
+              3.249662325417588e-05,
+              1.2998649301670352e-05
+            ],
+            "ac_squared_norm_share": 0.9999989438633016,
+            "approx_reader_norm_after_joint_clip": 0.0010276851156548318
+          },
+          {
+            "step": 982,
+            "questions_seen": 7856,
+            "pass_fraction": 0.491,
+            "ac_norm": 1129.3193359375,
+            "reader_norm": 1.5858516693115234,
+            "joint_norm": 1129.3204494065592,
+            "learning_rates": [
+              2.909362697926033e-05,
+              1.1637450791704132e-05
+            ],
+            "ac_squared_norm_share": 0.999998028073412,
+            "approx_reader_norm_after_joint_clip": 0.001404253034416061
+          },
+          {
+            "step": 1553,
+            "questions_seen": 12424,
+            "pass_fraction": 0.7765,
+            "ac_norm": 1087.7379150390625,
+            "reader_norm": 1.5478795766830444,
+            "joint_norm": 1087.7390163751186,
+            "learning_rates": [
+              1.0610520415244081e-05,
+              4.2442081660976325e-06
+            ],
+            "ac_squared_norm_share": 0.9999979750004698,
+            "approx_reader_norm_after_joint_clip": 0.0014230247807220482
+          },
+          {
+            "step": 727,
+            "questions_seen": 5816,
+            "pass_fraction": 0.3635,
+            "ac_norm": 1058.299072265625,
+            "reader_norm": 1.479465365409851,
+            "joint_norm": 1058.3001063857312,
+            "learning_rates": [
+              3.79241607901969e-05,
+              1.5169664316078758e-05
+            ],
+            "ac_squared_norm_share": 0.999998045696878,
+            "approx_reader_norm_after_joint_clip": 0.0013979639188211976
+          },
+          {
+            "step": 632,
+            "questions_seen": 5056,
+            "pass_fraction": 0.316,
+            "ac_norm": 989.6600952148438,
+            "reader_norm": 1.5181360244750977,
+            "joint_norm": 989.6612596225248,
+            "learning_rates": [
+              4.084219745280958e-05,
+              1.6336878981123832e-05
+            ],
+            "ac_squared_norm_share": 0.9999976468574784,
+            "approx_reader_norm_after_joint_clip": 0.0015339956052439069
+          },
+          {
+            "step": 1688,
+            "questions_seen": 13504,
+            "pass_fraction": 0.844,
+            "ac_norm": 953.9757080078125,
+            "reader_norm": 1.0746437311172485,
+            "joint_norm": 953.9763132951236,
+            "learning_rates": [
+              7.800588438889544e-06,
+              3.120235375555818e-06
+            ],
+            "ac_squared_norm_share": 0.9999987310227504,
+            "approx_reader_norm_after_joint_clip": 0.0011264889023070597
+          },
+          {
+            "step": 1459,
+            "questions_seen": 11672,
+            "pass_fraction": 0.7295,
+            "ac_norm": 886.5230102539062,
+            "reader_norm": 1.0160691738128662,
+            "joint_norm": 886.5235925265687,
+            "learning_rates": [
+              1.3046537019385319e-05,
+              5.218614807754127e-06
+            ],
+            "ac_squared_norm_share": 0.9999986863914821,
+            "approx_reader_norm_after_joint_clip": 0.0011461276171691815
+          },
+          {
+            "step": 1029,
+            "questions_seen": 8232,
+            "pass_fraction": 0.5145,
+            "ac_norm": 886.4589233398438,
+            "reader_norm": 1.235422968864441,
+            "joint_norm": 886.4597842196491,
+            "learning_rates": [
+              2.739125298538085e-05,
+              1.095650119415234e-05
+            ],
+            "ac_squared_norm_share": 0.9999980577136094,
+            "approx_reader_norm_after_joint_clip": 0.0013936593508957935
+          },
+          {
+            "step": 1933,
+            "questions_seen": 15464,
+            "pass_fraction": 0.9665,
+            "ac_norm": 866.6243286132812,
+            "reader_norm": 1.2263180017471313,
+            "joint_norm": 866.6251962643723,
+            "learning_rates": [
+              5.1348858724988035e-06,
+              2.0539543489995215e-06
+            ],
+            "ac_squared_norm_share": 0.9999979976334396,
+            "approx_reader_norm_after_joint_clip": 0.001415050018875728
+          }
+        ],
+        "sampled_gradient_trace": {
+          "n": 112,
+          "over_100_count": 2,
+          "largest_joint_norms": [
+            {
+              "step": 1501,
+              "questions_seen": 12008,
+              "pass_fraction": 0.7505,
+              "ac_norm": 134.52903747558594,
+              "reader_norm": 1.178317904472351,
+              "joint_norm": 134.53419772381892,
+              "learning_rates": [
+                1.1913702046034016e-05,
+                4.765480818413606e-06
+              ],
+              "ac_squared_norm_share": 0.9999232886603406,
+              "approx_reader_norm_after_joint_clip": 0.008758500928758519,
+              "trace_record_update": 1500,
+              "delta_heads_norm": 0.7469757815638507,
+              "passage_and_row_readouts_norm": 0.03995628626655983,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 3.09187428688021e-05,
+              "attention_grad_norm": {
+                "3": 0.019792720675468445,
+                "7": 0.018514636904001236,
+                "11": 0.014897938817739487,
+                "15": 0.013326670974493027,
+                "19": 0.008139166049659252,
+                "23": 0.005469928495585918,
+                "27": 0.004230814520269632,
+                "31": 0.0026755917351692915,
+                "row": 0.01847126893699169,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1701,
+              "questions_seen": 13608,
+              "pass_fraction": 0.8505,
+              "ac_norm": 103.45392608642578,
+              "reader_norm": 1.3422945737838745,
+              "joint_norm": 103.46263372550719,
+              "learning_rates": [
+                7.57723942280278e-06,
+                3.030895769121112e-06
+              ],
+              "ac_squared_norm_share": 0.999831682756547,
+              "approx_reader_norm_after_joint_clip": 0.012973713431376125,
+              "trace_record_update": 1700,
+              "delta_heads_norm": 1.3354532552342682,
+              "passage_and_row_readouts_norm": 0.08096158778763281,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00016724636741858554,
+              "attention_grad_norm": {
+                "3": 0.05037061497569084,
+                "7": 0.037336889654397964,
+                "11": 0.022285709157586098,
+                "15": 0.017715418711304665,
+                "19": 0.013059358112514019,
+                "23": 0.009237849153578281,
+                "27": 0.007189867086708546,
+                "31": 0.0036177521105855703,
+                "row": 0.038631342351436615,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 776,
+              "questions_seen": 6208,
+              "pass_fraction": 0.388,
+              "ac_norm": 96.3440170288086,
+              "reader_norm": 0.9872779250144958,
+              "joint_norm": 96.34907542342366,
+              "learning_rates": [
+                3.631924872185169e-05,
+                1.4527699488740676e-05
+              ],
+              "ac_squared_norm_share": 0.999895001341566,
+              "approx_reader_norm_after_joint_clip": 0.010246885197692214,
+              "trace_record_update": 775,
+              "delta_heads_norm": 0.6242148998324336,
+              "passage_and_row_readouts_norm": 0.03363977272902037,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 4.209962666012565e-05,
+              "attention_grad_norm": {
+                "3": 0.014983460307121277,
+                "7": 0.015858814120292664,
+                "11": 0.01391249056905508,
+                "15": 0.011275744065642357,
+                "19": 0.007618464529514313,
+                "23": 0.007916183210909367,
+                "27": 0.0052213785238564014,
+                "31": 0.002766536083072424,
+                "row": 0.013390480540692806,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1601,
+              "questions_seen": 12808,
+              "pass_fraction": 0.8005,
+              "ac_norm": 94.92388153076172,
+              "reader_norm": 2.909125328063965,
+              "joint_norm": 94.96844894511266,
+              "learning_rates": [
+                9.51253782342123e-06,
+                3.805015129368492e-06
+              ],
+              "ac_squared_norm_share": 0.9990616471596171,
+              "approx_reader_norm_after_joint_clip": 0.030632545121514608,
+              "trace_record_update": 1600,
+              "delta_heads_norm": 1.3762120323366158,
+              "passage_and_row_readouts_norm": 0.08516452672830559,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00021099865950970686,
+              "attention_grad_norm": {
+                "3": 0.054111238569021225,
+                "7": 0.035468265414237976,
+                "11": 0.025878529995679855,
+                "15": 0.019903328269720078,
+                "19": 0.010329559445381165,
+                "23": 0.006408701650798321,
+                "27": 0.006330812815576792,
+                "31": 0.004879074636846781,
+                "row": 0.042302198708057404,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1726,
+              "questions_seen": 13808,
+              "pass_fraction": 0.863,
+              "ac_norm": 89.14295959472656,
+              "reader_norm": 0.9106464385986328,
+              "joint_norm": 89.147610861106,
+              "learning_rates": [
+                7.172365221266403e-06,
+                2.8689460885065614e-06
+              ],
+              "ac_squared_norm_share": 0.9998956529514393,
+              "approx_reader_norm_after_joint_clip": 0.010215040196673362,
+              "trace_record_update": 1725,
+              "delta_heads_norm": 0.790114537635578,
+              "passage_and_row_readouts_norm": 0.055096577322683714,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 7.89428303232776e-05,
+              "attention_grad_norm": {
+                "3": 0.036293692886829376,
+                "7": 0.02106327749788761,
+                "11": 0.015880458056926727,
+                "15": 0.011872108094394207,
+                "19": 0.006052201613783836,
+                "23": 0.004542131442576647,
+                "27": 0.003260038560256362,
+                "31": 0.002058486919850111,
+                "row": 0.02845132350921631,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 951,
+              "questions_seen": 7608,
+              "pass_fraction": 0.4755,
+              "ac_norm": 87.22171783447266,
+              "reader_norm": 1.4217106103897095,
+              "joint_norm": 87.23330397879046,
+              "learning_rates": [
+                3.021207530574477e-05,
+                1.2084830122297909e-05
+              ],
+              "ac_squared_norm_share": 0.9997343818389147,
+              "approx_reader_norm_after_joint_clip": 0.01629779601650285,
+              "trace_record_update": 950,
+              "delta_heads_norm": 0.9793703417847526,
+              "passage_and_row_readouts_norm": 0.04793430470676065,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0001263815680919343,
+              "attention_grad_norm": {
+                "3": 0.024529336020350456,
+                "7": 0.024671759456396103,
+                "11": 0.02083931863307953,
+                "15": 0.018444806337356567,
+                "19": 0.010641527362167835,
+                "23": 0.0071988278068602085,
+                "27": 0.0041501265950500965,
+                "31": 0.002353975083678961,
+                "row": 0.011180137284100056,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1076,
+              "questions_seen": 8608,
+              "pass_fraction": 0.538,
+              "ac_norm": 75.34821319580078,
+              "reader_norm": 1.065489649772644,
+              "joint_norm": 75.35574629710477,
+              "learning_rates": [
+                2.5689502203873672e-05,
+                1.027580088154947e-05
+              ],
+              "ac_squared_norm_share": 0.9998000756374211,
+              "approx_reader_norm_after_joint_clip": 0.014139460996541415,
+              "trace_record_update": 1075,
+              "delta_heads_norm": 0.8894280060232207,
+              "passage_and_row_readouts_norm": 0.04637282781446224,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00013971873594458023,
+              "attention_grad_norm": {
+                "3": 0.024316679686307907,
+                "7": 0.021335942670702934,
+                "11": 0.019868269562721252,
+                "15": 0.015929751098155975,
+                "19": 0.010927749797701836,
+                "23": 0.007399328984320164,
+                "27": 0.00611391244456172,
+                "31": 0.004078312776982784,
+                "row": 0.015074227936565876,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1401,
+              "questions_seen": 11208,
+              "pass_fraction": 0.7005,
+              "ac_norm": 74.99483489990234,
+              "reader_norm": 1.7214065790176392,
+              "joint_norm": 75.0145885963117,
+              "learning_rates": [
+                1.4718543198548998e-05,
+                5.887417279419599e-06
+              ],
+              "ac_squared_norm_share": 0.9994734065494538,
+              "approx_reader_norm_after_joint_clip": 0.02294762376600774,
+              "trace_record_update": 1400,
+              "delta_heads_norm": 1.2224728081352951,
+              "passage_and_row_readouts_norm": 0.06439891295468354,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0002664521630800873,
+              "attention_grad_norm": {
+                "3": 0.03241303563117981,
+                "7": 0.03264231979846954,
+                "11": 0.025961020961403847,
+                "15": 0.021568868309259415,
+                "19": 0.015641309320926666,
+                "23": 0.01253852155059576,
+                "27": 0.009923488833010197,
+                "31": 0.004716602154076099,
+                "row": 0.019217604771256447,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1376,
+              "questions_seen": 11008,
+              "pass_fraction": 0.688,
+              "ac_norm": 64.6259536743164,
+              "reader_norm": 1.2216824293136597,
+              "joint_norm": 64.63749992282331,
+              "learning_rates": [
+                1.5474518912124476e-05,
+                6.18980756484979e-06
+              ],
+              "ac_squared_norm_share": 0.9996427703032181,
+              "approx_reader_norm_after_joint_clip": 0.018900520779297138,
+              "trace_record_update": 1375,
+              "delta_heads_norm": 0.9757672576041979,
+              "passage_and_row_readouts_norm": 0.047369003709308875,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00022850769542391976,
+              "attention_grad_norm": {
+                "3": 0.02312617562711239,
+                "7": 0.02343294769525528,
+                "11": 0.020082075148820877,
+                "15": 0.01634853333234787,
+                "19": 0.010169421322643757,
+                "23": 0.00937660876661539,
+                "27": 0.00782543234527111,
+                "31": 0.004120553843677044,
+                "row": 0.014825009740889072,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1051,
+              "questions_seen": 8408,
+              "pass_fraction": 0.5255,
+              "ac_norm": 60.06065368652344,
+              "reader_norm": 1.2494512796401978,
+              "joint_norm": 60.07364854703513,
+              "learning_rates": [
+                2.659401634753817e-05,
+                1.0637606539015268e-05
+              ],
+              "ac_squared_norm_share": 0.9995674158193761,
+              "approx_reader_norm_after_joint_clip": 0.020798657798573237,
+              "trace_record_update": 1050,
+              "delta_heads_norm": 0.865154429376891,
+              "passage_and_row_readouts_norm": 0.04163618687664794,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00020797534917163385,
+              "attention_grad_norm": {
+                "3": 0.02214515209197998,
+                "7": 0.020208464935421944,
+                "11": 0.016909604892134666,
+                "15": 0.013633606024086475,
+                "19": 0.009754952043294907,
+                "23": 0.007059189956635237,
+                "27": 0.0057292962446808815,
+                "31": 0.0031566754914820194,
+                "row": 0.013235996477305889,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 1926,
+              "questions_seen": 15408,
+              "pass_fraction": 0.963,
+              "ac_norm": 54.29001235961914,
+              "reader_norm": 1.1368627548217773,
+              "joint_norm": 54.30191432105226,
+              "learning_rates": [
+                5.164050332793787e-06,
+                2.0656201331175146e-06
+              ],
+              "ac_squared_norm_share": 0.999561685541347,
+              "approx_reader_norm_after_joint_clip": 0.020935960510789352,
+              "trace_record_update": 1925,
+              "delta_heads_norm": 0.7753800351615895,
+              "passage_and_row_readouts_norm": 0.04789384101838375,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00020475907736792662,
+              "attention_grad_norm": {
+                "3": 0.024912092834711075,
+                "7": 0.022622903808951378,
+                "11": 0.01873663067817688,
+                "15": 0.016189303249120712,
+                "19": 0.011241663247346878,
+                "23": 0.0077482061460614204,
+                "27": 0.005699188448488712,
+                "31": 0.002914772368967533,
+                "row": 0.017912862822413445,
+                "recursive": 0.0
+              }
+            },
+            {
+              "step": 701,
+              "questions_seen": 5608,
+              "pass_fraction": 0.3505,
+              "ac_norm": 44.65559768676758,
+              "reader_norm": 1.3606431484222412,
+              "joint_norm": 44.67632207937209,
+              "learning_rates": [
+                3.875e-05,
+                1.55e-05
+              ],
+              "ac_squared_norm_share": 0.9990724578551509,
+              "approx_reader_norm_after_joint_clip": 0.030455575898780177,
+              "trace_record_update": 700,
+              "delta_heads_norm": 1.1008144528623203,
+              "passage_and_row_readouts_norm": 0.0553978524907678,
+              "measured_heads_readouts_fraction_of_ac_squared_norm": 0.0006092210682703221,
+              "attention_grad_norm": {
+                "3": 0.028973428532481194,
+                "7": 0.023429980501532555,
+                "11": 0.021456098183989525,
+                "15": 0.019941868260502815,
+                "19": 0.014260917901992798,
+                "23": 0.015170136466622353,
+                "27": 0.011245266534388065,
+                "31": 0.004017808940261602,
+                "row": 0.015695560723543167,
+                "recursive": 0.0
+              }
+            }
+          ],
+          "fraction_of_ac_squared_norm_in_heads_and_readouts": {
+            "n": 112,
+            "median": 0.010689344296009682,
+            "p95": 0.10471090310096864,
+            "max": 0.1989320199983439
+          }
+        },
+        "gate_first_last": [
+          {
+            "update": 0,
+            "position_scale": 0.03367546945810318,
+            "input_scale": 0.01611701399087906,
+            "mixer.0.residual_scale": 0.02243635058403015,
+            "mixer.1.residual_scale": 0.023859553039073944,
+            "summary_pooling.residual_scale": 0.09847819805145264,
+            "recursive_adapter.scale": 0.01464406680315733,
+            "target_head.scale": 0.06538860499858856
+          },
+          {
+            "update": 1975,
+            "position_scale": 0.03644046187400818,
+            "input_scale": 0.016744740307331085,
+            "mixer.0.residual_scale": 0.02012350596487522,
+            "mixer.1.residual_scale": 0.022417476400732994,
+            "summary_pooling.residual_scale": 0.09998609125614166,
+            "recursive_adapter.scale": 0.01464406680315733,
+            "target_head.scale": 0.06476759910583496
+          }
+        ],
+        "panels": [
+          {
+            "questions_seen": 0,
+            "pass_fraction": 0.0,
+            "ac_nll": 2.236563509292844,
+            "full_nll": 0.7662113585727731,
+            "noctx_nll": 1.7922518564882832,
+            "learning_nll": 1.8851808414789835,
+            "cohorts": {
+              "9b": {
+                "held AC": 2.4700122898473613,
+                "held full context": 0.8487810879381535,
+                "held no context": 1.957150191697781,
+                "training AC": 1.8851808414789835
+              },
+              "27b": {
+                "held AC": 2.0031147287383266,
+                "held full context": 0.6836416292073926,
+                "held no context": 1.627353521278786,
+                "training AC": 1.8851808414789835
+              }
+            }
+          },
+          {
+            "questions_seen": 1600,
+            "pass_fraction": 0.1,
+            "ac_nll": 1.2088060927010382,
+            "full_nll": 0.6306240374154181,
+            "noctx_nll": 1.778890051887138,
+            "learning_nll": 1.1287276699786803,
+            "cohorts": {
+              "9b": {
+                "held AC": 1.3183734826126554,
+                "held full context": 0.717615739857061,
+                "held no context": 1.9504469830063562,
+                "training AC": 1.1287276699786803
+              },
+              "27b": {
+                "held AC": 1.099238702789421,
+                "held full context": 0.5436323349737752,
+                "held no context": 1.6073331207679202,
+                "training AC": 1.1287276699786803
+              }
+            }
+          },
+          {
+            "questions_seen": 3200,
+            "pass_fraction": 0.2,
+            "ac_nll": 0.9052148379473927,
+            "full_nll": 0.6095384476200042,
+            "noctx_nll": 1.7836557705227154,
+            "learning_nll": 0.8189500720116978,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.9654729724091042,
+                "held full context": 0.6957680567855842,
+                "held no context": 1.9568174771717006,
+                "training AC": 0.8189500720116978
+              },
+              "27b": {
+                "held AC": 0.8449567034856813,
+                "held full context": 0.5233088384544241,
+                "held no context": 1.6104940638737304,
+                "training AC": 0.8189500720116978
+              }
+            }
+          },
+          {
+            "questions_seen": 4800,
+            "pass_fraction": 0.3,
+            "ac_nll": 0.9719982649802994,
+            "full_nll": 0.607105675573781,
+            "noctx_nll": 1.8145356697722352,
+            "learning_nll": 0.9324631495706618,
+            "cohorts": {
+              "9b": {
+                "held AC": 1.058171704965313,
+                "held full context": 0.6868900248654076,
+                "held no context": 1.9817687565552005,
+                "training AC": 0.9324631495706618
+              },
+              "27b": {
+                "held AC": 0.8858248249952855,
+                "held full context": 0.5273213262821544,
+                "held no context": 1.64730258298927,
+                "training AC": 0.9324631495706618
+              }
+            }
+          },
+          {
+            "questions_seen": 6400,
+            "pass_fraction": 0.4,
+            "ac_nll": 0.8466882892289378,
+            "full_nll": 0.6233828153325905,
+            "noctx_nll": 1.799810276209126,
+            "learning_nll": 0.7128711670868795,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.9062942483387443,
+                "held full context": 0.710248084838316,
+                "held no context": 1.971301451322541,
+                "training AC": 0.7128711670868795
+              },
+              "27b": {
+                "held AC": 0.7870823301191315,
+                "held full context": 0.536517545826865,
+                "held no context": 1.6283191010957105,
+                "training AC": 0.7128711670868795
+              }
+            }
+          },
+          {
+            "questions_seen": 8000,
+            "pass_fraction": 0.5,
+            "ac_nll": 0.801305887325492,
+            "full_nll": 0.6163620698077004,
+            "noctx_nll": 1.8085069572045875,
+            "learning_nll": 0.5956137338440705,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.8664601567336417,
+                "held full context": 0.6985754066557955,
+                "held no context": 1.978657868126767,
+                "training AC": 0.5956137338440705
+              },
+              "27b": {
+                "held AC": 0.7361516179173422,
+                "held full context": 0.5341487329596054,
+                "held no context": 1.6383560462824085,
+                "training AC": 0.5956137338440705
+              }
+            }
+          },
+          {
+            "questions_seen": 9600,
+            "pass_fraction": 0.6,
+            "ac_nll": 0.7681400824497868,
+            "full_nll": 0.6088991232346073,
+            "noctx_nll": 1.8108381754549223,
+            "learning_nll": 0.5715398148811999,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.8163529936770898,
+                "held full context": 0.6927863467579983,
+                "held no context": 1.9844905766032659,
+                "training AC": 0.5715398148811999
+              },
+              "27b": {
+                "held AC": 0.719927171222484,
+                "held full context": 0.5250118997112162,
+                "held no context": 1.6371857743065785,
+                "training AC": 0.5715398148811999
+              }
+            }
+          },
+          {
+            "questions_seen": 11200,
+            "pass_fraction": 0.7,
+            "ac_nll": 0.7109422854872679,
+            "full_nll": 0.6204651570227636,
+            "noctx_nll": 1.8179960637873072,
+            "learning_nll": 0.4829419044481208,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.7704658541373496,
+                "held full context": 0.7079376680563821,
+                "held no context": 1.9932922914756235,
+                "training AC": 0.4829419044481208
+              },
+              "27b": {
+                "held AC": 0.6514187168371862,
+                "held full context": 0.5329926459891452,
+                "held no context": 1.6426998360989906,
+                "training AC": 0.4829419044481208
+              }
+            }
+          },
+          {
+            "questions_seen": 12800,
+            "pass_fraction": 0.8,
+            "ac_nll": 0.6784432881438088,
+            "full_nll": 0.6047199179496796,
+            "noctx_nll": 1.799232419042042,
+            "learning_nll": 0.5035399838064636,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.7332494393588459,
+                "held full context": 0.6916373710244065,
+                "held no context": 1.9738374684093507,
+                "training AC": 0.5035399838064636
+              },
+              "27b": {
+                "held AC": 0.623637136928772,
+                "held full context": 0.5178024648749527,
+                "held no context": 1.624627369674733,
+                "training AC": 0.5035399838064636
+              }
+            }
+          },
+          {
+            "questions_seen": 14400,
+            "pass_fraction": 0.9,
+            "ac_nll": 0.6554261830402297,
+            "full_nll": 0.6242322972678306,
+            "noctx_nll": 1.8156650003284562,
+            "learning_nll": 0.46723348054286024,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.6900583531769778,
+                "held full context": 0.710171201593117,
+                "held no context": 1.9885893815826337,
+                "training AC": 0.46723348054286024
+              },
+              "27b": {
+                "held AC": 0.6207940129034814,
+                "held full context": 0.5382933929425442,
+                "held no context": 1.6427406190742793,
+                "training AC": 0.46723348054286024
+              }
+            }
+          },
+          {
+            "questions_seen": 16000,
+            "pass_fraction": 1.0,
+            "ac_nll": 0.6462716465019518,
+            "full_nll": 0.627301589594676,
+            "noctx_nll": 1.8139865508776438,
+            "learning_nll": 0.521832452859984,
+            "cohorts": {
+              "9b": {
+                "held AC": 0.6671643821919705,
+                "held full context": 0.7139064590416233,
+                "held no context": 1.9869468544702946,
+                "training AC": 0.521832452859984
+              },
+              "27b": {
+                "held AC": 0.6253789108119333,
+                "held full context": 0.5406967201477287,
+                "held no context": 1.6410262472849935,
+                "training AC": 0.521832452859984
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

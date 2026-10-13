@@ -1,0 +1,770 @@
+{
+  "approved": true,
+  "approved_utc": "2026-09-24T21:03:11+00:00",
+  "campaign_end_utc": "2026-09-27T21:03:11+00:00",
+  "design_freeze_target_utc": "2026-09-26T09:03:11+00:00",
+  "milestones_utc": {
+    "4": "2026-09-25T01:03:11+00:00",
+    "8": "2026-09-25T05:03:11+00:00",
+    "12": "2026-09-25T09:03:11+00:00",
+    "16": "2026-09-25T13:03:11+00:00",
+    "24": "2026-09-25T21:03:11+00:00",
+    "36": "2026-09-26T09:03:11+00:00",
+    "72": "2026-09-27T21:03:11+00:00"
+  },
+  "plan": "CHANNEL_TRAINING_PLAN.md",
+  "report_root": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION",
+  "targets": {
+    "reconstruction_premix_minimum_tokens": 100000000,
+    "rag_questions": 100000,
+    "trajectory_qa_bank_questions": 100000,
+    "compaction_bank_examples": 100000,
+    "agent_teacher_trajectories": 100000,
+    "first_trajectory_qa_mix_questions": 100000,
+    "first_compaction_mix_examples": 32000,
+    "first_agent_sft_target_tokens": 20000000,
+    "trajectory_qa_counting": "100000 unique TRAIN questions; held questions additional; update current producer stop rule before bank completion"
+  },
+  "sixteen_hour_training": {
+    "trajectory_qa_unique_questions": 16000,
+    "compaction_histories": 8000,
+    "question_blind_rag_questions": 8000,
+    "alternate_qa_mode_matched_questions": 4000
+  },
+  "phases": {
+    "interfaces": "implemented; CPU contracts + RTX gradient routing passed",
+    "independent_synthesis": "two summary GPU producers and one single-agent teacher GPU producer running",
+    "reconstruction_premix_warmup": "ORCD23707807 RUNNING;110177607targets prepared;CSAIL2224149 heldbackup",
+    "task_training": "16k aware trajectory QA active; 8k blind RAG complete; summary8k awaiting remaining synthesis supply",
+    "mixed_training": "pending validated components and warm pair"
+  },
+  "ec2": {
+    "steady": 2,
+    "maximum_burst": 4,
+    "existing_expiry_utc": "2026-09-25T18:20:00Z",
+    "policy": "bounded bursts, release when useful MIT capacity arrives"
+  },
+  "jobs": {
+    "orcd": {
+      "23684713": "TIMEOUT after publishing 90381 trajectories / 44199 roots; committed cursor preserved",
+      "23684985": "COMPLETED 110001751 source tokens,175856passages,600held,no errors",
+      "23686020": "COMPLETED CPU prepare;16000questions/4195roots,held100 unchanged",
+      "23686316": "HELDJobHeldUser;untrained16k nowownedbyEC2 replacement",
+      "23636639": "RUNNING RTXnode5106 aftergracefulrequeue",
+      "23651688": "RAG27B synthesis moved pending request to L40S, normal+preempt, same bank/recipe",
+      "23689962": "PASSED actual L40S train/native Adam+RNG restore/train;finite loss+nonzero both gradients",
+      "23690892": "COMPLETED CPU preparation 9m51s;110177607 actual supervised target tokens",
+      "23691733": "CANCELLEDuntrained; replacement23707807 usesexportALL",
+      "23697372": "FAILED during JSONL readback: Unicode separators treated as lines; corrected LF parsing",
+      "23698006": "COMPLETED42000additional safe synthetic TRAIN questions/36459source requests;42balanced1000slices",
+      "23703211": "FAILED69s: BM25 exclusion referenced gold source absent fromretrievalindex; guardfixed inprivateRAGsource",
+      "23704836": "COMPLETED3m14s/7.8GB; CPUprepared8000train/400held,exactsourceandmaterial",
+      "23704947": "COMPLETED 8000 unique questions \u00d71 epoch; native full pair/Adam saved",
+      "23707807": "CANCELLED held, native929 checkpoint published; corrected script successor23732946",
+      "23708607": "COMPLETED18s/4.8GB source+initializerstage;banknotyet8000train",
+      "23725316": "CPU material continuation submitted; actual allocation budget and campaign end now enforced",
+      "23732946": "RUNNING native continuation from929; controller deadline20697seconds verified, environment would give2697",
+      "23748404": "COMPLETED10m54s/14GiB;8000train/100held ready; placementbackup only, noGPU",
+      "23757860": "RUNNING RTXPRO6000node5004 from~06:35; initial fixed controls in progress",
+      "23782156": "COMPLETED4m34s/6.95GiB;63318 selfcontainedQArows,56732train/6586held,3.743GB; localtransferactive",
+      "23818359": "COMPLETED4m22s/~16GiB;31986disjointnewTRAINroots exactcuts,25540coding/6446math,32independent1000historyselections",
+      "23823383": "CPUrepack31986selectedfullrows; pinnednativehistory/hash/readbackchecks",
+      "23823970": "CPUafterok23823383:verifyeverypackedrow againstoriginalv2digestbeforepublication"
+    },
+    "csail": {
+      "2216278": "COMPLETED512summarySFT;heldNLL0.76195,continuation0.80058",
+      "2219805": "FAILED before prep: archive overwrote rebased initializer with ORCD path; fixed extraction",
+      "2219856": "COMPLETED CPU,11m23s,exact110177607target budget/pairedP2 validation",
+      "2220324": "CANCELLED after automatic env retrieval failure held job before any training",
+      "2224149": "HELDJobHeldUser before ORCD23707807 submission; no duplicate",
+      "2236558": "COMPLETED source/initializer/model/material asset staging",
+      "2236849": "COMPLETED19m37s/11.22GiB;8000histories/7,161,798targets, exactheld100;cache943,375,267bytes",
+      "2236964": "HELD untrained standby; root verified before ORCD submission"
+    }
+  },
+  "portable_exports": {
+    "collections": [
+      "compaction",
+      "agent_teacher",
+      "reconstruction",
+      "trajectory_qa",
+      "rag_qa"
+    ],
+    "root": "IB/TMP/SYNC/REUSABLE_DATA",
+    "trajectory_qa_rows": 63318,
+    "rag_qa_rows": 74000,
+    "qa_verified_utc": "2026-09-25T08:14:22Z",
+    "verification": "All committed text payload SHA256 matched; manifests published last; trajectory histories match oracle input; RAG reservations retained",
+    "note": "RAG bank globally unassigned, not all training; source/prompt changes do not invalidate existing examples"
+  },
+  "monitor": {
+    "helper": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/wait_campaign_event.py",
+    "config": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/campaign_wait.json",
+    "cadence_seconds": 1800,
+    "active_wait_required": true,
+    "data_ready": "Native summary union train>=8000 wakes root immediately"
+  },
+  "updated_utc": "2026-09-25T15:03:11.109373+00:00",
+  "summary_partition": {
+    "path": "../../TMP/FIRST_TASK_AWARE_FINETUNING/summary_slices_v1/plan/manifest.json",
+    "identity": "cba8408b7eb77f3cb20fb8c1c03b2e8e667f68cbfcc6bd77e748061ea40118fc",
+    "legacy_rows": 1074,
+    "legacy_writer_paused": true,
+    "assignments": "../../TMP/FIRST_TASK_AWARE_FINETUNING/summary_slices_v1/assignments.json",
+    "successors": {
+      "ac-summary-20260924": 10,
+      "ac-summaryboost-20260924": 5
+    },
+    "assignments_note": "All18 original slices now assigned alternating owners. Current four-slice jobs continue; queued successors skip completed slices and consume extensions through existing18:10UTC deadline."
+  },
+  "teacher_input": {
+    "questions": 8000,
+    "unique_source_requests": 7461,
+    "active_slice": "004 retry (Sky6), thenv2",
+    "queued_slices": [
+      "006",
+      "007",
+      "004 retry then16v2 slices"
+    ],
+    "unassigned_slices": [],
+    "first_cached_completed": 47,
+    "first_cached_finish_reasons": {
+      "submitted": 47
+    },
+    "quality": "First examples use evidence-reading tools; no semantic aggregate quality claim",
+    "first_exported_completed": 200,
+    "completed_slices": [
+      "000",
+      "001",
+      "002",
+      "003",
+      "005",
+      "006",
+      "007"
+    ],
+    "first_completed_slice_tasks": 1000,
+    "expansion": {
+      "cpu_job": 23698006,
+      "packet": "../../TMP/FIRST_TASK_AWARE_FINETUNING/teacher_single_agent_v2",
+      "status": "Sky6 queued16successor slices;remaining26unassigned",
+      "questions": 42000,
+      "source_requests": 36459
+    },
+    "note": "Sky4 stopped before004 generation on Unicode splitlines bug; v1 LF-only fix validated all8 inputs. Sky5 running005-007; queuedSky6 recovers004 beforev2.",
+    "exported_completed": 7832
+  },
+  "portable_data": "/workspace/IB/TMP/SYNC/REUSABLE_DATA",
+  "persistent_copy": {
+    "remote": "/home/ngom/orcd/scratch/activation/channel_campaign_20260924",
+    "interval_seconds": 1800,
+    "first_success_utc": "2026-09-24T21:41:56Z"
+  },
+  "reconstruction_prepared": {
+    "training_passages": 175856,
+    "unique_source_tokens": 110001751,
+    "supervised_target_tokens": 110177607,
+    "epochs": 1,
+    "pre_mixing": true
+  },
+  "summary_pilot": {
+    "histories": 512,
+    "summary_targets": 479112,
+    "initial_held_nll": 0.9412142845083105,
+    "final_held_nll": 0.7619532078940457,
+    "initial_continuation_nll": 0.7981692433509244,
+    "final_continuation_nll": 0.800576323000035,
+    "first128_initial": 1.1564999919987198,
+    "first128_final": 1.2187492478796607
+  },
+  "trajectory_qa_8k": {
+    "complete": true,
+    "initial_held_answer_nll": 0.9457859,
+    "final_held_answer_nll": 0.6993282483473464,
+    "final_learning_answer_nll": 0.2970566586990367,
+    "best_held_answer_nll": 0.6844135859799367,
+    "best_questions": 7200,
+    "frozen_full_answer_nll": 0.2991196,
+    "frozen_no_context_answer_nll": 1.7758987,
+    "native_summary_nll_note": "Generic summary NLL includes format tokens; use panels.json answer-only NLL for QA comparisons",
+    "final_recovery": {
+      "status": "verified",
+      "recoverable_questions": 8000,
+      "updates": 1000,
+      "checkpoint_created_utc": "2026-09-25 00:10:02 UTC",
+      "verified_local_utc": "2026-09-25T00:23:02+00:00",
+      "directory": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/qa_ec2_recovery/step_01000_eb19472afbfb",
+      "bytes": 7170664562,
+      "manifest_sha256": "c4bdb8d0455357a9c57657c0e5c98465e6dc959f01e51e0e5801e74c6cab47f1",
+      "static_packet": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/qa_ec2_static_1834",
+      "source_host": "ac-qa-20260924",
+      "native_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "verification": "all paired payload hashes and unchanged run/control identities",
+      "note": "Combine with the preserved static packet; no cross-hardware arithmetic claim."
+    }
+  },
+  "qa16k_placement": {
+    "host": "ac-qa-20260924",
+    "packet": "/root/activation_artifacts/qa16k_aware_packet_v1",
+    "packet_manifest_sha256": "2493e58e9492d6179af087e6e8c0e439a9aeb541d68f4b65f778958b5d348393",
+    "status": "Sky10 RUNNING; native1048/8384questions resumed with optimizer moments; nonzero training verified",
+    "questions": 16000,
+    "encoder_sees_question": true,
+    "epochs": 1,
+    "optimizer": "freshAdam",
+    "initializer": "original strong42k RAG pair",
+    "recovery": "Hourly verified paired local recovery plus preserved8000 S3 weights",
+    "queued_successor_sky_job": 10,
+    "next_action": "COMPLETE; ac-qa nowcompactionC"
+  },
+  "important_checkpoints": {
+    "trajectory_qa_blind_7200": {
+      "utc": "2026-09-25T00:22:45.282017+00:00",
+      "uri": "s3://general-bucket-aln/activation-context-data/checkpoints/trajectory-qa-blind-7200-20260925/",
+      "files": 14,
+      "bytes": 2489280162,
+      "verification": "Native remote/local weight SHA256 match; S3 SHA256 transfer checks and size/metadata checks; manifest committed last",
+      "optimizer_saved": false
+    },
+    "trajectory_qa_aware_8000": {
+      "status": "Verified S3 and local paired weights; fresh optimizer/inference only",
+      "remote": "/root/activation_artifacts/important_pairs/trajectory_qa_aware_8000_20260925",
+      "held_answer_nll": 0.38284902468298454,
+      "optimizer_saved": false,
+      "utc": "2026-09-25T05:50:41.094919+00:00",
+      "uri": "s3://general-bucket-aln/activation-context-data/checkpoints/trajectory-qa-aware-8000-20260925/",
+      "files": 14,
+      "bytes": 2489277980,
+      "verification": "Three native remote/local weightSHA256 matches; S3 SHA256 transfer checks plus size/metadata checks; manifest committed last"
+    },
+    "trajectory_qa_aware_16000": {
+      "utc": "2026-09-25T11:26:52.230719+00:00",
+      "uri": "s3://general-bucket-aln/activation-context-data/checkpoints/trajectory-qa-aware-16000-20260925/",
+      "files": 17,
+      "bytes": 2489284590,
+      "verification": "Native fullpair recovery verified,3 remote-selected/native-final weight hashes identical; create-only SHA256 PUT and HEAD checks, manifest committed last",
+      "optimizer_saved": false
+    }
+  },
+  "summary8k_packet": {
+    "utc": "2026-09-25T06:34:51.990048+00:00",
+    "gpu_job": 23757860,
+    "host": "orcd",
+    "csail_backup_job": 2236964,
+    "csail_status": "PENDING JobHeldUser verified before submission",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--export=ALL,CAMPAIGN_END_UNIX=1790542991",
+      "--partition=mit_normal_gpu,mit_preemptable",
+      "--gres=gpu:1",
+      "--constraint=node1702|node1703|node1708|node1709|node1802|node1803|node2433|node2434|node2435|node2436|node2500|node2501|node2640|node2641|node2642|node2702|node2703|node2802|node2803|node2900|node2901|node2904|node2905|node2906|node3000|node3001|node3009|node3100|node3101|node3200|node3201|node3209|node3300|node3301|node3400|node3401|node3409|node3614|node4002|node4004|node4007|node4008|node4009|node4010|node4100|node4109|node4300|node4301|node4400|node4500|node4508|node4600|node4601|node4602|node4603|node4800|node4801|node4802|node4803|node4900|node4901|node5000|node5001|node5003|node5004|node5005|node5100|node5101|node5102|node5103|node5104|node5105|node5106|node5200|node5201|node5202|node5203|node5204",
+      "--time-min=01:00:00",
+      "--chdir=/home/ngom/orcd/scratch/activation/compaction_summary_8k_launch_v1",
+      "--output=/home/ngom/orcd/scratch/activation/compaction_summary_8k_launch_v1/train_%j.log",
+      "/home/ngom/orcd/scratch/activation/compaction_summary_8k_launch_v1/train_h200.sbatch"
+    ]
+  },
+  "warmup_placement": {
+    "host": "orcd H100node4109",
+    "job": 23732946,
+    "held_csail_backup": 2224149,
+    "report": "orcd/reconstruction_warmup_110m_v1/report",
+    "preemption_note": "~200498targettokensreplayed; interruptedoptimizerfileisnotacommittedcheckpoint",
+    "early_pace_note": "H100~7\u20139s/logical8 versusRTX~12s; roughly49h compute/110M beforequeue/panels. Budget unchanged.",
+    "recovery": "Nativepaired marker19 published atsecondRTXpreemption;H100owner nowpast80updates"
+  },
+  "rag_blind_first_panel": {
+    "questions": 800,
+    "initial_held_answer_nll": 1.114469111889027,
+    "held_answer_nll": 1.0357618173971066,
+    "learning_answer_nll": 1.0623103472434623,
+    "frozen_full_answer_nll": 0.6494252523702984,
+    "frozen_no_context_answer_nll": 1.814808466307969
+  },
+  "qa16k_first_panel": {
+    "unique_questions": 1600,
+    "epoch": 0.1,
+    "initial_held_answer_nll": 0.9918523,
+    "held_answer_nll": 0.6019978260676226,
+    "learning_answer_nll": 0.39858637663351804
+  },
+  "qa16k_latest_panel": {
+    "questions": 8000,
+    "epoch": 0.5,
+    "held_answer_nll": 0.38284902468298454,
+    "learning_answer_nll": 0.20015126353160229
+  },
+  "portable_compaction_counts": {
+    "held": 100,
+    "train": 15606
+  },
+  "material_extension": {
+    "trajectories": 200000,
+    "distinct_roots": 107316,
+    "compaction_candidates": 360718,
+    "target_rows": 200000,
+    "qa_windows": 426492,
+    "assistant_target_tokens": 1102237195,
+    "splits": {
+      "train": 179729,
+      "held": 20271
+    },
+    "sources": {
+      "coding": 107263,
+      "research": 5500,
+      "math": 87237
+    },
+    "exhausted_sources": [
+      "coding",
+      "research"
+    ],
+    "job": 23725316,
+    "status": "COMPLETED",
+    "updated_utc": "2026-09-25T12:16:17Z"
+  },
+  "allocation_budget_fix": {
+    "cause": "Slurm environment retained1h while controller granted6h; argv2698/2699seconds confirmed live",
+    "implemented": "Both launchers now bounded-query same job/start controller UTC end, fallback environment, preserve campaign cap and900s reserve",
+    "validated": "10 shell parser cases and remoteRAG packet hashes PASS",
+    "warmup_next_action": "Verified actual startup20697seconds, source=controller; resume929 Adam successful",
+    "rag_next_action": "Current segment runs normally; next requeue reads corrected external run.sh automatically",
+    "inventory_job": 23725865,
+    "summary8k": "Same verified controller-end parsing added before firstGPU submission, UTCexplicit; packetmanifest refreshed"
+  },
+  "compaction_extension_inventory": {
+    "cpu_job": 23725865,
+    "state": "COMPLETED 19s",
+    "indexed_trajectories": 90381,
+    "new_unique_training_roots": 17385,
+    "new_coding": 12364,
+    "new_math": 5021,
+    "new_research": 0,
+    "total_eligible_roots": 35793,
+    "path": "/home/ngom/orcd/scratch/activation/compaction_supply_20260925_v1",
+    "next": "Select exact cuts and independent extension banks before original18408 supply exhausts; research source exhausted so report actual source mix"
+  },
+  "rag_blind_latest_panel": {
+    "questions": 7200,
+    "held_answer_nll": 0.9678060230710862,
+    "learning_answer_nll": 0.713915360187431
+  },
+  "rag_blind_final": {
+    "complete": true,
+    "questions": 8000,
+    "epochs": 1,
+    "initial_held_nll": 1.114469111889027,
+    "final_held_nll": 0.9409172625330727,
+    "learning_nll": 0.7316748655015599,
+    "frozen_full_nll": 0.6494252523702984,
+    "frozen_no_context_nll": 1.814808466307969
+  },
+  "qa_comparison_limit": "Question-aware16k and blind8k share held questions and initializer, but training pool/order and cosine horizon differ. Promising view comparison, not an isolated causal ablation.",
+  "summary8k_frozen_manifest": "1fe19dd68ef86cb7341785495f37b02f98919c87650ad324fef815658d263691",
+  "summary8k_placement": {
+    "host": "orcd",
+    "gpu_job": 23757860,
+    "cpu_job": 2236849,
+    "orcd_cpu_backup": 23748404,
+    "orcd_gpu_submitted": true,
+    "selection_sha256": "914ede80484b64c8fe395842a8d29ca832e6633aefcc2a494aed2da25158eee5",
+    "training_histories": 8000,
+    "unique_roots": 8000,
+    "mix": {
+      "coding": 3996,
+      "research": 2402,
+      "math": 1602
+    },
+    "report": "orcd/compaction_summary_8k_v1/report",
+    "csail_gpu_backup": 2236964,
+    "csail_backup_status": "HELD"
+  },
+  "qa16k_latest": {
+    "questions": 14400,
+    "epochs": 0.9,
+    "held_answer_nll": 0.3217457989671584,
+    "learning_nll": 0.1577180984794825,
+    "full_context_nll": 0.299219,
+    "updated_utc": "2026-09-25T10:51:15.577474+00:00"
+  },
+  "warmup_latest": {
+    "target_tokens_at_last_panel": 17221649,
+    "held_nll": 0.19746333717294717,
+    "training_nll": 0.19849566184649609,
+    "token_accuracy": 0.9386895973862482,
+    "no_context_kl": 0.005187815985341281,
+    "quality_gate": true,
+    "current_target_tokens_at_0955": 17543809,
+    "note": "First observed gate pass; continue110M actualtargetbudget"
+  },
+  "summary8k_latest": {
+    "histories_at_0721": 392,
+    "initial_summary_held_nll": 0.9413955352117961,
+    "initial_continuation_nll": 0.7980713892286723,
+    "seconds_per_8_histories_recent": "27\u201334",
+    "host": "H100node4109",
+    "job": 23757860,
+    "histories_at_latest_panel": 3200,
+    "summary_held_nll": 0.6588585665778711,
+    "summary_learning_nll": 0.6063103745941236,
+    "continuation_nll": 0.8060005574389264,
+    "continuation_first128_nll": 1.2500918947031525,
+    "native_resumed_histories": 4360,
+    "actual_histories_at_1250": 4720
+  },
+  "current_bank_counts_0754": {
+    "trajectory_qa_total": 62585,
+    "trajectory_qa_train": 56087,
+    "trajectory_qa_held": 6498,
+    "summary_train": 10063,
+    "summary_held": 100,
+    "teacher_completed": 11382
+  },
+  "teacher_recovery_20260925": {
+    "sky_job": 7,
+    "previous_job": 6,
+    "host": "ac-teacher-20260924",
+    "start_slice": "v2_004",
+    "completed_raw_recovered": 616,
+    "extra_exported": 210,
+    "failure": "Exporter assumed parallel calls were dictionaries; malformed nested string",
+    "fix": "Type-checked exporter-only tool statistics; raw traces unchanged",
+    "provenance": "Pre-patch raw rows all exported with old generation before one-time worker metadata migration; receipt embedded in release manifest",
+    "receipt": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/teacher_single_agent_v2/export_fix_remote_004.json",
+    "pid": 3026553,
+    "deadline_utc": "2026-09-25T17:50:00Z",
+    "status": "Sky7 recovered failedslice004 to1000, now freshslice005;13000totalcompleted at09:23"
+  },
+  "compaction_extension_gate": "PASS: original full rows verified for all31986 against original source selection, exact native summary_history/load_rows checks, first12payloads hashverified on all3existingnodes.",
+  "compaction_extension_v2": {
+    "partition_identity": "52af0768bc0ec1603bbc47fed154d33fc23e2b575766629877681b46ef802161",
+    "old_partition_identity": "cba8408b7eb77f3cb20fb8c1c03b2e8e667f68cbfcc6bd77e748061ea40118fc",
+    "training_histories": 50394,
+    "new_histories": 31986,
+    "held": 100,
+    "sources": {
+      "coding": 36904,
+      "research": 4720,
+      "math": 8770
+    },
+    "new_slices_total": 32,
+    "initial_staged_new_slices": 12,
+    "source_payload_bytes_first12": 3619278696,
+    "note": "Plans validated only. Producer assignments require material staging and real queue submission. Old producers remain unchanged.",
+    "cutover": {
+      "utc": "2026-09-25T10:50:06.089632+00:00",
+      "old_manifest_sha256": "e48d41779f61f86ffd21dbdd39282cc13f0a99c6fc7f1e04006eb8d570654090",
+      "old_partition": "cba8408b7eb77f3cb20fb8c1c03b2e8e667f68cbfcc6bd77e748061ea40118fc",
+      "new_partition": "52af0768bc0ec1603bbc47fed154d33fc23e2b575766629877681b46ef802161",
+      "published_rows": 12902,
+      "published_shards": 836,
+      "exact_prefix_preserved": true,
+      "portable_counter_unchanged": true,
+      "new_available_train": 50394
+    },
+    "staged_hosts": [
+      "ac-summary-20260924",
+      "ac-summaryboost-20260924",
+      "ac-qa-20260924"
+    ],
+    "source_revision": "10d6e55a9954fa51b3d202bfadaab92bb333afcc",
+    "next": "A/Bextensionjobsqueued11/6; Cac-qaSky11submitted after16kfinalnativeexternalrecovery. Verifylive generation; end18:10UTC.",
+    "C_status": "Sky11 live generation verified219acceptednewhistories by11:59"
+  },
+  "qa16k_final": {
+    "complete": true,
+    "sky_job": 10,
+    "questions": 16000,
+    "epochs": 1,
+    "held_answer_nll": 0.3079606274917909,
+    "learning_answer_nll": 0.14407796178807133,
+    "initial_held_answer_nll": 0.9918522600973858,
+    "frozen_full_nll": 0.29921912260404127,
+    "frozen_no_context_nll": 1.775691433608767,
+    "supervised_answer_tokens": 685568,
+    "utc": "2026-09-25T11:11:13.641149+00:00",
+    "recovery": {
+      "status": "verified",
+      "recoverable_questions": 16000,
+      "updates": 2000,
+      "complete": true,
+      "checkpoint_created_utc": "2026-09-25 11:11:29 UTC",
+      "verified_local_utc": "2026-09-25T11:24:28+00:00",
+      "directory": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/qa16k_ec2_recovery/step_02000_eb19472afbfb",
+      "bytes": 7170232446,
+      "manifest_sha256": "d7b5bc89bb322c351e02d6a79cc24ded664d06ebde4b934879945e5f7598acd0",
+      "static_packet": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/qa16k_ec2_static_v1",
+      "source_host": "ac-qa-20260924",
+      "native_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "verification": "all paired payload hashes and unchanged run/control identities",
+      "note": "Combine with the preserved static packet; no cross-hardware arithmetic claim."
+    }
+  },
+  "warmup_latest_panel": {
+    "checked_utc": "2026-09-25T15:03:11.109373+00:00",
+    "current_status": {
+      "phase": "training",
+      "training": "175,856 passages \u00d7 0.262 epochs",
+      "target tokens presented": "28612145",
+      "source token exposures": "28566121",
+      "unique source tokens": "110001751",
+      "loss": "0.11606742767617106",
+      "no context KL": "0.004283230208481352"
+    },
+    "latest_panel": {
+      "passages presented": 35176,
+      "target tokens presented": 21796154,
+      "source token exposures": 21760978,
+      "epoch": 0.2000272950595942,
+      "held NLL": 0.1823041275848829,
+      "training NLL": 0.15219105438791639,
+      "token accuracy": 0.9439553584658068,
+      "no-context KL": 0.0053965431993016665,
+      "quality gate": true
+    }
+  },
+  "summary8k_latest_panel": {
+    "checked_utc": "2026-09-25T15:03:11.109373+00:00",
+    "current_status": {
+      "phase": "training",
+      "training": "8000 unique histories \u00d7 0.867 epochs",
+      "summary targets presented": "6213775"
+    },
+    "latest_panel": {
+      "histories presented": 6400,
+      "epoch": 0.8,
+      "summary targets presented": 5735852,
+      "summary held NLL": 0.6064671978764117,
+      "summary learning NLL": 0.5531366991367704,
+      "continuation NLL": 0.798475317163527,
+      "continuation first 128 NLL": 1.2245715634501522,
+      "continuation remaining NLL": 0.7790135916120922
+    }
+  },
+  "compaction_csail_extension": {
+    "cpu_job": 2272403,
+    "cpu_state": "COMPLETED, allsource/plan/materialhashes andsamplehistoryloadspassed",
+    "gpu_job": 2272445,
+    "partition": "csail-shared-h200",
+    "qos": "shared-if-available",
+    "slices": [
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "histories": 8000,
+    "recipe": "same pinned27B/sourcev7/native medium recipe",
+    "runtime_versions": {
+      "vllm": "0.28.0",
+      "torch": "2.13.0",
+      "transformers": "5.15.1"
+    },
+    "root": "/data/scratch/ngom/activation/summary_slices_v2",
+    "deadline": 1790542991,
+    "source_material_bytes": 2424659582,
+    "submitted_utc": "2026-09-25T12:08:41.480487+00:00",
+    "state": "RUNNING, generation verified388accepted by12:50",
+    "node": "aia-h200-13",
+    "startup": "model loaded, kernel warmup inprogress12:19"
+  },
+  "sixteen_hour_evidence": {
+    "observed_utc": "2026-09-25T13:23:37.494535+00:00",
+    "contextual_trajectory_qa": {
+      "unique_questions": 16000,
+      "epochs": 1,
+      "held_answer_nll": 0.3079606275,
+      "learning_nll": 0.1440779618,
+      "complete": true
+    },
+    "blind_trajectory_qa": {
+      "unique_questions": 8000,
+      "epochs": 1,
+      "held_answer_nll": 0.699328,
+      "complete": true
+    },
+    "blind_rag": {
+      "unique_questions": 8000,
+      "epochs": 1,
+      "held_answer_nll": 0.940917,
+      "complete": true
+    },
+    "compaction_summary": {
+      "planned_unique_histories": 8000,
+      "epoch": 0.649,
+      "latest_panel_unique_histories": 4800,
+      "held_summary_nll": 0.6251509971,
+      "continuation_nll": 0.8009411519,
+      "complete": false
+    },
+    "reconstruction": {
+      "actual_target_tokens": 24839403,
+      "last_panel_target_tokens": 21796154,
+      "held_nll": 0.1823041276,
+      "budget_target_tokens": 110177607
+    },
+    "portable_training_summaries": 16856,
+    "portable_completed_teacher_rollouts": 17390,
+    "interpretation": "QA and summary-SFT learning established; continuation transfer has not improved. Continue approved volumes and warmup; not a completion declaration."
+  },
+  "teacher_mit_continuation": {
+    "updated_utc": "2026-09-25T14:16:37.170813+00:00",
+    "job": 23864529,
+    "state": "RUNNING and exported366 actual trajectories",
+    "root": "/home/ngom/orcd/scratch/activation/teacher_mit_runtime_v1",
+    "slices": [
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41
+    ],
+    "cpu_sandbox_job": 23859506,
+    "cpu_input_job": 23861644,
+    "cpu_checks": "PASS: actual unchanged AgentEnv, shell/Python/file access, private mount/PID/network namespaces, network none, seccomp2, container cleanup; frozen source/inputs/66 model shards/native offline tokenizer",
+    "review": "startup USR1 requeue path fixed; four shell cases passed; no remaining blocker",
+    "worker_sha256": "45150974ca0960b9e326eacfb4e14c23a261f81ce5ae41e93cea166fde42ba4d",
+    "runtime": "rootless Podman5.6.2, exact EC2 image, private single-UID VFS; row provenance identifies environment difference",
+    "teacher_transport_pid": 3149639,
+    "teacher_transport_session": 91004,
+    "persistence_pid": 3149672,
+    "persistence_session": 43871,
+    "gpu_startup": "PASS: actual27B engine and native tool rollouts",
+    "cpu_recovery_job": 23862844,
+    "cpu_recovery_result": "PASS",
+    "node": "node1709",
+    "first_committed_tasks": 366,
+    "throughput": "about1000 completed tasks/hour/GPU after startup",
+    "checked_utc": "2026-09-25T15:03:11.109373+00:00"
+  },
+  "warmup_1532_boundary": {
+    "utc": "2026-09-25T15:33:05.748872+00:00",
+    "job": 23732946,
+    "state": "native5958 saved and automatic requeue",
+    "target_tokens": 29619066,
+    "action": "verify native optimizer/RNG resume after next allocation"
+  },
+  "mixed_recipe_proposal": {
+    "status": "working proposal, not yet launched or validated",
+    "qa_presentations_per_family": {
+      "direct_contextual": 40000,
+      "recursive_contextual": 40000,
+      "uncontextual_summary_prompt": 20000
+    },
+    "family_loss_shares": {
+      "rag_qa": 0.25,
+      "traj_qa": 0.25,
+      "summary_sft": 0.25,
+      "agent_sft": 0.15,
+      "reconstruction": 0.1
+    },
+    "reconstruction_rehearsal_targets": 10000000,
+    "recursive_layout": "compressed question-bearing parent trajectory conditions fresh evidence encoding; no raw outer-encoder question shortcut",
+    "continuation_training": "retired except justified cheap diagnostics",
+    "multi_target": {
+      "fraction_per_ac_family": 0.1,
+      "inputs": [
+        2,
+        3
+      ],
+      "selection": "shorter intact sources first",
+      "max_combined_full_reader_tokens": 24576,
+      "oversize": "3 inputs ->2 inputs ->singles; never truncate source evidence",
+      "purpose": "runtime familiarity; separate long-context capacity probes"
+    }
+  },
+  "multi_gpu_work": {
+    "status": "H2002/4 numerical/runtime gates passed; best strict bucket128 speeds1.817x/3.128x, fourGPU3.5 target not met. RTX2stress1.705x PASS; RTX4 stopped before distributed measurement due native-repeat gradient5.756%>5%. No large run started; explicit user approval required.",
+    "targets": {
+      "2_gpus": 1.8,
+      "4_gpus": 3.5
+    },
+    "comparison": "same examples/global batch/Adam/schedule; include communication; report end-to-end separately",
+    "actual_launcher_receipt": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/mixture_runtime_gate_v1/gate_result.json"
+  },
+  "synthesis_push": {
+    "accepted_utc": "2026-09-25T16:09:32.418671+00:00",
+    "hours": 20,
+    "target_end_utc": "2026-09-26T12:09:32.418671+00:00",
+    "tasks": [
+      "compaction",
+      "ordinary_agent_teacher"
+    ],
+    "ec2_existing_expiry_unchanged": true,
+    "forecast_additional_per_task": [
+      30000,
+      40000
+    ],
+    "forecast_condition": "two productive strong GPU producers per task plus extended eligible source slices"
+  },
+  "recursive_reconstruction_proposal": {
+    "status": "Implemented/reviewed; flat warmup paused at6459 with full Adam/RNG preserved; CPU preparation23903398 assembles remaining original targets with recursive/short-multi layouts.",
+    "flat_target_tokens": 80000000,
+    "recursive_target_tokens": 30000000,
+    "recursive_split": {
+      "mixed_old_rows_new_text": 0.5,
+      "whole_child_transport": 0.25,
+      "whole_child_balanced_compression": 0.25
+    },
+    "overall_rows_per_original_source_token": [
+      0.03333333333333333,
+      0.1
+    ],
+    "preserve_literal_gold_targets": true
+  },
+  "summary_8k_final": {
+    "completed_utc": "2026-09-25T16:06:00Z",
+    "histories": 8000,
+    "target_tokens": 7161798,
+    "held_nll": 0.5981564504933778,
+    "learning_nll": 0.5407414468995011,
+    "continuation_nll": 0.7992019637926816,
+    "continuation_first128_nll": 1.2316806929108657,
+    "preserved_native": true,
+    "s3_archive": "pending",
+    "root": "/home/ngom/orcd/scratch/activation/trajectory_compaction/compaction_summary_8k_v1"
+  },
+  "ratio_sampling": {
+    "status": "accepted; future prepared runs",
+    "sampler": "existing uniform ratio sampler",
+    "task_aware_range": [
+      0.05,
+      0.1
+    ],
+    "reconstruction_range": [
+      0.03333333333333333,
+      0.1
+    ],
+    "main_held_panel_ratio": 0.0625,
+    "recursive_reconstruction": "sample overall budget; derive per-level ratios by layout; no independent multiplication of sampled level ratios"
+  },
+  "large_training_launch_authorization": {
+    "status": "WAIT_FOR_EXPLICIT_USER_APPROVAL",
+    "updated_utc": "2026-09-26T11:58:00Z",
+    "instruction": "Do not start large training until approval."
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "status": "prepared_awaiting_root_review",
+  "files": {
+    "run_qa_pi42k_merged32k_v1.py": "016d28622bfc26c0f28bcd1cdc7b7eb7adf830e7ce977aed7eac5a2dd99a7303",
+    "prepare_pi42k_merged32k_v1.py": "9fcce23f5a290028fef809379c6dd4dcaeebc1e2893932081ca3347744639158",
+    "train_pi42k_merged32k_v1.sbatch": "5f007f86896663b7be8741cc0ddc9a74665dab1b157a3d9b4331af36398fe1eb",
+    "train_pi42k_merged32k_csail_v1.sbatch": "885acf29e1c6b31885aba7d63260aa8ecb64b215e3895f253dad4508564c35e4"
+  },
+  "design": {
+    "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/pi42k_merged32k_preparation/PI42K_MERGED32K_FRESH960_DESIGN_V1.json",
+    "sha256": "ab57f723b6ba54150c6b675b0367b943082fe662970b46df67425cffbca28cd5"
+  },
+  "subset": {
+    "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/pi42k_merged32k_preparation/subset.json",
+    "sha256": "578a8955664a2b750ea1141433f856a43fa2e2cdb48d38ae4ba1091e2ee650be",
+    "questions": 960,
+    "held": 100,
+    "cohorts": [
+      50,
+      50
+    ],
+    "learning_ids_retained": 32,
+    "training_by_family": {
+      "code": 288,
+      "documents": 77,
+      "legal": 58,
+      "financial": 48,
+      "office": 57,
+      "technical_web": 48,
+      "math_arxiv": 115,
+      "web": 192,
+      "math_textbook": 77
+    }
+  },
+  "input_bytes": {
+    "material": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+    "original_pair": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c",
+    "relocated_pair": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7"
+  },
+  "configuration_deltas_from_native_fresh8k": {
+    "schedule_total_updates": 120,
+    "checkpoint_every_updates": 24,
+    "micro_batch_examples": 1,
+    "gradient_checkpointing_min_tokens": 0,
+    "max_duration_seconds": 9000
+  },
+  "runtime_geometry": {
+    "evidence_tokens": 32768,
+    "max_passages": 64,
+    "passage_parts": false,
+    "ratio": 0.0625,
+    "encode_batch_max_tokens": 65536
+  },
+  "validation": {
+    "focused_fixture_checks": 39,
+    "actual_selection_and_hash_checks": "pass",
+    "syntax": "Python modules, embedded launcher Python and bash scripts pass",
+    "checks": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/pi42k_merged32k_preparation/checks.json",
+    "delta": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/pi42k_merged32k_preparation/delta.patch"
+  },
+  "limitations": [
+    "No GPU/remote work or submissions by preparation agent",
+    "On-compute source/payload hashes and populated Adam states are rechecked before training",
+    "Final readout owned by hillclimb_opportunities and uses a separate manifest; do not mutate frozen training design after launch",
+    "H200 baseline is measured in-run; no external RTX replay dependency"
+  ],
+  "no_other_experiments_implemented": true
+}

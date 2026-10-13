@@ -1,0 +1,290 @@
+{
+  "scope": "Observed development400 panel trajectories; descriptive, no intermediate checkpoint selection. No learning-rate causal isolation.",
+  "runs": [
+    {
+      "run": "oracle_27b_32k",
+      "schedule": {
+        "learning_rate_ac": 5e-05,
+        "learning_rate_target_lora": 2e-05,
+        "lr_schedule": "cosine",
+        "lr_final_fraction": 0.1,
+        "warmup_updates": 50,
+        "schedule_total_updates": 4000
+      },
+      "points": [
+        {
+          "stage_questions": 0,
+          "held400_nll": 2.2530745156748404
+        },
+        {
+          "stage_questions": 3200,
+          "held400_nll": 0.9212675393253724
+        },
+        {
+          "stage_questions": 6400,
+          "held400_nll": 0.8459827794735189
+        },
+        {
+          "stage_questions": 9600,
+          "held400_nll": 0.8143379057241589
+        },
+        {
+          "stage_questions": 12800,
+          "held400_nll": 0.7813217270381533
+        },
+        {
+          "stage_questions": 16000,
+          "held400_nll": 0.6622219538185565
+        },
+        {
+          "stage_questions": 19200,
+          "held400_nll": 0.6267671816714329
+        },
+        {
+          "stage_questions": 22400,
+          "held400_nll": 0.6059516784452935
+        },
+        {
+          "stage_questions": 25600,
+          "held400_nll": 0.5785534964841831
+        },
+        {
+          "stage_questions": 28800,
+          "held400_nll": 0.5580611337232597
+        },
+        {
+          "stage_questions": 32000,
+          "held400_nll": 0.5688311093481019
+        }
+      ]
+    },
+    {
+      "run": "continue32k_10k_final_lr",
+      "schedule": {
+        "learning_rate_ac": 5e-06,
+        "learning_rate_target_lora": 2e-06,
+        "lr_schedule": "constant",
+        "lr_final_fraction": 1.0,
+        "warmup_updates": 0,
+        "schedule_total_updates": 1250
+      },
+      "points": [
+        {
+          "stage_questions": 0,
+          "held400_nll": 0.5688311093481019
+        },
+        {
+          "stage_questions": 1000,
+          "held400_nll": 0.5520449480896175
+        },
+        {
+          "stage_questions": 2000,
+          "held400_nll": 0.5385113881084953
+        },
+        {
+          "stage_questions": 3000,
+          "held400_nll": 0.5509218995429329
+        },
+        {
+          "stage_questions": 4000,
+          "held400_nll": 0.5366679392261626
+        },
+        {
+          "stage_questions": 5000,
+          "held400_nll": 0.5321386721832682
+        },
+        {
+          "stage_questions": 6000,
+          "held400_nll": 0.5424231266554322
+        },
+        {
+          "stage_questions": 7000,
+          "held400_nll": 0.5302032667946078
+        },
+        {
+          "stage_questions": 8000,
+          "held400_nll": 0.5290024530748654
+        },
+        {
+          "stage_questions": 9000,
+          "held400_nll": 0.5290286395108617
+        },
+        {
+          "stage_questions": 10000,
+          "held400_nll": 0.5326864100103368
+        }
+      ]
+    },
+    {
+      "run": "continue32k_10k_rewarm",
+      "schedule": {
+        "learning_rate_ac": 2e-05,
+        "learning_rate_target_lora": 8e-06,
+        "lr_schedule": "cosine",
+        "lr_final_fraction": 0.25,
+        "warmup_updates": 50,
+        "schedule_total_updates": 1250
+      },
+      "points": [
+        {
+          "stage_questions": 0,
+          "held400_nll": 0.5688311093481019
+        },
+        {
+          "stage_questions": 1000,
+          "held400_nll": 0.5598477909625239
+        },
+        {
+          "stage_questions": 2000,
+          "held400_nll": 0.5724811950084964
+        },
+        {
+          "stage_questions": 3000,
+          "held400_nll": 0.5726085440154652
+        },
+        {
+          "stage_questions": 4000,
+          "held400_nll": 0.568429536374284
+        },
+        {
+          "stage_questions": 5000,
+          "held400_nll": 0.5608494945985515
+        },
+        {
+          "stage_questions": 6000,
+          "held400_nll": 0.557342944582367
+        },
+        {
+          "stage_questions": 7000,
+          "held400_nll": 0.546460483105611
+        },
+        {
+          "stage_questions": 8000,
+          "held400_nll": 0.5335584129898642
+        },
+        {
+          "stage_questions": 9000,
+          "held400_nll": 0.5394980468424458
+        },
+        {
+          "stage_questions": 10000,
+          "held400_nll": 0.5248436237374497
+        }
+      ]
+    },
+    {
+      "run": "continue42k_8k_final_lr_floor",
+      "schedule": {
+        "learning_rate_ac": 5e-06,
+        "learning_rate_target_lora": 2e-06,
+        "lr_schedule": "constant",
+        "lr_final_fraction": 1.0,
+        "warmup_updates": 0,
+        "schedule_total_updates": 1000
+      },
+      "points": [
+        {
+          "stage_questions": 0,
+          "held400_nll": 0.5326864100103368
+        },
+        {
+          "stage_questions": 800,
+          "held400_nll": 0.5305334592696438
+        },
+        {
+          "stage_questions": 1600,
+          "held400_nll": 0.5185428211161764
+        },
+        {
+          "stage_questions": 2400,
+          "held400_nll": 0.521027236737524
+        },
+        {
+          "stage_questions": 3200,
+          "held400_nll": 0.5214352137333497
+        },
+        {
+          "stage_questions": 4000,
+          "held400_nll": 0.5183454738655748
+        },
+        {
+          "stage_questions": 4800,
+          "held400_nll": 0.5248419452047074
+        },
+        {
+          "stage_questions": 5600,
+          "held400_nll": 0.5257994534466329
+        },
+        {
+          "stage_questions": 6400,
+          "held400_nll": 0.5242611569126419
+        },
+        {
+          "stage_questions": 7200,
+          "held400_nll": 0.5182528573016105
+        },
+        {
+          "stage_questions": 8000,
+          "held400_nll": 0.5271308556897355
+        }
+      ]
+    },
+    {
+      "run": "strong32k_piecewise_8k_8k",
+      "schedule": {
+        "learning_rate_ac": 2e-05,
+        "learning_rate_target_lora": 8e-06,
+        "lr_schedule": "cosine",
+        "lr_final_fraction": 0.25,
+        "warmup_updates": 50,
+        "schedule_total_updates": 1000
+      },
+      "points": [
+        {
+          "stage_questions": 0,
+          "held400_nll": 0.6759865545418197
+        },
+        {
+          "stage_questions": 800,
+          "held400_nll": 0.6397071845795123
+        },
+        {
+          "stage_questions": 1600,
+          "held400_nll": 0.639808071363625
+        },
+        {
+          "stage_questions": 2400,
+          "held400_nll": 0.6422179700813828
+        },
+        {
+          "stage_questions": 3200,
+          "held400_nll": 0.6439324070082493
+        },
+        {
+          "stage_questions": 4000,
+          "held400_nll": 0.6355926009981291
+        },
+        {
+          "stage_questions": 4800,
+          "held400_nll": 0.6195330190152684
+        },
+        {
+          "stage_questions": 5600,
+          "held400_nll": 0.6152516949606077
+        },
+        {
+          "stage_questions": 6400,
+          "held400_nll": 0.6136618062144483
+        },
+        {
+          "stage_questions": 7200,
+          "held400_nll": 0.6032504507483228
+        },
+        {
+          "stage_questions": 8000,
+          "held400_nll": 0.5968171752457129
+        }
+      ]
+    }
+  ]
+}

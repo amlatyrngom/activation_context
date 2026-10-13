@@ -1,0 +1,55 @@
+{
+  "utc": "2026-09-23T05:00:20.013926+00:00",
+  "status": "actual CPU preparation reviewed; ready to freeze",
+  "cpu_job": 23528918,
+  "cpu_outcome": "COMPLETED0:0,1m29,MaxRSS29964888KiB",
+  "parent": "continue32k_10k_final_lr",
+  "prepared_design_sha256": "c2ab200aa6d52676853af14362f9751d2948aea7eccdaacf4e717388ea94aedc",
+  "material_sha256": "2595d9eb215649126cd76875b083e098d28cf56c3649f76367da7708d929fd1f",
+  "initial_pair_sha256": "7eb8aa8e77f5d9f38ced3ea41e843caea855078470fbf38ab08d8695043d2b0e",
+  "actual_optimizer_receipt": {
+    "adam_state_preserved_byte_exact": true,
+    "param_groups_preserved_exact": true,
+    "weight_bytes_unchanged": true,
+    "independent_files_not_hardlinks": true,
+    "optimizer_parameter_states": 615,
+    "adam_parameter_steps": 5250,
+    "parent_stage_updates_done": 1250,
+    "parent_lifetime_updates_done": 5250,
+    "stage_updates_done": 0,
+    "stage_epoch_number": 0
+  },
+  "question_counts": {
+    "questions": 4000,
+    "epochs": 1,
+    "training_by_family": {
+      "code": 1200,
+      "math_arxiv": 480,
+      "math_textbook": 320,
+      "financial": 200,
+      "web": 800,
+      "technical_web": 200,
+      "documents": 320,
+      "legal": 240,
+      "office": 240
+    },
+    "learning32_preserved": true,
+    "unique_questions_after_stage": 42000,
+    "total_presentations_after_stage": 46000
+  },
+  "native_config_difference": {
+    "schedule_total_updates": [
+      1000,
+      500
+    ],
+    "gradient_checkpointing_min_tokens": [
+      1700,
+      0
+    ],
+    "max_duration_seconds": [
+      6600,
+      17100
+    ]
+  },
+  "validation": "Candidate51 focused CPU checks and root code review previously passed. Actualcompute asserts exacthalf-family/familiar-parent membership and unchanged held/retrieval/learning32; root reviews completed design/pair hashes, allweight bytes and unchanged actual615Adam moment/group states at5250, same parentown8k400 reference. Runtime initial400/token replay required before first update."
+}

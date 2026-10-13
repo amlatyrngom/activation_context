@@ -1,0 +1,20 @@
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -520,14 +520,12 @@
+         inputs_embeds = torch.zeros(batch_size, max_seq, self.d_side, device=device, dtype=torch.float32)
+         for row, sequence in enumerate(sequences):
+             inputs_embeds[row, :sequence.shape[0]] = sequence
++        # Decoder sequences are right padded; causal attention/recurrence cannot
++        # expose those later pads to real tokens. Mixer padding masks above stay.
+         attention_mask = None
+-        if batch_size > 1:
+-            attention_mask = torch.zeros(batch_size, max_seq, device=device, dtype=torch.long)
+-            for row, length in enumerate(seq_lengths):
+-                attention_mask[row, :length] = 1
+         enabled = (self.mode == TRAINING and torch.is_grad_enabled() and self.config.side_gradient_checkpointing
+                    and getattr(self, "_training_gradient_checkpointing", True)
+-                   and max_seq >= getattr(self, "_side_gradient_checkpointing_min_tokens", 0))
++                   and max_seq * batch_size >= getattr(self, "_side_gradient_checkpointing_min_tokens", 0))
+         hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
+                                            lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
+         phase_started = self._phase("side_decoder", phase_started, device)

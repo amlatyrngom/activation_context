@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "cpu_job": 23528267,
+  "cpu_elapsed": "1m42",
+  "cpu_max_rss_KiB": 30402096,
+  "parent": "continue32k_10k_final_lr",
+  "prepared_design_sha256": "280f910ecdb8405b02bd73dc4ee8c2636083e346a1afcdf33c88a8a9df55b5d5",
+  "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+  "initial_pair_sha256": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c",
+  "selection_receipt_sha256": "5af2e21e1c6798957e83668d9fa05089716bf710aa20797fcaa0b873fdb3c0b9",
+  "selected_by_family": {
+    "code": 2400,
+    "documents": 640,
+    "financial": 400,
+    "legal": 480,
+    "math_arxiv": 960,
+    "math_textbook": 640,
+    "office": 480,
+    "technical_web": 400,
+    "web": 1600
+  },
+  "selected_surplus_arxiv": 111,
+  "learning_questions": 32,
+  "inherited_adam_states": 615,
+  "inherited_adam_steps": 5250,
+  "stage_clock": 0,
+  "moments_groups_and_weight_bytes_preserved": true,
+  "independent_not_linked": true,
+  "config_delta_from_native_parent": {
+    "schedule_total_updates": [
+      1250,
+      1000
+    ],
+    "max_duration_seconds": [
+      10200,
+      6600
+    ]
+  },
+  "helper_sources_match_reviewed_local_files": true,
+  "remaining": "Freeze reviewed design, submitGPU train+ownfinal100; runtime initial400/token-score replay remains required beforefirstupdate."
+}

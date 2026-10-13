@@ -125,6 +125,7 @@ class DatasetQAExample:
     hard_negative_chunk_ids: list[str] | None = None
     excluded_doc_ids: list[str] | None = None
     oracle_labeled: bool = False
+    study_source: dict | None = None  # Exact selected source units/order/text for synthesized QA.
 
 
 @dataclass

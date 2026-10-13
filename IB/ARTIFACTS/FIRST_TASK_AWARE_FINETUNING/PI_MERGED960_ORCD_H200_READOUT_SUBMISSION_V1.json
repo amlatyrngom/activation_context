@@ -1,0 +1,23 @@
+{
+  "utc": "2026-09-23T17:15:17.010190Z",
+  "status": "released",
+  "files": {
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "evaluate_pi42k_merged32k_orcd_h200_v1.sbatch": "39757549a250c9f375c41e407666994640aae12cba1386464b60ed5a9b9ef60c",
+    "evaluate_pi42k_merged32k_v2.py": "211ab983df6c3db6df2b0a230ff20708a4166f8f5abeec2b04fb3485d3d8b5fc",
+    "PI42K_MERGED32K_ORCD_H200_READOUT_MANIFEST_V1.json": "180694031840e9a11f942bb97f2ae52d7d28ef82f53a913ce01bfa38b0ab52a6"
+  },
+  "dependency": 23558386,
+  "scope": "Own completed960-question final32k100actualAC plus same-host native2k parent/final retention; no updates; no confirmation.",
+  "root_review": "39 focused CPU checks rerun; V1-to-V2 diff reviewed. Explicit actual saved training head chunk for all cells;1e-3 replay gates unchanged.",
+  "local_output_alias": "/home/ngom/orcd/pool/activation/taskaware/reports/pi42k_merged32k_orcd_h200_cohort100",
+  "remote_output": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1/reports/pi42k_merged32k_orcd_h200_cohort100",
+  "job_id": 23561844,
+  "released_utc": "2026-09-23T17:15:17.281160Z"
+}

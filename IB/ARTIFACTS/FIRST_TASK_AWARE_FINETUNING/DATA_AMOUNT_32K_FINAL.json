@@ -1,0 +1,26 @@
+{
+  "status": "complete",
+  "unique_questions": 32000,
+  "epochs": 1,
+  "development_nll": 0.5688311093481019,
+  "learning_panel_nll": 0.39718307142845216,
+  "development_by_generator": {
+    "9b": 0.605943026827936,
+    "27b": 0.5317191918682677
+  },
+  "earlier_16k_1_epoch": 0.603263836029209,
+  "best_observed_development_nll": 0.5580611337232597,
+  "best_observed_after_unique_questions": 28800,
+  "selection": "Preselected finalpair, no switchtobestdevelopmentpanel",
+  "duration_s": 18457.8,
+  "job_elapsed_s": 18724,
+  "completion_tokens": 1500371,
+  "side_tokens": 65844364,
+  "student_tokens": 19056636,
+  "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/AC_MODELS/rag_poc/epoch_001",
+  "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/LORAS/rag_reader/epoch_001",
+  "qualitative_status": "All100 answers generated with exact400-panel NLL replay; full source review active.",
+  "tail_receipt": "TMP/model_comparison_analysis/main_32k_tail.json",
+  "cohort100_nll": 0.6079042416273781,
+  "archive_receipt": "QA_CHECKPOINT_ARCHIVE_27B32K_FINAL.json"
+}

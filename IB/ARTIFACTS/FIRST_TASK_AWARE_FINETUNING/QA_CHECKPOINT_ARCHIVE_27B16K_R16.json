@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/",
+  "checkpoint": {
+    "name": "oracle_27b_16k_r16",
+    "display_name": "27B-synthesized training: 16,000 questions \u00d7 1 pass, 1/16 compression",
+    "training_questions": 16000,
+    "training_epochs": 1,
+    "global_update": 2000,
+    "is_final_training_checkpoint": true,
+    "completed_epoch": {
+      "epoch_number": 1,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+    },
+    "source_ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r16/AC_MODELS/rag_poc/epoch_001",
+    "source_reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r16/LORAS/rag_reader/epoch_001",
+    "archive_ac_directory": "ac",
+    "archive_reader_directory": "reader",
+    "selection": "Explicitly archived completed final epoch_001 pair. selected_checkpoint.json is ancillary training provenance and is not used to locate archive weights.",
+    "encoder_base": "Qwen/Qwen3.5-2B",
+    "reader_base": "Qwen/Qwen3.5-9B",
+    "encoder_lora_rank": 128,
+    "reader_lora_rank": 128,
+    "synthesis_teacher_size": "27B",
+    "initialization": "P2 epoch1",
+    "compression": {
+      "configured_rows_per_encoded_source_token": 0.0625,
+      "measured_row_budget": {
+        "passage_parts": false,
+        "nominal_ratio": 0.0625,
+        "splits": {
+          "training": {
+            "questions": 16000,
+            "evidence_source_tokens": 31882665,
+            "encoded_source_tokens": 32938594,
+            "compressed_rows": 2066141,
+            "merged_source_tokens": 32938594,
+            "merged_compressed_rows": 2066141,
+            "rows_per_evidence_token": 0.0648045262213808,
+            "rows_per_encoded_source_token": 0.06272705507709285,
+            "additional_rows_vs_merged": 0
+          },
+          "development": {
+            "questions": 400,
+            "evidence_source_tokens": 786623,
+            "encoded_source_tokens": 811299,
+            "compressed_rows": 50898,
+            "merged_source_tokens": 811299,
+            "merged_compressed_rows": 50898,
+            "rows_per_evidence_token": 0.06470443910234,
+            "rows_per_encoded_source_token": 0.06273642639766597,
+            "additional_rows_vs_merged": 0
+          }
+        }
+      },
+      "note": "Configured ratio is exactly 1/16. Aggregate actual rows differ slightly because each example has integer row rounding; evidence-only and fully framed encoder token denominators are reported separately."
+    },
+    "development": {
+      "questions": 400,
+      "questions_per_generator_cohort": 200,
+      "answer_nll_9b_generated": 0.6429122099595753,
+      "answer_nll_27b_generated": 0.5636154620988426,
+      "answer_nll_combined": 0.603263836029209,
+      "metric": "Mean per-question answer-only gold-token NLL, nats/token; development, not reserved confirmation."
+    },
+    "reserved_confirmation": "Not evaluated for this checkpoint at archival.",
+    "material_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "material_ids_sha256": "ad2aa5edb8454211860738d5cb73ec1a2acabe746b1145038c185f7a2e83b1f1",
+    "evaluator_payload_hashes_verified": {
+      "ac/ac_modules.pt": "78f737b67d00d08338c8d663fb4c97746c08bfe0f859738a34f06bd04df2b316",
+      "ac/side_lora/adapter_config.json": "f29b6461a166b50122d7211ce0a480822b47aa2b2b5a7319504a2d34fc0517c8",
+      "ac/side_lora/adapter_model.safetensors": "07ac4006d45ffb2c1297fc6dfdbe44243df59f4940d244a879fd800debfc949a",
+      "reader/adapter_config.json": "e52b2c2946f885e30f6fc2be7c37e1cbc0d364dd95120ad70d49921aaaad72a9",
+      "reader/adapter_model.safetensors": "46979c622a7356688188f678b1ecfd43dc63fcb4744fcaf0550768d96ddabbc2"
+    },
+    "restore": "Use archive ac/ as the activation-context checkpoint and reader/ as its paired target LoRA. completed_epoch.json retains original run-relative paths; do not use those paths without restoring the original directory layout. Base models are required separately. Optimizer state is excluded, so this is an inference/fresh-optimizer fine-tuning archive, not a bit-exact training resume."
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "78f737b67d00d08338c8d663fb4c97746c08bfe0f859738a34f06bd04df2b316",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "f29b6461a166b50122d7211ce0a480822b47aa2b2b5a7319504a2d34fc0517c8",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "07ac4006d45ffb2c1297fc6dfdbe44243df59f4940d244a879fd800debfc949a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/checkpoint_metadata.json",
+      "bytes": 3962,
+      "sha256": "ab53bea6386b3740cd6c68dd61283b1aee588df112882877f69bd6331342c7be",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/evaluator_checkpoint_receipt.json",
+      "bytes": 4611,
+      "sha256": "9fa820bfb6f07b537beb0e2edf5823cd00d799c74cdded25340051718ccdc3b8",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/initialization.json",
+      "bytes": 4109,
+      "sha256": "c517372dde5feb8002c80a5dc649c4dd5ba496f0e2a11c4eb3840ef0734452f7",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/material_ids.json",
+      "bytes": 1180835,
+      "sha256": "097e43be3ad8d77efdde0b812222be1b61ef289077e40ae9ec7129ccd97a56cd",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/panel_02000.json",
+      "bytes": 1779245,
+      "sha256": "53d35f9764e6ee5a8c86287c906d86dcefb69ad8fbeda1ca78db135cfd4c04f8",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "e52b2c2946f885e30f6fc2be7c37e1cbc0d364dd95120ad70d49921aaaad72a9",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "46979c622a7356688188f678b1ecfd43dc63fcb4744fcaf0550768d96ddabbc2",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/report_data.json",
+      "bytes": 2370387,
+      "sha256": "db51c77745c6988d90e4c3e5d94fb9263d6b043231e1404a262a7757dd427259",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/result.json",
+      "bytes": 1699838,
+      "sha256": "0a5c69746ccdef1cdea249b973d594f48e5a2edcecfe5473b48072416f196e27",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/row_budget.json",
+      "bytes": 860,
+      "sha256": "35a1dfdc2b836de0713368a1dba25c5edd91179daee7d1116c2f7b5a84f8b1a4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/run_identity.json",
+      "bytes": 475,
+      "sha256": "1b468ebeedcb90581b5b07a3e13d907d303af4b3d2da7e1b2f673b8f45f8b531",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/run_recipe.json",
+      "bytes": 898,
+      "sha256": "3b6689cd5e38694a30cd207ccfd4abd94aead6b903903c2ecd8d7c21e28de5fd",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/selected_checkpoint.json",
+      "bytes": 393,
+      "sha256": "39fe47e1abf75e5f948647bef197f3a0996cdc85ec9ef16fd351f9df4a310285",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_16k_r16/epoch_001/training_config.json",
+      "bytes": 1014,
+      "sha256": "89e7214e569aa3bcc36f684b35526742c3c82621c0957f5ece0db14248d665da",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2496309177,
+  "contents": "Exact final paired AC modules, encoder LoRA, reader LoRA, completion and frozen training/development metadata. Base weights, optimizer states, other checkpoints and full training corpus excluded.",
+  "validation": "All five local checkpoint payload hashes matched the existing compute-produced evaluator receipt before upload. Every PUT supplied SHA256 and create-only IfNoneMatch; every object then matched S3 HEAD checksum and byte count. The manifest was uploaded and verified last. No new GPU restoration was run for archival."
+}

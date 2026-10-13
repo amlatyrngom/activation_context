@@ -1,0 +1,33 @@
+{
+  "checked_utc": "2026-09-23T16:24:57.049527+00:00",
+  "scope": "Same strong42000-question paired weights; same100 development questions and32k evidence/totalrows. Same L40S software/precision policy, distinct allocations; no further training. NLL only; prior RTX semantic counts are not relabeled as same-device counts.",
+  "layout_input_sha256": "e6822f29edc69350909f6f24802724e8acf4be41fc6fa9e5263e62ff7c1d24ea",
+  "merged_input_sha256": "49d6202f780468f80261e5dc9d907da3a41558fa79dd65c01bf14afcd11d35de",
+  "runtime": {
+    "torch": "2.13.0+cu130",
+    "cuda": "13.0",
+    "device": "NVIDIA L40S",
+    "tf32_matmul": true,
+    "tf32_cudnn": true,
+    "bf16_reduced_precision_reduction": true,
+    "bf16_reduction_split_k": true
+  },
+  "nll": {
+    "native2k": 0.5548410871216797,
+    "passagewise32k": 0.6792331358381135,
+    "monolithic32k": 0.6314022820800373,
+    "full32k": 0.5743692321493337,
+    "no_context": 1.8413090036099418
+  },
+  "monolithic_nll_improvement": 0.047830853758076254,
+  "per_question_monolithic_lower": 49,
+  "question_count": 100,
+  "input_paths": {
+    "layout": "IB/TMP/SYNC/TASK_AWARE_QA/continuation_layout_l40s_cohort100/result.json",
+    "merged": "IB/TMP/SYNC/TASK_AWARE_QA/continuation_merged_l40s_cohort100/continue32k_10k_final_lr__merged_32k_l40s/result.json"
+  },
+  "generation_status": {
+    "monolithic_complete": true,
+    "matched_passagewise_answers": 47
+  }
+}

@@ -1,6 +1,6 @@
 """
 Throughput of small generators for a CHEAP_SYNTHETIC phase: the study prompt on real MS-MARCO
-chunks, one JSON {question, answer} per chunk, measured per model and engine concurrency. Writes
+chunks, at most one grounded question per chunk, measured per model and engine concurrency. Writes
 a live report (watch it with `sky watch`) and `cheap_synthetic_results.json` last.
 
     uv run sky exec <node> uv run python -m activation.bench.cheap_synthetic_bench \\
@@ -21,7 +21,7 @@ import torch
 from vllm.sampling_params import StructuredOutputsParams
 
 from activation.common.reporting import HtmlReporter
-from activation.dataset.dataset_study import STUDY_JSON_SCHEMA, make_study_prompt
+from activation.dataset.dataset_study_prompts import make_source_study_prompt
 from activation.dataset.dataset_utils import safe_truncate_embedding_chunk, shuffle_fill_truncate
 from activation.dataset.loaders import MsMarcoDataset
 from activation.harness import FREE_DEVICE, HarnessRuntime, HarnessRuntimeConfig, ModelConfig
@@ -38,13 +38,13 @@ def load_chunks(harness: HarnessRuntime, num_chunks: int, seed: int) -> list[str
 
 
 def conversations_for(snippets: list[str], chunk_input_limit: int) -> list[list[dict]]:
-    system_prompt, instructions, _ = make_study_prompt(None)
+    system_prompt, instructions, _ = make_source_study_prompt(None)
     out = []
     for snippet in snippets:
         snippet = safe_truncate_embedding_chunk(snippet, chunk_input_limit)
         out.append([
             {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
-            {"role": "user", "content": [{"type": "text", "text": f"# Corpus Snippet\n```\n{snippet}\n```\n{instructions}"}]},
+            {"role": "user", "content": [{"type": "text", "text": f"Source 0:\n{snippet}\n\n{instructions}"}]},
         ])
     return out
 
@@ -52,7 +52,7 @@ def conversations_for(snippets: list[str], chunk_input_limit: int) -> list[list[
 def chat_kwargs_for(structured: bool, thinking: bool, seed: int, max_tokens: int) -> dict:
     sampling = {"max_tokens": max_tokens, "seed": seed, "temperature": 0.7, "top_p": 0.9}
     if structured:
-        sampling["structured_outputs"] = StructuredOutputsParams(json=STUDY_JSON_SCHEMA)
+        sampling["structured_outputs"] = StructuredOutputsParams(json=make_source_study_prompt(None)[2])
     return {"sampling_params": sampling, "chat_template_kwargs": {"enable_thinking": thinking}}
 
 
@@ -82,10 +82,10 @@ def run_config(model_id: str, max_num_seqs: int, structured: bool, thinking: boo
             prompt_tokens += output.prompt_token_count
             output_tokens += output.output_token_count
             try:
-                qa = json.loads(output.text)
-                if not str(qa["question"]).strip() or not str(qa["answer"]).strip():
+                questions = json.loads(output.text)["questions"]
+                if len(questions) != 1 or not questions[0]["question"].strip() or not questions[0]["answer"].strip() or questions[0]["evidence_indices"] != [0]:
                     failures += 1
-            except (json.JSONDecodeError, KeyError, TypeError):
+            except (ValueError, KeyError, TypeError, AttributeError):
                 failures += 1
     elapsed = time.time() - start
     sample = outputs[0].text[:400] if outputs else ""

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "source": "39fdbcec2da5a9b22e72ac3cbf4cc16f99ceb435",
+  "worker_sha256": "fec238a3a0c77feb3f8d4bf9facb0403d13db803b2c3446f0261c9e9c8774cc7",
+  "driver_sha256": "ec3bee9d4b550e8d8fd68a5efb3bdbf716b728c03711015879fd36aedc7fc37d",
+  "scope": "Disposable handcrafted summaries on32 real histories,held3; real2Bencoder/9Breader and Adam. No benchmark-quality or uninterrupted-weight-equivalence claim.",
+  "gate": "Logical8,32histories\u00d71; stop2updates, resume2; exact moment/RNG/target/selection/control/order checks; finitebothgradients; one32767-token history.",
+  "max_minutes": 20,
+  "output": "/root/activation_artifacts/summary_sft_gpu_gate_v1",
+  "ec2_hard_stop_utc": "2026-09-24T15:20:00Z",
+  "sky_job": 6,
+  "executed_histories": 32,
+  "summary_tokens": 2080,
+  "max_history_tokens": 32767,
+  "peak_memory_gib": 42.62,
+  "receipts": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/summary_sft_gpu_gate_v1",
+  "observed": "Two real updates, process exit, exactAdam moment/RNG restoration, two furtherupdates; order, target/selection/controlidentities and schedulechecked. Finitebothgradients."
+}

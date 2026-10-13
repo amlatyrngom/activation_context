@@ -1,0 +1,10 @@
+{
+  "scope": "One deterministic diagnostic; production ordinary-kernel fits are separate. Original tolerances unchanged.",
+  "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+  "deterministic_algorithms": true,
+  "warn_only": false,
+  "worker_sha256": "fb0fc3c64c505defc623ebc5e154306387c1fabb970fec51fc499298af7ae76c",
+  "status": "complete",
+  "deterministic_algorithms_at_exit": true,
+  "warn_only_at_exit": false
+}

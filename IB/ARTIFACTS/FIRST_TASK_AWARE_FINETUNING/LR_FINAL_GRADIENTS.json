@@ -1,0 +1,219 @@
+{
+  "status": "Both ratios complete",
+  "scope": "Matched16k x1, same P2/data/order/config except AC LR. Norms recorded before joint clipping. Parameter-update magnitudes are not inferred. No contaminated activation RMS/cosine used.",
+  "arms": {
+    "oracle_27b_16k_r8": {
+      "result_sha256": "7a799b05f01da6e33e65548115765ae7b2e83a1625e9800ceaaaa55e68fe9f68",
+      "duration_s": 11825.6,
+      "AC_norm": {
+        "median": 11.530506134033203,
+        "p95": 170.6134796142578,
+        "max": 6601.8603515625
+      },
+      "reader_norm": {
+        "median": 1.2677261233329773,
+        "p95": 1.972523808479309,
+        "max": 16.696287155151367
+      },
+      "joint_over_100": 174,
+      "reader_postclip_norm": {
+        "median": 0.10941423890137589,
+        "p95": 0.4346824450671411,
+        "max": 0.7958966916838788
+      },
+      "window_over_100": [
+        0,
+        0,
+        9,
+        18,
+        28,
+        23,
+        13,
+        29,
+        31,
+        23
+      ],
+      "sparse_parameter_gradient_traces": {
+        "count": 112,
+        "caught_norm_over100": [
+          {
+            "questions_seen_before_update": 12000,
+            "joint_norm": 134.53419772381892,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 3.09187428688021e-05
+          },
+          {
+            "questions_seen_before_update": 13600,
+            "joint_norm": 103.46263372550719,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00016724636741858554
+          }
+        ],
+        "scope": "Trace at k belongs to gradients for completed update k+1. Sampled modules do not cover all AC parameters. Only parameter gradients used."
+      }
+    },
+    "oracle_27b_16k_r8_half_ac_lr": {
+      "result_sha256": "34b69ff7c17486f057b69c6c38c0b366756eee42dc2ae00ef6d8183fde5edbe0",
+      "duration_s": 11131.9,
+      "AC_norm": {
+        "median": 20.532798767089844,
+        "p95": 135.62167358398438,
+        "max": 3473.755859375
+      },
+      "reader_norm": {
+        "median": 1.3614314198493958,
+        "p95": 2.0497655868530273,
+        "max": 16.616256713867188
+      },
+      "joint_over_100": 170,
+      "reader_postclip_norm": {
+        "median": 0.0653540417779601,
+        "p95": 0.2923786455941902,
+        "max": 0.740674072153463
+      },
+      "window_over_100": [
+        3,
+        16,
+        30,
+        13,
+        19,
+        14,
+        17,
+        17,
+        21,
+        20
+      ],
+      "sparse_parameter_gradient_traces": {
+        "count": 112,
+        "caught_norm_over100": [
+          {
+            "questions_seen_before_update": 1360,
+            "joint_norm": 251.84644653343065,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 1.9249646196428565e-05
+          },
+          {
+            "questions_seen_before_update": 3000,
+            "joint_norm": 111.28142857332587,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00011607887539744921
+          },
+          {
+            "questions_seen_before_update": 4000,
+            "joint_norm": 219.20755400607055,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 9.409828945847497e-06
+          },
+          {
+            "questions_seen_before_update": 8400,
+            "joint_norm": 163.03624080781861,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 3.283542299065388e-05
+          },
+          {
+            "questions_seen_before_update": 10800,
+            "joint_norm": 113.11420693325651,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 9.744210881673959e-05
+          },
+          {
+            "questions_seen_before_update": 13600,
+            "joint_norm": 104.08994981519264,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 8.857500970889178e-05
+          },
+          {
+            "questions_seen_before_update": 14000,
+            "joint_norm": 214.02008437316496,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 2.2190711433928553e-05
+          },
+          {
+            "questions_seen_before_update": 14200,
+            "joint_norm": 130.63235201972435,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 5.499451949210323e-05
+          }
+        ],
+        "scope": "Trace at k belongs to gradients for completed update k+1. Sampled modules do not cover all AC parameters. Only parameter gradients used."
+      }
+    },
+    "oracle_27b_16k_r16": {
+      "result_sha256": "0a5c69746ccdef1cdea249b973d594f48e5a2edcecfe5473b48072416f196e27",
+      "duration_s": 9884.5,
+      "AC_norm": {
+        "median": 6.091336965560913,
+        "p95": 15.814031600952148,
+        "max": 323.02178955078125
+      },
+      "reader_norm": {
+        "median": 1.2377051711082458,
+        "p95": 1.9354392290115356,
+        "max": 16.364852905273438
+      },
+      "joint_over_100": 2,
+      "reader_postclip_norm": {
+        "median": 0.19770490347756275,
+        "p95": 0.5686427163088378,
+        "max": 0.9483022826167856
+      },
+      "window_over_100": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "sparse_parameter_gradient_traces": {
+        "count": 112,
+        "caught_norm_over100": [
+          {
+            "questions_seen_before_update": 0,
+            "joint_norm": 323.3395370613782,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00032348169294911446
+          }
+        ],
+        "scope": "Trace at k belongs to gradients for completed update k+1. Sampled modules do not cover all AC parameters. Only parameter gradients used."
+      }
+    },
+    "oracle_27b_16k_r16_half_ac_lr": {
+      "result_sha256": "07e7da1f320b7b5e0ef15939e1a757dd607c555521683eb6c9d8e9bebee96adc",
+      "duration_s": 11978.2,
+      "AC_norm": {
+        "median": 7.0576331615448,
+        "p95": 21.572063446044922,
+        "max": 323.398193359375
+      },
+      "reader_norm": {
+        "median": 1.3097505569458008,
+        "p95": 2.040130615234375,
+        "max": 15.904732704162598
+      },
+      "joint_over_100": 6,
+      "reader_postclip_norm": {
+        "median": 0.18134774185159355,
+        "p95": 0.9642173011948223,
+        "max": 0.9985943510363302
+      },
+      "window_over_100": [
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "sparse_parameter_gradient_traces": {
+        "count": 112,
+        "caught_norm_over100": [
+          {
+            "questions_seen_before_update": 0,
+            "joint_norm": 323.7158573819817,
+            "measured_heads_readouts_fraction_of_ac_squared_norm": 0.00032312860439425166
+          }
+        ],
+        "scope": "Trace at k belongs to gradients for completed update k+1. Sampled modules do not cover all AC parameters. Only parameter gradients used."
+      }
+    }
+  },
+  "updated_utc": "2026-09-22T13:57:42.785995+00:00"
+}

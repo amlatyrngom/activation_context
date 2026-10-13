@@ -1,0 +1,24 @@
+{
+  "utc": "2026-09-23T16:54:09.326867Z",
+  "status": "released",
+  "files": {
+    "evaluate_pi42k_native960_lr_v1.py": "62a6887f3871fa55dd3ee6cc03c7f25b37089df7302db7a09882164d88a30648",
+    "evaluate_pi42k_native960_lr_v1.sbatch": "08e5bbf649c7e0a98125c4dbe5cafa6a41db2c43b50a58f3ff89d5624176a61d",
+    "PI42K_NATIVE960_LR_READOUT_MANIFEST_V1.json": "30db8354f98419b6545d5140e61171535a87015f8b979d9efa926b7099045506"
+  },
+  "jobs": {
+    "FLOOR": {
+      "job_id": 23559859,
+      "parent_job": 23558378,
+      "status": "released"
+    },
+    "2X": {
+      "job_id": 23559860,
+      "parent_job": 23558379,
+      "status": "released"
+    }
+  },
+  "root_review": "48CPUchecks/rootrerun+fullflowreview; independentreview no consequential findings. Own120/all615Adam5370 final only, exactinputs, actualtrainingchunk reused, threeview1e-3replay, frozen42k baselines labeled separately.",
+  "scope": "Read-only ownfinal100ACanswers and fresh3NLL views per native960LRarm;15minL40S perarm.",
+  "released_utc": "2026-09-23T16:54:10.842505Z"
+}

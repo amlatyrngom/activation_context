@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-23T05:14:41.933422Z",
+  "status": "released",
+  "hashes": {
+    "evaluate_continuation_long_32k_v1.py": "1714f76c71d709a216b671f490b54062879225ae46cf30849d3e15547b62977c",
+    "evaluate_continuation_long_32k_v1.sbatch": "283c569ffb361c6fa8c87f86b88e618ebba7fed793e6d00099fb51687a65893c"
+  },
+  "job": 23530004,
+  "scope": "Completed42kconstantLR onexactselected100 at32k independent-passages/1:16/65536,ownAC/full/noctxNLL+100actualACanswers160. Zero training or confirmation reads.",
+  "review": "Root reviewed small siblingdiff against completed8k worker;26 quick actualmetadata bindingchecks/syntax passed. Runtimeexact100inputs/rows andownfinal42k pair checks required.",
+  "allocation": "OneRTX32GiBhost30minwall; app1650s. UsesfourthORCDslot whilethreehealthytrainingrunscontinue.",
+  "held_job": "JobId=23530004 JobName=continue42k_long32k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-23T01:14:42 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T01:14:42 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3495423 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_32k_v1.sbatch SubmitLine=sbatch --parsable --hold --mem=32G --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/continuation_long32k_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_32k_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/continuation_long32k_23530004.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+}

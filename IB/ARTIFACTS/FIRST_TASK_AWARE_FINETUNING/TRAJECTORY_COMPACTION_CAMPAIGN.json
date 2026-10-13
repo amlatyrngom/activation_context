@@ -1,0 +1,116 @@
+{
+  "start_utc": "2026-09-24T01:22:00+00:00",
+  "end_utc": "2026-09-27T21:03:11+00:00",
+  "boundaries": {
+    "8": "2026-09-24T09:22:00+00:00",
+    "12": "2026-09-24T13:22:00+00:00",
+    "16": "2026-09-24T17:22:00+00:00",
+    "24": "2026-09-25T01:22:00+00:00",
+    "36": "2026-09-25T13:22:00+00:00"
+  },
+  "status": "training_and_synthesis",
+  "authorized": true,
+  "report_root": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION",
+  "gpu_scope": [
+    "orcd",
+    "csail",
+    "ec2_spot"
+  ],
+  "ec2": true,
+  "qa_target_questions": 100000,
+  "compaction_target_assistant_tokens": 50000000,
+  "compaction_extension_tokens": 100000000,
+  "current_qa_run": {
+    "job": null,
+    "state": "training onRTX, beyond1,840questions",
+    "questions": 8000,
+    "distinct_roots": 2098,
+    "epochs": 1,
+    "source": "5ec13f17b09918fa3187ffe71b7449298a0c7111",
+    "report": "ec2/trajectory_qa_8k_ec2_v1/report/report.tressoir.html",
+    "saved_questions": 1680,
+    "latest_held_panel": {
+      "questions": 416,
+      "epoch": 0.052,
+      "held_NLL": 0.8619208277250877,
+      "learning_NLL": 0.7266674508651983,
+      "supervised_answer_tokens": 17773
+    },
+    "alternative_h200_handoff_job": null,
+    "sky_job": 8,
+    "cluster": "ac-qa-20260924"
+  },
+  "primary_compaction_objective": "Fixed27B summary SFT from original pre-cut history; full-suffix continuationKL control retained",
+  "ec2_exception": {
+    "cluster": "ac-opt-20260924",
+    "instance": "i-0518a8317bf36dfd9",
+    "launch_utc": "2026-09-24T12:30:59Z",
+    "hard_termination_utc": "2026-09-24T15:20:00Z",
+    "scope": "One existing spotRTX for bounded GPU optimization/behavior gates; no additionallaunches",
+    "status": "terminated verified2026-09-24T14:12Z"
+  },
+  "updated_utc": "2026-09-24T21:03:11+00:00",
+  "summary_native_medium_probe": {
+    "job": 23651996,
+    "model": "Qwen/Qwen3.8-27B-FP8",
+    "reasoning_effort": "medium",
+    "status": "PASS four-case quick fidelity check"
+  },
+  "summary_bulk": {
+    "job": null,
+    "source": "10d6e55a9954fa51b3d202bfadaab92bb333afcc",
+    "bank": "compaction_summary_bank_v2",
+    "rtx_handoff_job": null,
+    "state": "all100held complete; training-bank generation underway",
+    "sky_job": 6,
+    "cluster": "ac-summary-20260924",
+    "held": 100,
+    "train": 169,
+    "pilot_sky_job": 5
+  },
+  "ec2_capacity": {
+    "authorized": true,
+    "steady_nodes": 2,
+    "maximum_nodes": 4,
+    "burst_policy": "Limited bursts for ready experiments when MIT unavailable; release as useful MIT allocations arrive",
+    "duration": "Until queues normalize; first24h provisioning safety bound and active30minreviews",
+    "clusters": [
+      "ac-qa-20260924",
+      "ac-summary-20260924"
+    ],
+    "instance_type": "g7e.2xlarge",
+    "status": "both running, two slots only",
+    "roles": [
+      "exact-resume original8kQA",
+      "native-medium27B compaction summaries, then quality pilot"
+    ],
+    "region": "ap-south-1",
+    "zone": "ap-south-1b",
+    "host_ram_gib": 64,
+    "container_memory_gib": 56,
+    "spot_hourly_each_usd": 1.8202,
+    "instances": {
+      "ac-qa-20260924": "i-0f67251d5c2f5fb98",
+      "ac-summary-20260924": "i-043df4edb1c598b6b"
+    },
+    "expiry_utc": "2026-09-25T18:20:00Z"
+  },
+  "reader_batch_learning": {
+    "stage_job": 2213794,
+    "B1": 2214388,
+    "B2": 2214389,
+    "cluster": "csail",
+    "questions": 512,
+    "parent_questions": 1680,
+    "state": "queued after missing report-directory preflight fix; no prior model updates",
+    "scope": "Explicit learning comparison; B2 failed numerical-equivalence checks",
+    "superseded_before_execution": [
+      2213795,
+      2213796,
+      2214129,
+      2214130
+    ]
+  },
+  "original_end_utc": "2026-09-25T13:22:00+00:00",
+  "superseded_operating_plan": "CHANNEL_TRAINING_PLAN.md"
+}

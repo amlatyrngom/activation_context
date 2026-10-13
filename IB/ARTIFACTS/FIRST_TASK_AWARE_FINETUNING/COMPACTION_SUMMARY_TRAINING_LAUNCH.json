@@ -1,0 +1,16 @@
+{
+  "status": "prepared; waiting for100held+512training published summaries",
+  "bank": "compaction_summary_bank_v2",
+  "source": "f2912512eaffe364561bd6f5873e574b68539174",
+  "initial_pair": "bench/compaction_pair_1848.json",
+  "training_histories": 512,
+  "epochs": 1,
+  "held_histories": 100,
+  "note": "Diagnostic with full50updatewarmup; not convergence. No GPU allocated to wait for data.",
+  "actual_output": "$HOME/orcd/scratch/activation/trajectory_compaction/compaction_summary_512_v1",
+  "local_report": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION/orcd/compaction_summary_512_v1/report/report.tressoir.html",
+  "scripts": {
+    "compaction_summary_512_prepare_v1.sh": "2f2c157ad2dc966cf0b1433191b18a5fc131b368f19c8aed2bdee2c83a721c66",
+    "compaction_summary_512_train_v1.sbatch": "67ffe78423c14e0482df9ac6376c723589d0d4bf2ba1e405c254273f5a89753f"
+  }
+}

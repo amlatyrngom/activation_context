@@ -1,0 +1,280 @@
+{
+  "status": "complete_private_probe_pass_no_production_adoption",
+  "recorded_utc": "2026-09-23T16:39:31.831025+00:00",
+  "job_id": 23555733,
+  "summary_sha256": "a126149a583ca57c0a28d393666d856da966a13a5f0946e84188e5545dad7fa4",
+  "worker_result_sha256": {
+    "resident": "b9857a56cefc505ed25250b2c6a0b5b0d01ac5c292859632ef00cf16be875fec",
+    "resident_repeat": "9b2a4d7584137d67af5254e265fe3e9449575b30e7afd9f8aaa08cc6a3c62004",
+    "offloaded": "3ff84e8d7582546cbd2f1733c5bc477e5556e2b54c804ce5fb19bbf0aeff67ef",
+    "fit_first": "cb036f842e2a85b5c2be6d14e9e80d8f8477527c943b63620636c4d31d2ef51b",
+    "fit_worst": "45346b7a86eb10bb3df55f0ba9212cae265e291f3f9d97cdfad43dbfa61adf89"
+  },
+  "submission_sha256": "dbea65a78eb43c0a595cadae82fc8116b03f70935de4e05b082e24b8ad680d11",
+  "frozen_worker_sha256": "b292c3097fac2cf9e84c8f9d03b5713dcd7bc3fd7590ac34c72b39b6dd3ebf3e",
+  "frozen_input_sha256": {
+    "design": "b9869a9618721cf6a052374d53baa477c994248ddf0627a6d3343273397085cd",
+    "pair": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c",
+    "material": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+    "subset": "578a8955664a2b750ea1141433f856a43fa2e2cdb48d38ae4ba1091e2ee650be"
+  },
+  "frozen_payload_sha256": {
+    "ac_modules": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+    "encoder_config": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+    "encoder_weights": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+    "reader_config": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+    "reader_weights": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3",
+    "optimizer": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac"
+  },
+  "exact_native2k_proof": {
+    "passed": true,
+    "exact_checks": {
+      "resident_repeat": {
+        "inputs": true,
+        "reporting_inputs": true,
+        "math_policy": true,
+        "loss_calls": true,
+        "logits_calls": true,
+        "steps": true,
+        "raw_gradients": true,
+        "clipped_gradients": true,
+        "initial_clocks": true,
+        "initial_parameter_ids": true,
+        "final_optimizer": true,
+        "save_reload_exact": true
+      },
+      "offloaded": {
+        "inputs": true,
+        "reporting_inputs": true,
+        "math_policy": true,
+        "loss_calls": true,
+        "logits_calls": true,
+        "steps": true,
+        "raw_gradients": true,
+        "clipped_gradients": true,
+        "initial_clocks": true,
+        "initial_parameter_ids": true,
+        "final_optimizer": true,
+        "save_reload_exact": true
+      }
+    },
+    "scope": "Same-GPU deterministic native2k, micro1, checkpoint0, original first16 training questions, two real Adam updates. Not32k/cross-device equivalence."
+  },
+  "records": {
+    "resident": {
+      "status": "complete",
+      "device": "NVIDIA L40S",
+      "step_seconds": [
+        29.554066750220954,
+        26.977525177877396
+      ],
+      "peak_allocated_gib": 32.60331583023071,
+      "elapsed_seconds": 152.763528841082,
+      "initial_moment_devices": [
+        "cuda:0"
+      ],
+      "all615_final_clocks": 5252.0,
+      "active_gradients_per_step": [
+        615,
+        615
+      ],
+      "save_reload_exact": true,
+      "parent_payload_unchanged": true,
+      "max_tested_encoder_tokens": 3365,
+      "max_tested_compressed_rows": 211,
+      "transfer_events": [],
+      "worst_geometry_selection": null
+    },
+    "resident_repeat": {
+      "status": "complete",
+      "device": "NVIDIA L40S",
+      "step_seconds": [
+        28.9908146020025,
+        26.87593394331634
+      ],
+      "peak_allocated_gib": 32.60331583023071,
+      "elapsed_seconds": 135.9115107404068,
+      "initial_moment_devices": [
+        "cuda:0"
+      ],
+      "all615_final_clocks": 5252.0,
+      "active_gradients_per_step": [
+        615,
+        615
+      ],
+      "save_reload_exact": true,
+      "parent_payload_unchanged": true,
+      "max_tested_encoder_tokens": 3365,
+      "max_tested_compressed_rows": 211,
+      "transfer_events": [],
+      "worst_geometry_selection": null
+    },
+    "offloaded": {
+      "status": "complete",
+      "device": "NVIDIA L40S",
+      "step_seconds": [
+        30.807121175341308,
+        28.579469110816717
+      ],
+      "peak_allocated_gib": 31.88211488723755,
+      "elapsed_seconds": 130.4411890679039,
+      "initial_moment_devices": [
+        "cpu"
+      ],
+      "all615_final_clocks": 5252.0,
+      "active_gradients_per_step": [
+        615,
+        615
+      ],
+      "save_reload_exact": true,
+      "parent_payload_unchanged": true,
+      "max_tested_encoder_tokens": 3365,
+      "max_tested_compressed_rows": 211,
+      "transfer_events": [
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.8167002308182418
+        },
+        {
+          "action": "restore",
+          "bytes": 4676120624,
+          "seconds": 0.5124543681740761
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.7558133737184107
+        },
+        {
+          "action": "restore",
+          "bytes": 4676120624,
+          "seconds": 0.5586773985996842
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.727153604850173
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.0021438607946038246
+        }
+      ],
+      "worst_geometry_selection": null
+    },
+    "fit_first": {
+      "status": "complete",
+      "device": "NVIDIA L40S",
+      "step_seconds": [
+        84.08093267306685
+      ],
+      "peak_allocated_gib": 38.04172086715698,
+      "elapsed_seconds": 340.01931787794456,
+      "initial_moment_devices": [
+        "cpu"
+      ],
+      "all615_final_clocks": 5251.0,
+      "active_gradients_per_step": [
+        615
+      ],
+      "save_reload_exact": true,
+      "parent_payload_unchanged": true,
+      "max_tested_encoder_tokens": 33050,
+      "max_tested_compressed_rows": 2066,
+      "transfer_events": [
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 1.9567937501706183
+        },
+        {
+          "action": "restore",
+          "bytes": 4676120624,
+          "seconds": 1.3199814991094172
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 1.3379773567430675
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.0019735670648515224
+        }
+      ],
+      "worst_geometry_selection": null
+    },
+    "fit_worst": {
+      "status": "complete",
+      "device": "NVIDIA L40S",
+      "step_seconds": [
+        81.71071570785716
+      ],
+      "peak_allocated_gib": 38.02293348312378,
+      "elapsed_seconds": 358.1084578856826,
+      "initial_moment_devices": [
+        "cpu"
+      ],
+      "all615_final_clocks": 5251.0,
+      "active_gradients_per_step": [
+        615
+      ],
+      "save_reload_exact": true,
+      "parent_payload_unchanged": true,
+      "max_tested_encoder_tokens": 33319,
+      "max_tested_compressed_rows": 2083,
+      "transfer_events": [
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 1.8497603116557002
+        },
+        {
+          "action": "restore",
+          "bytes": 4676120624,
+          "seconds": 1.22044347692281
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 1.2394506903365254
+        },
+        {
+          "action": "park",
+          "bytes": 4676120624,
+          "seconds": 0.002186430152505636
+        }
+      ],
+      "worst_geometry_selection": {
+        "definition": "max encoder tokens + compressed rows + gold tokens; original logical8 containing that item",
+        "maximum_item_index": 29,
+        "proxy": 35441,
+        "caveat": "A geometry proxy, not an exhaustive proof of all960 examples."
+      }
+    }
+  },
+  "same_math_policy_all_workers": true,
+  "resolved_logits_chunk_tokens": 256,
+  "planning_extrapolation": {
+    "questions": 960,
+    "epochs": 1,
+    "logical_batch_questions": 8,
+    "training_minutes_range": [
+      163.42143141571432,
+      168.1618653461337
+    ],
+    "training_minutes_mean": 165.79164838092402,
+    "additional_costs": "Initial panel plus10 subsequent held100/learning32 panels, initial/final full/no-context controls, setup and checkpoints.",
+    "interpretation": "Roughly2h45 pure training and likely>3h overall; not fast enough for a complete32k960 run before the PI deadline. Two shape probes, not a measured full-run ETA."
+  },
+  "limits": [
+    "Exact resident/offloaded equivalence only at native2k on same GPU, not32k/cross-device.",
+    "Two merged32k actual logical8 batches fit; maximum-geometry proxy is not an exhaustive960 guarantee.",
+    "Optimizer-state serialization/load_state_dict roundtrip, not fresh-process full paired-checkpoint resume.",
+    "Trainer step times include copies/instrumentation; separate original-step stopwatch excludes preceding restore.",
+    "No production adoption, new implementation or submission accompanies this result."
+  ]
+}

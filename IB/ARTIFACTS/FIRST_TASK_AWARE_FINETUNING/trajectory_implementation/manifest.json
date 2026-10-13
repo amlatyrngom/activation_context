@@ -1,0 +1,199 @@
+{
+  "created_at": "2026-09-24T02:58:50.175859+00:00",
+  "baseline_root": "/source",
+  "files": {
+    "activation/ac_model/ac_model.py": {
+      "before_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "after_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3",
+      "staged_path": "activation/ac_model/ac_model.py"
+    },
+    "activation/ac_model/ac_model_reporter.py": {
+      "before_sha256": "23eef560f7993814d9bcf44defeebb952a730068e7d1a9a7582c1e8f6984cb28",
+      "after_sha256": "b031e71c8459ea72867194be95f73d41df35930b8ecd7300132ad596eff5c157",
+      "staged_path": "activation/ac_model/ac_model_reporter.py"
+    },
+    "activation/ac_model/ac_model_study.py": {
+      "before_sha256": "332a3cbac69b691d2576eabfbed2196dfbd3241dd2a71e26a9ae8f5349098d7b",
+      "after_sha256": "049819aa629b2c799074c6f951a2fcf39912416fc4431cee6207cea7ac3e0e11",
+      "staged_path": "activation/ac_model/ac_model_study.py"
+    },
+    "activation/ac_model/ac_model_training.py": {
+      "before_sha256": "f0eb298ba1b5714a0e4f4a79269b32989670f0fd84c61985d7d27a4de9e0d601",
+      "after_sha256": "2c240ff71f37cba26a763494a4ac1a01a0b0f5456fbd6f6d6200ee328c40f456",
+      "staged_path": "activation/ac_model/ac_model_training.py"
+    },
+    "activation/ac_model/ac_model_utils.py": {
+      "before_sha256": "081297c4a4f1062ce26f0e9f847e2ce728cc0db8d5076526bdb626359e5bfbbb",
+      "after_sha256": "a5c6a7dea14f5b3f88766eccbac38fa468b3a56933dc7f25d4642febca9ad47d",
+      "staged_path": "activation/ac_model/ac_model_utils.py"
+    },
+    "activation/bench/agent_probes/cheap_synthetic_bench.py": {
+      "before_sha256": "48224857b1c8719288801716c11e451d525b4340cd9ce08ab1b7732a48e50fed",
+      "after_sha256": "48ffd4ebfc977acf41343afcf310220bc005528f2b71c63cf0a75a35cda5ad69",
+      "staged_path": "activation/bench/agent_probes/cheap_synthetic_bench.py"
+    },
+    "activation/common/reporting.py": {
+      "before_sha256": "821532bd96b0ce50eb805a1e3d387b3ca75e48d59f5f4910c139fdea8cb4577e",
+      "after_sha256": "1d8cef4d94c585fc8f8abacdcea230f8a87eea2719cc41d9670353c95718bbfa",
+      "staged_path": "activation/common/reporting.py"
+    },
+    "activation/dataset/dataset.py": {
+      "before_sha256": "4090e96af0946617cdfb3a44809aca94a75a4b87cc3c6afef67864f962c48196",
+      "after_sha256": "dfe83053f6251088856a4a4a5cd51501f5c7c29681a4bceb694dd5aa78b8cd17",
+      "staged_path": "activation/dataset/dataset.py"
+    },
+    "activation/dataset/dataset_manager.py": {
+      "before_sha256": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5",
+      "after_sha256": "8a195afe841c7c4b2dd651f202e934363fd55e4d17ecb51fca950f66b721b2f2",
+      "staged_path": "activation/dataset/dataset_manager.py"
+    },
+    "activation/dataset/dataset_study.py": {
+      "before_sha256": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18",
+      "after_sha256": "df79a3441f760dc43763057ecc90d47b9766f3a29f3848e2589811983452e77e",
+      "staged_path": "activation/dataset/dataset_study.py"
+    },
+    "activation/dataset/dataset_study_prompts.py": {
+      "before_sha256": null,
+      "after_sha256": "50dae9e1f2348998a9a7c1ea121819fd0ec071ad2df472290c14eee4d01bc22d",
+      "staged_path": "activation/dataset/dataset_study_prompts.py"
+    },
+    "activation/agent/agent.py": {
+      "before_sha256": "1d79c345a7008961ae9c48ddefb6aaca691a4baa5edb2901c55018145ee5bef1",
+      "after_sha256": "cc5e20809fc8c942bb249a016ea60fbeab01a3ee816832c5dba2b261019818d3",
+      "staged_path": "activation/agent/agent.py"
+    },
+    "activation/dataset/dataset_caching.py": {
+      "before_sha256": "1bf3a95d62ad975126fb9096456a127515866f270859545e7ac3ed50fbaa761c",
+      "after_sha256": "28ab1f4d1bb83a9f464e896f54b348ddf8db96bded570806e59a80f67dab7c0f",
+      "staged_path": "activation/dataset/dataset_caching.py"
+    },
+    "activation/common/ac_parts.py": {
+      "before_sha256": "7c1579f66cd097522fb572ad497b028fa15faa1cdb2fc78a25ca2bbc0cdb1ec6",
+      "after_sha256": "69bb3c4f444004fb3bf71d4fe1fc5a5bd86cc00b5d1d73458f23942c1e663a11",
+      "staged_path": "activation/common/ac_parts.py"
+    },
+    "activation/agent/agent_tools.py": {
+      "before_sha256": "438cfdd8843b3b13e5a9d6c8b8c17b58d8def274a1e4c83f37d08560485fb9d8",
+      "after_sha256": "977d013b8708683d93ac93eaae0ff5465614da2681b740571772143d377cdac5",
+      "staged_path": "activation/agent/agent_tools.py"
+    },
+    "activation/harness/hf_utils.py": {
+      "before_sha256": "25c1e3f6708524ac9201d42e2b10a0905a5e168062b1463c594212a7003dc5a9",
+      "after_sha256": "079a6f5d52a3f52eb3f6309e0a1d53dfd3f99664ec6a229286c4ea063ddf41f0",
+      "staged_path": "activation/harness/hf_utils.py"
+    },
+    "activation/harness/module_manager.py": {
+      "before_sha256": "4c54d76147c9e5a3ceb6d6c3c471a614f02e7f960f1ccd22128268bc341fc055",
+      "after_sha256": "b4ec7ebd90eb9d54781e02d008fe47c816397d1ede3774ee45d81b20234e17a6",
+      "staged_path": "activation/harness/module_manager.py"
+    },
+    "activation/autotuners/__init__.py": {
+      "before_sha256": "ab0504685cb07475cddce418342c75d1b9ad47af7c3f5dd4c5b919c37df282d4",
+      "after_sha256": "69a14f70974dce7d92f5f3e86c733c308490440f2c1bafa8d64e110dab038117",
+      "staged_path": "activation/autotuners/__init__.py"
+    },
+    "activation/autotuners/core.py": {
+      "before_sha256": "a52afeee3451f55834f55d4b7323ac5bb8825800922dbb706fac2bb69a2e7f08",
+      "after_sha256": "fa12021690ecdb1f89fe0b3d382fad2647d068d259f28349efa3f3c9a3ed9d70",
+      "staged_path": "activation/autotuners/core.py"
+    },
+    "activation/autotuners/worker.py": {
+      "before_sha256": "b0d6ce3b9ef81e0ac1c5fb430bac382a9fd306e66b2c1a03077f44317006616c",
+      "after_sha256": "36c910c790aed86d0e2033320fa819bc0b9078e7ecf63b61750f6543d76d4705",
+      "staged_path": "activation/autotuners/worker.py"
+    }
+  },
+  "patch_sha256": "d6f1f9b83f071eda21de996c6909221025e64a7f8a69b317f5a5de9b3216e370",
+  "validation": {
+    "ast": true,
+    "patch_forward": true,
+    "patch_reverse": true,
+    "exact_bytes": true,
+    "cpu_teacher_tests": 6,
+    "cpu_per_target_kl": true,
+    "real_gpu_teacher_reload": true,
+    "real_gpu_runner_smoke": true,
+    "combined_32k_8k_L40S": "Historical V6/V7 PASS with private Adam-moment parking; current product additionally passes native two-process singleton-policy resume on L40S/RTX PRO",
+    "real_gpu_cached_runner_stop_reload": true,
+    "gpu_bitwise_uninterrupted_resume_equivalence": "Not claimed; initial backward variation observed before restart in independent runs",
+    "handoff_projection_exact_diff_cards": 20,
+    "cpu_compaction_turn_budget": true,
+    "cpu_resumed_eta": true,
+    "cpu_long_cache_filename": true,
+    "python_ast_files": 20,
+    "forward_patch_check": true,
+    "patch_replays_exact_staged_bytes": true,
+    "reverse_patch_check": true,
+    "shared_compaction_prompt": "136 prompt words; requests an entire handoff under 500 words, five headings, observed-versus-guessed state and original instruction scope; same constant in oracle and runtime tool. Output length is still validated separately; v7 accepted3/4 previously failed held items; no new major task-state loss found in brief source review, with inherited research-confidence caveats.",
+    "execution_cpu_tests": 24,
+    "intervention_cpu_tests": 54,
+    "adapter_scope_cpu_tests": 77,
+    "execution_tuner_progress_cpu_tests": 9,
+    "execution_native_restart": "PASS on L40S and RTX PRO: exact weights, moments, clocks, penalty RNG, order and frozen controls restored in fresh processes",
+    "adapter_scope_gpu_ab": "PASS on L40S and RTX PRO for eight short questions and eight distinct 32k histories; same loss and both gradient groups",
+    "execution_policy_gpu": "Validated singleton policies on L40S, RTX PRO and H200; original-distribution RTX/H200 receipts include checkpoint-boundary capacity. Reader B2/B4 remain rejected by unchanged gradient gates. These initializer fixtures do not validate a changed current-resume checkpoint.",
+    "execution_checkpoint_boundary_cpu_tests": 25,
+    "execution_checkpoint_boundary_scope": "Separate capacity cases cover just-below-threshold sequences and forced penalties. Original-8000-question RTX/H200 singleton winners each pass three policy-relevant GPU capacity cases plus three timing cases. Generic final partial graph/reader coverage has 25 CPU checks; the original8000 cases match frozen v3 exactly.",
+    "original_distribution_gpu_receipts": {
+      "RTX PRO": {
+        "path": "IB/TMP/SYNC/TRAJECTORY_COMPACTION/performance_original_qa_rtx_v2/result.json",
+        "sha256": "3f7413c5fd1012f1173a87646f9cda06005ad74ca65676cba43f680a143e8575",
+        "policy": {
+          "graph_examples": 1,
+          "reader_batch": 1,
+          "encode_batch_tokens": 1,
+          "reuse_encodings": false,
+          "side_checkpoint_tokens": 8192,
+          "target_checkpoint_tokens": 4096,
+          "optimizer_moments": "cpu"
+        },
+        "seconds_per_question": {
+          "seeded_median": 2.1232039843750385,
+          "seeded_p90": 2.771077574874994,
+          "distinct_max_length_stress": 4.914665089625004
+        },
+        "capacity_cases_passed": 3,
+        "peak_gpu_gib": 69.51456594467163,
+        "scope": "Initializer weights; original8k seeded median/p90 logical batches and distinct32k stress plus policy-specific capacity. Not a measured full-pass mean or current-resume-pair validation."
+      },
+      "H200": {
+        "path": "IB/TMP/SYNC/TRAJECTORY_COMPACTION/csail/performance_original_qa_h200_v3/result.json",
+        "sha256": "1d853455f56452b3012291b9fbbd4ea3bc53be50c68b940c42b38485c90e4bb9",
+        "policy": {
+          "graph_examples": 1,
+          "reader_batch": 1,
+          "encode_batch_tokens": 1,
+          "reuse_encodings": false,
+          "side_checkpoint_tokens": 16384,
+          "target_checkpoint_tokens": 4096,
+          "optimizer_moments": "cpu"
+        },
+        "seconds_per_question": {
+          "seeded_median": 1.581820743973367,
+          "seeded_p90": 1.8591647344874218,
+          "distinct_max_length_stress": 3.300145498942584
+        },
+        "capacity_cases_passed": 3,
+        "peak_gpu_gib": 104.68884706497192,
+        "scope": "Initializer weights; original8k seeded median/p90 logical batches and distinct32k stress plus policy-specific capacity. Not a measured full-pass mean or current-resume-pair validation."
+      }
+    },
+    "focused_human_review": {
+      "verdict": "pass",
+      "scope": "Bounded teacher/plain-SFT review; fixed torn UTF-8 tail handling in private producer; no other blocker. Large teacher runtime gate ongoing."
+    },
+    "channel_modes_cpu": 6,
+    "rag_layout_resume_cpu": 3,
+    "channel_gpu": "RTX PRO: question visibility and AC-then-plain reader-only update passed; native2B thinking/tool target masks separately passed on CPU"
+  },
+  "validation_updated_at": "2026-09-24T21:32:39.432066+00:00",
+  "base_product_commit": "50e21b45a557fc9633a470702860eb7b688f4361",
+  "workspace_overlay": [
+    "activation/agent/agent.py: reset current-segment turn counter after compaction",
+    "activation/ac_model/ac_model_reporter.py: exclude skipped updates from resumed ETA rate",
+    "activation/dataset/dataset_caching.py: bound long cache filenames while retaining legacy valid names",
+    "activation/common/ac_parts.py, activation/agent/agent_tools.py, activation/agent/agent.py: shared compaction handoff prompt and generic continuation cue",
+    "AC execution performance: optional SFT execution policy in existing trainer/utils/autotuners; guarded PEFT scopes in existing harness files",
+    "Question visibility boolean in both QA builders; explicit ordinary-agent text-only SFT through the AC trainer"
+  ]
+}

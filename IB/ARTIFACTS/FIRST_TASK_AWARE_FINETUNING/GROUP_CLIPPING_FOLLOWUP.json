@@ -1,0 +1,99 @@
+{
+  "source_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+  "variant_sha256": "8ae0a9fb4c2a514c84e9baee3f3619d5c06961800a7268f36ada85246f2af1de",
+  "patch_sha256": "95ca2f3cd0cbde521ecd4c5f467394e73d3cd0c747022d30ed76a62d93127fa9",
+  "status": "RUNNING23479031; queued final100 readout23479034",
+  "source_tree": "train_ws_night_v1",
+  "variant_tree": "train_ws_group_clip_v1",
+  "new_run": "oracle_27b_16k_r8_group_clip",
+  "change": "Clip AC and reader groups separately to norm1. Preserve preclip combined norm as hypot of recorded group norms. Same forward/backward/optimizer/schedule/penalty otherwise.",
+  "gate": "Optional after main 32k and matched 16k x 2 companion allocations; never delays either. Reassess value after LR results.",
+  "scope": "Optimization-policy experiment, not isolated reader suppression or a proved improvement. Separate groups allow total norm up to sqrt2. Adam prevents converting gradient magnitudes to proportional parameter-update claims.",
+  "validation": "TMP/check_group_clipping.py applies the actual patch, verifies source/variant hashes and checks identical forward/backward, group bounds/direction, combined preclip telemetry and frozen-reader equivalence.",
+  "preparation": {
+    "job": 23473733,
+    "status": "COMPLETED 0:0",
+    "elapsed_seconds": 5,
+    "earlier_attempt": {
+      "job": 23473661,
+      "status": "FAILED 1:0,1s",
+      "reason": "Frozen workspace contains activation/ only; removed the attempted copy of absent project metadata. No GPU or live source affected."
+    }
+  },
+  "planned_recipe": {
+    "questions": 16000,
+    "epochs": 1,
+    "material": "model_comparison_material/material_27b_16000.json",
+    "encoder_lr": 5e-05,
+    "reader_lr": 2e-05,
+    "ratio": 0.125,
+    "source": "train_ws_group_clip_v1",
+    "runner": "run_qa_comparison_v1.py",
+    "training_seconds": 14400,
+    "reservation_seconds": 16200,
+    "checkpoint": "Original P2 pair, fresh optimizer"
+  },
+  "launch_files": {
+    "prepare_group_clip.sbatch": "6e8b66544b4f537f8266ceef7f101bbd533a7fef83de71fd423a708502991642",
+    "model_comparison_group_clip.sbatch": "212c01aad5fa6f047de11cc9bca9b38c1b32bf76a5a7e07669065adea53ad86c"
+  },
+  "final_readout": {
+    "status": "PENDING afterok23479031",
+    "files": {
+      "evaluate_group_clip_cohort.py": "1580cc0bbc4c7b378463661f13a3559b4c23495d56dd46ea013dba88fd0dd392",
+      "group_clip_cohort.sbatch": "3914733d2e008bb7420a0ac2dbbe02e158ee3365ba328216c5e40b4ce6995107"
+    },
+    "validation": "CLI import and shell syntax passed; 11 synthetic final-identity/source/pair guard cases passed. Reuses the pinned original development400/selected100 scoring and generation; unchanged inference implementation.",
+    "scope": "Only a completed own-run 16k \u00d7 1 paired final; exact control training config/material/order and recorded separate-clipping source. No confirmation questions.",
+    "job": 23479034
+  },
+  "training_job": 23479031,
+  "submitted_utc": "2026-09-22T14:08:15.981559+00:00",
+  "decision": "Lower AC LR worsens development and learning NLL at both ratios without demonstrated stability benefit. Test independent group clipping at original LR, with main/companion already allocated.",
+  "first_panel": {
+    "checked_utc": "2026-09-22T14:36:44.440936+00:00",
+    "unique_questions": 16000,
+    "epochs_seen": 0.1,
+    "development_NLL": 1.2180415889441192,
+    "control_NLL": 1.2088060927010382,
+    "learning_NLL": 1.2176799123762967,
+    "control_learning_NLL": 1.1287276699786803,
+    "interpretation": "No clear early quality gain. Paired-question difference interval crosses zero; later stability remains to be measured. Continue the controlled run."
+  },
+  "latest_panel": {
+    "checked_utc": "2026-09-22T14:55:32.477482+00:00",
+    "unique_questions": 16000,
+    "epochs_seen": 0.2,
+    "scores": {
+      "oracle_27b_16k_r8": {
+        "AC answer NLL": 0.9052148379473927,
+        "full answer NLL": 0.6095384476200042,
+        "no-context answer NLL": 1.7836557705227154,
+        "training answer NLL": 0.8189500720116978
+      },
+      "oracle_27b_16k_r8_group_clip": {
+        "AC answer NLL": 0.9745805712234821,
+        "full answer NLL": 0.5608471190992332,
+        "no-context answer NLL": 1.7805899554906415,
+        "training answer NLL": 0.9258050960450999
+      }
+    },
+    "interpretation": "Separate clipping behind at20%. Continue into later portion where control showed more spikes; do not change the main large-run policy.",
+    "gradient_summary": {
+      "original": {
+        "median": 5.531187529846658,
+        "p95": 20.568814341852345,
+        "max": 95.27253654375919,
+        "over100": 0
+      },
+      "separate_clip": {
+        "median": 4.333496181486809,
+        "p95": 37.86950592982536,
+        "max": 221.18423531593328,
+        "over100": 6
+      },
+      "scope": "Joint preclip norm; exact first400 recorded batches, not parameter-update magnitudes."
+    },
+    "observation": "At20%, full-context NLL improves (.561 vs.610), while AC and learning NLL worsen. Six joint-gradient events>100 versus zero in control. This is not a demonstrated stability improvement."
+  }
+}

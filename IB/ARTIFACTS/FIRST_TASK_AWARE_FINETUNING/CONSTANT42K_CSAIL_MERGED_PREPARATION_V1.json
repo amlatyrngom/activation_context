@@ -1,0 +1,25 @@
+{
+  "status": "prepared, CPU checks passed; no staging or submission",
+  "check_count": 10,
+  "checks": [
+    "Actual completed CPU2181811 receipt, relocated pair, native1250 identity and own42k metadata accepted",
+    "wrong Adam clock rejected",
+    "partial transfer rejected",
+    "wrong source material rejected",
+    "wrong final stage rejected",
+    "wrong parent model rejected",
+    "Wrong staged weight identity rejected",
+    "No adaptation-final/design dependency or old-score reuse; AC then full/no-context scoring then optional full decoding; core survives optional timeout",
+    "AC publication, core publication and final completion rehash parent payloads",
+    "40min H200 wrapper/app2250s uses only staged parent and immutable helper paths"
+  ],
+  "worker_sha256": "58bb0f23138ddf4c81904d424ed932d8d7e08f70dd0fa2054f705adc578eb15d",
+  "launcher_sha256": "4f9fe40b1f664653d6dcac424f1446f7484bd6403108451cf62ca7a1264c2c76",
+  "manifest_sha256": "12085ddff480a9d9857a8f5a8b221bc1c0b8d29c423c5b6e074ee5478de90aea",
+  "fixture_sha256": "784b0a29aa00d51a1112a4d679e4629dbac43d6c575a628719edc6e78a13dccc",
+  "limitations": "CPU metadata and existing actual100 tokenizer receipt only; full frozen retrieval/tokenization and actual source/payload hashes checked on allocated GPU; no modelweight load or remote actions.",
+  "transport_review": "Root-requested separate CSAIL report root: continuation_merged_csail_cohort100; launcher bash parse and manifest hash coherence rechecked; worker/science unchanged.",
+  "cpu_receipt_sha256": "aeb123cbbd1fc7b22f70bb28438015252563012a363edcc99cc6ac4759562d01",
+  "primary": "Independent staged constant42k merged32k on H200; fresh scores and actual100 answers",
+  "future_dependency": null
+}

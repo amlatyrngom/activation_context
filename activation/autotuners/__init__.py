@@ -62,3 +62,28 @@ def configure_fla_runtime(bundle: dict | None):
     """Apply the returned catalog for a trainer's model-call scope; restore on exit."""
     from .fla import configure_fla_runtime as configure
     return configure(bundle)
+
+
+def tune_ac_execution(harness, ac_name: str, prepared_examples, training_config, *, seconds: float = 600,
+                      progress_callback=None) -> dict:
+    """Measure an SFT execution policy in a disposable GPU worker before model placement.
+
+    Returns ``policy`` and its measured ``receipt``. Does not change the caller's
+    config, examples, optimizer or weights; applying the policy is explicit.
+    The optional callback receives phase/case progress in the parent process.
+    """
+    from .core import tune_ac_execution as tune
+    return tune(harness, ac_name, prepared_examples, training_config, seconds=seconds,
+                progress_callback=progress_callback)
+
+
+def tune_ac_parallelism(harness, ac_name: str, training_items, training_config, *,
+                       gpu_counts=(1, 2, 4), seconds: float = 1800, progress_callback=None) -> dict:
+    """Measure real identical trainer updates on one node before choosing 1/2/4 GPUs.
+
+    Includes synchronization, clipping and populated Adam. Keeps the global batch,
+    item order and schedule fixed; checks resulting weight changes and Adam state.
+    """
+    from .core import tune_ac_parallelism as tune
+    return tune(harness, ac_name, training_items, training_config, gpu_counts=gpu_counts,
+                seconds=seconds, progress_callback=progress_callback)

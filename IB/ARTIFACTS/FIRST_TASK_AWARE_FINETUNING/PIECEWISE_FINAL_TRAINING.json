@@ -1,0 +1,22 @@
+{
+  "stop_reason": "complete",
+  "completed_global_updates": 500,
+  "planned_updates": 500,
+  "items": 4000,
+  "examples": 4000,
+  "dropped_too_long": 0,
+  "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/AC_MODELS/rag_poc/epoch_001",
+  "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/LORAS/rag_reader/epoch_001",
+  "duration_s": 18898.0,
+  "peak_memory_gb": 53.57,
+  "side_tokens": 32992635,
+  "unique_questions": 4000,
+  "epochs": 1,
+  "held_nll": 0.9164916510316956,
+  "training_seconds": 11318.68754662294,
+  "reporting_seconds": 6673.031813512091,
+  "baseline_seconds": 738.7591403629631,
+  "slurm_elapsed_seconds": 19125,
+  "slurm_state": "COMPLETED0:0",
+  "checked_utc": "2026-09-23T01:21:20.920344+00:00"
+}

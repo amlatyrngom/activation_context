@@ -1,0 +1,11 @@
+{
+  "utc": "2026-09-23T03:06:52.796453Z",
+  "status": "released",
+  "hashes": {
+    "evaluate_continuation_long_8k_v1.py": "c84649afa4743f3dda7126620116d78e1aaaca4c48521ee24d21597749b4be7b",
+    "evaluate_continuation_long_8k_v1.sbatch": "e2c336473dd0aed18f01ca29963f71f4dbe908712d11613d4b2846404588abf4"
+  },
+  "job": 23523743,
+  "review": "Root source review plus syntax and16 focused CPU rejection checks passed. Final-pair, exact400-input and runtime-base/source guards remain enforced on compute.",
+  "scope": "Completed32k+10k constant-floor final pair on matched8k400 development inputs, with100AC answers and its own full/no-context NLL. Original65536 batching and precision. No training or confirmation read."
+}

@@ -1,0 +1,284 @@
+{
+  "selection": {
+    "seed": "whole-parent-pilot-review15-20260921",
+    "rule": "One question per nonempty domain/target-token cell, smallest seeded SHA256 of question ID, selected before quality review; four extra rows by same hash from unused parent groups to reach15 because four cells have no acceptances",
+    "ids": [
+      "longqa:fb99d4323c1217230d02fe35",
+      "longqa:27598e9d337932056bd72e9c",
+      "longqa:a34a41d5cd18e83823a51664",
+      "longqa:6aa597b12ca18a7c0b2da320",
+      "longqa:81f94324ac3b8311c9728288",
+      "longqa:ef3ffca2979b863459dbd544",
+      "longqa:d26fa755854364d1a98e1a71",
+      "longqa:a4c533a286d9cc30a2ac5934",
+      "longqa:02289f3dfd15e2dd40107716",
+      "longqa:286481d093a1357757a8594c",
+      "longqa:476705ffc7a942e822a8006f",
+      "longqa:7d35861ad177fd314686d225",
+      "longqa:ae81593c84bb290b4a81072b",
+      "longqa:9c0d9a2acfae9c2c432cfc62",
+      "longqa:f2d3063dcf5b92709227b5d1"
+    ],
+    "available_cells": {
+      "('code', 8192)": 7,
+      "('code', 16384)": 5,
+      "('code', 32768)": 7,
+      "('legal', 8192)": 7,
+      "('legal', 16384)": 11,
+      "('legal', 32768)": 11,
+      "('math', 16384)": 9,
+      "('math', 32768)": 3,
+      "('math', 8192)": 6,
+      "('documents', 8192)": 2,
+      "('documents', 16384)": 1
+    }
+  },
+  "selected_rows_sha256": "092c52344f726ad1bc8dbd13efae59fb2b111ca99870d8ef85fa896b872c6f54",
+  "review": "Bounded manual grounding/necessity pass; no model judge; no population error-rate inference",
+  "grounding_counts": {
+    "supported": 7,
+    "incorrect": 2,
+    "qualification": 3,
+    "incomplete_support": 1,
+    "unsupported_claim": 2
+  },
+  "multiple_support_counts": {
+    "related": 7,
+    "redundant": 7,
+    "boundary_split": 1
+  },
+  "findings": [
+    {
+      "id": "longqa:fb99d4323c1217230d02fe35",
+      "domain": "code",
+      "target_tokens": 8192,
+      "source_tokens": 6743,
+      "doc_id": "github/deeplearning4j/deeplearning4j/c533a2d61d253f917af48b38c7161fa926ff9d26/deeplearning4j-modelimport/src/main/java/org/deeplearning4j/nn/modelimport/keras/utils/KerasLayerUtils.java",
+      "evidence_indices": [
+        1,
+        2
+      ],
+      "grounding": "supported",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit1 detects TimeDistributed and calls getTimeDistributedLayerConfig, then dispatches on the replacement class; unit2 documents/implements extraction of the inner layer and replacement of the class-name field. Caller/helper relation is natural."
+    },
+    {
+      "id": "longqa:27598e9d337932056bd72e9c",
+      "domain": "code",
+      "target_tokens": 16384,
+      "source_tokens": 11886,
+      "doc_id": "github/huggingface/pytorch-image-models/324a4e58b6b0365d16dcf8f93739be8f74cd7d37/timm/models/swin_transformer_v2_cr.py",
+      "evidence_indices": [
+        4,
+        5
+      ],
+      "grounding": "incorrect",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit4 computes i=index+1 before the periodic test. Unit5 passes extra_norm_stage=extra_norm_stage or (index+1)==len(depths), so the final stage ends with normalization even when the user flag is false. The answer misses both details."
+    },
+    {
+      "id": "longqa:a34a41d5cd18e83823a51664",
+      "domain": "code",
+      "target_tokens": 32768,
+      "source_tokens": 24635,
+      "doc_id": "github/pinpoint-apm/pinpoint/0f94b21205ca84f01d18283b381615f5e88f3f55/thrift/src/main/java/com/navercorp/pinpoint/thrift/dto/TSpan.java",
+      "evidence_indices": [
+        7,
+        8
+      ],
+      "grounding": "qualification",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "The optional-field comparison pattern is supported, but required primitive fields such as agentStartTime and spanId use present=true unconditionally. The answer overgeneralizes the presence-bit rule. Unit8 already illustrates the reported pattern; unit7 adds no necessary answer fact."
+    },
+    {
+      "id": "longqa:6aa597b12ca18a7c0b2da320",
+      "domain": "documents",
+      "target_tokens": 8192,
+      "source_tokens": 6875,
+      "doc_id": "github/square/leakcanary/2b9b9e67df0d4588fd36d6bec6b1a33bc49e3f1e/docs/recipes.md",
+      "evidence_indices": [
+        2,
+        3
+      ],
+      "grounding": "supported",
+      "multiple_support": "boundary_split",
+      "temporary_labels_found": false,
+      "note": "Unit2 gives the known-library-leak option and staticFieldLeak example; unit3 begins with option2, disabling automatic watching and calling objectWatcher.watch. Grounded, but the apparent multiple-section requirement is one short numbered list split at the chunk boundary."
+    },
+    {
+      "id": "longqa:81f94324ac3b8311c9728288",
+      "domain": "documents",
+      "target_tokens": 16384,
+      "source_tokens": 12355,
+      "doc_id": "github/paddlepaddle/paddlespeech/ea9ee93739f023916ef7736ad8f4d8d3a34d4f8a/demos/speech_server/README.md",
+      "evidence_indices": [
+        2,
+        7
+      ],
+      "grounding": "supported",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit2 shows vector --task spk --input and an embedding result; unit7 shows --task score with --enroll and --test plus a similarity result. A coherent two-task comparison. Much of the intervening long context consists of printed numeric embedding vectors."
+    },
+    {
+      "id": "longqa:ef3ffca2979b863459dbd544",
+      "domain": "legal",
+      "target_tokens": 8192,
+      "source_tokens": 6329,
+      "doc_id": "caselaw/f2d_474/html/0514-01.html",
+      "evidence_indices": [
+        0,
+        1,
+        3
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit3 alone contains the June17/20/23 revisions, consultation with auditors, June24 press release, ripe-for-publication conclusion and due-diligence finding. The other cited units are unnecessary for this answer."
+    },
+    {
+      "id": "longqa:d26fa755854364d1a98e1a71",
+      "domain": "legal",
+      "target_tokens": 16384,
+      "source_tokens": 11790,
+      "doc_id": "caselaw/f2d_474/html/0565-01.html",
+      "evidence_indices": [
+        0,
+        1,
+        5
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit1 alone says collection is not punishment, there is no fundamental limitations right, and the period does not commence before a return even when requiring it would violate the privilege. Units0 and5 add redundant statutory/background material."
+    },
+    {
+      "id": "longqa:a4c533a286d9cc30a2ac5934",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 23623,
+      "doc_id": "caselaw/sw3d_308/html/0843-01.html",
+      "evidence_indices": [
+        5,
+        6,
+        9
+      ],
+      "grounding": "incomplete_support",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Units6 and9 support interstate wholesale regulation and continued pre-emption after NGPA deregulation. The answer also claims the effect of the WDA, absent from all three selected units. That proposition is supported later in the full parent, so this is an incomplete chosen-support failure, not necessarily a false full-parent answer."
+    },
+    {
+      "id": "longqa:02289f3dfd15e2dd40107716",
+      "domain": "math",
+      "target_tokens": 8192,
+      "source_tokens": 7813,
+      "doc_id": "proof-pile-2/arxiv/2005.14481",
+      "evidence_indices": [
+        0,
+        2,
+        3
+      ],
+      "grounding": "incorrect",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit3 gives beta(alpha)=±sqrt(-(kappa1^-1+kappa2^-1 alpha^2)/(10 kappa3^-1 alpha^2)), with kappa3<0, and radiation beta0=O(beta^2/alpha). The source describes large dimensions becoming exponentially large, not beta becoming exponentially suppressed. Unit3 itself contains the freezing/radiation result."
+    },
+    {
+      "id": "longqa:286481d093a1357757a8594c",
+      "domain": "math",
+      "target_tokens": 16384,
+      "source_tokens": 15576,
+      "doc_id": "proof-pile-2/arxiv/1607.04617",
+      "evidence_indices": [
+        0,
+        1,
+        7
+      ],
+      "grounding": "supported",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit1 explicitly says visibility maximization is more efficient for g=4 and concurrence decays quickly; unit7 gives gT=2pi/4 and concurrence near1 under concurrence-maximizing measurements. These are related complementary facts; unit0 is background/redundant."
+    },
+    {
+      "id": "longqa:476705ffc7a942e822a8006f",
+      "domain": "math",
+      "target_tokens": 32768,
+      "source_tokens": 24327,
+      "doc_id": "proof-pile-2/arxiv/2203.02009",
+      "evidence_indices": [
+        0,
+        1,
+        9
+      ],
+      "grounding": "unsupported_claim",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Units0/1 support general Otilde(log^8 q) versus Hilbert Otilde(log^4 q), under a positive proportion of Elkies primes and a stated field-size condition. Unit9 gives an order-ell subgroup and polynomials of degree O(ell). The answer invents a degree-4 torsion subgroup and omits the theorem conditions. The source relationship is coherent, but the mathematical description is not fully grounded."
+    },
+    {
+      "id": "longqa:7d35861ad177fd314686d225",
+      "domain": "code",
+      "target_tokens": 16384,
+      "source_tokens": 14979,
+      "doc_id": "github/raphw/byte-buddy/0f9f5d84a878b3f04cd52475c48215dbd53e5053/byte-buddy-dep/src/main/java/net/bytebuddy/ByteBuddy.java",
+      "evidence_indices": [
+        4,
+        5
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit5 itself states both that redefinition fully replaces intercepted methods and that rebasing preserves original code callable from new implementations. Unit4 repeats the redefinition comment."
+    },
+    {
+      "id": "longqa:ae81593c84bb290b4a81072b",
+      "domain": "math",
+      "target_tokens": 8192,
+      "source_tokens": 7894,
+      "doc_id": "proof-pile-2/arxiv/2209.14497",
+      "evidence_indices": [
+        2,
+        4,
+        5
+      ],
+      "grounding": "unsupported_claim",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit2 says fiber modulation extends to the highest wavenumber; unit4 supports the different multifractal spectrum. The answer strengthens modulation into energy depletion across all scales, which these spans do not establish. Unit5 instead describes energy subtraction followed by reinjection at small scales. The spectrum/intermittency comparison is coherent."
+    },
+    {
+      "id": "longqa:9c0d9a2acfae9c2c432cfc62",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 22343,
+      "doc_id": "caselaw/f2d_483/html/1238-01.html",
+      "evidence_indices": [
+        6,
+        7
+      ],
+      "grounding": "qualification",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "The procedural explanation is supported by unit6 alone. The question states the restriction categorically; units6/7 explicitly do not require full sections556/557 proceedings and emphasize quality of procedure rather than formal/informal labels. Keep the claim scoped to the proceeding and insufficient comment-only record."
+    },
+    {
+      "id": "longqa:f2d3063dcf5b92709227b5d1",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 26708,
+      "doc_id": "caselaw/f2d_478/html/1281-01.html",
+      "evidence_indices": [
+        6,
+        10
+      ],
+      "grounding": "qualification",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "The omitted sale intention and likely better-terms/no-merger response are supported. The phrase risk of liquidation versus profits is imprecise: the source says disclosure would reduce the perceived risk of retaining GOA and reveal liquidation profits. Unit10 alone contains the omission, risk explanation and shareholder response; unit6 repeats the intention."
+    }
+  ]
+}

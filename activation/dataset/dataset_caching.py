@@ -10,6 +10,7 @@ it). A request beyond the cached rows reuses them and generates the tail, which 
 are keyed by example id. A stable caching id from the caller is trusted; nothing else is checked.
 """
 import json
+import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,7 +31,13 @@ class StudyCacheKey:
         parts = [self.caching_id, self.dataset_id, self.kind, self.model_id, f"seed{self.seed}"]
         if self.label_model_id:
             parts.append(self.label_model_id)
-        return "__".join(re.sub(r"[^0-9A-Za-z_.-]+", "_", part) for part in parts) + ".jsonl"
+        stem = "__".join(re.sub(r"[^0-9A-Za-z_.-]+", "_", part) for part in parts)
+        if len(stem) + len(".jsonl") > 255:
+            # Local model snapshots can make a cache key exceed filesystem limits.
+            # Keep valid existing names; hash the complete original key when shortening.
+            suffix = hashlib.sha256(json.dumps(parts, ensure_ascii=False).encode("utf-8")).hexdigest()
+            stem = stem[:180] + "__" + suffix
+        return stem + ".jsonl"
 
 
 class StudyCache:
@@ -72,3 +79,89 @@ class StudyCache:
     def read_by_id(self, key: StudyCacheKey, id_field: str) -> dict[str, dict]:
         """Rows keyed by one field (labels by example id); a later row for the same id wins."""
         return {row[id_field]: row for row in self.read(key) if id_field in row}
+
+
+def freeze_text_collection(root: str | Path, destination: str | Path) -> dict:
+    """Freeze the available committed prefix of a portable collection, without copying payloads.
+
+    Growing manifests and in-flight transfers are safe: only listed, present,
+    checksum-verified files enter the snapshot. A listed corrupt file is an error.
+    Relative payload paths let the same snapshot move with its collection.
+    """
+    import os
+    root, destination = Path(root), Path(destination)
+    if destination.exists():
+        raise FileExistsError(f"Frozen snapshot already exists: {destination}")
+    raw = (root / 'manifest.json').read_bytes()
+    manifest = json.loads(raw)
+    entries = []
+    if 'releases' in manifest:
+        for release in manifest['releases']:
+            relative = Path(release['manifest'])
+            if relative.is_absolute() or '..' in relative.parts:
+                raise ValueError('Unsafe collection manifest path')
+            path = root / relative
+            if not path.exists():
+                continue
+            child = json.loads(path.read_bytes())
+            entries.extend({**row, 'file': str(relative.parent / row['file'])} for row in child['shards'])
+    elif 'files' in manifest:
+        entries = manifest['files']
+    elif 'file' in manifest:
+        entries = [manifest]
+    else:
+        raise ValueError('Portable collection has no committed file list')
+    files, pending, seen = [], [], set()
+    for entry in entries:
+        relative = Path(entry['file'])
+        if relative.is_absolute() or '..' in relative.parts or str(relative) in seen:
+            raise ValueError('Unsafe or repeated collection payload path')
+        seen.add(str(relative))
+        path = root / relative
+        if not path.is_file():
+            pending.append(str(relative)); continue
+        with path.open('rb') as stream:
+            checksum = hashlib.file_digest(stream, 'sha256').hexdigest()
+        if checksum != entry['sha256']:
+            raise ValueError(f'Committed collection payload changed: {relative}')
+        files.append({'file': str(relative), 'sha256': checksum, 'bytes': path.stat().st_size,
+                      'rows': entry.get('rows', entry.get('questions'))})
+    controls = {}
+    # Existing evaluation questions remain reserved even when new runs freeze a fresh held panel.
+    if manifest.get('schema') == 'self_contained_rag_qa_v1' and not (root / 'reserved_questions.json').is_file():
+        raise FileNotFoundError('RAG collection has not transferred reserved_questions.json yet; retry after it arrives')
+    if (root / 'reserved_questions.json').exists():
+        control = (root / 'reserved_questions.json').read_bytes()
+        controls['reserved_questions'] = {'sha256': hashlib.sha256(control).hexdigest(), 'data': json.loads(control)}
+    result = {'schema': 'frozen-portable-text-v1', 'collection_schema': manifest['schema'],
+              'manifest_sha256': hashlib.sha256(raw).hexdigest(), 'files': files,
+              'pending_transfer_files': pending, 'controls': controls}
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + f'.{os.getpid()}.tmp')
+    with temporary.open('x') as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2); stream.write('\n'); stream.flush(); os.fsync(stream.fileno())
+    # Publish without overwriting another launch's already committed selection.
+    try:
+        os.link(temporary, destination)
+    finally:
+        temporary.unlink()
+    return result
+
+
+def frozen_text_rows(root: str | Path, snapshot: dict):
+    """Read an immutable snapshot; new producer commits never change this iterator."""
+    root = Path(root)
+    for entry in snapshot['files']:
+        path = root / entry['file']
+        with path.open('rb') as stream:
+            if hashlib.file_digest(stream, 'sha256').hexdigest() != entry['sha256']:
+                raise ValueError(f'Frozen payload changed: {path}')
+            stream.seek(0)
+            if path.suffix == '.jsonl':
+                for ordinal, line in enumerate(stream):
+                    yield json.loads(line), {'file': entry['file'], 'ordinal': ordinal}
+            else:
+                payload = json.load(stream)
+                for split in ('train', 'held'):
+                    for ordinal, row in enumerate(payload[split]):
+                        yield dict(row, split=split), {'file': entry['file'], 'split': split, 'ordinal': ordinal}

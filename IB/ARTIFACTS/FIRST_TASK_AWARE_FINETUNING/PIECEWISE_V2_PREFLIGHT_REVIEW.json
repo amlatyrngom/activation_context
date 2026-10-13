@@ -1,0 +1,28 @@
+{
+  "verdict": "pass",
+  "design_sha256": "86fcaad5db4b24d8b5f4972567a78e7e2f3d4e821b18b3d5ca4e55ae4ed98e08",
+  "pins": {
+    "builder_sha256": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+    "launcher_sha256": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+    "evaluator_sha256": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30",
+    "evaluator_launcher_sha256": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+    "restart_launcher_sha256": "63569ceee66fb6e2174821663a3a2a73632c7b1ebe5bad4660becaeeab539edf"
+  },
+  "checks": [
+    "deterministic proof exact all615 present gradients and18outputs",
+    "four ordinary-kernel fits + shared input/row identity",
+    "seven invalid final guards rejected",
+    "identical original source hashes",
+    "unchanged builder/row/answer/resume AST",
+    "independent reference-cache copy",
+    "Python/shell/embedded Python syntax"
+  ],
+  "gpu_jobs_submitted": false,
+  "remote_mutations": false,
+  "finding": {
+    "classification": "genuine",
+    "file": "bench/restart_piecewise_memory_fix.sbatch",
+    "issue": "Preserved cache hardlink could be overwritten by trainer",
+    "resolution": "Independent shutil.copy2 plus destination SHA256 verification"
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "bucket": "general-bucket-aln",
+  "prefix": "activation-context-data/checkpoints/reconstruction-20260921",
+  "checkpoints": [
+    {
+      "name": "P2",
+      "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/reconstruction-20260921/P2/",
+      "completed_pair": {
+        "epoch_number": 1,
+        "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+        "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+      },
+      "held_novel": {
+        "items": 420,
+        "gold_nll": 0.10636879954139111,
+        "token_accuracy": 0.9649908438877518,
+        "loss": 0.10636879954139111
+      },
+      "training_encoder_lr": 0.0001,
+      "training_ratio": 0.0625,
+      "files": [
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/AC_MODELS/rag_poc/completed_epoch.json",
+          "bytes": 132,
+          "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/AC_MODELS/rag_poc/epoch_001/ac_modules.pt",
+          "bytes": 1175258677,
+          "sha256": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/AC_MODELS/rag_poc/epoch_001/side_lora/README.md",
+          "bytes": 5184,
+          "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_config.json",
+          "bytes": 1150,
+          "sha256": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors",
+          "bytes": 349204488,
+          "sha256": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/LORAS/rag_reader/epoch_001/README.md",
+          "bytes": 5184,
+          "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/LORAS/rag_reader/epoch_001/adapter_config.json",
+          "bytes": 1147,
+          "sha256": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/LORAS/rag_reader/epoch_001/adapter_model.safetensors",
+          "bytes": 931173960,
+          "sha256": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/arm.json",
+          "bytes": 948,
+          "sha256": "d05d85c6e1e8031688ca74aa9f3697bbf88f999040a30805dffaa76f5ac012e5",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2/result.json",
+          "bytes": 15516,
+          "sha256": "1d971ae8cdfb58ee9c2752890a124588e343f504edc515cc8b82d9334c31a368",
+          "server_checksum_verified": true
+        }
+      ]
+    },
+    {
+      "name": "P2s5",
+      "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/reconstruction-20260921/P2s5/",
+      "completed_pair": {
+        "epoch_number": 1,
+        "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+        "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+      },
+      "held_novel": {
+        "items": 420,
+        "gold_nll": 0.3898932479336454,
+        "token_accuracy": 0.8823180185346096,
+        "loss": 0.3898932479336454
+      },
+      "training_encoder_lr": 5e-05,
+      "training_ratio": 0.0625,
+      "files": [
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/AC_MODELS/rag_poc/completed_epoch.json",
+          "bytes": 132,
+          "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/AC_MODELS/rag_poc/epoch_001/ac_modules.pt",
+          "bytes": 1175258677,
+          "sha256": "486b4f509112059d7c36dfa2f81c25d342cf5f6959bda69e3bd3dea412d67982",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/AC_MODELS/rag_poc/epoch_001/side_lora/README.md",
+          "bytes": 5184,
+          "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_config.json",
+          "bytes": 1150,
+          "sha256": "e34a4d2f73ad1cd95ce2f54af23740fd5c486f5774c87b186a08b256f2d40859",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors",
+          "bytes": 349204488,
+          "sha256": "3b18ff78bd939a3352bdbc5fad2f975e5214e54c53b870a41091eef73f910129",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/LORAS/rag_reader/epoch_001/README.md",
+          "bytes": 5184,
+          "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/LORAS/rag_reader/epoch_001/adapter_config.json",
+          "bytes": 1147,
+          "sha256": "8023c5da8edf0586aac86c66131382f106f82dad0151375ef32258b22ec80a3e",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/LORAS/rag_reader/epoch_001/adapter_model.safetensors",
+          "bytes": 931173960,
+          "sha256": "44913c5c3b198bed4111151e87c1413fbcbbd35aabedd223d1a5e8565111570e",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/arm.json",
+          "bytes": 966,
+          "sha256": "40b8497f5d998356963d5f1f727d08f9a06375e79f771570a1fe990944eda648",
+          "server_checksum_verified": true
+        },
+        {
+          "key": "activation-context-data/checkpoints/reconstruction-20260921/P2s5/result.json",
+          "bytes": 15513,
+          "sha256": "a6aadf28cb005000b751077f1181582a8bb3180c7e31fedfa722ea0d014db69e",
+          "server_checksum_verified": true
+        }
+      ]
+    }
+  ],
+  "contents": "Paired AC modules, encoder LoRA and reader LoRA; public base weights and optimizer moments excluded.",
+  "validation": "S3 validates supplied SHA-256 on each PUT; subsequent HEAD checksum and byte count matched. GPU restoration remains a pre-run gate."
+}

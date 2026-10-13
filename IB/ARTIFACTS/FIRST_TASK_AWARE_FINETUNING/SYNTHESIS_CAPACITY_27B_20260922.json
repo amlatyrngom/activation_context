@@ -1,0 +1,505 @@
+{
+  "schema_version": 1,
+  "analyzed_utc": "2026-09-22T10:12:34.562762+00:00",
+  "manifest_updated_utc": "2026-09-22 10:09:06 UTC",
+  "snapshot_path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/storage_retention/synthesis_bank_27b_capacity_manifest_20260922.json",
+  "manifest_sha256": "c09848ffbb0e1e588f37e0e121f0685512ffda135343ba805071f279203846f4",
+  "source_pool_sha256": "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c",
+  "source_count_receipt": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/storage_retention/registered_source_counts_20260922.json",
+  "source_count_receipt_sha256": "0ccf7937a262feeebf3ced9999dab6d5829c968320ad4ae59fd2f2e0c25f9898",
+  "generator_model_id": "Qwen/Qwen3.5-27B",
+  "recipe_ids": [
+    "c7d03cbf136df37b35ef",
+    "179debe03c9b8ed9c15a"
+  ],
+  "recipe_version": [
+    "27b_grounded_v2"
+  ],
+  "published_questions": 32000,
+  "accepted_questions": 32554,
+  "target_questions": 200000,
+  "families": {
+    "code": {
+      "share": 0.3,
+      "registered_windows": 77546,
+      "consumed_windows": 17728,
+      "remaining_windows": 59818,
+      "accepted_questions": 9688,
+      "published_questions": 9600,
+      "committed_surplus": 88,
+      "lifetime_accepted_per_window": 0.5464801444043321,
+      "recent_accepted_per_window": 0.5559375,
+      "recent_microchunks": 50,
+      "recent_windows": 3200,
+      "forecast_balanced_ceiling_lifetime": 141257.83092659447,
+      "forecast_balanced_ceiling_recent": 143143.56458333333,
+      "targets": {
+        "36000": {
+          "needed_accepted": 1112,
+          "minimum_future_accepted_per_window": 0.018589722157210203,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 29.396896832714333
+        },
+        "64000": {
+          "needed_accepted": 9512,
+          "minimum_future_accepted_per_window": 0.15901568089872614,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 3.4366431116461666
+        },
+        "200000": {
+          "needed_accepted": 50312,
+          "minimum_future_accepted_per_window": 0.8410846233575178,
+          "covers_at_lifetime_yield": false,
+          "covers_at_recent_yield": false,
+          "additional_windows_at_lifetime_yield": 32248,
+          "additional_windows_at_recent_yield": 30682,
+          "capacity_multiple_at_lower_yield": 0.6497326537998557
+        }
+      },
+      "staged_extra_windows": 40000,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 214121.8501805054
+    },
+    "math_arxiv": {
+      "share": 0.12,
+      "registered_windows": 82047,
+      "consumed_windows": 3232,
+      "remaining_windows": 78815,
+      "accepted_questions": 3882,
+      "published_questions": 3840,
+      "committed_surplus": 42,
+      "lifetime_accepted_per_window": 1.2011138613861385,
+      "recent_accepted_per_window": 1.1980263157894737,
+      "recent_microchunks": 50,
+      "recent_windows": 3040,
+      "forecast_balanced_ceiling_lifetime": 821231.5748762377,
+      "forecast_balanced_ceiling_recent": 819203.7006578948,
+      "targets": {
+        "36000": {
+          "needed_accepted": 438,
+          "minimum_future_accepted_per_window": 0.005557317769460128,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 215.57635634462872
+        },
+        "64000": {
+          "needed_accepted": 3798,
+          "minimum_future_accepted_per_window": 0.04818879654888029,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 24.861096387295255
+        },
+        "200000": {
+          "needed_accepted": 20118,
+          "minimum_future_accepted_per_window": 0.2552559791917782,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 4.693430961275841
+        }
+      },
+      "staged_extra_windows": 0,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 819203.7006578948
+    },
+    "math_textbook": {
+      "share": 0.08,
+      "registered_windows": 25645,
+      "consumed_windows": 3200,
+      "remaining_windows": 22445,
+      "accepted_questions": 2605,
+      "published_questions": 2560,
+      "committed_surplus": 45,
+      "lifetime_accepted_per_window": 0.8140625,
+      "recent_accepted_per_window": 0.812828947368421,
+      "recent_microchunks": 50,
+      "recent_windows": 3040,
+      "forecast_balanced_ceiling_lifetime": 260957.91015625,
+      "forecast_balanced_ceiling_recent": 260611.8215460526,
+      "targets": {
+        "36000": {
+          "needed_accepted": 275,
+          "minimum_future_accepted_per_window": 0.01225217197594119,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 66.34162081339713
+        },
+        "64000": {
+          "needed_accepted": 2515,
+          "minimum_future_accepted_per_window": 0.11205168188906216,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 7.254053965679606
+        },
+        "200000": {
+          "needed_accepted": 13395,
+          "minimum_future_accepted_per_window": 0.5967921586099354,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 1.3619966945639574
+        }
+      },
+      "staged_extra_windows": 0,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 260611.8215460526
+    },
+    "financial": {
+      "share": 0.05,
+      "registered_windows": 22899,
+      "consumed_windows": 1792,
+      "remaining_windows": 21107,
+      "accepted_questions": 1648,
+      "published_questions": 1600,
+      "committed_surplus": 48,
+      "lifetime_accepted_per_window": 0.9196428571428571,
+      "recent_accepted_per_window": 0.9196428571428571,
+      "recent_microchunks": 31,
+      "recent_windows": 1792,
+      "forecast_balanced_ceiling_lifetime": 421178.0357142857,
+      "forecast_balanced_ceiling_recent": 421178.0357142857,
+      "targets": {
+        "36000": {
+          "needed_accepted": 152,
+          "minimum_future_accepted_per_window": 0.007201402378357891,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 127.70330122180451
+        },
+        "64000": {
+          "needed_accepted": 1552,
+          "minimum_future_accepted_per_window": 0.07353010849481215,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 12.507024346465391
+        },
+        "200000": {
+          "needed_accepted": 8352,
+          "minimum_future_accepted_per_window": 0.3956981096318757,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 2.32410222530104
+        }
+      },
+      "staged_extra_windows": 0,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 421178.0357142857
+    },
+    "web": {
+      "share": 0.2,
+      "registered_windows": 95000,
+      "consumed_windows": 30208,
+      "remaining_windows": 64792,
+      "accepted_questions": 6464,
+      "published_questions": 6400,
+      "committed_surplus": 64,
+      "lifetime_accepted_per_window": 0.21398305084745764,
+      "recent_accepted_per_window": 0.21875,
+      "recent_microchunks": 50,
+      "recent_windows": 3200,
+      "forecast_balanced_ceiling_lifetime": 101641.94915254237,
+      "forecast_balanced_ceiling_recent": 103186.25,
+      "targets": {
+        "36000": {
+          "needed_accepted": 736,
+          "minimum_future_accepted_per_window": 0.011359427089764168,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 18.83748618275608
+        },
+        "64000": {
+          "needed_accepted": 6336,
+          "minimum_future_accepted_per_window": 0.09778985059883936,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 2.1881928394110597
+        },
+        "200000": {
+          "needed_accepted": 33536,
+          "minimum_future_accepted_per_window": 0.517594764785776,
+          "covers_at_lifetime_yield": false,
+          "covers_at_recent_yield": false,
+          "additional_windows_at_lifetime_yield": 91931,
+          "additional_windows_at_recent_yield": 88516,
+          "capacity_multiple_at_lower_yield": 0.41341811278949414
+        }
+      },
+      "staged_extra_windows": 110000,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 219332.62711864407
+    },
+    "technical_web": {
+      "share": 0.05,
+      "registered_windows": 18223,
+      "consumed_windows": 4736,
+      "remaining_windows": 13487,
+      "accepted_questions": 1631,
+      "published_questions": 1600,
+      "committed_surplus": 31,
+      "lifetime_accepted_per_window": 0.34438344594594594,
+      "recent_accepted_per_window": 0.343125,
+      "recent_microchunks": 50,
+      "recent_windows": 3200,
+      "forecast_balanced_ceiling_lifetime": 125513.99070945947,
+      "forecast_balanced_ceiling_recent": 125174.5375,
+      "targets": {
+        "36000": {
+          "needed_accepted": 169,
+          "minimum_future_accepted_per_window": 0.012530585007785274,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 27.38299926035503
+        },
+        "64000": {
+          "needed_accepted": 1569,
+          "minimum_future_accepted_per_window": 0.11633424779417216,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 2.949475382409178
+        },
+        "200000": {
+          "needed_accepted": 8369,
+          "minimum_future_accepted_per_window": 0.6205234670423371,
+          "covers_at_lifetime_yield": false,
+          "covers_at_recent_yield": false,
+          "additional_windows_at_lifetime_yield": 10815,
+          "additional_windows_at_recent_yield": 10904,
+          "capacity_multiple_at_lower_yield": 0.5529605538296093
+        }
+      },
+      "staged_extra_windows": 15000,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 228112.0375
+    },
+    "documents": {
+      "share": 0.08,
+      "registered_windows": 26317,
+      "consumed_windows": 2048,
+      "remaining_windows": 24269,
+      "accepted_questions": 2654,
+      "published_questions": 2560,
+      "committed_surplus": 94,
+      "lifetime_accepted_per_window": 1.2958984375,
+      "recent_accepted_per_window": 1.2958984375,
+      "recent_microchunks": 35,
+      "recent_windows": 2048,
+      "forecast_balanced_ceiling_lifetime": 426301.98974609375,
+      "forecast_balanced_ceiling_recent": 426301.98974609375,
+      "targets": {
+        "36000": {
+          "needed_accepted": 226,
+          "minimum_future_accepted_per_window": 0.009312291400552144,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 139.15999637029867
+        },
+        "64000": {
+          "needed_accepted": 2466,
+          "minimum_future_accepted_per_window": 0.10161110882195393,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 12.75351142728609
+        },
+        "200000": {
+          "needed_accepted": 13346,
+          "minimum_future_accepted_per_window": 0.5499196505830484,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 2.3565232413972352
+        }
+      },
+      "staged_extra_windows": 0,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 426301.98974609375
+    },
+    "legal": {
+      "share": 0.06,
+      "registered_windows": 30433,
+      "consumed_windows": 1280,
+      "remaining_windows": 29153,
+      "accepted_questions": 2037,
+      "published_questions": 1920,
+      "committed_surplus": 117,
+      "lifetime_accepted_per_window": 1.59140625,
+      "recent_accepted_per_window": 1.59140625,
+      "recent_microchunks": 22,
+      "recent_windows": 1280,
+      "forecast_balanced_ceiling_lifetime": 807187.7734375,
+      "forecast_balanced_ceiling_recent": 807187.7734375,
+      "targets": {
+        "36000": {
+          "needed_accepted": 123,
+          "minimum_future_accepted_per_window": 0.004219119816142421,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 377.1891577743902
+        },
+        "64000": {
+          "needed_accepted": 1803,
+          "minimum_future_accepted_per_window": 0.06184612218296573,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 25.731706270798668
+        },
+        "200000": {
+          "needed_accepted": 9963,
+          "minimum_future_accepted_per_window": 0.3417487051075361,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 4.656656268819632
+        }
+      },
+      "staged_extra_windows": 0,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 807187.7734375
+    },
+    "office": {
+      "share": 0.06,
+      "registered_windows": 19673,
+      "consumed_windows": 3360,
+      "remaining_windows": 16313,
+      "accepted_questions": 1945,
+      "published_questions": 1920,
+      "committed_surplus": 25,
+      "lifetime_accepted_per_window": 0.5788690476190477,
+      "recent_accepted_per_window": 0.5750644329896907,
+      "recent_microchunks": 50,
+      "recent_windows": 3104,
+      "forecast_balanced_ceiling_lifetime": 189801.5128968254,
+      "forecast_balanced_ceiling_recent": 188767.1015893471,
+      "targets": {
+        "36000": {
+          "needed_accepted": 215,
+          "minimum_future_accepted_per_window": 0.013179672653711763,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 43.632679513306165
+        },
+        "64000": {
+          "needed_accepted": 1895,
+          "minimum_future_accepted_per_window": 0.11616502176178507,
+          "covers_at_lifetime_yield": true,
+          "covers_at_recent_yield": true,
+          "additional_windows_at_lifetime_yield": 0,
+          "additional_windows_at_recent_yield": 0,
+          "capacity_multiple_at_lower_yield": 4.950409549003074
+        },
+        "200000": {
+          "needed_accepted": 10055,
+          "minimum_future_accepted_per_window": 0.6163795745724269,
+          "covers_at_lifetime_yield": false,
+          "covers_at_recent_yield": false,
+          "additional_windows_at_lifetime_yield": 1058,
+          "additional_windows_at_recent_yield": 1172,
+          "capacity_multiple_at_lower_yield": 0.9329712675644779
+        }
+      },
+      "staged_extra_windows": 4000,
+      "projected_balanced_ceiling_with_staged_extensions_at_lower_yield": 227104.73045532644
+    }
+  },
+  "proposal": {
+    "status": "Prepared, validated and activated with create-only links; producer discovers at startup or source exhaustion.",
+    "additional_raw_windows": {
+      "code": 40000,
+      "web": 110000,
+      "technical_web": 15000,
+      "office": 4000
+    },
+    "method": "Use existing family-extension format and pinned raw-corpus extractors; publish new immutable files and preserve prior source order/cursors. Add only unconsumed source windows. Keep nine-family accepted quotas, question/checker recipe, and single-question code mode unchanged.",
+    "sources": {
+      "web": "Continue the existing pinned MS MARCO passage-text-only extractor beyond its old bounded cap. Do not load native query/answer/relevance columns.",
+      "code": "More distinct repository source files using the existing cached-repository extractor. Prior extension delivered 14,339 windows against a 24k cap, so do not assume this cache alone supplies another40k; additional repository snapshots may be needed.",
+      "technical_web": "Continue the same pinned BRIGHT raw-document subjects beyond their existing per-subject caps, retaining document/source identities; do not load benchmark example/question fields.",
+      "office": "Keep the existing60% automation/30% business/10% procedural-help mix: about2,400/1,200/400 extra windows. Reuse unused automation material; add distinct business/procedural text where the previous balanced extractor exhausted its limiting subpools."
+    },
+    "priority": "Prepare web first, then code/technical web; office is a small later top-up. Recheck at64k and before committing beyond~90k published."
+  },
+  "scope": "Offline committed-manifest capacity estimate, counting accepted surplus. Not a training-eligibility, reconstruction/native-question overlap, or question-quality audit. No raw source scan, remote command, jobs, downloads, pruning, source mutations or bank mutations. Exact eligible counts remain gated by the training-material preparer.",
+  "conclusion": "Current sources cover36k and64k published pools at lifetime/recent yields, but not200k. Web is first projected bottleneck; code, technical web and office also need extensions if yields persist.",
+  "preparation": {
+    "status": "complete_activated",
+    "job_id": "23470299",
+    "submitted_utc": "2026-09-22T10:24:23.135994+00:00",
+    "remote_root": "~/orcd/pool/activation/taskaware/bank_source_extensions_27b_20260922",
+    "targets": {
+      "code": 40000,
+      "web": 110000,
+      "technical_web": 15000,
+      "office": 4000
+    },
+    "resources": {
+      "cpus": 4,
+      "memory_GB": 16,
+      "time_limit_hours": 3,
+      "gpus": 0
+    },
+    "private_script": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/prepare_27b_source_extensions.py",
+    "script_sha256": "29e6d2b0949af72b1a8134d4666e844d20b78eeb9597c3c102cf16965b329a34",
+    "producer_changed": false,
+    "active_extension_directory_changed": true,
+    "focused_cpu_checks": "Exact counts, content/file hashes, baseline duplicate rejection, incomplete-publication refusal, full4000 office60/30/10 fixture.",
+    "receipt": "RAW_SOURCE_EXTENSIONS_27B_20260922.json",
+    "all_targets_complete": true,
+    "total_new_raw_windows": 169000,
+    "total_bytes": 434383803,
+    "cpu_job": {
+      "id": "23470299",
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 46,
+      "outcome": "Web, code and technical-web files completed and passed validation; office fallback repository unavailable. Those successful files were retained unchanged."
+    },
+    "office_recovery": "Completed locally in25.7s; exact4000 mix; no additional Slurm job.",
+    "lowest_projected_balanced_ceiling_at_lower_yield": 214121.8501805054,
+    "activation": {
+      "job_id": "23470885",
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 6,
+      "activated_utc": "2026-09-22T10:35:06.656678+00:00",
+      "receipt": "RAW_SOURCE_EXTENSIONS_27B_ACTIVATION_20260922.json",
+      "new_linked_files": 4,
+      "old_files_verified_unchanged": 8,
+      "producer_interrupted": false,
+      "producer_code_or_cursors_changed": false,
+      "producer_has_loaded_at_activation_snapshot": false
+    }
+  }
+}

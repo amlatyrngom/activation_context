@@ -1,0 +1,489 @@
+{
+  "checked_utc": "2026-09-23T01:19:35.646948+00:00",
+  "status": "piecewise_complete_final_paired_checkpoint_published",
+  "panels": {
+    "piecewise_27b_4k_8k": [
+      {
+        "update": 0,
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 3.1728804654430274,
+        "full answer NLL": 0.7738224639919301,
+        "no-context answer NLL": 1.7922518564882832,
+        "training answer NLL": 2.8339111806767345,
+        "panel seconds": 359.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 3.423377311491028,
+            "held full context": 0.849064411003227,
+            "held no context": 1.957150191697781,
+            "training AC": 2.8339111806767345
+          },
+          "27b": {
+            "held AC": 2.9223836193950268,
+            "held full context": 0.6985805169806332,
+            "held no context": 1.627353521278786,
+            "training AC": 2.8339111806767345
+          }
+        }
+      },
+      {
+        "update": 50,
+        "percent": 10.0,
+        "held items": 400,
+        "AC answer NLL": 1.223661068593922,
+        "full answer NLL": 0.5561470410404444,
+        "no-context answer NLL": 1.7125316682047165,
+        "training answer NLL": 1.0192597180626997,
+        "panel seconds": 359.5,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.3103559933574638,
+            "held full context": 0.6119533851458829,
+            "held no context": 1.8807150263687546,
+            "training AC": 1.0192597180626997
+          },
+          "27b": {
+            "held AC": 1.1369661438303804,
+            "held full context": 0.5003406969350059,
+            "held no context": 1.5443483100406783,
+            "training AC": 1.0192597180626997
+          }
+        }
+      },
+      {
+        "update": 100,
+        "percent": 20.0,
+        "held items": 400,
+        "AC answer NLL": 1.1649609821879108,
+        "full answer NLL": 0.6563952473446512,
+        "no-context answer NLL": 1.8256274237486236,
+        "training answer NLL": 0.9305454601523389,
+        "panel seconds": 359.8,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.2879930651507623,
+            "held full context": 0.7316965649156767,
+            "held no context": 2.0028367508947844,
+            "training AC": 0.9305454601523389
+          },
+          "27b": {
+            "held AC": 1.0419288992250593,
+            "held full context": 0.5810939297736258,
+            "held no context": 1.6484180966024626,
+            "training AC": 0.9305454601523389
+          }
+        }
+      },
+      {
+        "update": 150,
+        "percent": 30.0,
+        "held items": 400,
+        "AC answer NLL": 1.149283999890838,
+        "full answer NLL": 0.5970817003435722,
+        "no-context answer NLL": 1.78426419543702,
+        "training answer NLL": 0.8764504181599846,
+        "panel seconds": 358.9,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.240044373003222,
+            "held full context": 0.6667422003634934,
+            "held no context": 1.9548123169050726,
+            "training AC": 0.8764504181599846
+          },
+          "27b": {
+            "held AC": 1.058523626778454,
+            "held full context": 0.5274212003236509,
+            "held no context": 1.613716073968967,
+            "training AC": 0.8764504181599846
+          }
+        }
+      },
+      {
+        "update": 200,
+        "percent": 40.0,
+        "held items": 400,
+        "AC answer NLL": 1.1313838071482138,
+        "full answer NLL": 0.6018214262855027,
+        "no-context answer NLL": 1.7980964397103991,
+        "training answer NLL": 0.8634122748392153,
+        "panel seconds": 359.0,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.2171417665596402,
+            "held full context": 0.671585111032045,
+            "held no context": 1.9673689485613992,
+            "training AC": 0.8634122748392153
+          },
+          "27b": {
+            "held AC": 1.0456258477367872,
+            "held full context": 0.5320577415389603,
+            "held no context": 1.6288239308593992,
+            "training AC": 0.8634122748392153
+          }
+        }
+      },
+      {
+        "update": 250,
+        "percent": 50.0,
+        "held items": 400,
+        "AC answer NLL": 1.043477789584759,
+        "full answer NLL": 0.6101456228929429,
+        "no-context answer NLL": 1.8163145073671496,
+        "training answer NLL": 0.7231746263658241,
+        "panel seconds": 359.2,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.1267139312977967,
+            "held full context": 0.6853757833688904,
+            "held no context": 1.9878720555567684,
+            "training AC": 0.7231746263658241
+          },
+          "27b": {
+            "held AC": 0.9602416478717214,
+            "held full context": 0.5349154624169955,
+            "held no context": 1.6447569591775306,
+            "training AC": 0.7231746263658241
+          }
+        }
+      },
+      {
+        "update": 300,
+        "percent": 60.0,
+        "held items": 400,
+        "AC answer NLL": 0.9652911460001709,
+        "full answer NLL": 0.6244063044645889,
+        "no-context answer NLL": 1.821586294800182,
+        "training answer NLL": 0.7009824591258588,
+        "panel seconds": 359.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.056861871931851,
+            "held full context": 0.704939846722929,
+            "held no context": 1.993263957534445,
+            "training AC": 0.7009824591258588
+          },
+          "27b": {
+            "held AC": 0.8737204200684908,
+            "held full context": 0.5438727622062488,
+            "held no context": 1.6499086320659189,
+            "training AC": 0.7009824591258588
+          }
+        }
+      },
+      {
+        "update": 350,
+        "percent": 70.0,
+        "held items": 400,
+        "AC answer NLL": 0.9326220766426015,
+        "full answer NLL": 0.6169175812613062,
+        "no-context answer NLL": 1.8106040313852716,
+        "training answer NLL": 0.5970618351894574,
+        "panel seconds": 359.0,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.0116856134947438,
+            "held full context": 0.6910932616159521,
+            "held no context": 1.983057385297957,
+            "training AC": 0.5970618351894574
+          },
+          "27b": {
+            "held AC": 0.8535585397904594,
+            "held full context": 0.5427419009066603,
+            "held no context": 1.6381506774725865,
+            "training AC": 0.5970618351894574
+          }
+        }
+      },
+      {
+        "update": 400,
+        "percent": 80.0,
+        "held items": 400,
+        "AC answer NLL": 0.9246837905048474,
+        "full answer NLL": 0.5708413217998703,
+        "no-context answer NLL": 1.7796808209268367,
+        "training answer NLL": 0.5436383555077725,
+        "panel seconds": 359.2,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.9979335501629784,
+            "held full context": 0.6438942611688315,
+            "held no context": 1.9541425140161082,
+            "training AC": 0.5436383555077725
+          },
+          "27b": {
+            "held AC": 0.8514340308467166,
+            "held full context": 0.4977883824309091,
+            "held no context": 1.6052191278375652,
+            "training AC": 0.5436383555077725
+          }
+        }
+      },
+      {
+        "update": 450,
+        "percent": 90.0,
+        "held items": 400,
+        "AC answer NLL": 0.9128365989245394,
+        "full answer NLL": 0.5892691486553104,
+        "no-context answer NLL": 1.8045786495959575,
+        "training answer NLL": 0.5503824514267672,
+        "panel seconds": 359.8,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.9873879393513009,
+            "held full context": 0.6642754060973302,
+            "held no context": 1.9784616488870423,
+            "training AC": 0.5503824514267672
+          },
+          "27b": {
+            "held AC": 0.8382852584977779,
+            "held full context": 0.5142628912132908,
+            "held no context": 1.6306956503048726,
+            "training AC": 0.5503824514267672
+          }
+        }
+      },
+      {
+        "update": 500,
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.9164916510316956,
+        "full answer NLL": 0.5899494037727551,
+        "no-context answer NLL": 1.805666303379744,
+        "training answer NLL": 0.5528649640527552,
+        "panel seconds": 359.6,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.9947262432812726,
+            "held full context": 0.6657026144191173,
+            "held no context": 1.979990471422061,
+            "training AC": 0.5528649640527552
+          },
+          "27b": {
+            "held AC": 0.8382570587821188,
+            "held full context": 0.5141961931263929,
+            "held no context": 1.6313421353374267,
+            "training AC": 0.5528649640527552
+          }
+        }
+      }
+    ],
+    "merged_27b_4k_8k": [
+      {
+        "update": 0,
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 2.107899064166723,
+        "full answer NLL": 0.7738224639919301,
+        "no-context answer NLL": 1.7922518564882832,
+        "training answer NLL": 1.855949029192667,
+        "panel seconds": 335.4,
+        "cohorts": {
+          "9b": {
+            "held AC": 2.327706003745574,
+            "held full context": 0.849064411003227,
+            "held no context": 1.957150191697781,
+            "training AC": 1.855949029192667
+          },
+          "27b": {
+            "held AC": 1.8880921245878712,
+            "held full context": 0.6985805169806332,
+            "held no context": 1.627353521278786,
+            "training AC": 1.855949029192667
+          }
+        }
+      },
+      {
+        "update": 50,
+        "percent": 10.0,
+        "held items": 400,
+        "AC answer NLL": 1.3743303209467188,
+        "full answer NLL": 0.5468150432045052,
+        "no-context answer NLL": 1.7114696801801677,
+        "training answer NLL": 1.2449115805106654,
+        "panel seconds": 336.0,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.482616832089356,
+            "held full context": 0.6001946169319801,
+            "held no context": 1.8759815631568768,
+            "training AC": 1.2449115805106654
+          },
+          "27b": {
+            "held AC": 1.2660438098040816,
+            "held full context": 0.4934354694770303,
+            "held no context": 1.5469577972034583,
+            "training AC": 1.2449115805106654
+          }
+        }
+      },
+      {
+        "update": 100,
+        "percent": 20.0,
+        "held items": 400,
+        "AC answer NLL": 1.3688621296796464,
+        "full answer NLL": 0.6576638596511362,
+        "no-context answer NLL": 1.8734708757891076,
+        "training answer NLL": 1.1839701147806894,
+        "panel seconds": 336.1,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.50980497175895,
+            "held full context": 0.7332298325031396,
+            "held no context": 2.0463686225042617,
+            "training AC": 1.1839701147806894
+          },
+          "27b": {
+            "held AC": 1.2279192876003429,
+            "held full context": 0.5820978867991325,
+            "held no context": 1.7005731290739536,
+            "training AC": 1.1839701147806894
+          }
+        }
+      },
+      {
+        "update": 150,
+        "percent": 30.0,
+        "held items": 400,
+        "AC answer NLL": 1.3453509849409186,
+        "full answer NLL": 0.5743854488656628,
+        "no-context answer NLL": 1.7830132908235163,
+        "training answer NLL": 1.1162407101224496,
+        "panel seconds": 336.1,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.4614804193289275,
+            "held full context": 0.6431602709561601,
+            "held no context": 1.9527066025086108,
+            "training AC": 1.1162407101224496
+          },
+          "27b": {
+            "held AC": 1.2292215505529098,
+            "held full context": 0.5056106267751654,
+            "held no context": 1.6133199791384214,
+            "training AC": 1.1162407101224496
+          }
+        }
+      },
+      {
+        "update": 200,
+        "percent": 40.0,
+        "held items": 400,
+        "AC answer NLL": 1.3207464137648495,
+        "full answer NLL": 0.5892456681000353,
+        "no-context answer NLL": 1.7858232130407954,
+        "training answer NLL": 1.0919855540098178,
+        "panel seconds": 335.9,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.4421564950982093,
+            "held full context": 0.6612106105533309,
+            "held no context": 1.9512180100195615,
+            "training AC": 1.0919855540098178
+          },
+          "27b": {
+            "held AC": 1.1993363324314894,
+            "held full context": 0.5172807256467395,
+            "held no context": 1.6204284160620293,
+            "training AC": 1.0919855540098178
+          }
+        }
+      },
+      {
+        "update": 250,
+        "percent": 50.0,
+        "held items": 400,
+        "AC answer NLL": 1.319436166368365,
+        "full answer NLL": 0.5838843098348343,
+        "no-context answer NLL": 1.7979780725094328,
+        "training answer NLL": 1.0604314893489248,
+        "panel seconds": 354.2,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.4451222577290077,
+            "held full context": 0.660902744572776,
+            "held no context": 1.9682234503903897,
+            "training AC": 1.0604314893489248
+          },
+          "27b": {
+            "held AC": 1.1937500750077223,
+            "held full context": 0.5068658750968927,
+            "held no context": 1.6277326946284756,
+            "training AC": 1.0604314893489248
+          }
+        }
+      },
+      {
+        "update": 300,
+        "percent": 60.0,
+        "held items": 400,
+        "AC answer NLL": 1.317191094523213,
+        "full answer NLL": 0.6126206065985498,
+        "no-context answer NLL": 1.8105675151604759,
+        "training answer NLL": 1.039022218056684,
+        "panel seconds": 336.6,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.4490372149145239,
+            "held full context": 0.694820215555154,
+            "held no context": 1.980685004252124,
+            "training AC": 1.039022218056684
+          },
+          "27b": {
+            "held AC": 1.185344974131902,
+            "held full context": 0.5304209976419455,
+            "held no context": 1.6404500260688284,
+            "training AC": 1.039022218056684
+          }
+        }
+      },
+      {
+        "update": 350,
+        "percent": 70.0,
+        "held items": 400,
+        "AC answer NLL": 1.3152994555534872,
+        "full answer NLL": 0.599631312449488,
+        "no-context answer NLL": 1.8085192041303382,
+        "training answer NLL": 1.0207578834220152,
+        "panel seconds": 337.2,
+        "cohorts": {
+          "9b": {
+            "held AC": 1.438449569774961,
+            "held full context": 0.6747010135836939,
+            "held no context": 1.9768588430413674,
+            "training AC": 1.0207578834220152
+          },
+          "27b": {
+            "held AC": 1.192149341332013,
+            "held full context": 0.524561611315282,
+            "held no context": 1.6401795652193087,
+            "training AC": 1.0207578834220152
+          }
+        }
+      }
+    ]
+  },
+  "caveat": "One seed and repeatedly inspected development; final paired checkpoints and semantic/32k-transfer readouts pending.",
+  "final_training": {
+    "stop_reason": "complete",
+    "completed_global_updates": 500,
+    "planned_updates": 500,
+    "items": 4000,
+    "examples": 4000,
+    "dropped_too_long": 0,
+    "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/AC_MODELS/rag_poc/epoch_001",
+    "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/LORAS/rag_reader/epoch_001",
+    "duration_s": 18898.0,
+    "peak_memory_gb": 53.57,
+    "side_tokens": 32992635,
+    "unique_questions": 4000,
+    "epochs": 1,
+    "held_nll": 0.9164916510316956,
+    "training_seconds": 11318.68754662294,
+    "reporting_seconds": 6673.031813512091,
+    "baseline_seconds": 738.7591403629631,
+    "slurm_elapsed_seconds": 19125,
+    "slurm_state": "COMPLETED0:0",
+    "checked_utc": "2026-09-23T01:21:20.920344+00:00"
+  }
+}

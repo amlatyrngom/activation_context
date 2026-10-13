@@ -1,0 +1,10 @@
+{
+  "scope": "Observed same-question progress, not an isolated timing benchmark; separate RTX PRO nodes. elapsed_s is saved at checkpoint progress, before that panel completes.",
+  "questions_seen_once": 1600,
+  "piecewise_elapsed_s": 7670.042527938262,
+  "merged_elapsed_s": 5867.3370863390155,
+  "piecewise_epoch_elapsed_s": 6826.356682529207,
+  "merged_epoch_elapsed_s": 5092.351608966943,
+  "elapsed_ratio": 1.3072442259703307,
+  "status": "Implementation batching/cost analysis pending; active runs unchanged."
+}

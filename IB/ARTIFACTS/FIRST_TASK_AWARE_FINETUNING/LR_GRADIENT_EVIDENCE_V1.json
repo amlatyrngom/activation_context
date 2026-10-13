@@ -1,0 +1,2420 @@
+{
+  "scope": "Local final published trajectories only; no confirmation access or new experiments",
+  "metric_definitions": {
+    "training_ce": "Recorded changing-batch objective over retained assistant tokens (including answer wrapper); excludes separately added no-context penalty. Not answer-only NLL.",
+    "learning_answer_nll": "Mean per-question answer-token NLL on fixed32 training questions for that stage; panels differ across stages, same between the two10k arms.",
+    "held_answer_nll": "Mean per-question answer-token NLL on fixed400 development questions, same across stages.",
+    "gradient_norm": "Recorded joint AC+reader L2 norm before shared threshold1 clipping; gradient includes main objective and selected no-context penalty.",
+    "clip_fraction": "Computed fraction of finite recorded pre-clip norms exceeding configured max_grad_norm; not a separately logged clip-fraction metric.",
+    "group_share": "Optional derived squared-norm share from preclip group norms; not parameter movement, Adam update size or a causal attribution."
+  },
+  "runs": {
+    "oracle_27b_32k": {
+      "questions": 32000,
+      "parent_unique_questions": 0,
+      "epochs": 1,
+      "summary_scope": "whole run",
+      "combined_gradient_coverage_questions": [
+        8,
+        32000
+      ],
+      "group_gradient_coverage_questions": [
+        8,
+        32000
+      ],
+      "config": {
+        "learning_rate_ac": 5e-05,
+        "learning_rate_target_lora": 2e-05,
+        "warmup_updates": 50,
+        "lr_schedule": "cosine",
+        "lr_final_fraction": 0.1,
+        "max_grad_norm": 1.0,
+        "examples_per_update": 8,
+        "micro_batch_examples": 2,
+        "seed": 20260921
+      },
+      "gradients": {
+        "joint": {
+          "count": 4000,
+          "mean": 9.23323137435317,
+          "median": 6.856849193572998,
+          "p10": 3.6657859563827513,
+          "p90": 15.317252540588377,
+          "min": 1.7174737453460693,
+          "max": 468.8218078613281
+        },
+        "above_threshold": 4000,
+        "clip_fraction": 1.0,
+        "ac_median": 6.733170747756958,
+        "reader_median": 1.1619936227798462,
+        "median_ac_squared_share": 0.9709578624682563
+      },
+      "loss_bins": [
+        {
+          "stage_questions_start_exclusive": 0,
+          "stage_questions_end": 3200,
+          "lifetime_questions_end": 3200,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 6.134435788094997,
+            "median": 4.750484228134155,
+            "p10": 2.794139862060547,
+            "p90": 9.742323398590088,
+            "min": 1.735580563545227,
+            "max": 106.77181243896484
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.4052129906785922,
+            "median": 0.39557872130535543,
+            "p10": 0.2612795131281018,
+            "p90": 0.5569591959938407,
+            "min": 0.1656046537682414,
+            "max": 1.1458649560809135
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 5.780945778787136,
+              "median": 4.464823961257935,
+              "p10": 2.3957912445068357,
+              "p90": 9.50443677902222,
+              "min": 1.4188646078109741,
+              "max": 106.76470184326172
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.7357253050804138,
+              "median": 1.5346571803092957,
+              "p10": 1.204587996006012,
+              "p90": 2.206111001968384,
+              "min": 0.9111352562904358,
+              "max": 15.116802215576172
+            },
+            "median_ac_squared_share": 0.8841952265222653
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 3200,
+          "stage_questions_end": 6400,
+          "lifetime_questions_end": 6400,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 7.099018849730491,
+            "median": 5.546931743621826,
+            "p10": 3.30484037399292,
+            "p90": 11.348792934417725,
+            "min": 2.1437835693359375,
+            "max": 164.69656372070312
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.3330530134141918,
+            "median": 0.3163586154114455,
+            "p10": 0.2154290147198481,
+            "p90": 0.469958535116166,
+            "min": 0.10271277732681483,
+            "max": 0.6589798768982291
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 6.931972443461418,
+              "median": 5.365933895111084,
+              "p10": 3.0704449653625487,
+              "p90": 11.247347736358645,
+              "min": 1.8032872676849365,
+              "max": 164.69175720214844
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.3262647435069084,
+              "median": 1.296353280544281,
+              "p10": 1.0390276789665223,
+              "p90": 1.6045067667961121,
+              "min": 0.7235110402107239,
+              "max": 3.207526922225952
+            },
+            "median_ac_squared_share": 0.9440061891610502
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 6400,
+          "stage_questions_end": 9600,
+          "lifetime_questions_end": 9600,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 7.796026245951652,
+            "median": 6.44035792350769,
+            "p10": 3.4963672399520878,
+            "p90": 12.684363746643069,
+            "min": 1.9932894706726074,
+            "max": 74.87410736083984
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.34245585306739484,
+            "median": 0.3323477951998939,
+            "p10": 0.21735092669841835,
+            "p90": 0.481528645567596,
+            "min": 0.13453117047902197,
+            "max": 0.7774884551763535
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 7.657153468728065,
+              "median": 6.3106114864349365,
+              "p10": 3.2625825643539432,
+              "p90": 12.602863979339602,
+              "min": 1.75506591796875,
+              "max": 74.85956573486328
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.2661209513247014,
+              "median": 1.2304163575172424,
+              "p10": 0.9916474759578705,
+              "p90": 1.5273073315620422,
+              "min": 0.645760715007782,
+              "max": 2.846033811569214
+            },
+            "median_ac_squared_share": 0.961355459798873
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 9600,
+          "stage_questions_end": 12800,
+          "lifetime_questions_end": 12800,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 7.962825192809105,
+            "median": 6.42436671257019,
+            "p10": 3.6424892425537108,
+            "p90": 13.501145935058595,
+            "min": 2.116767406463623,
+            "max": 53.61481475830078
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.30725202446542427,
+            "median": 0.2999340651440434,
+            "p10": 0.19371450478211047,
+            "p90": 0.43460254714736946,
+            "min": 0.08716772065963596,
+            "max": 0.6281714923679829
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 7.843727333843708,
+              "median": 6.314267873764038,
+              "p10": 3.489315056800842,
+              "p90": 13.414092922210695,
+              "min": 1.9690569639205933,
+              "max": 53.58665084838867
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.2047648605704309,
+              "median": 1.176004946231842,
+              "p10": 0.9393680036067963,
+              "p90": 1.4633542299270632,
+              "min": 0.6682584285736084,
+              "max": 3.281484603881836
+            },
+            "median_ac_squared_share": 0.9641833138083733
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 12800,
+          "stage_questions_end": 16000,
+          "lifetime_questions_end": 16000,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 6.463589156866074,
+            "median": 5.62305212020874,
+            "p10": 3.48808798789978,
+            "p90": 10.270038986206057,
+            "min": 1.7174737453460693,
+            "max": 29.858802795410156
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.2897803744387238,
+            "median": 0.28328066715039313,
+            "p10": 0.18227490449789913,
+            "p90": 0.4147495798999444,
+            "min": 0.0874110528966412,
+            "max": 0.5763585809618235
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 6.331089912056923,
+              "median": 5.45300030708313,
+              "p10": 3.3051088094711303,
+              "p90": 10.19603910446167,
+              "min": 1.4984477758407593,
+              "max": 29.836503982543945
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.1803180141746998,
+              "median": 1.1532169580459595,
+              "p10": 0.9124615490436555,
+              "p90": 1.4574454188346864,
+              "min": 0.6626732349395752,
+              "max": 3.638509750366211
+            },
+            "median_ac_squared_share": 0.9583261282846182
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 16000,
+          "stage_questions_end": 19200,
+          "lifetime_questions_end": 19200,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 12.37685248732567,
+            "median": 8.140449047088623,
+            "p10": 4.647325754165649,
+            "p90": 20.015030479431175,
+            "min": 2.334364652633667,
+            "max": 468.8218078613281
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.2544965499248883,
+            "median": 0.24515610234811902,
+            "p10": 0.15504329381510615,
+            "p90": 0.3642309503629804,
+            "min": 0.08470757042232435,
+            "max": 0.5710420217365026
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 12.292536587119102,
+              "median": 8.041164875030518,
+              "p10": 4.5180895805358885,
+              "p90": 19.981851387023948,
+              "min": 2.147552967071533,
+              "max": 468.8208312988281
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.1329521870613097,
+              "median": 1.104754626750946,
+              "p10": 0.8532110452651978,
+              "p90": 1.4176639795303345,
+              "min": 0.6663161516189575,
+              "max": 2.7894303798675537
+            },
+            "median_ac_squared_share": 0.9812448366365591
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 19200,
+          "stage_questions_end": 22400,
+          "lifetime_questions_end": 22400,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 15.603513830900193,
+            "median": 9.94090747833252,
+            "p10": 5.045459413528443,
+            "p90": 26.714912033081063,
+            "min": 2.80299973487854,
+            "max": 293.87615966796875
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.24900235512063773,
+            "median": 0.24458307413442526,
+            "p10": 0.14437214017962105,
+            "p90": 0.3675341906899121,
+            "min": 0.05960716801928356,
+            "max": 0.5833576507866383
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 15.532507457733153,
+              "median": 9.882262706756592,
+              "p10": 4.927344799041748,
+              "p90": 26.681308174133314,
+              "min": 2.7133402824401855,
+              "max": 293.8743591308594
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.1365402373671531,
+              "median": 1.0732816457748413,
+              "p10": 0.8248685717582703,
+              "p90": 1.4586502909660342,
+              "min": 0.5769814252853394,
+              "max": 4.69911003112793
+            },
+            "median_ac_squared_share": 0.9872777470789602
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 22400,
+          "stage_questions_end": 25600,
+          "lifetime_questions_end": 25600,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 9.044268020987511,
+            "median": 7.39862322807312,
+            "p10": 4.282587099075318,
+            "p90": 14.68905019760132,
+            "min": 2.2631115913391113,
+            "max": 109.7509536743164
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.23842054495648882,
+            "median": 0.22963697160594165,
+            "p10": 0.14779971292009578,
+            "p90": 0.3366665232781088,
+            "min": 0.06606856832513586,
+            "max": 0.6516517205163836
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 8.942988017201424,
+              "median": 7.321933031082153,
+              "p10": 4.127628660202027,
+              "p90": 14.600780200958255,
+              "min": 2.0095789432525635,
+              "max": 109.74112701416016
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.1529720522463323,
+              "median": 1.0867372155189514,
+              "p10": 0.8713981330394746,
+              "p90": 1.4337828278541567,
+              "min": 0.5777603983879089,
+              "max": 5.048121929168701
+            },
+            "median_ac_squared_share": 0.9770177069695481
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 25600,
+          "stage_questions_end": 28800,
+          "lifetime_questions_end": 28800,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 8.872705468535424,
+            "median": 7.279280424118042,
+            "p10": 4.074955892562866,
+            "p90": 14.024331665039062,
+            "min": 2.2795417308807373,
+            "max": 122.06721496582031
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.2305096427563376,
+            "median": 0.2240802348824218,
+            "p10": 0.1297525985050015,
+            "p90": 0.3455151720903814,
+            "min": 0.04853922162146773,
+            "max": 0.4646032556775026
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 8.786061995625495,
+              "median": 7.203351020812988,
+              "p10": 3.984029841423035,
+              "p90": 13.901073360443117,
+              "min": 2.225285053253174,
+              "max": 122.06027221679688
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.0949581900238992,
+              "median": 1.0472492575645447,
+              "p10": 0.8327802956104279,
+              "p90": 1.3602845788002014,
+              "min": 0.49438536167144775,
+              "max": 3.2293179035186768
+            },
+            "median_ac_squared_share": 0.9780834111263115
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 28800,
+          "stage_questions_end": 32000,
+          "lifetime_questions_end": 32000,
+          "gradient_norm": {
+            "count": 400,
+            "mean": 10.97907870233059,
+            "median": 8.377695560455322,
+            "p10": 4.5430555820465095,
+            "p90": 19.00696792602539,
+            "min": 2.4353091716766357,
+            "max": 79.5184555053711
+          },
+          "above_clip_threshold": 400,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 400,
+            "mean": 0.2174079243686174,
+            "median": 0.21366977467550896,
+            "p10": 0.13029776694602332,
+            "p90": 0.3019244459574111,
+            "min": 0.05602475139312446,
+            "max": 0.5394104141741991
+          },
+          "group_norms": {
+            "recorded_batches": 400,
+            "ac": {
+              "count": 400,
+              "mean": 10.903449516892433,
+              "median": 8.305078983306885,
+              "p10": 4.433963918685913,
+              "p90": 18.98213424682617,
+              "min": 2.3175623416900635,
+              "max": 79.5050048828125
+            },
+            "reader": {
+              "count": 400,
+              "mean": 1.0735339825600385,
+              "median": 1.0367172360420227,
+              "p10": 0.8245882630348206,
+              "p90": 1.3257264375686648,
+              "min": 0.4748496115207672,
+              "max": 3.8962910175323486
+            },
+            "median_ac_squared_share": 0.9845829294803079
+          }
+        }
+      ],
+      "answer_nll_panels": [
+        {
+          "stage_unique_questions": 0,
+          "lifetime_unique_questions": 0,
+          "epoch": 1,
+          "held_answer_nll": 2.2530745156748404,
+          "learning_answer_nll": 1.935764598512917
+        },
+        {
+          "stage_unique_questions": 3200,
+          "lifetime_unique_questions": 3200,
+          "epoch": 1,
+          "held_answer_nll": 0.9212675393253724,
+          "learning_answer_nll": 0.8287635023387288
+        },
+        {
+          "stage_unique_questions": 6400,
+          "lifetime_unique_questions": 6400,
+          "epoch": 1,
+          "held_answer_nll": 0.8459827794735189,
+          "learning_answer_nll": 0.7931413485879767
+        },
+        {
+          "stage_unique_questions": 9600,
+          "lifetime_unique_questions": 9600,
+          "epoch": 1,
+          "held_answer_nll": 0.8143379057241589,
+          "learning_answer_nll": 0.7233687255117298
+        },
+        {
+          "stage_unique_questions": 12800,
+          "lifetime_unique_questions": 12800,
+          "epoch": 1,
+          "held_answer_nll": 0.7813217270381533,
+          "learning_answer_nll": 0.6663597829075906
+        },
+        {
+          "stage_unique_questions": 16000,
+          "lifetime_unique_questions": 16000,
+          "epoch": 1,
+          "held_answer_nll": 0.6622219538185565,
+          "learning_answer_nll": 0.5460401664176991
+        },
+        {
+          "stage_unique_questions": 19200,
+          "lifetime_unique_questions": 19200,
+          "epoch": 1,
+          "held_answer_nll": 0.6267671816714329,
+          "learning_answer_nll": 0.5147860636554107
+        },
+        {
+          "stage_unique_questions": 22400,
+          "lifetime_unique_questions": 22400,
+          "epoch": 1,
+          "held_answer_nll": 0.6059516784452935,
+          "learning_answer_nll": 0.4325706226264068
+        },
+        {
+          "stage_unique_questions": 25600,
+          "lifetime_unique_questions": 25600,
+          "epoch": 1,
+          "held_answer_nll": 0.5785534964841831,
+          "learning_answer_nll": 0.4255505442079028
+        },
+        {
+          "stage_unique_questions": 28800,
+          "lifetime_unique_questions": 28800,
+          "epoch": 1,
+          "held_answer_nll": 0.5580611337232597,
+          "learning_answer_nll": 0.4268150067687484
+        },
+        {
+          "stage_unique_questions": 32000,
+          "lifetime_unique_questions": 32000,
+          "epoch": 1,
+          "held_answer_nll": 0.5688311093481019,
+          "learning_answer_nll": 0.39718307142845216
+        }
+      ],
+      "input_hashes": {
+        "report_data.json": "bb5a8a1713e1ba0002988f1f7b764819de7a2ec76e5627777b86cfc842e9aefc",
+        "result.json": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+        "training_config.json": "630c858a80322fb8a87a5b96825b91b9eceb921e4bdbb16ba6706fded83afb26",
+        "panels.json": "196bc1979c304a7fde0621cbe3e9e81bee844ea9c703ec17ec0dfaeff534b16d",
+        "material_ids.json": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980"
+      },
+      "lr_first_last": {
+        "first": [
+          1.0000000000000002e-06,
+          4.0000000000000003e-07
+        ],
+        "last": [
+          5.000007116362358e-06,
+          2.000002846544943e-06
+        ]
+      },
+      "resume_caveat": null
+    },
+    "continue32k_10k_final_lr": {
+      "questions": 10000,
+      "parent_unique_questions": 32000,
+      "epochs": 1,
+      "summary_scope": "whole run",
+      "combined_gradient_coverage_questions": [
+        8,
+        10000
+      ],
+      "group_gradient_coverage_questions": [
+        8,
+        10000
+      ],
+      "config": {
+        "learning_rate_ac": 5e-06,
+        "learning_rate_target_lora": 2e-06,
+        "warmup_updates": 0,
+        "lr_schedule": "constant",
+        "lr_final_fraction": 1.0,
+        "max_grad_norm": 1.0,
+        "examples_per_update": 8,
+        "micro_batch_examples": 2,
+        "seed": 20260921
+      },
+      "gradients": {
+        "joint": {
+          "count": 1250,
+          "mean": 8.71399016828537,
+          "median": 7.270034074783325,
+          "p10": 4.075435972213745,
+          "p90": 14.940387439727788,
+          "min": 1.8214201927185059,
+          "max": 56.43623733520508
+        },
+        "above_threshold": 1250,
+        "clip_fraction": 1.0,
+        "ac_median": 7.185803174972534,
+        "reader_median": 1.0312392115592957,
+        "median_ac_squared_share": 0.9789062005363944
+      },
+      "loss_bins": [
+        {
+          "stage_questions_start_exclusive": 0,
+          "stage_questions_end": 1000,
+          "lifetime_questions_end": 33000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 10.098442687988282,
+            "median": 8.55801773071289,
+            "p10": 4.860055351257325,
+            "p90": 17.227621078491214,
+            "min": 2.3008108139038086,
+            "max": 35.5323371887207
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2294779941959714,
+            "median": 0.2189337690360844,
+            "p10": 0.13991571539081632,
+            "p90": 0.34426438594236974,
+            "min": 0.0660004302917514,
+            "max": 0.4479594735894352
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 10.02458706665039,
+              "median": 8.477596282958984,
+              "p10": 4.770068836212158,
+              "p90": 17.17342987060547,
+              "min": 2.156275749206543,
+              "max": 35.51354217529297
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0770147023200989,
+              "median": 1.0399787425994873,
+              "p10": 0.7966010928153991,
+              "p90": 1.3387563943862915,
+              "min": 0.5717995762825012,
+              "max": 2.797783613204956
+            },
+            "median_ac_squared_share": 0.982552971879678
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 1000,
+          "stage_questions_end": 2000,
+          "lifetime_questions_end": 34000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 10.235493223190307,
+            "median": 8.675999641418457,
+            "p10": 4.341355514526367,
+            "p90": 17.041287994384774,
+            "min": 2.285950183868408,
+            "max": 42.47336196899414
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.21712237692870257,
+            "median": 0.21012311230879277,
+            "p10": 0.12532599453697912,
+            "p90": 0.30471712104044857,
+            "min": 0.06933675787877291,
+            "max": 0.4148264741525054
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 10.158455472946168,
+              "median": 8.615861892700195,
+              "p10": 4.075069952011108,
+              "p90": 17.003409194946297,
+              "min": 2.164968490600586,
+              "max": 42.46270751953125
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0942236046791076,
+              "median": 1.0375611782073975,
+              "p10": 0.7723555326461793,
+              "p90": 1.4845093727111816,
+              "min": 0.5307468771934509,
+              "max": 2.778393030166626
+            },
+            "median_ac_squared_share": 0.9846821236304291
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 2000,
+          "stage_questions_end": 3000,
+          "lifetime_questions_end": 35000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.995560121536254,
+            "median": 7.125585556030273,
+            "p10": 4.779668140411377,
+            "p90": 13.588280677795415,
+            "min": 3.6137454509735107,
+            "max": 56.37272644042969
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.21503040337690618,
+            "median": 0.20712968241423368,
+            "p10": 0.1435617660084972,
+            "p90": 0.2927293389569968,
+            "min": 0.08713207789696753,
+            "max": 0.4812394715845585
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.910486087799072,
+              "median": 7.018921375274658,
+              "p10": 4.702950382232666,
+              "p90": 13.533495521545415,
+              "min": 3.470457077026367,
+              "max": 56.357749938964844
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0962032079696655,
+              "median": 1.0340662002563477,
+              "p10": 0.8335638761520385,
+              "p90": 1.3167654037475587,
+              "min": 0.6040305495262146,
+              "max": 4.095361232757568
+            },
+            "median_ac_squared_share": 0.9793920601681165
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 3000,
+          "stage_questions_end": 4000,
+          "lifetime_questions_end": 36000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.266904428482055,
+            "median": 7.3776092529296875,
+            "p10": 4.364274406433106,
+            "p90": 14.663171577453618,
+            "min": 2.7452752590179443,
+            "max": 29.05912971496582
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.21056863715010696,
+            "median": 0.20571421179920435,
+            "p10": 0.12085888010915369,
+            "p90": 0.293374059064081,
+            "min": 0.06328949681483209,
+            "max": 0.4479631124995649
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.182699340820312,
+              "median": 7.26361083984375,
+              "p10": 4.290672016143799,
+              "p90": 14.600865554809573,
+              "min": 2.6355857849121094,
+              "max": 29.036109924316406
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0664351091384887,
+              "median": 1.0194690227508545,
+              "p10": 0.7868685603141785,
+              "p90": 1.3517978906631472,
+              "min": 0.540593683719635,
+              "max": 2.133021831512451
+            },
+            "median_ac_squared_share": 0.9798154488863114
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 4000,
+          "stage_questions_end": 5000,
+          "lifetime_questions_end": 37000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.773239990234375,
+            "median": 6.939679145812988,
+            "p10": 3.4292318344116213,
+            "p90": 15.560466384887697,
+            "min": 2.322042226791382,
+            "max": 35.97270965576172
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.20560210579486737,
+            "median": 0.20418859261553735,
+            "p10": 0.11454156709369273,
+            "p90": 0.3030567342415452,
+            "min": 0.0665136827446986,
+            "max": 0.402078396640718
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.677174934387207,
+              "median": 6.881609916687012,
+              "p10": 3.3005517959594726,
+              "p90": 15.50573444366455,
+              "min": 2.2259039878845215,
+              "max": 35.93394470214844
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0923766045570373,
+              "median": 1.043412685394287,
+              "p10": 0.7759254097938537,
+              "p90": 1.365789842605591,
+              "min": 0.5195452570915222,
+              "max": 4.774783134460449
+            },
+            "median_ac_squared_share": 0.9783002205800905
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 5000,
+          "stage_questions_end": 6000,
+          "lifetime_questions_end": 38000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.413918898582459,
+            "median": 7.335351467132568,
+            "p10": 3.8156059741973882,
+            "p90": 13.220597457885745,
+            "min": 1.8948568105697632,
+            "max": 31.083267211914062
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.20762699197244364,
+            "median": 0.2025662325322628,
+            "p10": 0.12902521891519428,
+            "p90": 0.3032487079850398,
+            "min": 0.07413533028739039,
+            "max": 0.4214847171679139
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.321758922576905,
+              "median": 7.242786407470703,
+              "p10": 3.6488101959228514,
+              "p90": 13.15826396942139,
+              "min": 1.7876269817352295,
+              "max": 31.052183151245117
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.110293194770813,
+              "median": 0.9974990487098694,
+              "p10": 0.7944422483444213,
+              "p90": 1.4070364236831667,
+              "min": 0.6283886432647705,
+              "max": 5.35759973526001
+            },
+            "median_ac_squared_share": 0.980257678833793
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 6000,
+          "stage_questions_end": 7000,
+          "lifetime_questions_end": 39000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.350294818878174,
+            "median": 6.794246673583984,
+            "p10": 4.121150493621826,
+            "p90": 12.632300567626956,
+            "min": 2.4240686893463135,
+            "max": 56.43623733520508
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2020214052017036,
+            "median": 0.19160320376977324,
+            "p10": 0.12319560333562549,
+            "p90": 0.2835559661267325,
+            "min": 0.07548104191664606,
+            "max": 0.3520203554071486
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.259102998733521,
+              "median": 6.6923675537109375,
+              "p10": 4.02600326538086,
+              "p90": 12.582966804504398,
+              "min": 2.3422977924346924,
+              "max": 56.426456451416016
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.085694821357727,
+              "median": 1.0388802289962769,
+              "p10": 0.8380926251411438,
+              "p90": 1.424463224411011,
+              "min": 0.6243003010749817,
+              "max": 3.552460193634033
+            },
+            "median_ac_squared_share": 0.9761856568123151
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 7000,
+          "stage_questions_end": 8000,
+          "lifetime_questions_end": 40000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.410997415542603,
+            "median": 6.993101596832275,
+            "p10": 4.238200378417969,
+            "p90": 14.491150283813479,
+            "min": 1.8214201927185059,
+            "max": 31.18674659729004
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.19992555229864956,
+            "median": 0.19536044646520168,
+            "p10": 0.12083769432501867,
+            "p90": 0.28637037100270396,
+            "min": 0.04447357455501333,
+            "max": 0.486350511549972
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.324539427757264,
+              "median": 6.928707122802734,
+              "p10": 4.118000888824463,
+              "p90": 14.451267814636232,
+              "min": 1.7055729627609253,
+              "max": 31.16655731201172
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0701125984191895,
+              "median": 1.0333549976348877,
+              "p10": 0.8084018111228943,
+              "p90": 1.3231662273406983,
+              "min": 0.592697262763977,
+              "max": 2.817979097366333
+            },
+            "median_ac_squared_share": 0.9776692981800655
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 8000,
+          "stage_questions_end": 9000,
+          "lifetime_questions_end": 41000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.09035884666443,
+            "median": 6.739515781402588,
+            "p10": 3.709175205230713,
+            "p90": 14.901617050170902,
+            "min": 2.2229976654052734,
+            "max": 30.26988410949707
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.20464818747580285,
+            "median": 0.19302465324290097,
+            "p10": 0.11589588826464023,
+            "p90": 0.3037807853892446,
+            "min": 0.06768694933271036,
+            "max": 0.446181726641953
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.002056063652038,
+              "median": 6.675764083862305,
+              "p10": 3.598451328277588,
+              "p90": 14.850943946838381,
+              "min": 1.9773062467575073,
+              "max": 30.25313377380371
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0789450674057006,
+              "median": 1.0158635377883911,
+              "p10": 0.8120539426803588,
+              "p90": 1.353897023200989,
+              "min": 0.5962678790092468,
+              "max": 2.9541351795196533
+            },
+            "median_ac_squared_share": 0.9754833194863792
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 9000,
+          "stage_questions_end": 10000,
+          "lifetime_questions_end": 42000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 7.50469125175476,
+            "median": 6.207868576049805,
+            "p10": 3.919650506973267,
+            "p90": 12.631209564208984,
+            "min": 2.1748554706573486,
+            "max": 33.59173583984375
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.20711571053358785,
+            "median": 0.20302060572430491,
+            "p10": 0.11635468296371983,
+            "p90": 0.30727909281849863,
+            "min": 0.060783903834817465,
+            "max": 0.4990234016440809
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 7.411586444854736,
+              "median": 6.13178014755249,
+              "p10": 3.8182225704193113,
+              "p90": 12.58015842437744,
+              "min": 1.8194067478179932,
+              "max": 33.57514572143555
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0738280243873597,
+              "median": 1.0253925323486328,
+              "p10": 0.7783451676368713,
+              "p90": 1.3409218788146973,
+              "min": 0.6843907833099365,
+              "max": 2.7747182846069336
+            },
+            "median_ac_squared_share": 0.9750460091667137
+          }
+        }
+      ],
+      "answer_nll_panels": [
+        {
+          "stage_unique_questions": 0,
+          "lifetime_unique_questions": 32000,
+          "epoch": 1,
+          "held_answer_nll": 0.5688311093481019,
+          "learning_answer_nll": 0.5969980733501056
+        },
+        {
+          "stage_unique_questions": 1000,
+          "lifetime_unique_questions": 33000,
+          "epoch": 1,
+          "held_answer_nll": 0.5520449480896175,
+          "learning_answer_nll": 0.5999907185038574
+        },
+        {
+          "stage_unique_questions": 2000,
+          "lifetime_unique_questions": 34000,
+          "epoch": 1,
+          "held_answer_nll": 0.5385113881084953,
+          "learning_answer_nll": 0.5891557622912101
+        },
+        {
+          "stage_unique_questions": 3000,
+          "lifetime_unique_questions": 35000,
+          "epoch": 1,
+          "held_answer_nll": 0.5509218995429329,
+          "learning_answer_nll": 0.5858858981036243
+        },
+        {
+          "stage_unique_questions": 4000,
+          "lifetime_unique_questions": 36000,
+          "epoch": 1,
+          "held_answer_nll": 0.5366679392261626,
+          "learning_answer_nll": 0.5521124323527673
+        },
+        {
+          "stage_unique_questions": 5000,
+          "lifetime_unique_questions": 37000,
+          "epoch": 1,
+          "held_answer_nll": 0.5321386721832682,
+          "learning_answer_nll": 0.4984893748090447
+        },
+        {
+          "stage_unique_questions": 6000,
+          "lifetime_unique_questions": 38000,
+          "epoch": 1,
+          "held_answer_nll": 0.5424231266554322,
+          "learning_answer_nll": 0.48813014049999487
+        },
+        {
+          "stage_unique_questions": 7000,
+          "lifetime_unique_questions": 39000,
+          "epoch": 1,
+          "held_answer_nll": 0.5302032667946078,
+          "learning_answer_nll": 0.47698198665801894
+        },
+        {
+          "stage_unique_questions": 8000,
+          "lifetime_unique_questions": 40000,
+          "epoch": 1,
+          "held_answer_nll": 0.5290024530748654,
+          "learning_answer_nll": 0.48206344037337645
+        },
+        {
+          "stage_unique_questions": 9000,
+          "lifetime_unique_questions": 41000,
+          "epoch": 1,
+          "held_answer_nll": 0.5290286395108617,
+          "learning_answer_nll": 0.4694212580276456
+        },
+        {
+          "stage_unique_questions": 10000,
+          "lifetime_unique_questions": 42000,
+          "epoch": 1,
+          "held_answer_nll": 0.5326864100103368,
+          "learning_answer_nll": 0.5186346885452096
+        }
+      ],
+      "input_hashes": {
+        "report_data.json": "91eb2c45090475dab0bac9607d1ee5ca58fd29db4c5708a70b779c7ac5a72413",
+        "result.json": "a7fa5afce4160cb5e3ff15eb3611fc58655f4d51dd915925368a9dee3c52ab77",
+        "training_config.json": "22474d21b581ceb2a53a0e76c8184222dd1c562a2c7bcabb076b8e47ab57e98a",
+        "panels.json": "bc5c7c4b84502aed29d2c4791d6d5c76519895bfe41d11073ee7666feaef8165",
+        "material_ids.json": "065230210b8b0f2ffb6231dcb115b77c60453b4fd15a14d795c26d1f43454668"
+      },
+      "lr_first_last": {
+        "first": [
+          5e-06,
+          2e-06
+        ],
+        "last": [
+          5e-06,
+          2e-06
+        ]
+      },
+      "resume_caveat": null
+    },
+    "continue32k_10k_rewarm": {
+      "questions": 10000,
+      "parent_unique_questions": 32000,
+      "epochs": 1,
+      "summary_scope": "latest resume attempt",
+      "combined_gradient_coverage_questions": [
+        8,
+        10000
+      ],
+      "group_gradient_coverage_questions": [
+        2008,
+        10000
+      ],
+      "config": {
+        "learning_rate_ac": 2e-05,
+        "learning_rate_target_lora": 8e-06,
+        "warmup_updates": 50,
+        "lr_schedule": "cosine",
+        "lr_final_fraction": 0.25,
+        "max_grad_norm": 1.0,
+        "examples_per_update": 8,
+        "micro_batch_examples": 2,
+        "seed": 20260921
+      },
+      "gradients": {
+        "joint": {
+          "count": 1250,
+          "mean": 8.25232026643753,
+          "median": 7.085558891296387,
+          "p10": 4.061136150360108,
+          "p90": 13.412227058410647,
+          "min": 1.6053450107574463,
+          "max": 41.79085159301758
+        },
+        "above_threshold": 1250,
+        "clip_fraction": 1.0,
+        "ac_median": 6.79347562789917,
+        "reader_median": 1.04652339220047,
+        "median_ac_squared_share": 0.9757153674661887
+      },
+      "loss_bins": [
+        {
+          "stage_questions_start_exclusive": 0,
+          "stage_questions_end": 1000,
+          "lifetime_questions_end": 33000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 10.428387851715089,
+            "median": 8.555380821228027,
+            "p10": 4.9340057373046875,
+            "p90": 19.2405502319336,
+            "min": 3.2397637367248535,
+            "max": 41.79085159301758
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.23313793788140175,
+            "median": 0.22814569622278214,
+            "p10": 0.14176224473048935,
+            "p90": 0.33731811787001786,
+            "min": 0.06642017053673044,
+            "max": 0.4663811279460788
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 1000,
+          "stage_questions_end": 2000,
+          "lifetime_questions_end": 34000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.368099744796753,
+            "median": 7.240647315979004,
+            "p10": 4.09092435836792,
+            "p90": 13.211429595947271,
+            "min": 2.2238006591796875,
+            "max": 39.901275634765625
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.23092063740902813,
+            "median": 0.23269221661030315,
+            "p10": 0.14823403546470218,
+            "p90": 0.3095953416079283,
+            "min": 0.0726818151306361,
+            "max": 0.4141346672549844
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 2000,
+          "stage_questions_end": 3000,
+          "lifetime_questions_end": 35000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 9.21295867729187,
+            "median": 7.964540004730225,
+            "p10": 5.202889728546143,
+            "p90": 15.205641365051275,
+            "min": 3.2765305042266846,
+            "max": 29.147785186767578
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2303571868944855,
+            "median": 0.22128431033343077,
+            "p10": 0.15504460739903153,
+            "p90": 0.31266529411077504,
+            "min": 0.1105512126814574,
+            "max": 0.4949490090366453
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 9.122922313690186,
+              "median": 7.904029369354248,
+              "p10": 4.933461284637451,
+              "p90": 15.138765525817877,
+              "min": 3.1771960258483887,
+              "max": 29.11304473876953
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.1333111624717713,
+              "median": 1.0439554452896118,
+              "p10": 0.8940031409263611,
+              "p90": 1.3819045305252078,
+              "min": 0.6122279167175293,
+              "max": 4.059017658233643
+            },
+            "median_ac_squared_share": 0.9823625356319307
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 3000,
+          "stage_questions_end": 4000,
+          "lifetime_questions_end": 36000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.406497844696045,
+            "median": 7.192916393280029,
+            "p10": 4.4239599227905275,
+            "p90": 13.255327987670903,
+            "min": 2.5354361534118652,
+            "max": 37.999290466308594
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.22709152877307498,
+            "median": 0.22343000676482916,
+            "p10": 0.13425928516080604,
+            "p90": 0.30966663584113124,
+            "min": 0.059422555612400174,
+            "max": 0.39343095861840993
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.314449121475219,
+              "median": 7.117701530456543,
+              "p10": 4.258023834228515,
+              "p90": 13.188465118408207,
+              "min": 2.4683310985565186,
+              "max": 37.98183822631836
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.1194480266571045,
+              "median": 1.0857433080673218,
+              "p10": 0.8567331910133362,
+              "p90": 1.4398404121398927,
+              "min": 0.5794642567634583,
+              "max": 2.172346353530884
+            },
+            "median_ac_squared_share": 0.9787622473358525
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 4000,
+          "stage_questions_end": 5000,
+          "lifetime_questions_end": 37000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 7.607562055587769,
+            "median": 6.3474249839782715,
+            "p10": 3.7239769458770753,
+            "p90": 11.971346473693853,
+            "min": 2.5898685455322266,
+            "max": 41.662109375
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2250257023920858,
+            "median": 0.21579064595425734,
+            "p10": 0.12559982646198478,
+            "p90": 0.32999116892460734,
+            "min": 0.07992775901220739,
+            "max": 0.49879634054377675
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 7.491911745071411,
+              "median": 6.252742767333984,
+              "p10": 3.578071355819702,
+              "p90": 11.906820297241214,
+              "min": 2.4064900875091553,
+              "max": 41.64033126831055
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.1451482334136962,
+              "median": 1.0837993621826172,
+              "p10": 0.8384494423866273,
+              "p90": 1.4652040958404542,
+              "min": 0.662767767906189,
+              "max": 4.545583724975586
+            },
+            "median_ac_squared_share": 0.9697914787113986
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 5000,
+          "stage_questions_end": 6000,
+          "lifetime_questions_end": 38000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 6.9759383869171145,
+            "median": 6.220004081726074,
+            "p10": 3.4422307968139645,
+            "p90": 11.39239044189453,
+            "min": 2.226048469543457,
+            "max": 19.413345336914062
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.22192581578323733,
+            "median": 0.21373227299773134,
+            "p10": 0.13540523676201702,
+            "p90": 0.32166382898576557,
+            "min": 0.08298463965911651,
+            "max": 0.42389880027621984
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 6.842750904083252,
+              "median": 6.086927890777588,
+              "p10": 3.3424937248229982,
+              "p90": 11.004750442504887,
+              "min": 2.04408860206604,
+              "max": 19.364961624145508
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.1734975628852844,
+              "median": 1.074806809425354,
+              "p10": 0.8371252179145813,
+              "p90": 1.4473518848419191,
+              "min": 0.6780264973640442,
+              "max": 7.692816734313965
+            },
+            "median_ac_squared_share": 0.9693561273082959
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 6000,
+          "stage_questions_end": 7000,
+          "lifetime_questions_end": 39000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 7.603087552070618,
+            "median": 6.848064422607422,
+            "p10": 4.038601589202881,
+            "p90": 11.793151092529296,
+            "min": 1.7727082967758179,
+            "max": 25.712482452392578
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2103135072221121,
+            "median": 0.20463684434071183,
+            "p10": 0.13258308138465508,
+            "p90": 0.3115031159948558,
+            "min": 0.08035663850023411,
+            "max": 0.3999450821429491
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 7.503757398605346,
+              "median": 6.764399528503418,
+              "p10": 3.949007987976074,
+              "p90": 11.746198081970213,
+              "min": 1.620089054107666,
+              "max": 25.69753074645996
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.085892644405365,
+              "median": 1.0696572065353394,
+              "p10": 0.8373732566833496,
+              "p90": 1.3331335067749026,
+              "min": 0.5620023012161255,
+              "max": 3.305460214614868
+            },
+            "median_ac_squared_share": 0.9750286525933305
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 7000,
+          "stage_questions_end": 8000,
+          "lifetime_questions_end": 40000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 7.531263080596924,
+            "median": 6.410203456878662,
+            "p10": 3.9392202377319334,
+            "p90": 12.72362823486328,
+            "min": 1.6053450107574463,
+            "max": 30.96261978149414
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.2075191806248913,
+            "median": 0.19579869648441672,
+            "p10": 0.12849442106089554,
+            "p90": 0.30349164297804243,
+            "min": 0.04852545098401606,
+            "max": 0.5381090687587857
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 7.434253546714783,
+              "median": 6.344103813171387,
+              "p10": 3.8082275390625,
+              "p90": 12.642798805236817,
+              "min": 1.5062886476516724,
+              "max": 30.94583511352539
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0906424617767334,
+              "median": 1.0284523963928223,
+              "p10": 0.7698696970939636,
+              "p90": 1.384506344795227,
+              "min": 0.555182158946991,
+              "max": 4.264644622802734
+            },
+            "median_ac_squared_share": 0.9717629651388155
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 8000,
+          "stage_questions_end": 9000,
+          "lifetime_questions_end": 41000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 7.7884538497924805,
+            "median": 6.202642917633057,
+            "p10": 4.004108285903931,
+            "p90": 11.565365982055667,
+            "min": 1.9971418380737305,
+            "max": 35.01538848876953
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.21006694971921389,
+            "median": 0.20201864610862685,
+            "p10": 0.10789113248101785,
+            "p90": 0.30930388772394507,
+            "min": 0.06377242930466309,
+            "max": 0.40137767046689987
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 7.7024107809066775,
+              "median": 6.065881729125977,
+              "p10": 3.8911824226379395,
+              "p90": 11.52284030914307,
+              "min": 1.9294534921646118,
+              "max": 34.987178802490234
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0505736107826233,
+              "median": 1.026892066001892,
+              "p10": 0.7970506310462951,
+              "p90": 1.2740204334259033,
+              "min": 0.5155430436134338,
+              "max": 1.9840388298034668
+            },
+            "median_ac_squared_share": 0.9740081636289519
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 9000,
+          "stage_questions_end": 10000,
+          "lifetime_questions_end": 42000,
+          "gradient_norm": {
+            "count": 125,
+            "mean": 8.600953620910644,
+            "median": 7.392226219177246,
+            "p10": 4.175567150115967,
+            "p90": 12.618185043334966,
+            "min": 2.35977840423584,
+            "max": 36.14469528198242
+          },
+          "above_clip_threshold": 125,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 125,
+            "mean": 0.20867304886570492,
+            "median": 0.20673282258212566,
+            "p10": 0.11729349588276818,
+            "p90": 0.30654063585097907,
+            "min": 0.06684668074012734,
+            "max": 0.5640922710299492
+          },
+          "group_norms": {
+            "recorded_batches": 125,
+            "ac": {
+              "count": 125,
+              "mean": 8.512399005889893,
+              "median": 7.246858596801758,
+              "p10": 4.056928491592407,
+              "p90": 12.55936889648438,
+              "min": 2.270594835281372,
+              "max": 36.13332748413086
+            },
+            "reader": {
+              "count": 125,
+              "mean": 1.0862239618301393,
+              "median": 1.0311877727508545,
+              "p10": 0.783789074420929,
+              "p90": 1.4065166950225831,
+              "min": 0.6426149010658264,
+              "max": 3.5786783695220947
+            },
+            "median_ac_squared_share": 0.9785880566518396
+          }
+        }
+      ],
+      "answer_nll_panels": [
+        {
+          "stage_unique_questions": 0,
+          "lifetime_unique_questions": 32000,
+          "epoch": 1,
+          "held_answer_nll": 0.5688311093481019,
+          "learning_answer_nll": 0.5969980733501056
+        },
+        {
+          "stage_unique_questions": 1000,
+          "lifetime_unique_questions": 33000,
+          "epoch": 1,
+          "held_answer_nll": 0.5598477909625239,
+          "learning_answer_nll": 0.6217367695916732
+        },
+        {
+          "stage_unique_questions": 2000,
+          "lifetime_unique_questions": 34000,
+          "epoch": 1,
+          "held_answer_nll": 0.5724811950084964,
+          "learning_answer_nll": 0.5962298409684812
+        },
+        {
+          "stage_unique_questions": 3000,
+          "lifetime_unique_questions": 35000,
+          "epoch": 1,
+          "held_answer_nll": 0.5726085440154652,
+          "learning_answer_nll": 0.6485688874523969
+        },
+        {
+          "stage_unique_questions": 4000,
+          "lifetime_unique_questions": 36000,
+          "epoch": 1,
+          "held_answer_nll": 0.568429536374284,
+          "learning_answer_nll": 0.6190480047495844
+        },
+        {
+          "stage_unique_questions": 5000,
+          "lifetime_unique_questions": 37000,
+          "epoch": 1,
+          "held_answer_nll": 0.5608494945985515,
+          "learning_answer_nll": 0.563841601545861
+        },
+        {
+          "stage_unique_questions": 6000,
+          "lifetime_unique_questions": 38000,
+          "epoch": 1,
+          "held_answer_nll": 0.557342944582367,
+          "learning_answer_nll": 0.5212712088856065
+        },
+        {
+          "stage_unique_questions": 7000,
+          "lifetime_unique_questions": 39000,
+          "epoch": 1,
+          "held_answer_nll": 0.546460483105611,
+          "learning_answer_nll": 0.4823415906992051
+        },
+        {
+          "stage_unique_questions": 8000,
+          "lifetime_unique_questions": 40000,
+          "epoch": 1,
+          "held_answer_nll": 0.5335584129898642,
+          "learning_answer_nll": 0.4458608470228302
+        },
+        {
+          "stage_unique_questions": 9000,
+          "lifetime_unique_questions": 41000,
+          "epoch": 1,
+          "held_answer_nll": 0.5394980468424458,
+          "learning_answer_nll": 0.47828485334905724
+        },
+        {
+          "stage_unique_questions": 10000,
+          "lifetime_unique_questions": 42000,
+          "epoch": 1,
+          "held_answer_nll": 0.5248436237374497,
+          "learning_answer_nll": 0.44071761649462693
+        }
+      ],
+      "input_hashes": {
+        "report_data.json": "8530a683ce24ee898e8ea7ff0619628fdfa1194a9901a954da94f48ea58e6aa6",
+        "result.json": "23cdf57111943a7a559a34af749cb9774d3e3300335b5b56de0c600f1cefb09e",
+        "training_config.json": "d4a82589fa04569cf089b4e4d6ba3e813e5d8eec4587c8ddf38b7e3e7b22d527",
+        "panels.json": "b19e11eea1b77c9ccbadf39fa7c7fa5ab8978d64766360740cd03ca1f6d4a469",
+        "material_ids.json": "065230210b8b0f2ffb6231dcb115b77c60453b4fd15a14d795c26d1f43454668"
+      },
+      "lr_first_last": {
+        "first": [
+          1.8995190528383293e-05,
+          7.598076211353316e-06
+        ],
+        "last": [
+          5.000025702080115e-06,
+          2.0000102808320455e-06
+        ]
+      },
+      "resume_caveat": "Latest published report combines retained checkpoint prefix with resumed suffix; duplicate question coordinates would be resolved to last occurrence. Discarded work excluded. Separate group traces only latest attempt."
+    },
+    "continue42k_8k_final_lr_floor": {
+      "questions": 8000,
+      "parent_unique_questions": 42000,
+      "epochs": 1,
+      "summary_scope": "whole run",
+      "combined_gradient_coverage_questions": [
+        8,
+        8000
+      ],
+      "group_gradient_coverage_questions": [
+        8,
+        8000
+      ],
+      "config": {
+        "learning_rate_ac": 5e-06,
+        "learning_rate_target_lora": 2e-06,
+        "warmup_updates": 0,
+        "lr_schedule": "constant",
+        "lr_final_fraction": 1.0,
+        "max_grad_norm": 1.0,
+        "examples_per_update": 8,
+        "micro_batch_examples": 2,
+        "seed": 20260921
+      },
+      "gradients": {
+        "joint": {
+          "count": 1000,
+          "mean": 9.096166880607605,
+          "median": 7.650691032409668,
+          "p10": 4.319085025787353,
+          "p90": 14.657338237762453,
+          "min": 1.95749831199646,
+          "max": 106.71224975585938
+        },
+        "above_threshold": 1000,
+        "clip_fraction": 1.0,
+        "ac_median": 7.559857130050659,
+        "reader_median": 1.0326229929924011,
+        "median_ac_squared_share": 0.9818511269888633
+      },
+      "loss_bins": [
+        {
+          "stage_questions_start_exclusive": 0,
+          "stage_questions_end": 800,
+          "lifetime_questions_end": 42800,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.857216019630432,
+            "median": 7.122113466262817,
+            "p10": 3.6809982299804687,
+            "p90": 11.090956020355225,
+            "min": 2.1668012142181396,
+            "max": 106.71224975585938
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.2114009806699687,
+            "median": 0.20830086524074432,
+            "p10": 0.12465489129535855,
+            "p90": 0.30249685463495557,
+            "min": 0.07735999237775104,
+            "max": 0.4468210004270077
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.754624135494232,
+              "median": 7.052757740020752,
+              "p10": 3.5774935960769656,
+              "p90": 11.037001991271973,
+              "min": 2.046762228012085,
+              "max": 106.70828247070312
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0872406554222107,
+              "median": 1.0169824361801147,
+              "p10": 0.7783853888511657,
+              "p90": 1.3469918489456179,
+              "min": 0.595867931842804,
+              "max": 4.144959449768066
+            },
+            "median_ac_squared_share": 0.9786552067265439
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 800,
+          "stage_questions_end": 1600,
+          "lifetime_questions_end": 43600,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.563256959915162,
+            "median": 7.054499626159668,
+            "p10": 3.944961094856262,
+            "p90": 14.480581474304214,
+            "min": 2.086481809616089,
+            "max": 30.23483657836914
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.20757391123859634,
+            "median": 0.20304529776331037,
+            "p10": 0.10746950568136526,
+            "p90": 0.3101675127254566,
+            "min": 0.057528399309376255,
+            "max": 0.44085606606677175
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.453070323467255,
+              "median": 6.970276832580566,
+              "p10": 3.8695590496063237,
+              "p90": 14.115940380096454,
+              "min": 1.9555280208587646,
+              "max": 30.213401794433594
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.1650506204366684,
+              "median": 1.0741369128227234,
+              "p10": 0.7554217219352722,
+              "p90": 1.438701665401459,
+              "min": 0.5108347535133362,
+              "max": 6.74769926071167
+            },
+            "median_ac_squared_share": 0.9777118885542191
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 1600,
+          "stage_questions_end": 2400,
+          "lifetime_questions_end": 44400,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.983860750198364,
+            "median": 8.067308902740479,
+            "p10": 4.675555324554443,
+            "p90": 13.953749561309817,
+            "min": 2.102022647857666,
+            "max": 43.64463806152344
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.2133348074705282,
+            "median": 0.22121535999758635,
+            "p10": 0.1295665480851312,
+            "p90": 0.28827112659346316,
+            "min": 0.06385179836070165,
+            "max": 0.3771006455644965
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.904537087678909,
+              "median": 7.9146411418914795,
+              "p10": 4.566002225875855,
+              "p90": 13.902957725524905,
+              "min": 1.8989876508712769,
+              "max": 43.625030517578125
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.06676378428936,
+              "median": 1.0426787734031677,
+              "p10": 0.8312333285808563,
+              "p90": 1.3085715770721436,
+              "min": 0.6224204301834106,
+              "max": 2.1968374252319336
+            },
+            "median_ac_squared_share": 0.9826152365983978
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 2400,
+          "stage_questions_end": 3200,
+          "lifetime_questions_end": 45200,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 9.27485791683197,
+            "median": 8.052992343902588,
+            "p10": 4.550548839569092,
+            "p90": 15.055474185943607,
+            "min": 2.4708540439605713,
+            "max": 31.206090927124023
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.2090435461392917,
+            "median": 0.20796009022160433,
+            "p10": 0.1360532704886282,
+            "p90": 0.29579592726076953,
+            "min": 0.07600848458241671,
+            "max": 0.41087899822741747
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 9.190175478458405,
+              "median": 7.9728357791900635,
+              "p10": 4.458677959442138,
+              "p90": 15.022772502899175,
+              "min": 2.339306592941284,
+              "max": 31.18341827392578
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0880332136154174,
+              "median": 1.0280483961105347,
+              "p10": 0.7931739330291748,
+              "p90": 1.330133390426636,
+              "min": 0.6748194694519043,
+              "max": 4.207154750823975
+            },
+            "median_ac_squared_share": 0.9828501644893329
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 3200,
+          "stage_questions_end": 4000,
+          "lifetime_questions_end": 46000,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.489129037857056,
+            "median": 7.075918674468994,
+            "p10": 4.227908134460449,
+            "p90": 14.989695835113528,
+            "min": 2.1049511432647705,
+            "max": 24.508628845214844
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.2041816755758191,
+            "median": 0.20230115833692253,
+            "p10": 0.11097428321227198,
+            "p90": 0.29667669958435,
+            "min": 0.0614754376874771,
+            "max": 0.5239167092368007
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.394008264541625,
+              "median": 7.014625310897827,
+              "p10": 4.149914216995239,
+              "p90": 14.963130092620853,
+              "min": 1.9918866157531738,
+              "max": 24.47272491455078
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0907385075092315,
+              "median": 1.0320048928260803,
+              "p10": 0.7401949763298035,
+              "p90": 1.3025218486785892,
+              "min": 0.5743579268455505,
+              "max": 4.426295757293701
+            },
+            "median_ac_squared_share": 0.9813950874629861
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 4000,
+          "stage_questions_end": 4800,
+          "lifetime_questions_end": 46800,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.488760747909545,
+            "median": 7.489754915237427,
+            "p10": 4.842255592346191,
+            "p90": 13.147677898406986,
+            "min": 2.7649362087249756,
+            "max": 26.71156883239746
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.20839756033106824,
+            "median": 0.20813119527883828,
+            "p10": 0.11974372903932817,
+            "p90": 0.29842271017842,
+            "min": 0.06987609365023673,
+            "max": 0.3871865086257458
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.41013197183609,
+              "median": 7.388880968093872,
+              "p10": 4.752425003051758,
+              "p90": 13.095027637481692,
+              "min": 2.6811981201171875,
+              "max": 26.67639923095703
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0662215864658355,
+              "median": 1.054108738899231,
+              "p10": 0.7778940916061401,
+              "p90": 1.3242379188537599,
+              "min": 0.5878136157989502,
+              "max": 1.5760327577590942
+            },
+            "median_ac_squared_share": 0.9792602803186055
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 4800,
+          "stage_questions_end": 5600,
+          "lifetime_questions_end": 47600,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 8.965153234004974,
+            "median": 7.630705833435059,
+            "p10": 4.501353168487548,
+            "p90": 12.797324562072768,
+            "min": 2.756269693374634,
+            "max": 36.9042854309082
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.19772321309123073,
+            "median": 0.17600266262888908,
+            "p10": 0.1205652353237383,
+            "p90": 0.30141065580537546,
+            "min": 0.08517414212110452,
+            "max": 0.47235458029899746
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 8.89694888830185,
+              "median": 7.536948919296265,
+              "p10": 4.418414163589477,
+              "p90": 12.742461109161392,
+              "min": 2.6702208518981934,
+              "max": 36.894283294677734
+            },
+            "reader": {
+              "count": 100,
+              "mean": 0.9987566030025482,
+              "median": 0.9709267318248749,
+              "p10": 0.7634483814239502,
+              "p90": 1.2073944091796873,
+              "min": 0.6221602559089661,
+              "max": 1.5268714427947998
+            },
+            "median_ac_squared_share": 0.9827191935885347
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 5600,
+          "stage_questions_end": 6400,
+          "lifetime_questions_end": 48400,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 9.07634667634964,
+            "median": 7.579822301864624,
+            "p10": 4.962257814407349,
+            "p90": 14.884762954711915,
+            "min": 2.0472700595855713,
+            "max": 26.58973503112793
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.20577376934488711,
+            "median": 0.19863240037375363,
+            "p10": 0.13462783911963924,
+            "p90": 0.27608993211761124,
+            "min": 0.08418058720417321,
+            "max": 0.41105892999621574
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 9.001204940080642,
+              "median": 7.498589038848877,
+              "p10": 4.853579568862915,
+              "p90": 14.823273754119874,
+              "min": 1.9518309831619263,
+              "max": 26.564607620239258
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0615913128852845,
+              "median": 1.0664420127868652,
+              "p10": 0.8318534255027771,
+              "p90": 1.34319748878479,
+              "min": 0.5722553730010986,
+              "max": 1.6279345750808716
+            },
+            "median_ac_squared_share": 0.9818509702447538
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 6400,
+          "stage_questions_end": 7200,
+          "lifetime_questions_end": 49200,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 9.393070330619812,
+            "median": 8.478768825531006,
+            "p10": 4.11210503578186,
+            "p90": 14.726671123504644,
+            "min": 3.3904569149017334,
+            "max": 51.06497573852539
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.2051542811123545,
+            "median": 0.20233071531401947,
+            "p10": 0.12035029201761062,
+            "p90": 0.28903083120821976,
+            "min": 0.07425436453195289,
+            "max": 0.471136486834439
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 9.311159114837647,
+              "median": 8.400652408599854,
+              "p10": 4.0369964122772215,
+              "p90": 14.65493898391724,
+              "min": 3.269704580307007,
+              "max": 51.05634689331055
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.104094944000244,
+              "median": 1.0764684677124023,
+              "p10": 0.7788055181503296,
+              "p90": 1.3509969830513002,
+              "min": 0.6043928861618042,
+              "max": 4.735958576202393
+            },
+            "median_ac_squared_share": 0.9829033871270791
+          }
+        },
+        {
+          "stage_questions_start_exclusive": 7200,
+          "stage_questions_end": 8000,
+          "lifetime_questions_end": 50000,
+          "gradient_norm": {
+            "count": 100,
+            "mean": 10.870017132759095,
+            "median": 8.272314548492432,
+            "p10": 4.29086971282959,
+            "p90": 18.647074127197268,
+            "min": 1.95749831199646,
+            "max": 79.58245849609375
+          },
+          "above_clip_threshold": 100,
+          "clip_fraction": 1.0,
+          "training_assistant_ce": {
+            "count": 100,
+            "mean": 0.19431948492445372,
+            "median": 0.1880684139614459,
+            "p10": 0.09571442081942223,
+            "p90": 0.2962655490497128,
+            "min": 0.04989699802536052,
+            "max": 0.3878750242292881
+          },
+          "group_norms": {
+            "recorded_batches": 100,
+            "ac": {
+              "count": 100,
+              "mean": 10.802048395872117,
+              "median": 8.217772006988525,
+              "p10": 4.210313892364502,
+              "p90": 18.593409156799318,
+              "min": 1.9046052694320679,
+              "max": 79.57662963867188
+            },
+            "reader": {
+              "count": 100,
+              "mean": 1.0382259008288384,
+              "median": 1.0062587261199951,
+              "p10": 0.7589193642139435,
+              "p90": 1.3784754991531372,
+              "min": 0.4519721567630768,
+              "max": 3.5792899131774902
+            },
+            "median_ac_squared_share": 0.9849112007798286
+          }
+        }
+      ],
+      "answer_nll_panels": [
+        {
+          "stage_unique_questions": 0,
+          "lifetime_unique_questions": 42000,
+          "epoch": 1,
+          "held_answer_nll": 0.5326864100103368,
+          "learning_answer_nll": 0.44032028364548814
+        },
+        {
+          "stage_unique_questions": 800,
+          "lifetime_unique_questions": 42800,
+          "epoch": 1,
+          "held_answer_nll": 0.5305334592696438,
+          "learning_answer_nll": 0.4727453459680289
+        },
+        {
+          "stage_unique_questions": 1600,
+          "lifetime_unique_questions": 43600,
+          "epoch": 1,
+          "held_answer_nll": 0.5185428211161764,
+          "learning_answer_nll": 0.4535347539807164
+        },
+        {
+          "stage_unique_questions": 2400,
+          "lifetime_unique_questions": 44400,
+          "epoch": 1,
+          "held_answer_nll": 0.521027236737524,
+          "learning_answer_nll": 0.41043529196534206
+        },
+        {
+          "stage_unique_questions": 3200,
+          "lifetime_unique_questions": 45200,
+          "epoch": 1,
+          "held_answer_nll": 0.5214352137333497,
+          "learning_answer_nll": 0.4129001899742869
+        },
+        {
+          "stage_unique_questions": 4000,
+          "lifetime_unique_questions": 46000,
+          "epoch": 1,
+          "held_answer_nll": 0.5183454738655748,
+          "learning_answer_nll": 0.39514431866553906
+        },
+        {
+          "stage_unique_questions": 4800,
+          "lifetime_unique_questions": 46800,
+          "epoch": 1,
+          "held_answer_nll": 0.5248419452047074,
+          "learning_answer_nll": 0.40781809934877156
+        },
+        {
+          "stage_unique_questions": 5600,
+          "lifetime_unique_questions": 47600,
+          "epoch": 1,
+          "held_answer_nll": 0.5257994534466329,
+          "learning_answer_nll": 0.4083681533120151
+        },
+        {
+          "stage_unique_questions": 6400,
+          "lifetime_unique_questions": 48400,
+          "epoch": 1,
+          "held_answer_nll": 0.5242611569126419,
+          "learning_answer_nll": 0.3753148925698943
+        },
+        {
+          "stage_unique_questions": 7200,
+          "lifetime_unique_questions": 49200,
+          "epoch": 1,
+          "held_answer_nll": 0.5182528573016105,
+          "learning_answer_nll": 0.39626594128385384
+        },
+        {
+          "stage_unique_questions": 8000,
+          "lifetime_unique_questions": 50000,
+          "epoch": 1,
+          "held_answer_nll": 0.5271308556897355,
+          "learning_answer_nll": 0.36027104289924583
+        }
+      ],
+      "input_hashes": {
+        "report_data.json": "48359d7c2b479a7b649caf956dc857ac9510c77fc8e8dfe440dd213d559b5aa9",
+        "result.json": "5e4c532b119a187b42746484b321f04ca4209966dea064c3f70cc0faae1ce025",
+        "training_config.json": "e1dd310b0fc7a912a0b7d39626b2bf38f73fec5064576fc60375ff26f936fc74",
+        "panels.json": "bfc79eea125337a012c8c11d7e61732c2d92589ef721dc295ff85b674f62906b",
+        "material_ids.json": "c46f42d0c260e6b6a08246b9863f166e92d356de6135c75efb1a896577a9c058"
+      },
+      "lr_first_last": {
+        "first": [
+          5e-06,
+          2e-06
+        ],
+        "last": [
+          5e-06,
+          2e-06
+        ]
+      },
+      "resume_caveat": null
+    }
+  },
+  "missing_measurements": [
+    "Post-Adam parameter update norms/directions",
+    "Per-objective main-versus-penalty gradient decomposition or alignment",
+    "Counterfactual matched clipping threshold/group policy",
+    "Full rewarm separate AC/reader norm trace before+2000 questions"
+  ],
+  "comparability": {
+    "floor_and_rewarm_material_ids_equal": true,
+    "all_four_held_ids_and_order_equal": true,
+    "learn32_identity_evidence": "Both10k arms use same pinned material design; initial32 NLL exactly equal. Original32k and subsequentfresh8k have different learning32 panels."
+  }
+}

@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Research directions and a minimal interface for structured AC models and agentic programs without text generation.">
+  <title>Agentic programs without text generation · Structured AC research</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.css">
+
+  <style>
+    .section-links { display:flex; flex-wrap:wrap; gap:.45rem 1rem; margin-top:1rem; }
+    .diagram-box rect { fill:var(--nb-surface, #f4f5f7); stroke:var(--nb-border, #9ba3af); }
+    .diagram-arrow { fill:none; stroke:var(--nb-text, #202630); stroke-width:1.4; marker-end:url(#arrow); }
+    .diagram-text { fill:var(--nb-text, #202630); text-anchor:middle; font:14px system-ui,sans-serif; }
+    .diagram-note { fill:var(--nb-text, #202630); font:13px system-ui,sans-serif; }
+    figcaption,.source-note { color:var(--nb-muted, #606875); font-size:.92em; }
+    .cost-explorer { border-block:1px solid var(--nb-border, #b9c0ca); padding:1rem 0; margin:1.3rem 0; }
+    .cost-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.8rem; }
+    .cost-controls label { display:grid; gap:.35rem; font-size:.92em; }
+    .cost-controls input { width:100%; box-sizing:border-box; border:1px solid var(--nb-border, #a9b1bd); border-radius:4px; padding:.4rem; background:var(--nb-bg, #fff); color:var(--nb-text, #202630); font:inherit; }
+    .cost-presets { display:flex; flex-wrap:wrap; gap:.5rem; margin:.9rem 0; }
+    .cost-presets button { padding:.35rem .65rem; background:var(--nb-surface, #f4f5f7); color:var(--nb-text, #202630); border:1px solid var(--nb-border, #a9b1bd); border-radius:4px; font:inherit; cursor:pointer; }
+    .cost-presets button:focus-visible,.cost-controls input:focus-visible { outline:2px solid var(--nb-accent, #3469cd); outline-offset:2px; }
+    .cost-bars { display:grid; gap:.55rem; }
+    .cost-bar-row { display:grid; grid-template-columns:7rem 1fr 6rem; gap:.6rem; align-items:center; font-size:.92em; }
+    .cost-track { height:.65rem; background:var(--nb-surface, #eef0f4); }
+    .cost-fill { height:100%; background:var(--nb-accent, #3469cd); }
+    .cost-fill.structured { opacity:.58; }
+    @media(max-width:480px) { .cost-bar-row { grid-template-columns:5.8rem 1fr 5.2rem; gap:.35rem; } }
+  </style>
+</head>
+<body>
+  <main class="tressoir-document">
+
+    <header class="document-header">
+      <p class="eyebrow">Research notebook · brainstorming · 21 September 2026</p>
+      <h1>Agentic programs without text generation</h1>
+      <p class="lede">Use an AC backbone as a callable neural function: read text or activations, compute in latent slots, return typed values and optional latent state. Let the program compose these calls and set the final answer directly.</p>
+      <ul class="meta" aria-label="Artifact metadata"><li>Proposal, not an implementation plan</li><li>No experiments launched</li><li>Grounded in the current checkout and primary literature</li></ul>
+    </header>
+
+    <section class="section" aria-labelledby="recommendation">
+      <h2 id="recommendation">The direction I would pursue</h2>
+      <p><strong>Build a small family of structured neural nodes, then ask whether an entire useful workflow can run through those nodes.</strong> The strongest paper story is the joint design of the node’s computation, its communication format, and the program that schedules it. A classification head alone is a useful baseline; the research question is what changes when that interface extends across the whole program.</p>
+      <p>I would start with <strong>evidence aggregation over documents</strong>, follow with <strong>semantic operand selection plus exact numerical execution</strong>, and use <strong>a bounded action policy</strong> as the more ambitious demonstration. In every case, all model calls can have structured outputs, and ordinary code can call <code>set_final_answer()</code>.</p>
+      <p>A useful working thesis: <em>for tasks whose solutions admit a compact executable structure, a harness can expose that structure at the model boundary, replacing repeated language serialization with learned computation and explicit dataflow.</em> Whether this improves quality, latency, or training efficiency remains an empirical question.</p>
+      <nav class="section-links" aria-label="Research sections"><a href="#boundary">Task boundary</a><a href="#directions">Research directions</a><a href="#programs">Whole programs</a><a href="#slots">Markers and reasoning</a><a href="#interface">Minimal interface</a><a href="#experiments">Experiments</a><a href="#efficiency">Efficiency</a><a href="#prior">Prior work</a></nav>
+    </section>
+
+    <section class="section" aria-labelledby="boundary">
+      <h2 id="boundary">The useful boundary is a bounded decision structure</h2>
+      <p>The output need not come from a small global vocabulary. It needs a tractable representation for each request. A pointer can return a previously unseen name. A numerical head can return a real value. A short sequence of operator choices can compute an answer whose decimal rendering has never appeared in training.</p>
+      <table><thead><tr><th>Output contract</th><th>How the head returns it</th><th>Where the boundary lies</th></tr></thead><tbody>
+        <tr><td>Fixed labels / flags</td><td>Class logits or independent Boolean logits</td><td>Classification, entailment, relation types, action enums.</td></tr>
+        <tr><td>A choice from this request</td><td>Scores over a masked candidate set</td><td>The candidates can be arbitrary text, documents, entities, patches, or tool targets. Their construction and recall are part of the task.</td></tr>
+        <tr><td>Text already in the input</td><td>Span or candidate pointers; code copies exact source text</td><td>Names, dates, evidence, selected statements. Retain source offsets; compressed rows alone do not provide exact token locations.</td></tr>
+        <tr><td>A number or small tuple</td><td>Regression, bins, or operator + operand pointers</td><td>Use regression for approximate quantities; use exact execution for arithmetic and discrete counts when an executable derivation is available.</td></tr>
+        <tr><td>A bounded set / record / short program</td><td>Several slots with validity masks and a joint constraint rule</td><td>Relations, event records, a small expression tree. Variable length needs a count, null slot, or stop decision.</td></tr>
+        <tr><td>Arbitrary short text</td><td>Parallel token or character slots, with length / blank handling</td><td>Possible, but sequence dependencies and spelling make this a non-autoregressive generation project. A length cap alone does not make it easy.</td></tr>
+      </tbody></table>
+      <p><strong>Small answers can require difficult reasoning.</strong> A yes/no entailment judgment may depend on an exception two pages away. A single number may require identifying the right population, time period, denominator, and unit. Regexes can locate candidate phrases or numbers; they do not generally resolve these semantic relationships across paraphrases and documents.</p>
+      <p>Use deterministic parsing wherever it is sufficient. The interesting learned work begins at disambiguation, relevance, coreference, scope, semantic matching, and evidence combination. “Cannot be solved by regex” is a motivation, not a sufficient baseline: a small trained encoder, a cross-encoder ranker, and symbolic execution can also be strong competitors.</p>
+    </section>
+
+    <section class="section" aria-labelledby="directions">
+      <h2 id="directions">Research directions worth separating</h2>
+      <table><thead><tr><th>Direction</th><th>Nontrivial learned operation</th><th>Structured result</th><th>My assessment</th></tr></thead><tbody>
+        <tr><td><strong>1. Distributed evidence reasoning</strong></td><td>Combine qualified, conflicting, or incomplete evidence across passages.</td><td>Verdict, evidence IDs, optional memory rows.</td><td>Best first demonstration of architectural co-design.</td></tr>
+        <tr><td><strong>2. Numerical reasoning with an executor</strong></td><td>Select quantities, roles, units, and operations from prose / tables.</td><td>Operand references + operation IDs → exact number.</td><td>Best demonstration that bounded outputs can support meaningful reasoning.</td></tr>
+        <tr><td><strong>3. Semantic joins and entity resolution</strong></td><td>Resolve which records refer to the same entity or satisfy a relation.</td><td>Match / relation scores and record IDs.</td><td>Strong practical efficiency story, especially with reuse across queries.</td></tr>
+        <tr><td><strong>4. Multi-hop answer selection / extraction</strong></td><td>Follow references and compare facts across documents.</td><td>Candidate or source-span pointer.</td><td>Good fit with the current QA direction; candidate coverage needs honest accounting.</td></tr>
+        <tr><td><strong>5. Structured action policies</strong></td><td>Select the next observation, tool, target, or stop action from current state.</td><td>Action enum + typed arguments + next state.</td><td>Most compelling “agentic program only” extension; higher training and evaluation cost.</td></tr>
+        <tr><td><strong>6. Candidate verification / ranking</strong></td><td>Judge whether a proposed answer, patch, or derivation meets the task.</td><td>Score, preference, accept/reject, error category.</td><td>Useful secondary result. A generated candidate pool can hide substantial upstream cost.</td></tr>
+      </tbody></table>
+
+      <h3>1 · Evidence reasoning: expose a decision, preserve unresolved information</h3>
+      <p>A leaf reads a claim and a passage. It returns evidence scores and a compact latent message; a parent reads the messages and produces the document-level result. The informative question is whether the latent channel retains distinctions that a leaf’s local verdict would discard.</p>
+      <p><strong>Illustrative case:</strong> one section says information may be shared with advisers; another limits this to advisers under a confidentiality obligation. The claim concerns unrestricted sharing. A local “supports” label loses the qualification. The parent needs either a sufficiently rich typed record or latent state that preserves it. This is a concrete test of the communication interface.</p>
+      <p><a href="https://aclanthology.org/2021.findings-emnlp.164/">ContractNLI</a> already pairs document-level entailment labels with evidence spans and discusses difficulty from exceptions. <a href="https://aclanthology.org/2020.emnlp-main.609/">SciFact</a> supplies scientific claims, abstract evidence, and rationale annotations. Use these as task anchors; a new cross-document conflict benchmark would be a separate contribution, not a property to assume of either dataset.</p>
+      <p><strong>Decisive comparison:</strong> identical trees exchanging (a) verdict probabilities and evidence IDs, (b) a richer fixed semantic record, (c) latent rows, or (d) both. If typed records suffice, keep the simpler interface and frame the result accordingly.</p>
+
+      <h3>2 · Numerical reasoning: learn the semantics, execute the arithmetic</h3>
+      <p>For “What was the percentage change in operating income?”, regexes can extract all numbers but cannot reliably identify the correct years, metric, adjustments, and direction. Nodes select the old and new quantities, identify the operation, and return source references. A deterministic executor computes <code>100 * (new - old) / old</code> and formats the result.</p>
+      <p><a href="https://aclanthology.org/2021.emnlp-main.300/">FinQA</a> is attractive because it includes financial questions and annotated reasoning programs. <a href="https://aclanthology.org/N19-1246/">DROP</a> provides a broader discrete-reasoning task anchor. A restricted operator / answer-type slice must report its coverage separately from full-benchmark scores.</p>
+      <p><strong>Research question:</strong> can the program learn an accurate expression through structured neural calls without a generated scratchpad? Start with a fixed small expression tree, then allow a bounded loop emitting <code>(op, arg1, arg2, stop)</code>. The latter still has sequential decisions; avoiding text generation does not mean eliminating sequential computation.</p>
+      <p>Direct scalar regression is a useful ablation, especially for approximate estimates, but a poor default for exact arithmetic, dates, large integers, or values far outside the training range. Track unit mistakes, operand mistakes, and execution mistakes separately.</p>
+
+      <h3>3 · Semantic joins: a less glamorous, potentially stronger efficiency result</h3>
+      <p>Match differently worded records, detect duplicate issues, connect a requirement to supporting evidence, or choose which product description satisfies a specification. The output is a relation or row ID; the hard part is semantic correspondence. A graph can first screen pairs, then resolve ambiguous groups, then enforce global constraints such as one-to-one matching.</p>
+      <p>Use candidate blocking and exact matching as baselines and preprocessing. Account for the quadratic pair space if blocking fails. Reusable document encodings could make this direction more efficient across many queries, but query-conditioned encodings lose that reuse. Measure both regimes.</p>
+
+      <h3>4–6 · Extensions, with the task boundaries made explicit</h3>
+      <p><strong>Multi-hop QA:</strong> <a href="https://arxiv.org/abs/1809.09600">HotpotQA</a> provides multi-document questions and supporting facts. Copying an answer from a selected span gives text output without text generation. Answer aliases, non-extractive answers, and retrieval misses still count; do not silently insert the gold answer into a candidate list.</p>
+      <p><strong>Action policies:</strong> read an observation, select one of a finite set of actions and a current entity ID, execute it, and repeat. Good starting environments expose structured search filters, menu choices, records, or navigation targets. Arbitrary shell commands, unrestricted search-query writing, and open code synthesis exceed the initial interface unless additional bounded representations are supplied.</p>
+      <p><strong>Verification:</strong> rank a fixed set of patches against a bug report or candidate answers against evidence. Tests can establish executable facts while the model judges semantic fit. This supports a complete structured program only when candidate construction is deterministic, externally supplied as part of the task, or itself produced by structured nodes; otherwise claim a verifier component and count generator cost.</p>
+    </section>
+
+    <section class="section" aria-labelledby="programs">
+      <h2 id="programs">Make the entire agentic program structured</h2>
+      <p>Three interfaces are enough to describe the initial system: <strong>observations in</strong> (text, structured values, or aligned activations), <strong>typed values out</strong> (for program decisions), and <strong>latent memory out</strong> (for the next model). The program owns batching, branching, aggregation, tools, and final rendering.</p>
+      <figure>
+        <svg viewBox="0 0 880 290" role="img" aria-labelledby="graph-title graph-desc">
+          <title id="graph-title">A structured evidence program with no generated messages</title>
+          <desc id="graph-desc">Three document chunks feed three structured leaf nodes. Their typed evidence and latent memory feed a structured reducer. Ordinary code renders the reducer's answer and calls set_final_answer.</desc>
+          <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="currentColor"/></marker></defs>
+          <g class="diagram-box"><rect x="8" y="25" width="156" height="48" rx="5"/><rect x="8" y="120" width="156" height="48" rx="5"/><rect x="8" y="215" width="156" height="48" rx="5"/>
+          <rect x="204" y="25" width="170" height="48" rx="5"/><rect x="204" y="120" width="170" height="48" rx="5"/><rect x="204" y="215" width="170" height="48" rx="5"/><rect x="470" y="107" width="173" height="74" rx="5"/><rect x="705" y="107" width="165" height="74" rx="5"/></g>
+          <g class="diagram-arrow"><path d="M164 49H204M164 144H204M164 239H204M374 49H415V126H470M374 144H470M374 239H415V163H470M643 144H705"/></g>
+          <g class="diagram-text"><text x="86" y="54">Text chunk 1</text><text x="86" y="149">Text chunk 2</text><text x="86" y="244">Text chunk 3</text><text x="289" y="54">Structured leaf</text><text x="289" y="149">Structured leaf</text><text x="289" y="244">Structured leaf</text><text x="556" y="137">Structured reducer</text><text x="556" y="161">verdict + evidence</text><text x="787" y="137">Render in code</text><text x="787" y="161">set_final_answer</text></g>
+          <text class="diagram-note" x="434" y="18">Edges: typed fields + optional latent rows</text>
+          <text class="diagram-note" x="466" y="235">Every neural box: one fixed forward pass initially</text>
+        </svg>
+        <figcaption>Several logical nodes can share one backbone and adapter. The graph does not require one resident model per box.</figcaption>
+      </figure>
+      <p><strong>Program A · evidence tree.</strong> Split a document by ordinary code; batch leaf calls; merge their outputs; choose a verdict and evidence IDs; map the verdict to its canonical string and submit it. If a tree must retain exact evidence text, keep a source table and pass references alongside memory.</p>
+      <p><strong>Program B · numerical dataflow.</strong> Parse quantity candidates; use structured nodes to identify relevant operands and operations; execute a bounded expression; submit the resulting number. Intermediate results can be numerical inputs to later nodes, with explicit units and role tags.</p>
+      <p><strong>Program C · observation/action loop.</strong> A node returns action type, current target ID, bounded arguments, and a stop score. The program runs the tool and feeds the next observation back. Stop means either submit an available typed answer or a predefined unresolved result. The loop has a step budget and a repeated-state rule. No language-generation fallback is needed for the research condition.</p>
+      <p>The all-structured condition should instrument <strong>zero calls to text-generation APIs at evaluation</strong>, including planners, leaf workers, summarizers, query writers, and final-answer formatters. Training-time teachers may generate labels, but their cost and role should be disclosed. Deterministic formatting is allowed; it must not contain task-solving rules that make the neural work disappear.</p>
+      <p>A fixed evidence tree is a neural dataflow program; the observation/action loop is a stronger agentic example. Keeping these labels precise makes the architectural argument easier to defend.</p>
+    </section>
+
+    <section class="section" aria-labelledby="slots">
+      <h2 id="slots">What markers buy—and what they do not</h2>
+      <p>For a decoder-style backbone, append learned embeddings after the full input:</p>
+      <pre class="code-block"><code class="language-text">[text / typed inputs / incoming AC rows]
+[scratch_1 ... scratch_S]
+[memory_1 ... memory_M]
+[verdict] [evidence] [value] ...
+             ↓ one backbone forward
+       named hidden states → typed heads / outgoing memory</code></pre>
+      <p><strong>“Encode-only” means no autoregressive token-generation loop.</strong> The backbone may still be a causal decoder internally; the repository already calls this operation <code>decoder_forward()</code>. A bidirectional encoder is another possible backbone, but changing masks and pretraining assumptions is a separate experiment.</p>
+      <table><thead><tr><th>Slot role</th><th>Purpose</th><th>Useful control</th></tr></thead><tbody>
+        <tr><td>Output slot</td><td>A task-specific query/readout location for a head.</td><td>Last-token or pooled hidden state with the same head.</td></tr>
+        <tr><td>Scratch slot</td><td>Extra representational workspace before readout.</td><td>Zero scratch slots; matched extra positions; different slot budgets.</td></tr>
+        <tr><td>Memory slot</td><td>Export a compact state that another node can consume.</td><td>Typed values only; typed values plus selected source snippets.</td></tr>
+      </tbody></table>
+      <p>In a standard causal Transformer layer, later positions attend earlier positions’ states from the preceding layer. Appending 16 scratch slots does <strong>not</strong> create 16 complete recurrent reasoning steps. It adds positions and changes the available computation within the fixed layer stack. Hybrid backbones can have different within-layer recurrence; neither case makes slot count equivalent to repeated whole-model forwards.</p>
+      <p>For extra sequential computation, explicitly feed a node’s state into another forward pass, use a tree with more levels, or investigate a recurrent backbone. Keep <strong>slot count</strong>, <strong>graph depth</strong>, and <strong>number of forward passes</strong> as separate experimental axes. Pause-token training, continuous-state recurrence, and recurrent depth are related but distinct mechanisms; see the <a href="#prior">prior-work map</a>.</p>
+      <p>Output slots under causal attention are ordered: earlier ones cannot use later ones. Start with the existing causal mask and a documented ordering. For permutation-invariant sets, use appropriate pooling or a set head and test permutations. Several independent logits can produce an inconsistent record; validity constraints, a joint head, or an additional pass are needed when fields depend strongly on one another.</p>
+      <p>Named slots make readout locations legible; they do not make their hidden computations interpretable. Test whether scratch and memory are used through ablations, edge shuffling, and task-preserving counterfactuals. A confidence head also needs calibration; its name is not evidence of reliability.</p>
+    </section>
+
+    <section class="section" aria-labelledby="interface">
+      <h2 id="interface">A minimal <code>structured_ac_model.py</code></h2>
+      <p><strong>Yes to a sibling model with a small typed contract.</strong> Reuse the AC encoding machinery, but avoid inheriting the requirement that every model must emit activations for a generative reader. Generic PyTorch modules are useful at the input-adapter and output-head boundaries; they still need explicit shape, masking, representation-space, and serialization contracts.</p>
+
+      <h3>The smallest surface worth designing</h3>
+      <pre class="code-block"><code class="language-python"># Proposal only: these names are not implemented.
+@dataclass
+class StructuredRequest:
+    messages: list[dict]                 # existing text/message dialect
+    values: dict[str, Tensor]            # optional typed numerical inputs
+    memories: list[LatentValue]          # rows + mask + space/producer version
+    candidates: dict[str, CandidateSet]  # request-local IDs, masks, features
+
+@dataclass
+class StructuredOutput:
+    tensors: dict[str, Tensor]           # logits, estimates, pointer scores
+    memory: LatentValue | None          # live tensor graph during training
+
+class StructuredACModel:
+    def forward(self, batch) -&gt; list[StructuredOutput]: ...
+    def predict(self, batch) -&gt; list[StructuredOutput]: ...
+
+# Configuration declares slot groups and their readouts.
+slots = {"scratch": 8, "memory": 8, "verdict": 1, "evidence": 1}
+heads = nn.ModuleDict({
+    "verdict": nn.Linear(d_model, 3),
+    "evidence": CandidateScorer(d_model),
+})
+# Each named head receives its slot states plus requested candidate/content
+# features and masks. Fixed heads may use only their slot states.
+# The program, not forward(), maps predictions to Python values / text.</code></pre>
+      <p><code>forward()</code> must preserve gradients and avoid detached rollout caches. <code>predict()</code> provides inference-mode execution, batching, and optional versioned caching. Losses stay outside the model: cross-entropy for labels and pointers, appropriate numerical loss for regression, and auxiliary supervision only where labels exist. Raw tensors should remain available until the caller chooses argmax or a constrained interpretation.</p>
+      <p>For saved configurations, store a module factory or importable class specification, JSON-compatible kwargs, schema/version information, and a state dictionary. An arbitrary live <code>nn.Module</code> is convenient in a notebook but is not a complete portable checkpoint format. Defer a large plug-in system and universal schema language.</p>
+
+      <h3>What the current code already provides</h3>
+      <table><thead><tr><th>Observed in this checkout</th><th>Implication for the proposal</th></tr></thead><tbody>
+        <tr><td><code>ac_model.py::_encode_prepared_batch</code> constructs summaries, runs one side forward, then gathers final row states.</td><td>There is a natural seam before <code>target_head</code> / deep heads. Reuse input preparation and backbone execution; allow explicit task and memory slots there.</td></tr>
+        <tr><td><code>ActivationContextModel</code> and its registration require side and target model identities.</td><td>A structured-only node should need its backbone and adapters, not a dummy target reader. A sibling class around a small shared encoding core is cleaner than a broad subclass override.</td></tr>
+        <tr><td><code>ACOutput</code> means reader-space input rows plus optional layer-specific residuals; <code>states</code> is currently an optional recursive readout field.</td><td>Do not reinterpret it as arbitrary task logits or assume it exposes all token states. Use a separate structured result and an explicit latent carrier.</td></tr>
+        <tr><td><code>_child_request</code> asserts the same AC model name.</td><td>Existing recursion is not arbitrary cross-model routing. Typed values are immediately portable; latent edges need an explicit consumer adapter.</td></tr>
+        <tr><td><code>AgenticProgram.execute</code>, <code>run_program</code>, and <code>set_final_answer</code> already support a program returning the main result without a model turn.</td><td>Keep this program API. Add model lookup and a structured call boundary; the program can compose calls in ordinary Python.</td></tr>
+        <tr><td><code>RolloutManager._run_jobs</code> eagerly loads and warms a generation engine; <code>_run_one</code> eagerly creates the environment.</td><td>Declare runtime needs explicitly and bypass the generation engine for structured-only programs. An environment remains necessary when the program or scorer uses it.</td></tr>
+      </tbody></table>
+      <p><strong>Practical scope:</strong> the new sibling file can own request/output types, slots, adapters, and heads. A narrow shared feature-forward seam in <code>ac_model.py</code>, registration in <code>module_manager.py</code>, and an explicit program capability such as <code>requires_generation = False</code> address execution. Keep the capability’s default true for existing programs; split mixed workloads rather than guessing from whether a turn happened. Preserve ordinary scoring and cache identity. This is a small coordinated change, not a truthful one-file implementation.</p>
+      <p>A first disposable baseline can simply pool existing AC outputs and fit a head. That establishes whether their representations contain task information. It does not establish the value of distinct markers, remove target-specific machinery, or measure the intended structured-only architecture. For deep AC outputs, request the complete object; the current rows-only path deliberately rejects dropping residual channels.</p>
+
+      <h3>Make latent edges explicit</h3>
+      <p>A <code>LatentValue</code> needs rows and a validity mask, an identified representation space, and producer/checkpoint provenance. A consumer maps it into its backbone’s input space with a trained adapter and role/position treatment. Equal width is not semantic compatibility, even for two adapters over the same base model.</p>
+      <p>Start with a shared backbone and a shared trained communication space. To accept an existing AC model’s output, use one of two explicit paths: (a) consume the complete <code>ACOutput</code> in the exact reader architecture it targets, including supported deep interventions; or (b) train an adapter that defines which channels it consumes. An embeddings-only adapter is an ablation, not transparent preservation of a deep AC message. Existing layer-indexed residuals are not portable to arbitrary backbones.</p>
+      <p>Keep opaque memory separate from exact provenance: document IDs, offsets, candidate tables, masks, and units travel as ordinary typed data. Do not expose every source-token hidden state by default; pointer heads can opt into the token or candidate features they need.</p>
+
+      <details class="card" data-tressoir-markdown>
+        <summary><span class="card-title">Illustrative program sketch</span><span class="card-oneliner">How existing finalization fits the proposed model calls</span><span class="card-badge">Optional</span></summary>
+        <div class="card-body"><button class="card-gutter" type="button" data-card-collapse aria-label="Collapse program sketch" title="Collapse section"></button><div class="card-content">
+          <pre class="code-block"><code class="language-python"># Pseudocode: get_structured_model / structured_call are proposed.
+class EvidenceProgram(AgenticProgram):
+    requires_generation = False
+
+    def execute(self):
+        task = read_task(self.agent.agent_config)
+        source_table, requests = prepare_passages(task)
+        leaf = self.agent.harness.module_manager.get_structured_model("leaf")
+        root = self.agent.harness.module_manager.get_structured_model("root")
+
+        leaves = structured_call(self.agent, leaf, requests)
+        request = make_reducer_request(task, leaves, source_table)
+        result = structured_call(self.agent, root, [request])[0]
+
+        verdict = LABELS[result.tensors["verdict"].argmax().item()]
+        self.agent.set_final_answer(verdict)
+        return self.agent.run_results
+
+# structured_call owns timing/provenance and detached trace capture.
+# A separate training execution uses forward(), retains tensors on-device,
+# and backpropagates across the fixed graph before making hard decisions.</code></pre>
+          <p>A model call record should contain node ID, parent IDs, model/checkpoint/schema identity, replayable inputs or references, typed outputs, selected actions, and timing. Capture exact latent payloads when needed for replay. Existing assistant-token trajectories do not automatically contain supervision for these calls, and a final answer alone cannot reconstruct them.</p>
+          <p>Keep this record small for the initial fixed graph. Introduce a structured trace alongside existing run results when integration is needed, rather than manufacturing assistant tokens. The current token-oriented training path cannot be assumed to train such traces.</p>
+        </div></div>
+      </details>
+    </section>
+
+    <section class="section" aria-labelledby="training">
+      <h2 id="training">Training: start with a fixed graph and honest gradients</h2>
+      <p>First train heads and small input/output adapters over a frozen backbone; then compare adding LoRA to the backbone. Compare fresh initialization with the existing AC encoder as a warm start. The current reconstruction / QA checkpoint may provide useful features, but it was optimized for a reader’s task and representation; transfer to direct structured decisions is a hypothesis.</p>
+      <p>For a fixed tree, leave latent edges as live tensors and backpropagate the root’s task loss through the whole graph. Add evidence or operand losses when ground truth exists. A label-only leaf bottleneck may be too narrow; latent state can be trained to carry information needed by the root without inventing local labels that the task does not provide.</p>
+      <p>Hard argmax, retrieval, tool execution, and discrete routing interrupt ordinary backpropagation. Initially supervise those choices or keep routing fixed. Later compare policy learning or explicitly chosen estimators. A soft training mixture followed by hard inference needs a measured train–inference gap. External tools are not differentiable merely because their inputs came from a neural head.</p>
+      <p>Rollout caches and saved traces are detached. They support replay or training a downstream head with a frozen producer, not automatic end-to-end training of the producer. Changing producer weights invalidates cached latents; checkpoint the shared communication contract with the participating adapters and heads. For large graphs, recomputation or staged training is a memory/quality tradeoff to measure.</p>
+      <p>Use fresh, source-grouped evaluation material. The existing synthesized QA bank may help with shared tasks, but answer strings alone do not guarantee span, evidence, or program supervision. Do not consume the running campaign’s reserved confirmation split as a development set for this new direction.</p>
+    </section>
+
+    <section class="section" aria-labelledby="experiments">
+      <h2 id="experiments">Experiments that would decide whether this is worth a paper</h2>
+      <p><strong>First result to seek:</strong> an all-structured document-evidence program that matches a well-tuned text program’s task quality while reducing end-to-end cost, and whose latent edges improve over an otherwise identical typed-only graph. If the second part fails, a simpler efficiency result may still be worthwhile.</p>
+      <table><thead><tr><th>Question</th><th>Comparison</th><th>What it would establish</th></tr></thead><tbody>
+        <tr><td>Does direct structured output help?</td><td>Same backbone: short constrained answer / one-token label vs pooled hidden-state head vs marker head.</td><td>Output-interface benefit, separated from large-model versus small-model effects.</td></tr>
+        <tr><td>Do extra slots help?</td><td>0 / 4 / 16 scratch slots, same head and data; report actual cost. Train at tested budgets or identify extrapolation.</td><td>Evidence for additional workspace, rather than attributing every gain to latent reasoning.</td></tr>
+        <tr><td>Does graph composition help?</td><td>One structured model over the available evidence vs a tree with matched information access.</td><td>Decomposition benefit, with repeated input and scheduling costs included.</td></tr>
+        <tr><td>Do latent edges help?</td><td>Same graph: text, typed records, latent rows, typed + latent, and typed + selected evidence snippets.</td><td>Whether learned communication adds value beyond compact explicit information.</td></tr>
+        <tr><td>Does AC pretraining transfer?</td><td>Frozen AC features, task-tuned AC, and fresh task-tuned backbone at matched parameter/data budgets.</td><td>A connection to the ongoing AC research rather than an assumption about checkpoint reuse.</td></tr>
+        <tr><td>Is compositionality learned?</td><td>Unseen documents/templates/entities, deeper trees, more distractors, reordered leaves, and held-out evidence combinations.</td><td>Generalization beyond repeated local patterns. Training on depth 2 does not guarantee depth 4.</td></tr>
+      </tbody></table>
+      <p><strong>Minimum serious baselines:</strong> deterministic parsing/rules where applicable; a smaller discriminative encoder or cross-encoder; a last-token/pooled head on the same backbone; a monolithic structured model; a concise text program; and a graph with typed-only edges. For numerical tasks include symbolic execution with learned operand selection. Avoid choosing only verbose chain-of-thought agents as efficiency opponents.</p>
+      <p>For the first task, fix retrieval/candidate pools and make all systems see the same evidence. Then run an end-to-end version that charges retrieval and candidate construction. Report candidate recall and schema coverage; for a single-answer selection task, final accuracy cannot exceed the probability that a valid answer is in the pool.</p>
+      <p>Measure final task quality, evidence/operand correctness, p50 and p95 latency, throughput at stated concurrency, peak memory, GPU-seconds per example, total backbone tokens processed, node calls, bytes transferred, and training/teacher cost. Include multiple seeds or uncertainty estimates. Compare at matched quality and at matched cost; a speedup accompanied by an unreported accuracy loss is not the desired result.</p>
+      <p><strong>Useful falsifiers:</strong> shuffled memory performs equally well; richer typed records remove the latent advantage; a small encoder meets the target much more cheaply; a monolithic head matches the graph; or the improvement vanishes against a one-token baseline. These outcomes narrow the claim and point to which complexity can be removed.</p>
+      <p>My suggested progression is one evidence task with the essential controls, then a numerical task to establish a different output type, then the action loop if the interface and training already work. This is a research ordering, not an instruction to launch runs.</p>
+    </section>
+
+    <section class="section" aria-labelledby="efficiency">
+      <h2 id="efficiency">Where the efficiency could actually come from</h2>
+      <p>Removing autoregressive output can save repeated backbone steps, vocabulary projections, generation KV-cache capacity, and serialization/parsing work. A graph can also avoid making the next node re-read a long textual message. It still pays for input processing, scratch slots, heads, adapters, batching, communication, and every sequential graph level.</p>
+      <p>For a one-token label, the initial prompt pass already produces the first-token logits. There may be no subsequent backbone decoding step to remove. A custom head saves the large vocabulary projection and changes the learning problem, but extra markers can cost more than that saving. This is why multi-field outputs and repeated intermediate messages are more promising efficiency targets.</p>
+      <div class="math-display">\[T_{\mathrm{text}}\approx P+\max(K-1,0)D,\qquad T_{\mathrm{structured}}\approx P+S+H.\]</div>
+      <p>Here <em>P</em> is measured prompt-pass latency, <em>K</em> is total generated tokens including any required syntax, <em>D</em> is average latency of each subsequent decoding step, <em>S</em> is extra slot-processing time, and <em>H</em> is net head/adapter overhead relative to the text baseline. <em>H</em> can be negative when saved vocabulary-head work dominates. This simplified comparison assumes the same input and excludes graph scheduling and transfer.</p>
+      <div class="cost-explorer" id="cost-explorer">
+        <h3>Explore the per-node break-even point</h3>
+        <p><strong>Illustrative assumptions only; these are not benchmark results.</strong> Change the fields or choose a contrasting output length.</p>
+        <div class="cost-controls">
+          <label>Prompt pass P (ms)<input id="cost-prefill" type="number" min="0.1" step="1" value="80"></label>
+          <label>Generated tokens K<input id="cost-tokens" type="number" min="1" step="1" value="64"></label>
+          <label>Decode step D (ms)<input id="cost-decode" type="number" min="0.01" step="0.5" value="8"></label>
+          <label>Extra slots S (ms)<input id="cost-slots" type="number" min="0" step="0.5" value="10"></label>
+          <label>Net heads H (ms)<input id="cost-head" type="number" step="0.1" value="0.2"></label>
+        </div>
+        <div class="cost-presets"><button type="button" data-token-preset="1">One-token label</button><button type="button" data-token-preset="64">64-token message</button><button type="button" data-token-preset="256">256-token message</button></div>
+        <div id="cost-result" data-morph-skip role="status" aria-live="polite"><p>At the illustrative defaults: text 584 ms; structured 90.2 ms; ratio 6.47×. With a one-token label, text is 80 ms and structured is 90.2 ms: the structured node is slower.</p></div>
+      </div>
+      <p>For a graph, total GPU work sums over nodes; wall time follows the scheduled critical path and actual hardware contention. Parallel leaves on one GPU are not free parallelism. Compare batching, prompt-prefix caching, and cold/warm document caching fairly. Separate query-independent document encoding, whose cost can be amortized, from query-conditioned encoding, whose cache key must include the query.</p>
+      <p><strong>Latent communication is not automatically smaller in bytes.</strong> An illustrative 16 × 2,560 BF16 tensor is 81,920 bytes (80 KiB), before metadata; a short textual message can be much smaller. Fewer backbone positions or less generation work can still win. Report bytes and device transfers as well as token counts. Start with nodes on the same device; cross-machine transfer is another cost regime.</p>
+    </section>
+
+    <section class="section" aria-labelledby="prior">
+      <h2 id="prior">Prior work sets the bar</h2>
+      <p>This is a focused literature check, not an exhaustive novelty search. The defensible opportunity is in the <strong>combination and measured behavior</strong> of trained AC communication, typed outputs, explicit program structure, and the removal of final language generation.</p>
+      <table><thead><tr><th>Primary source</th><th>Relevant established idea</th><th>What this proposal would still need to show</th></tr></thead><tbody>
+        <tr><td><a href="https://arxiv.org/abs/1810.04805">BERT</a> (2018)</td><td>Pretrained language representations adapted to discriminative tasks.</td><td>A head on an LLM is not itself the contribution.</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/1511.02799">Neural Module Networks</a> (2015)</td><td>Compose jointly trained neural modules for question answering.</td><td>A graph of neural functions also has substantial precedent.</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2107.14795">Perceiver IO</a> (2021)</td><td>A latent architecture supporting structured inputs and outputs through query-based readout.</td><td>Generic adapters and output queries need a task/system-level payoff here.</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2310.02226">Think before you speak</a> (2023)</td><td>Learnable pause positions add computation before output; training with them matters.</td><td>Separate extra-position benefits from graph or communication benefits.</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2412.06769">Coconut</a> (2024)</td><td>Feed hidden states back as continuous reasoning inputs.</td><td>One fixed pass over markers is not the same mechanism as latent recurrence.</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2502.05171">Scaling up Test-Time Compute with Latent Reasoning</a> (2025)</td><td>Recurrent depth as an axis for additional inference computation.</td><td>Compare extra depth honestly if scratch slots alone are insufficient.</td></tr>
+        <tr><td><a href="https://arxiv.org/html/2511.20639v4">LatentMAS</a> (2025; v4, 2026)</td><td>Training-free latent reasoning and KV-based communication among agents; its pipeline still decodes the final answer as text (§3.3).</td><td>Trained compact AC edges and typed heads throughout, including final output, are the specific comparison—not a claim to originate latent multi-agent communication.</td></tr>
+      </tbody></table>
+      <p>A candidate framing under <em>Harness/model co-design at the architectural level</em>: <strong>“Programs of structured neural calls for bounded-output reasoning.”</strong> The paper could ask which information should remain latent, which should become a typed value, and which computation should be executed by the harness.</p>
+      <p>The most interesting eventual result would be a task-dependent frontier: some workflows need only typed records; others benefit from latent edges; some need recurrent computation; and open-ended synthesis still benefits from language generation. A clear map of those boundaries could be more useful than a universal replacement claim.</p>
+    </section>
+
+    <section class="section" aria-labelledby="takeaways">
+      <h2 id="takeaways">My current bets</h2>
+      <ol>
+        <li><strong>Highest confidence:</strong> compact typed heads are useful when a program already knows the output schema and calls models repeatedly.</li>
+        <li><strong>Most important uncertainty:</strong> whether latent messages add enough over rich typed records and evidence pointers to justify their training and transfer costs.</li>
+        <li><strong>Best architectural experiment:</strong> one fixed evidence graph, all neural nodes structured, with text/typed/latent edge ablations and direct finalization.</li>
+        <li><strong>Best second task:</strong> numerical reasoning with learned operand selection and exact execution, followed by a bounded action loop if the first results warrant it.</li>
+        <li><strong>Minimal interface choice:</strong> a sibling <code>StructuredACModel</code>, a shared feature-forward seam, explicit head/adapter contracts, and a program capability that avoids loading the generation engine.</li>
+      </ol>
+      <p class="source-note">Scope: brainstorming requested by the user, including programs that exclusively use structured models. Architecture observations come from the local source as inspected on 21 September 2026; concurrent training work may continue changing it. All proposed APIs, examples, outcomes, and latency assumptions are illustrative. Source files inspected: <code>activation/ac_model/{ac_model.py,ac_model_utils.py}</code>, <code>activation/harness/module_manager.py</code>, and <code>activation/agent/{agentic_program.py,agent.py,rollout_manager.py}</code>. No training code, runtime settings, or experiments were changed for this document. <a href="./README.md" data-tressoir-open-file>Artifact notes and validation scope</a>.</p>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-tsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-rust.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-sql.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/meta.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.js"></script>
+
+  <script>
+  (() => {
+    if (window.__structuredAcResearchInstalled) return;
+    window.__structuredAcResearchInstalled = true;
+    const names = ['prefill', 'tokens', 'decode', 'slots', 'head'];
+    const stateKey = 'structured-ac.research.cost.v1';
+    let dirty = false;
+    let timer;
+    function read() {
+      return Object.fromEntries(names.map(n => [n, Number(document.getElementById('cost-' + n)?.value)]));
+    }
+    function render() {
+      const root = document.getElementById('cost-result');
+      if (!root) return;
+      const x = read();
+      if (!Object.values(x).every(Number.isFinite) || x.prefill <= 0 || x.tokens < 1 || !Number.isInteger(x.tokens) || x.decode <= 0 || x.slots < 0) {
+        root.textContent = 'Use positive prompt/decode times, a whole number of tokens, and nonnegative slot time.';
+        return;
+      }
+      const text = x.prefill + Math.max(x.tokens - 1, 0) * x.decode;
+      const structured = x.prefill + x.slots + x.head;
+      if (structured <= 0) { root.textContent = 'The total structured time must be positive.'; return; }
+      const max = Math.max(text, structured);
+      const ratio = text / structured;
+      const breakEven = Math.max(1, Math.floor(1 + (x.slots + x.head) / x.decode) + 1);
+      const summary = ratio >= 1 ? `${ratio.toFixed(2)}× text/structured time ratio under these assumptions.` : `Structured is ${(1 / ratio).toFixed(2)}× slower under these assumptions.`;
+      root.innerHTML = `<div class="cost-bars"><div class="cost-bar-row"><span>Text</span><div class="cost-track"><div class="cost-fill" style="width:${text/max*100}%"></div></div><span>${text.toFixed(1)} ms</span></div><div class="cost-bar-row"><span>Structured</span><div class="cost-track"><div class="cost-fill structured" style="width:${structured/max*100}%"></div></div><span>${structured.toFixed(1)} ms</span></div></div><p><strong>${summary}</strong> Structured becomes faster at K ≥ ${breakEven} tokens in this simplified model. Quality is not modeled.</p>`;
+    }
+    async function restore() {
+      try {
+        const saved = await window.tressoirNotebook?.getInteraction?.(stateKey);
+        if (!dirty && saved && names.every(n => Number.isFinite(saved[n]))) {
+          names.forEach(n => { const el = document.getElementById('cost-' + n); if (el) el.value = String(saved[n]); });
+        }
+      } catch (_) { /* The static document also works outside Tressoir. */ }
+      render();
+    }
+    function changed() {
+      dirty = true;
+      render();
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const x = read();
+        if (Object.values(x).every(Number.isFinite)) {
+          Promise.resolve(window.tressoirNotebook?.storeInteraction?.(stateKey, x)).catch(() => {});
+        }
+      }, 250);
+    }
+    document.addEventListener('input', event => {
+      if (event.target instanceof HTMLElement && event.target.closest('#cost-explorer')) changed();
+    });
+    document.addEventListener('click', event => {
+      const button = event.target instanceof Element ? event.target.closest('[data-token-preset]') : null;
+      if (button) {
+        document.getElementById('cost-tokens').value = button.dataset.tokenPreset;
+        changed();
+      }
+    });
+    window.addEventListener('tressoir:render', render);
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restore, {once:true});
+    else restore();
+  })();
+  </script>
+
+</body>
+</html>

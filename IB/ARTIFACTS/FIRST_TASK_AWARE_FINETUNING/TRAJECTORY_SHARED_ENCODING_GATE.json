@@ -1,0 +1,57 @@
+{
+  "job_id": 2203080,
+  "host": "csail",
+  "receipt_utc": "2026-09-24T09:00:14.664571+00:00",
+  "worker_sha256": "47be76c3ab8d70721f3488f30f0b5d7243156ecff491e16787e444655cb462ef",
+  "review": "trajectory_code_consolidation: pass; duplicate-first OOM caveat, large H200 requested",
+  "source": "source_v9",
+  "source_product": "50e21b45a557fc9633a470702860eb7b688f4361",
+  "supersedes_pending_h200_profile": 2199942,
+  "claims": "Fixed-weight losses/all gradients after one real Adam update. No current micro1 speedup, update-equivalence or resume claim.",
+  "first_gpu_status": "numerical gate failed; optimization not promoted",
+  "first_gpu_result": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/shared_history_gate_h200_v1.json",
+  "followup": {
+    "job_id": 2203333,
+    "host": "csail",
+    "worker": "probe_shared_history_encoding_singletons_v2.py",
+    "output": "shared_history_gate_singletons_v2",
+    "change": "encode_batch_max_tokens=1: force identical singleton encoder shape; reader batch unchanged",
+    "reason": "Separate graph sharing from B1 no-mask versus B>1 all-ones-mask paths; thresholds unchanged"
+  },
+  "singleton_followup_result": {
+    "status": "pass",
+    "result": "IB/TMP/SYNC/TRAJECTORY_COMPACTION/csail/shared_history_gate_singletons_v2/result.json",
+    "long4_duplicate_seconds": 13.891895082779229,
+    "long4_shared_seconds": 6.064221202395856,
+    "scope": "Batched reader with singleton encoder; not current production training speed"
+  },
+  "micro1_followup": {
+    "job_id": "2203529",
+    "queued_utc": "2026-09-24T10:23:55.371482+00:00",
+    "worker": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/probe_shared_history_encoding_micro1_v3.py",
+    "worker_sha256": "76ef0798816be5e300c82fd6d6c6aa2539e6071fdff7e491836b2938ef4a270b",
+    "output": "/data/scratch/ngom/activation/trajectory_compaction/shared_history_gate_micro1_v3",
+    "review": "No blocking graph/trainability/accounting finding; optional actual encode and moment placement receipts added",
+    "condition": "Existing source_v9 unchanged, actual singleton reader _example_loss, immediate vs combined duplicate vs combined shared, Adam moments parked, same thresholds",
+    "result": {
+      "status": "pass",
+      "all_cases": 4,
+      "production_long4_seconds": 22.205849667079747,
+      "shared_long4_seconds": 14.441415638662875,
+      "production_peak_gib": 37.99309301376343,
+      "shared_peak_gib": 39.1839337348938,
+      "moment_devices": [
+        "cpu"
+      ],
+      "moment_tensors": 1230
+    }
+  },
+  "reader_batched_followup": {
+    "job_id": "2203823",
+    "queued_utc": "2026-09-24T11:05:42.047881+00:00",
+    "worker": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/probe_shared_history_encoding_readerbatch_v4.py",
+    "worker_sha256": "6969e87d6d2bf4f2002c8308b1251dda611a1df324f915202bccfb497907f023",
+    "output": "/data/scratch/ngom/activation/trajectory_compaction/shared_history_gate_readerbatch_v4",
+    "scope": "Compare actual production singleton reader with singleton-encoder/shared batched reader at the same weights and penalty targets. Existing thresholds unchanged."
+  }
+}

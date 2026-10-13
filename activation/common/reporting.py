@@ -624,7 +624,7 @@ class HtmlReporter:
             "refresh_seconds": self.refresh_seconds,
             "poll_seconds": self.poll_seconds,
             "finished": self.finished,
-            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
             "status": dict(self.status),
             "widgets": widgets,
         }

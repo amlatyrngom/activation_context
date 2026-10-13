@@ -1,0 +1,11 @@
+{
+  "submitted_utc": "2026-09-23T00:41:28.870040Z",
+  "job": 23515979,
+  "status": "released",
+  "hashes": {
+    "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa",
+    "probe_piecewise_forward_localization_v1.sbatch": "2fdeb2fff0a413911b393dd7cd43c872b385a35b10a1f0281de61256c3fc2407",
+    "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381"
+  },
+  "scope": "Diagnostic only; no equivalence validated, no optimizer updates or parent writes. Same preemptable four-GPU cap as training."
+}

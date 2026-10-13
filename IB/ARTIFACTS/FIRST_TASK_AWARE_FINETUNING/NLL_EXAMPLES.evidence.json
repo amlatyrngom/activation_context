@@ -1,0 +1,3171 @@
+{
+  "snapshot": {
+    "run": "hill_control",
+    "update": 500,
+    "saved_ac_version": 10197,
+    "encoder": "Qwen3.5-2B",
+    "reader": "Qwen3.5-9B",
+    "ratio": 0.0625,
+    "aggregate_answer_nll": {
+      "held AC": 0.7519124892321429,
+      "held full context": 0.3887289429053662,
+      "held no context": 1.9034837940808425,
+      "training AC": 0.6197534053080768
+    },
+    "no_context_decode_status": "complete"
+  },
+  "sampling": "Original first 12 held inspection items, not random; no annotation-error-rate estimate.",
+  "source_files": {
+    "IB/TMP/SYNC/TASK_AWARE_QA/hill_control/answers_00500.json": "c6eed32618562e60b0b7b57072924900f5f7cf514d53938c437977817ec1f36e",
+    "IB/TMP/SYNC/TASK_AWARE_QA/hill_control/full_context_answers_00500.json": "b158443cc3d64fdf6191828cb01bebc0634882656f67941686a9a0d50e50497e",
+    "IB/TMP/SYNC/TASK_AWARE_QA/hill_control/panel_00500.json": "b3ac799effeb183a23ef9eb941a680e32982550d024705a2f21d943ff316207f"
+  },
+  "confirmed_defects": [
+    {
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:317:e6416f4186c41bd5:0",
+      "check": "27,537 - 24,713 = +2,824 thousand; question presupposes a decrease and gold says 2,826."
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "check": "The unknown branch calls error and breaks; retry belongs to the default branch / initial poll."
+    }
+  ],
+  "additional_reference_issue": {
+    "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+    "supplemental_source": "https://github.com/google/breakpad/blob/main/src/common/simple_string_dictionary.h#L46-L57",
+    "check": "Alias<256,256,64>; external definition maps arguments to key bytes,value bytes,entry count. Dependency definition absent from supplied header."
+  },
+  "no_context_recheck": {
+    "status": "passed",
+    "run": "hill_control",
+    "update": 500,
+    "saved_ac_version": 10197,
+    "runtime_ac_version": 10198,
+    "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/hill_control/selected/update_00500/reader",
+    "microbatch": 2,
+    "scope": "Original all-held list, same length sorting and batch partners, no decoding; compare original rounded per-token log-probabilities.",
+    "max_answer_nll_difference": 0.0,
+    "mean_answer_nll_difference": 0.0,
+    "torch_version": "2.13.0+cu130",
+    "rows": [
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+        "original_answer_nll": 1.29502,
+        "rechecked_answer_nll": 1.29502,
+        "difference": 0.0,
+        "original_student_tokens": 424,
+        "rechecked_student_tokens": 424
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:34:06cafccd01e38f4a:0",
+        "original_answer_nll": 1.593752,
+        "rechecked_answer_nll": 1.593752,
+        "difference": 0.0,
+        "original_student_tokens": 433,
+        "rechecked_student_tokens": 433
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:51:6fdde0a0eede9a02:0",
+        "original_answer_nll": 1.5954333333333333,
+        "rechecked_answer_nll": 1.5954333333333333,
+        "difference": 0.0,
+        "original_student_tokens": 444,
+        "rechecked_student_tokens": 444
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:215:89483ebd01e8c7c6:0",
+        "original_answer_nll": 1.1196809523809523,
+        "rechecked_answer_nll": 1.1196809523809523,
+        "difference": 0.0,
+        "original_student_tokens": 419,
+        "rechecked_student_tokens": 419
+      },
+      {
+        "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:4:2adc2846ef98019c:0",
+        "original_answer_nll": 1.4305772727272728,
+        "rechecked_answer_nll": 1.4305772727272728,
+        "difference": 0.0,
+        "original_student_tokens": 452,
+        "rechecked_student_tokens": 452
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+        "original_answer_nll": 1.339255,
+        "rechecked_answer_nll": 1.339255,
+        "difference": 0.0,
+        "original_student_tokens": 416,
+        "rechecked_student_tokens": 416
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:317:e6416f4186c41bd5:0",
+        "original_answer_nll": 1.877375,
+        "rechecked_answer_nll": 1.877375,
+        "difference": 0.0,
+        "original_student_tokens": 450,
+        "rechecked_student_tokens": 450
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:43:a254f3e834bcaf78:0",
+        "original_answer_nll": 1.2471640000000002,
+        "rechecked_answer_nll": 1.2471640000000002,
+        "difference": 0.0,
+        "original_student_tokens": 445,
+        "rechecked_student_tokens": 445
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:104:86b8e2a1af5543a6:0",
+        "original_answer_nll": 1.4446136363636364,
+        "rechecked_answer_nll": 1.4446136363636364,
+        "difference": 0.0,
+        "original_student_tokens": 420,
+        "rechecked_student_tokens": 420
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+        "original_answer_nll": 2.4618827586206895,
+        "rechecked_answer_nll": 2.4618827586206895,
+        "difference": 0.0,
+        "original_student_tokens": 433,
+        "rechecked_student_tokens": 433
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:495:545721c9a6c0d3b7:0",
+        "original_answer_nll": 0.75589,
+        "rechecked_answer_nll": 0.75589,
+        "difference": 0.0,
+        "original_student_tokens": 428,
+        "rechecked_student_tokens": 428
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+        "original_answer_nll": 1.635868,
+        "rechecked_answer_nll": 1.635868,
+        "difference": 0.0,
+        "original_student_tokens": 437,
+        "rechecked_student_tokens": 437
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:8:855b8499db6b289e:0",
+        "original_answer_nll": 0.9043761904761906,
+        "rechecked_answer_nll": 0.9043761904761906,
+        "difference": 0.0,
+        "original_student_tokens": 463,
+        "rechecked_student_tokens": 463
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:113:ba2899ad5c9a5342:0",
+        "original_answer_nll": 1.1775208333333333,
+        "rechecked_answer_nll": 1.1775208333333333,
+        "difference": 0.0,
+        "original_student_tokens": 434,
+        "rechecked_student_tokens": 434
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:228:c48aea5a0811af19:0",
+        "original_answer_nll": 2.787716666666667,
+        "rechecked_answer_nll": 2.787716666666667,
+        "difference": 0.0,
+        "original_student_tokens": 408,
+        "rechecked_student_tokens": 408
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:555:a889e6fbc311ebc5:0",
+        "original_answer_nll": 1.3064866666666668,
+        "rechecked_answer_nll": 1.3064866666666668,
+        "difference": 0.0,
+        "original_student_tokens": 429,
+        "rechecked_student_tokens": 429
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:256:23767ddda07ab252:0",
+        "original_answer_nll": 0.66,
+        "rechecked_answer_nll": 0.66,
+        "difference": 0.0,
+        "original_student_tokens": 431,
+        "rechecked_student_tokens": 431
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:367:9fa873a21e8973b4:0",
+        "original_answer_nll": 2.2876,
+        "rechecked_answer_nll": 2.2876,
+        "difference": 0.0,
+        "original_student_tokens": 424,
+        "rechecked_student_tokens": 424
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:254:5dc5baf913fb62d4:0",
+        "original_answer_nll": 2.3941500000000002,
+        "rechecked_answer_nll": 2.3941500000000002,
+        "difference": 0.0,
+        "original_student_tokens": 446,
+        "rechecked_student_tokens": 446
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:195:be4803fcedbb80bd:0",
+        "original_answer_nll": 1.6444263157894736,
+        "rechecked_answer_nll": 1.6444263157894736,
+        "difference": 0.0,
+        "original_student_tokens": 462,
+        "rechecked_student_tokens": 462
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:172:6127f5c86879b4c3:0",
+        "original_answer_nll": 1.7848772727272726,
+        "rechecked_answer_nll": 1.7848772727272726,
+        "difference": 0.0,
+        "original_student_tokens": 436,
+        "rechecked_student_tokens": 436
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:299:d9a7ec351051774c:0",
+        "original_answer_nll": 1.7798272727272726,
+        "rechecked_answer_nll": 1.7798272727272726,
+        "difference": 0.0,
+        "original_student_tokens": 425,
+        "rechecked_student_tokens": 425
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:493:24ed4ce6d64411a1:0",
+        "original_answer_nll": 2.8596428571428567,
+        "rechecked_answer_nll": 2.8596428571428567,
+        "difference": 0.0,
+        "original_student_tokens": 415,
+        "rechecked_student_tokens": 415
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:313:4081aacf79b1b94b:0",
+        "original_answer_nll": 1.07725,
+        "rechecked_answer_nll": 1.07725,
+        "difference": 0.0,
+        "original_student_tokens": 446,
+        "rechecked_student_tokens": 446
+      },
+      {
+        "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:42:11b9b02fd9bca823:0",
+        "original_answer_nll": 3.3461,
+        "rechecked_answer_nll": 3.3461,
+        "difference": 0.0,
+        "original_student_tokens": 429,
+        "rechecked_student_tokens": 429
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:128:e5d972a3dfeb4425:0",
+        "original_answer_nll": 1.73081,
+        "rechecked_answer_nll": 1.73081,
+        "difference": 0.0,
+        "original_student_tokens": 422,
+        "rechecked_student_tokens": 422
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:474:9651f63084be5eee:0",
+        "original_answer_nll": 2.156283333333333,
+        "rechecked_answer_nll": 2.156283333333333,
+        "difference": 0.0,
+        "original_student_tokens": 422,
+        "rechecked_student_tokens": 422
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:242:33180160d794f93c:0",
+        "original_answer_nll": 2.1669434782608694,
+        "rechecked_answer_nll": 2.1669434782608694,
+        "difference": 0.0,
+        "original_student_tokens": 425,
+        "rechecked_student_tokens": 425
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:149:fee17604735987d1:0",
+        "original_answer_nll": 1.6196000000000002,
+        "rechecked_answer_nll": 1.6196000000000002,
+        "difference": 0.0,
+        "original_student_tokens": 434,
+        "rechecked_student_tokens": 434
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:43:b95a0b30327d06b1:0",
+        "original_answer_nll": 1.000557142857143,
+        "rechecked_answer_nll": 1.000557142857143,
+        "difference": 0.0,
+        "original_student_tokens": 441,
+        "rechecked_student_tokens": 441
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:131:1330d324692a53d9:0",
+        "original_answer_nll": 1.471904347826087,
+        "rechecked_answer_nll": 1.471904347826087,
+        "difference": 0.0,
+        "original_student_tokens": 449,
+        "rechecked_student_tokens": 449
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:165:a3ea5870ff862595:0",
+        "original_answer_nll": 0.963596,
+        "rechecked_answer_nll": 0.963596,
+        "difference": 0.0,
+        "original_student_tokens": 447,
+        "rechecked_student_tokens": 447
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:187:f70a357c668ba9a1:0",
+        "original_answer_nll": 7.025433333333333,
+        "rechecked_answer_nll": 7.025433333333333,
+        "difference": 0.0,
+        "original_student_tokens": 425,
+        "rechecked_student_tokens": 425
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:225:4ecef38afc69de31:0",
+        "original_answer_nll": 0.824476923076923,
+        "rechecked_answer_nll": 0.824476923076923,
+        "difference": 0.0,
+        "original_student_tokens": 421,
+        "rechecked_student_tokens": 421
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:466:a700a6b92e5f04f9:0",
+        "original_answer_nll": 2.3333384615384616,
+        "rechecked_answer_nll": 2.3333384615384616,
+        "difference": 0.0,
+        "original_student_tokens": 455,
+        "rechecked_student_tokens": 455
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:67:22ee4510407593f0:0",
+        "original_answer_nll": 3.3914,
+        "rechecked_answer_nll": 3.3914,
+        "difference": 0.0,
+        "original_student_tokens": 439,
+        "rechecked_student_tokens": 439
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:297:a417245decd9548f:0",
+        "original_answer_nll": 2.14285,
+        "rechecked_answer_nll": 2.14285,
+        "difference": 0.0,
+        "original_student_tokens": 410,
+        "rechecked_student_tokens": 410
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:238:ffe5f9054fa0d6fa:0",
+        "original_answer_nll": 0.9066583333333335,
+        "rechecked_answer_nll": 0.9066583333333335,
+        "difference": 0.0,
+        "original_student_tokens": 412,
+        "rechecked_student_tokens": 412
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:434:82a6d7468db168e0:0",
+        "original_answer_nll": 2.0646999999999998,
+        "rechecked_answer_nll": 2.0646999999999998,
+        "difference": 0.0,
+        "original_student_tokens": 423,
+        "rechecked_student_tokens": 423
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:436:8409565f6c92be58:0",
+        "original_answer_nll": 2.0392378378378377,
+        "rechecked_answer_nll": 2.0392378378378377,
+        "difference": 0.0,
+        "original_student_tokens": 467,
+        "rechecked_student_tokens": 467
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:469:0c013addad13c363:0",
+        "original_answer_nll": 1.7718333333333334,
+        "rechecked_answer_nll": 1.7718333333333334,
+        "difference": 0.0,
+        "original_student_tokens": 409,
+        "rechecked_student_tokens": 409
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:314:29b98bfecd1d1dce:0",
+        "original_answer_nll": 0.8673000000000001,
+        "rechecked_answer_nll": 0.8673000000000001,
+        "difference": 0.0,
+        "original_student_tokens": 422,
+        "rechecked_student_tokens": 422
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:172:bb5a1ec72fcaf354:0",
+        "original_answer_nll": 2.970466666666667,
+        "rechecked_answer_nll": 2.970466666666667,
+        "difference": 0.0,
+        "original_student_tokens": 425,
+        "rechecked_student_tokens": 425
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:5:ba36ccc8dc4ac2b3:0",
+        "original_answer_nll": 1.5514548387096776,
+        "rechecked_answer_nll": 1.5514548387096776,
+        "difference": 0.0,
+        "original_student_tokens": 441,
+        "rechecked_student_tokens": 441
+      },
+      {
+        "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:89:9a8411d4bc97aa5a:0",
+        "original_answer_nll": 1.17855,
+        "rechecked_answer_nll": 1.17855,
+        "difference": 0.0,
+        "original_student_tokens": 406,
+        "rechecked_student_tokens": 406
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:65:c1c43aed65e8765b:0",
+        "original_answer_nll": 2.358364705882353,
+        "rechecked_answer_nll": 2.358364705882353,
+        "difference": 0.0,
+        "original_student_tokens": 429,
+        "rechecked_student_tokens": 429
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:345:e52a1e9b23f9c343:0",
+        "original_answer_nll": 1.6275833333333332,
+        "rechecked_answer_nll": 1.6275833333333332,
+        "difference": 0.0,
+        "original_student_tokens": 442,
+        "rechecked_student_tokens": 442
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:293:4b7e1cce6bf2394e:0",
+        "original_answer_nll": 2.0198161290322583,
+        "rechecked_answer_nll": 2.0198161290322583,
+        "difference": 0.0,
+        "original_student_tokens": 445,
+        "rechecked_student_tokens": 445
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:329:4c09427d9d896bb2:0",
+        "original_answer_nll": 2.634779411764706,
+        "rechecked_answer_nll": 2.634779411764706,
+        "difference": 0.0,
+        "original_student_tokens": 468,
+        "rechecked_student_tokens": 468
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:125:8c029b2673909da9:0",
+        "original_answer_nll": 8.2848,
+        "rechecked_answer_nll": 8.2848,
+        "difference": 0.0,
+        "original_student_tokens": 421,
+        "rechecked_student_tokens": 421
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:331:5cc65ccb3cb55da0:0",
+        "original_answer_nll": 2.51035,
+        "rechecked_answer_nll": 2.51035,
+        "difference": 0.0,
+        "original_student_tokens": 436,
+        "rechecked_student_tokens": 436
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:50:1ffad2afefccf3a5:0",
+        "original_answer_nll": 1.5392,
+        "rechecked_answer_nll": 1.5392,
+        "difference": 0.0,
+        "original_student_tokens": 433,
+        "rechecked_student_tokens": 433
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:325:aa293860d590ab5c:0",
+        "original_answer_nll": 2.579957894736842,
+        "rechecked_answer_nll": 2.579957894736842,
+        "difference": 0.0,
+        "original_student_tokens": 415,
+        "rechecked_student_tokens": 415
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:376:88cc316a18d14799:0",
+        "original_answer_nll": 1.5997,
+        "rechecked_answer_nll": 1.5997,
+        "difference": 0.0,
+        "original_student_tokens": 419,
+        "rechecked_student_tokens": 419
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:271:ee9f439e65f3b86c:0",
+        "original_answer_nll": 0.67451,
+        "rechecked_answer_nll": 0.67451,
+        "difference": 0.0,
+        "original_student_tokens": 452,
+        "rechecked_student_tokens": 452
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:457:8637ac81d68d9d01:0",
+        "original_answer_nll": 0.7212,
+        "rechecked_answer_nll": 0.7212,
+        "difference": 0.0,
+        "original_student_tokens": 419,
+        "rechecked_student_tokens": 419
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:27:bb99223e6735bfdf:0",
+        "original_answer_nll": 4.2531,
+        "rechecked_answer_nll": 4.2531,
+        "difference": 0.0,
+        "original_student_tokens": 430,
+        "rechecked_student_tokens": 430
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:272:a279452d4e436332:0",
+        "original_answer_nll": 1.0799320000000001,
+        "rechecked_answer_nll": 1.0799320000000001,
+        "difference": 0.0,
+        "original_student_tokens": 427,
+        "rechecked_student_tokens": 427
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:205:d1c57989194640d7:0",
+        "original_answer_nll": 2.1703699999999997,
+        "rechecked_answer_nll": 2.1703699999999997,
+        "difference": 0.0,
+        "original_student_tokens": 448,
+        "rechecked_student_tokens": 448
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:386:5250f83f167ced0d:0",
+        "original_answer_nll": 1.0650538461538461,
+        "rechecked_answer_nll": 1.0650538461538461,
+        "difference": 0.0,
+        "original_student_tokens": 454,
+        "rechecked_student_tokens": 454
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:308:de1dadea95c8efe0:0",
+        "original_answer_nll": 1.643962962962963,
+        "rechecked_answer_nll": 1.643962962962963,
+        "difference": 0.0,
+        "original_student_tokens": 459,
+        "rechecked_student_tokens": 459
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:339:e04db17f9a8e81d5:0",
+        "original_answer_nll": 1.5118,
+        "rechecked_answer_nll": 1.5118,
+        "difference": 0.0,
+        "original_student_tokens": 444,
+        "rechecked_student_tokens": 444
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:201:c537c602a7892fe7:0",
+        "original_answer_nll": 1.80745,
+        "rechecked_answer_nll": 1.80745,
+        "difference": 0.0,
+        "original_student_tokens": 418,
+        "rechecked_student_tokens": 418
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:279:14e1747129943430:0",
+        "original_answer_nll": 1.204661904761905,
+        "rechecked_answer_nll": 1.204661904761905,
+        "difference": 0.0,
+        "original_student_tokens": 453,
+        "rechecked_student_tokens": 453
+      },
+      {
+        "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:69:3c282e5f2c89aa5c:0",
+        "original_answer_nll": 0.7440483870967742,
+        "rechecked_answer_nll": 0.7440483870967742,
+        "difference": 0.0,
+        "original_student_tokens": 441,
+        "rechecked_student_tokens": 441
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:230:f90e40ecfaa3692c:0",
+        "original_answer_nll": 1.6439000000000001,
+        "rechecked_answer_nll": 1.6439000000000001,
+        "difference": 0.0,
+        "original_student_tokens": 413,
+        "rechecked_student_tokens": 413
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:242:659b32181ba0f57a:0",
+        "original_answer_nll": 0.8821125,
+        "rechecked_answer_nll": 0.8821125,
+        "difference": 0.0,
+        "original_student_tokens": 422,
+        "rechecked_student_tokens": 422
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:324:870ad99de4282196:0",
+        "original_answer_nll": 3.4436444444444447,
+        "rechecked_answer_nll": 3.4436444444444447,
+        "difference": 0.0,
+        "original_student_tokens": 413,
+        "rechecked_student_tokens": 413
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:3:d6b416fa3d9e41f4:0",
+        "original_answer_nll": 2.0461589743589745,
+        "rechecked_answer_nll": 2.0461589743589745,
+        "difference": 0.0,
+        "original_student_tokens": 459,
+        "rechecked_student_tokens": 459
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:351:fc98eb7967bbdb86:0",
+        "original_answer_nll": 1.7764333333333333,
+        "rechecked_answer_nll": 1.7764333333333333,
+        "difference": 0.0,
+        "original_student_tokens": 448,
+        "rechecked_student_tokens": 448
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:212:e93312bf95e71f31:0",
+        "original_answer_nll": 0.8144199999999999,
+        "rechecked_answer_nll": 0.8144199999999999,
+        "difference": 0.0,
+        "original_student_tokens": 410,
+        "rechecked_student_tokens": 410
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:21:98436efb85b1b4a0:0",
+        "original_answer_nll": 1.24535,
+        "rechecked_answer_nll": 1.24535,
+        "difference": 0.0,
+        "original_student_tokens": 434,
+        "rechecked_student_tokens": 434
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:71:1e0ebc7f203a1c9f:0",
+        "original_answer_nll": 0.5589702702702702,
+        "rechecked_answer_nll": 0.5589702702702702,
+        "difference": 0.0,
+        "original_student_tokens": 441,
+        "rechecked_student_tokens": 441
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:230:67ffb3c6b5208d10:0",
+        "original_answer_nll": 0.6330882352941177,
+        "rechecked_answer_nll": 0.6330882352941177,
+        "difference": 0.0,
+        "original_student_tokens": 449,
+        "rechecked_student_tokens": 449
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:171:007770e82e120321:0",
+        "original_answer_nll": 2.7003777777777778,
+        "rechecked_answer_nll": 2.7003777777777778,
+        "difference": 0.0,
+        "original_student_tokens": 413,
+        "rechecked_student_tokens": 413
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:399:e1d3671b763282f7:0",
+        "original_answer_nll": 2.6368199999999997,
+        "rechecked_answer_nll": 2.6368199999999997,
+        "difference": 0.0,
+        "original_student_tokens": 407,
+        "rechecked_student_tokens": 407
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:316:5cb570b88f16fe3c:0",
+        "original_answer_nll": 4.52325,
+        "rechecked_answer_nll": 4.52325,
+        "difference": 0.0,
+        "original_student_tokens": 418,
+        "rechecked_student_tokens": 418
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:82:85d3b0dd5f46993e:0",
+        "original_answer_nll": 0.7135733333333333,
+        "rechecked_answer_nll": 0.7135733333333333,
+        "difference": 0.0,
+        "original_student_tokens": 450,
+        "rechecked_student_tokens": 450
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:84:814d440a23aa2426:0",
+        "original_answer_nll": 2.745921212121212,
+        "rechecked_answer_nll": 2.745921212121212,
+        "difference": 0.0,
+        "original_student_tokens": 461,
+        "rechecked_student_tokens": 461
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:213:a3a77f99839461ee:0",
+        "original_answer_nll": 1.02286,
+        "rechecked_answer_nll": 1.02286,
+        "difference": 0.0,
+        "original_student_tokens": 447,
+        "rechecked_student_tokens": 447
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:73:982a40cd7903cd17:0",
+        "original_answer_nll": 0.6561625,
+        "rechecked_answer_nll": 0.6561625,
+        "difference": 0.0,
+        "original_student_tokens": 420,
+        "rechecked_student_tokens": 420
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:2:cccb8c9a93f84683:0",
+        "original_answer_nll": 2.270825,
+        "rechecked_answer_nll": 2.270825,
+        "difference": 0.0,
+        "original_student_tokens": 432,
+        "rechecked_student_tokens": 432
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:375:122e937202c9ef34:0",
+        "original_answer_nll": 1.05839,
+        "rechecked_answer_nll": 1.05839,
+        "difference": 0.0,
+        "original_student_tokens": 402,
+        "rechecked_student_tokens": 402
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:59:2ec894318e1119da:0",
+        "original_answer_nll": 2.403988,
+        "rechecked_answer_nll": 2.403988,
+        "difference": 0.0,
+        "original_student_tokens": 437,
+        "rechecked_student_tokens": 437
+      },
+      {
+        "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:98:87308029c513bafe:0",
+        "original_answer_nll": 2.4689,
+        "rechecked_answer_nll": 2.4689,
+        "difference": 0.0,
+        "original_student_tokens": 409,
+        "rechecked_student_tokens": 409
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:493:cdcf7b5e99a31d32:0",
+        "original_answer_nll": 1.2741307692307693,
+        "rechecked_answer_nll": 1.2741307692307693,
+        "difference": 0.0,
+        "original_student_tokens": 409,
+        "rechecked_student_tokens": 409
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:296:aacf297e750bb859:0",
+        "original_answer_nll": 1.3858727272727274,
+        "rechecked_answer_nll": 1.3858727272727274,
+        "difference": 0.0,
+        "original_student_tokens": 413,
+        "rechecked_student_tokens": 413
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:308:78001b404721f37d:0",
+        "original_answer_nll": 1.2318923076923076,
+        "rechecked_answer_nll": 1.2318923076923076,
+        "difference": 0.0,
+        "original_student_tokens": 463,
+        "rechecked_student_tokens": 463
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:371:61584cd3bcc60609:0",
+        "original_answer_nll": 2.0907142857142857,
+        "rechecked_answer_nll": 2.0907142857142857,
+        "difference": 0.0,
+        "original_student_tokens": 439,
+        "rechecked_student_tokens": 439
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:500:79498013db4c1e7f:0",
+        "original_answer_nll": 3.35373125,
+        "rechecked_answer_nll": 3.35373125,
+        "difference": 0.0,
+        "original_student_tokens": 430,
+        "rechecked_student_tokens": 430
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:473:ebfb8cc9f2b8183c:0",
+        "original_answer_nll": 2.0283333333333333,
+        "rechecked_answer_nll": 2.0283333333333333,
+        "difference": 0.0,
+        "original_student_tokens": 446,
+        "rechecked_student_tokens": 446
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:345:199643515ea7e4da:0",
+        "original_answer_nll": 2.1050999999999997,
+        "rechecked_answer_nll": 2.1050999999999997,
+        "difference": 0.0,
+        "original_student_tokens": 444,
+        "rechecked_student_tokens": 444
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:35:2865156df982ab9e:0",
+        "original_answer_nll": 1.599368181818182,
+        "rechecked_answer_nll": 1.599368181818182,
+        "difference": 0.0,
+        "original_student_tokens": 474,
+        "rechecked_student_tokens": 474
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:381:a00fd1bbc97aad32:0",
+        "original_answer_nll": 1.2059444444444445,
+        "rechecked_answer_nll": 1.2059444444444445,
+        "difference": 0.0,
+        "original_student_tokens": 423,
+        "rechecked_student_tokens": 423
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:94:3d68a07e05894572:0",
+        "original_answer_nll": 2.470557142857143,
+        "rechecked_answer_nll": 2.470557142857143,
+        "difference": 0.0,
+        "original_student_tokens": 433,
+        "rechecked_student_tokens": 433
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:11:beb7b13f3d176952:0",
+        "original_answer_nll": 1.26280625,
+        "rechecked_answer_nll": 1.26280625,
+        "difference": 0.0,
+        "original_student_tokens": 436,
+        "rechecked_student_tokens": 436
+      },
+      {
+        "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:159:04fed4813751a0c8:0",
+        "original_answer_nll": 1.3340874999999999,
+        "rechecked_answer_nll": 1.3340874999999999,
+        "difference": 0.0,
+        "original_student_tokens": 456,
+        "rechecked_student_tokens": 456
+      },
+      {
+        "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:271:745509975c6f43d8:0",
+        "original_answer_nll": 3.1067666666666667,
+        "rechecked_answer_nll": 3.1067666666666667,
+        "difference": 0.0,
+        "original_student_tokens": 424,
+        "rechecked_student_tokens": 424
+      },
+      {
+        "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:26:16a4345c6997f1f1:0",
+        "original_answer_nll": 2.0679333333333334,
+        "rechecked_answer_nll": 2.0679333333333334,
+        "difference": 0.0,
+        "original_student_tokens": 422,
+        "rechecked_student_tokens": 422
+      },
+      {
+        "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:54:04dc05031284503e:0",
+        "original_answer_nll": 3.571475,
+        "rechecked_answer_nll": 3.571475,
+        "difference": 0.0,
+        "original_student_tokens": 450,
+        "rechecked_student_tokens": 450
+      }
+    ]
+  },
+  "rows": [
+    {
+      "index": 0,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+      "domain": "code",
+      "question": "What is the default capacity for key-value pairs in the CrashKeyStorage type used by the crash reporter?",
+      "gold": "The CrashKeyStorage type has a default capacity of 256 for both keys and values.",
+      "answers": {
+        "AC": "The default capacity is 256 key-value pairs.",
+        "full context": "The default capacity for key-value pairs in the CrashKeyStorage type is 256.",
+        "no context": "100"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe default capacity is 256 key-value pairs.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe default capacity for key-value pairs in the CrashKeyStorage type is 256.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n100\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.851995,
+        "full context": 0.572085,
+        "no context": 1.29502
+      },
+      "gold_token_scores": [
+        {
+          "text": "The",
+          "nll": {
+            "held AC": 0.5847,
+            "held full context": 0.559,
+            "held no context": 2.9428
+          }
+        },
+        {
+          "text": " Crash",
+          "nll": {
+            "held AC": 5.5359,
+            "held full context": 4.6537,
+            "held no context": 4.5229
+          }
+        },
+        {
+          "text": "Key",
+          "nll": {
+            "held AC": 0.0021,
+            "held full context": 0.0003,
+            "held no context": 0.0033
+          }
+        },
+        {
+          "text": "Storage",
+          "nll": {
+            "held AC": 0.0003,
+            "held full context": 0.0001,
+            "held no context": 0.0006
+          }
+        },
+        {
+          "text": " type",
+          "nll": {
+            "held AC": 0.5439,
+            "held full context": 0.0304,
+            "held no context": 0.0402
+          }
+        },
+        {
+          "text": " has",
+          "nll": {
+            "held AC": 0.6249,
+            "held full context": 0.9466,
+            "held no context": 1.0565
+          }
+        },
+        {
+          "text": " a",
+          "nll": {
+            "held AC": 0.008,
+            "held full context": 0.0596,
+            "held no context": 0.0283
+          }
+        },
+        {
+          "text": " default",
+          "nll": {
+            "held AC": 0.2772,
+            "held full context": 0.0396,
+            "held no context": 0.0061
+          }
+        },
+        {
+          "text": " capacity",
+          "nll": {
+            "held AC": 0.0317,
+            "held full context": 0.0133,
+            "held no context": 0.0014
+          }
+        },
+        {
+          "text": " of",
+          "nll": {
+            "held AC": 0.0747,
+            "held full context": 0.2431,
+            "held no context": 0.3107
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.0145,
+            "held full context": 0.0055,
+            "held no context": 0.0052
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 0.1863,
+            "held full context": 0.1446,
+            "held no context": 2.0648
+          }
+        },
+        {
+          "text": "5",
+          "nll": {
+            "held AC": 0.0406,
+            "held full context": 0.0029,
+            "held no context": 0.3487
+          }
+        },
+        {
+          "text": "6",
+          "nll": {
+            "held AC": 0.0086,
+            "held full context": 0.0005,
+            "held no context": 0.0323
+          }
+        },
+        {
+          "text": " for",
+          "nll": {
+            "held AC": 3.3457,
+            "held full context": 1.2896,
+            "held no context": 3.7259
+          }
+        },
+        {
+          "text": " both",
+          "nll": {
+            "held AC": 5.4408,
+            "held full context": 1.9394,
+            "held no context": 10.5111
+          }
+        },
+        {
+          "text": " keys",
+          "nll": {
+            "held AC": 0.2501,
+            "held full context": 0.7784,
+            "held no context": 0.132
+          }
+        },
+        {
+          "text": " and",
+          "nll": {
+            "held AC": 0.0037,
+            "held full context": 0.0101,
+            "held no context": 0.0009
+          }
+        },
+        {
+          "text": " values",
+          "nll": {
+            "held AC": 0.0163,
+            "held full context": 0.0045,
+            "held no context": 0.0065
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.0499,
+            "held full context": 0.7205,
+            "held no context": 0.1602
+          }
+        }
+      ],
+      "source_ids": [
+        "electron/electron@5e78330c/atom/common/crash_reporter/linux/crash_dump_handler.h"
+      ],
+      "analysis": {
+        "title": "Capacity needs a unit\u2014and a dependency definition",
+        "classification": "Additional unsafe reference",
+        "finding": "The supplied header contains the alias below but does not define its template arguments. Both decodes interpret 256 as the number of entries. Breakpad\u2019s supplemental definition identifies the arguments as key bytes, value bytes and entry count: this alias therefore describes 64 entries with 256-byte key/value buffers. The question and gold conflate these quantities.",
+        "nll_reading": "This is separate from the two errors proved directly by the supplied source. The dependency definition was consulted during analysis; it was not included in the generator\u2019s shown header. Similar wording between gold and model output is not a correctness check.",
+        "support_excerpt": "typedef google_breakpad::NonAllocatingMap<256, 256, 64> CrashKeyStorage;"
+      },
+      "rechecked_no_context_nll_error": 0.0010300000000000864
+    },
+    {
+      "index": 1,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:34:06cafccd01e38f4a:0",
+      "domain": "documents",
+      "question": "According to the study, what specific hemodynamic mechanism causes fainting in Control-Faint subjects during upright tilt testing?",
+      "gold": "Fainting in Control-Faint subjects is caused by decreased systemic vascular resistance and reduced splanchnic arterial vasoconstriction.",
+      "answers": {
+        "AC": "Fainting is caused by reduced splanchnic perfusion leading to decreased central blood volume and hypotension.",
+        "full context": "Decreased systemic vascular resistance (SVR) caused by impaired splanchnic arterial vasoconstriction.",
+        "no context": "The study states that fainting in Control-Faint subjects during upright tilt testing is caused by a specific hemodynamic mechanism: a failure of the sympathetic nervous system to maintain adequate vasoconstriction, leading to a significant drop in blood pressure (hypotension) and/or a decrease in heart rate (bradycardia), resulting in cerebral hypoperfusion."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nFainting is caused by reduced splanchnic perfusion leading to decreased central blood volume and hypotension.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nDecreased systemic vascular resistance (SVR) caused by impaired splanchnic arterial vasoconstriction.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe study states that fainting in Control-Faint subjects during upright tilt testing is caused by a specific hemodynamic mechanism: a failure of the sympathetic nervous system to maintain adequate vasoconstriction, leading to a significant drop in blood pressure (hypotension) and/or a decrease in heart rate (bradycardia), resulting in cerebral hypoperfusion.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.975992,
+        "full context": 0.534408,
+        "no context": 1.593752
+      },
+      "gold_token_scores": [
+        {
+          "text": "F",
+          "nll": {
+            "held AC": 1.6764,
+            "held full context": 4.621,
+            "held no context": 6.7038
+          }
+        },
+        {
+          "text": "ainting",
+          "nll": {
+            "held AC": 0.0142,
+            "held full context": 0.0028,
+            "held no context": 0.2726
+          }
+        },
+        {
+          "text": " in",
+          "nll": {
+            "held AC": 2.4646,
+            "held full context": 0.0096,
+            "held no context": 0.1205
+          }
+        },
+        {
+          "text": " Control",
+          "nll": {
+            "held AC": 0.0971,
+            "held full context": 0.0003,
+            "held no context": 0.0037
+          }
+        },
+        {
+          "text": "-F",
+          "nll": {
+            "held AC": 0.0022,
+            "held full context": 0.0006,
+            "held no context": 0.0002
+          }
+        },
+        {
+          "text": "aint",
+          "nll": {
+            "held AC": 0.0004,
+            "held full context": 0.0001,
+            "held no context": 0.0
+          }
+        },
+        {
+          "text": " subjects",
+          "nll": {
+            "held AC": 0.0776,
+            "held full context": 0.0001,
+            "held no context": 0.0003
+          }
+        },
+        {
+          "text": " is",
+          "nll": {
+            "held AC": 0.1169,
+            "held full context": 0.042,
+            "held no context": 1.3168
+          }
+        },
+        {
+          "text": " caused",
+          "nll": {
+            "held AC": 0.1194,
+            "held full context": 0.0001,
+            "held no context": 0.0033
+          }
+        },
+        {
+          "text": " by",
+          "nll": {
+            "held AC": 0.0524,
+            "held full context": 0.0001,
+            "held no context": 0.0004
+          }
+        },
+        {
+          "text": " decreased",
+          "nll": {
+            "held AC": 1.8731,
+            "held full context": 0.0609,
+            "held no context": 6.371
+          }
+        },
+        {
+          "text": " systemic",
+          "nll": {
+            "held AC": 3.8215,
+            "held full context": 0.0304,
+            "held no context": 3.6803
+          }
+        },
+        {
+          "text": " vascular",
+          "nll": {
+            "held AC": 0.4637,
+            "held full context": 0.0,
+            "held no context": 0.1134
+          }
+        },
+        {
+          "text": " resistance",
+          "nll": {
+            "held AC": 0.0143,
+            "held full context": 0.0,
+            "held no context": 0.0038
+          }
+        },
+        {
+          "text": " and",
+          "nll": {
+            "held AC": 2.187,
+            "held full context": 6.168,
+            "held no context": 2.0111
+          }
+        },
+        {
+          "text": " reduced",
+          "nll": {
+            "held AC": 1.2644,
+            "held full context": 0.9857,
+            "held no context": 2.3719
+          }
+        },
+        {
+          "text": " s",
+          "nll": {
+            "held AC": 1.8408,
+            "held full context": 0.0089,
+            "held no context": 9.3192
+          }
+        },
+        {
+          "text": "plan",
+          "nll": {
+            "held AC": 0.0009,
+            "held full context": 0.0,
+            "held no context": 0.0055
+          }
+        },
+        {
+          "text": "chn",
+          "nll": {
+            "held AC": 0.0003,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "ic",
+          "nll": {
+            "held AC": 0.0011,
+            "held full context": 0.0,
+            "held no context": 0.0007
+          }
+        },
+        {
+          "text": " arterial",
+          "nll": {
+            "held AC": 5.2601,
+            "held full context": 0.0257,
+            "held no context": 3.0172
+          }
+        },
+        {
+          "text": " vaso",
+          "nll": {
+            "held AC": 2.6421,
+            "held full context": 0.002,
+            "held no context": 2.8588
+          }
+        },
+        {
+          "text": "con",
+          "nll": {
+            "held AC": 0.0037,
+            "held full context": 0.0001,
+            "held no context": 0.0042
+          }
+        },
+        {
+          "text": "striction",
+          "nll": {
+            "held AC": 0.0305,
+            "held full context": 0.0,
+            "held no context": 0.0234
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.3751,
+            "held full context": 1.4018,
+            "held no context": 1.6416
+          }
+        }
+      ],
+      "source_ids": [
+        "bright/biology/fainting_mechanism/PMC6597794_1"
+      ],
+      "analysis": {
+        "title": "AC changes the documented mechanism",
+        "classification": "Substantive AC error",
+        "finding": "The passage distinguishes two groups. For Control-Faint, it reports reduced vascular resistance and increased splanchnic blood flow. AC instead says reduced splanchnic perfusion; that reverses the relevant flow direction. Full context preserves the requested mechanism.",
+        "nll_reading": "This is a real evidence-use failure, beyond a paraphrase. The AC loss is higher on mechanism-bearing tokens including \u201csystemic\u201d and \u201carterial,\u201d consistent with\u2014but not proof of\u2014the observed failure.",
+        "support_excerpt": "CO increased in Control-Faint because of reduced splanchnic vascular resistance; splanchnic pooling was similar to Control-noFaint.\n[\u2026]\nDecreased SVR and splanchnic arterial vasoconstriction is the mechanism for faint in Control-Faint.\n[\u2026]\nincreased splanchnic blood flow and reduced splanchnic resistance."
+      },
+      "rechecked_no_context_nll_error": 0.0049680000000000835
+    },
+    {
+      "index": 2,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:51:6fdde0a0eede9a02:0",
+      "domain": "numeric",
+      "question": "What was the impact of adopting ASU 2020-06 on the Company's unaudited consolidated financial statements as of January 1, 2024?",
+      "gold": "The adoption had no impact.",
+      "answers": {
+        "AC": "The adoption had no impact on the Company's unaudited consolidated financial statements.",
+        "full context": "The adoption of ASU 2020-06 had no impact on the Company's financial position, results of operations, or cash flows.",
+        "no context": "The adoption of ASU 2020-06 had no impact on the Company's unaudited consolidated financial statements as of January 1, 2024."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe adoption had no impact on the Company's unaudited consolidated financial statements.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe adoption of ASU 2020-06 had no impact on the Company's financial position, results of operations, or cash flows.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe adoption of ASU 2020-06 had no impact on the Company's unaudited consolidated financial statements as of January 1, 2024.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.6479333333333334,
+        "full context": 0.8959,
+        "no context": 1.5954333333333333
+      },
+      "gold_token_scores": [
+        {
+          "text": "The",
+          "nll": {
+            "held AC": 0.2678,
+            "held full context": 0.1766,
+            "held no context": 1.1549
+          }
+        },
+        {
+          "text": " adoption",
+          "nll": {
+            "held AC": 0.0269,
+            "held full context": 0.0013,
+            "held no context": 0.6931
+          }
+        },
+        {
+          "text": " had",
+          "nll": {
+            "held AC": 0.3937,
+            "held full context": 2.5117,
+            "held no context": 5.614
+          }
+        },
+        {
+          "text": " no",
+          "nll": {
+            "held AC": 0.0047,
+            "held full context": 0.0,
+            "held no context": 0.0137
+          }
+        },
+        {
+          "text": " impact",
+          "nll": {
+            "held AC": 0.1628,
+            "held full context": 0.0267,
+            "held no context": 0.4825
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 3.0317,
+            "held full context": 2.6591,
+            "held no context": 1.6144
+          }
+        }
+      ],
+      "source_ids": [
+        "loong/2024-C-Bond Systems, Inc-j.txt"
+      ],
+      "analysis": {
+        "title": "All supplied answers describe no impact",
+        "classification": "Wording difference",
+        "finding": "The source explicitly says adopting this standard on January 1, 2024 had no impact on the company\u2019s unaudited consolidated financial statements. Both generated responses convey that outcome.",
+        "nll_reading": "The reference is just six tokens. Different opening wording or continuing after \u201cimpact\u201d can contribute a large average loss without changing the outcome.",
+        "support_excerpt": "The adoption of this standard on January 1, 2024 had no impact on the Company\u2019s unaudited consolidated financial statements."
+      },
+      "rechecked_no_context_nll_error": 0.018716666666666493
+    },
+    {
+      "index": 3,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:215:89483ebd01e8c7c6:0",
+      "domain": "web",
+      "question": "In which decade did Traralgon begin to transition away from a farming-based economy?",
+      "gold": "Traralgon began moving away from a farming-based economy in the 1930s.",
+      "answers": {
+        "AC": "The 1930s.",
+        "full context": "1930s",
+        "no context": "1950s"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe 1930s.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n1930s\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n1950s\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.3140095238095238,
+        "full context": 0.9306095238095238,
+        "no context": 1.1196809523809523
+      },
+      "gold_token_scores": [
+        {
+          "text": "Tr",
+          "nll": {
+            "held AC": 2.1076,
+            "held full context": 8.1877,
+            "held no context": 6.159
+          }
+        },
+        {
+          "text": "ar",
+          "nll": {
+            "held AC": 0.0003,
+            "held full context": 0.0005,
+            "held no context": 0.0032
+          }
+        },
+        {
+          "text": "al",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0005,
+            "held no context": 0.0003
+          }
+        },
+        {
+          "text": "gon",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0001,
+            "held no context": 0.0003
+          }
+        },
+        {
+          "text": " began",
+          "nll": {
+            "held AC": 0.0742,
+            "held full context": 0.0025,
+            "held no context": 0.1344
+          }
+        },
+        {
+          "text": " moving",
+          "nll": {
+            "held AC": 3.5074,
+            "held full context": 11.265,
+            "held no context": 13.6327
+          }
+        },
+        {
+          "text": " away",
+          "nll": {
+            "held AC": 0.0452,
+            "held full context": 0.0006,
+            "held no context": 0.0888
+          }
+        },
+        {
+          "text": " from",
+          "nll": {
+            "held AC": 0.0002,
+            "held full context": 0.0,
+            "held no context": 0.0006
+          }
+        },
+        {
+          "text": " a",
+          "nll": {
+            "held AC": 0.6366,
+            "held full context": 0.0254,
+            "held no context": 0.3203
+          }
+        },
+        {
+          "text": " farming",
+          "nll": {
+            "held AC": 0.0146,
+            "held full context": 0.0017,
+            "held no context": 0.0218
+          }
+        },
+        {
+          "text": "-based",
+          "nll": {
+            "held AC": 0.1441,
+            "held full context": 0.0209,
+            "held no context": 0.076
+          }
+        },
+        {
+          "text": " economy",
+          "nll": {
+            "held AC": 0.0009,
+            "held full context": 0.0001,
+            "held no context": 0.0008
+          }
+        },
+        {
+          "text": " in",
+          "nll": {
+            "held AC": 0.0382,
+            "held full context": 0.005,
+            "held no context": 0.0736
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.0008,
+            "held full context": 0.0003,
+            "held no context": 0.0033
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.0041,
+            "held full context": 0.0007,
+            "held no context": 0.0334
+          }
+        },
+        {
+          "text": "1",
+          "nll": {
+            "held AC": 0.0002,
+            "held full context": 0.0,
+            "held no context": 0.0033
+          }
+        },
+        {
+          "text": "9",
+          "nll": {
+            "held AC": 0.001,
+            "held full context": 0.0,
+            "held no context": 0.1909
+          }
+        },
+        {
+          "text": "3",
+          "nll": {
+            "held AC": 0.0111,
+            "held full context": 0.0001,
+            "held no context": 2.5436
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.0003
+          }
+        },
+        {
+          "text": "s",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0003,
+            "held no context": 0.0004
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.0076,
+            "held full context": 0.0314,
+            "held no context": 0.2263
+          }
+        }
+      ],
+      "source_ids": [
+        "msmarco:train:944"
+      ],
+      "analysis": {
+        "title": "Full context answers correctly at NLL 0.931",
+        "classification": "Correct concise answer",
+        "finding": "Both answers identify the 1930s, matching the passage. Full context chooses a short answer rather than repeating the question in a sentence.",
+        "nll_reading": "About 99.5% of the full-context gold-answer loss is on the tokens \u201cTr\u201d and \u201c moving.\u201d Once the gold prefix is supplied, the date itself receives very little loss. A high loss on this specific phrasing does not make \u201c1930s\u201d incorrect.",
+        "support_excerpt": "It was not until the 1930s however that Traralgon began to move away from a farming based economy."
+      },
+      "rechecked_no_context_nll_error": 0.00254285714285718
+    },
+    {
+      "index": 4,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:4:2adc2846ef98019c:0",
+      "domain": "wiki",
+      "question": "Which two television series did Angela Cartwright star in during the 1950s and 1960s respectively, playing Linda Williams and Penny Robinson?",
+      "gold": "The Danny Thomas Show (1950s) and Lost in Space (1960s).",
+      "answers": {
+        "AC": "The Danny Thomas Show (1950s) and Lost in Space (1960s).",
+        "full context": "The Danny Thomas Show and Lost in Space",
+        "no context": "The Wonder Years and The Partridge Family"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Danny Thomas Show (1950s) and Lost in Space (1960s).\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Danny Thomas Show and Lost in Space\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Wonder Years and The Partridge Family\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.07479545454545454,
+        "full context": 0.1634,
+        "no context": 1.4305772727272728
+      },
+      "gold_token_scores": [
+        {
+          "text": "The",
+          "nll": {
+            "held AC": 0.4423,
+            "held full context": 0.0371,
+            "held no context": 0.4686
+          }
+        },
+        {
+          "text": " Danny",
+          "nll": {
+            "held AC": 0.3155,
+            "held full context": 0.0067,
+            "held no context": 11.5149
+          }
+        },
+        {
+          "text": " Thomas",
+          "nll": {
+            "held AC": 0.04,
+            "held full context": 0.0002,
+            "held no context": 8.9969
+          }
+        },
+        {
+          "text": " Show",
+          "nll": {
+            "held AC": 0.0057,
+            "held full context": 0.0001,
+            "held no context": 0.0232
+          }
+        },
+        {
+          "text": " (",
+          "nll": {
+            "held AC": 0.5686,
+            "held full context": 1.6418,
+            "held no context": 1.7812
+          }
+        },
+        {
+          "text": "1",
+          "nll": {
+            "held AC": 0.0404,
+            "held full context": 0.0244,
+            "held no context": 0.3147
+          }
+        },
+        {
+          "text": "9",
+          "nll": {
+            "held AC": 0.0004,
+            "held full context": 0.0,
+            "held no context": 0.0013
+          }
+        },
+        {
+          "text": "5",
+          "nll": {
+            "held AC": 0.0852,
+            "held full context": 0.0017,
+            "held no context": 0.5451
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.1085,
+            "held full context": 0.0005,
+            "held no context": 0.0571
+          }
+        },
+        {
+          "text": "s",
+          "nll": {
+            "held AC": 0.0006,
+            "held full context": 0.0001,
+            "held no context": 0.0029
+          }
+        },
+        {
+          "text": ")",
+          "nll": {
+            "held AC": 0.0043,
+            "held full context": 0.0169,
+            "held no context": 0.2043
+          }
+        },
+        {
+          "text": " and",
+          "nll": {
+            "held AC": 0.0002,
+            "held full context": 0.0011,
+            "held no context": 0.0228
+          }
+        },
+        {
+          "text": " Lost",
+          "nll": {
+            "held AC": 0.0004,
+            "held full context": 0.0001,
+            "held no context": 4.4214
+          }
+        },
+        {
+          "text": " in",
+          "nll": {
+            "held AC": 0.0002,
+            "held full context": 0.001,
+            "held no context": 0.0043
+          }
+        },
+        {
+          "text": " Space",
+          "nll": {
+            "held AC": 0.0002,
+            "held full context": 0.0,
+            "held no context": 0.0016
+          }
+        },
+        {
+          "text": " (",
+          "nll": {
+            "held AC": 0.0019,
+            "held full context": 0.0,
+            "held no context": 0.0004
+          }
+        },
+        {
+          "text": "1",
+          "nll": {
+            "held AC": 0.001,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "9",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0,
+            "held no context": 0.0
+          }
+        },
+        {
+          "text": "6",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.0263,
+            "held full context": 0.0,
+            "held no context": 0.0025
+          }
+        },
+        {
+          "text": "s",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.0
+          }
+        },
+        {
+          "text": ").",
+          "nll": {
+            "held AC": 0.0036,
+            "held full context": 1.8631,
+            "held no context": 3.1093
+          }
+        }
+      ],
+      "source_ids": [
+        "nq:train:1732"
+      ],
+      "analysis": {
+        "title": "The two television series are recovered",
+        "classification": "Correct answer",
+        "finding": "Both responses supply the requested series. Full context omits the redundant decade labels; AC reproduces the gold wording.",
+        "nll_reading": "Both views have low loss on this example. This establishes success here, not a universal low-NLL quality threshold.",
+        "support_excerpt": "Linda Williams [\u2026] in the 1950s TV series The Danny Thomas Show, and Penny Robinson, in the 1960s television series Lost in Space."
+      },
+      "rechecked_no_context_nll_error": 0.0013318181818182673
+    },
+    {
+      "index": 5,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+      "domain": "code",
+      "question": "Under what condition does the thread name include an additional suffix containing the total size parameter?",
+      "gold": "The thread name includes the total size suffix only when the totalSize parameter is greater than 1.",
+      "answers": {
+        "AC": "When the total size is greater than 1.",
+        "full context": "When the totalSize parameter is greater than 1.",
+        "no context": "When the thread is a worker thread in a thread pool."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nWhen the total size is greater than 1.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nWhen the totalSize parameter is greater than 1.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nWhen the thread is a worker thread in a thread pool.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.483965,
+        "full context": 0.37715,
+        "no context": 1.339255
+      },
+      "gold_token_scores": [
+        {
+          "text": "The",
+          "nll": {
+            "held AC": 1.372,
+            "held full context": 0.945,
+            "held no context": 2.2224
+          }
+        },
+        {
+          "text": " thread",
+          "nll": {
+            "held AC": 0.4476,
+            "held full context": 0.1285,
+            "held no context": 0.1245
+          }
+        },
+        {
+          "text": " name",
+          "nll": {
+            "held AC": 0.0351,
+            "held full context": 0.0004,
+            "held no context": 0.0092
+          }
+        },
+        {
+          "text": " includes",
+          "nll": {
+            "held AC": 0.0283,
+            "held full context": 0.0002,
+            "held no context": 0.0112
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.3765,
+            "held full context": 1.0237,
+            "held no context": 3.3145
+          }
+        },
+        {
+          "text": " total",
+          "nll": {
+            "held AC": 1.4077,
+            "held full context": 0.6864,
+            "held no context": 0.7954
+          }
+        },
+        {
+          "text": " size",
+          "nll": {
+            "held AC": 0.0598,
+            "held full context": 0.0313,
+            "held no context": 0.0008
+          }
+        },
+        {
+          "text": " suffix",
+          "nll": {
+            "held AC": 0.1667,
+            "held full context": 0.3381,
+            "held no context": 1.7928
+          }
+        },
+        {
+          "text": " only",
+          "nll": {
+            "held AC": 1.197,
+            "held full context": 3.3569,
+            "held no context": 2.7035
+          }
+        },
+        {
+          "text": " when",
+          "nll": {
+            "held AC": 0.9118,
+            "held full context": 0.5023,
+            "held no context": 0.6054
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.1392,
+            "held full context": 0.0918,
+            "held no context": 0.2183
+          }
+        },
+        {
+          "text": " total",
+          "nll": {
+            "held AC": 1.516,
+            "held full context": 0.0344,
+            "held no context": 1.6798
+          }
+        },
+        {
+          "text": "Size",
+          "nll": {
+            "held AC": 0.8477,
+            "held full context": 0.0993,
+            "held no context": 6.0857
+          }
+        },
+        {
+          "text": " parameter",
+          "nll": {
+            "held AC": 1.021,
+            "held full context": 0.209,
+            "held no context": 0.8963
+          }
+        },
+        {
+          "text": " is",
+          "nll": {
+            "held AC": 0.0434,
+            "held full context": 0.035,
+            "held no context": 0.0475
+          }
+        },
+        {
+          "text": " greater",
+          "nll": {
+            "held AC": 0.0646,
+            "held full context": 0.0214,
+            "held no context": 0.9141
+          }
+        },
+        {
+          "text": " than",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0,
+            "held no context": 0.0005
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.0239,
+            "held full context": 0.0034,
+            "held no context": 0.5328
+          }
+        },
+        {
+          "text": "1",
+          "nll": {
+            "held AC": 0.0129,
+            "held full context": 0.0004,
+            "held no context": 3.1111
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.0081,
+            "held full context": 0.0355,
+            "held no context": 1.7193
+          }
+        }
+      ],
+      "source_ids": [
+        "seata/seata@33275c72/common/src/main/java/com/alibaba/fescar/common/thread/NamedThreadFactory.java"
+      ],
+      "analysis": {
+        "title": "Both answers satisfy the condition",
+        "classification": "Wording difference",
+        "finding": "Both models recover the exact condition totalSize > 1. Full context scores 0.377 and AC 0.484 against the longer gold sentence; these numbers do not indicate a wrong answer.",
+        "nll_reading": "The full-context loss is concentrated on wording such as \u201conly,\u201d not on the threshold. The actual answer is shorter than the gold wording.",
+        "support_excerpt": "if (totalSize > 1) {\n    name += \"_\" + totalSize;\n}"
+      },
+      "rechecked_no_context_nll_error": 0.0011900000000000244
+    },
+    {
+      "index": 6,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:317:e6416f4186c41bd5:0",
+      "domain": "numeric",
+      "question": "By how much did the Company's total revenues decrease in thousands between the three months ended March 31, 2023 and the same period in 2024?",
+      "gold": "Total revenues decreased by $2,826 thousand.",
+      "answers": {
+        "AC": "Total revenues decreased by $897,000.",
+        "full context": "2,676,568",
+        "no context": "0"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nTotal revenues decreased by $897,000.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n2,676,568\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n0\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 1.0520833333333333,
+        "full context": 1.4798333333333333,
+        "no context": 1.877375
+      },
+      "gold_token_scores": [
+        {
+          "text": "Total",
+          "nll": {
+            "held AC": 1.104,
+            "held full context": 6.0388,
+            "held no context": 8.7525
+          }
+        },
+        {
+          "text": " revenues",
+          "nll": {
+            "held AC": 0.0075,
+            "held full context": 0.0329,
+            "held no context": 0.0861
+          }
+        },
+        {
+          "text": " decreased",
+          "nll": {
+            "held AC": 0.0024,
+            "held full context": 0.3634,
+            "held no context": 0.1781
+          }
+        },
+        {
+          "text": " by",
+          "nll": {
+            "held AC": 0.0013,
+            "held full context": 0.0288,
+            "held no context": 0.0059
+          }
+        },
+        {
+          "text": " $",
+          "nll": {
+            "held AC": 0.0136,
+            "held full context": 0.3025,
+            "held no context": 0.9331
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 3.029,
+            "held full context": 0.5706,
+            "held no context": 2.2566
+          }
+        },
+        {
+          "text": ",",
+          "nll": {
+            "held AC": 1.3576,
+            "held full context": 0.1194,
+            "held no context": 0.572
+          }
+        },
+        {
+          "text": "8",
+          "nll": {
+            "held AC": 1.9987,
+            "held full context": 2.0286,
+            "held no context": 2.887
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 2.5249,
+            "held full context": 2.7572,
+            "held no context": 3.3416
+          }
+        },
+        {
+          "text": "6",
+          "nll": {
+            "held AC": 2.3338,
+            "held full context": 1.8908,
+            "held no context": 2.3765
+          }
+        },
+        {
+          "text": " thousand",
+          "nll": {
+            "held AC": 0.065,
+            "held full context": 3.1707,
+            "held no context": 0.3965
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.1872,
+            "held full context": 0.4543,
+            "held no context": 0.7426
+          }
+        }
+      ],
+      "source_ids": [
+        "loong/2024-Chosen, Inc.-j.txt"
+      ],
+      "analysis": {
+        "title": "The table contradicts the question and gold",
+        "classification": "Confirmed premise / gold error",
+        "finding": "The provided table reports total revenues of 27,537 in 2024 and 24,713 in 2023, in thousands. That is an increase of 2,824 thousand. The question presupposes a decrease and the gold gives 2,826. Both generated numerical answers also fail to recover the table\u2019s change.",
+        "nll_reading": "NLL here measures agreement with an incorrect reference. Lower loss against this gold would not establish better arithmetic or better evidence use. The recorded values remain unchanged.",
+        "support_excerpt": "Three months ended March 31 \u00b7 in thousands\n                         2024      2023\nTotal revenues          27,537    24,713\n\n27,537 \u2212 24,713 = +2,824 thousand (increase)"
+      },
+      "rechecked_no_context_nll_error": 0.0020500000000001073
+    },
+    {
+      "index": 7,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:43:a254f3e834bcaf78:0",
+      "domain": "documents",
+      "question": "What specific property is claimed for the proposed R2IVE estimator regarding its first-order asymptotic distribution compared to an IV estimator with known true classification?",
+      "gold": "It possesses the oracle property, having the same first-order asymptotic distribution as the IV estimator assuming the true classification is known.",
+      "answers": {
+        "AC": "The R2IVE estimator has the same first-order asymptotic distribution as an IV estimator with known true classification.",
+        "full context": "The R2IVE estimator has the oracle property, meaning it has the same first-order asymptotic distribution as the IV estimator assuming the true classification is known.",
+        "no context": "The R2IVE estimator is claimed to have the same first-order asymptotic distribution as an IV estimator with known true classification."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe R2IVE estimator has the same first-order asymptotic distribution as an IV estimator with known true classification.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe R2IVE estimator has the oracle property, meaning it has the same first-order asymptotic distribution as the IV estimator assuming the true classification is known.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe R2IVE estimator is claimed to have the same first-order asymptotic distribution as an IV estimator with known true classification.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.479252,
+        "full context": 0.314924,
+        "no context": 1.2471640000000002
+      },
+      "gold_token_scores": [
+        {
+          "text": "It",
+          "nll": {
+            "held AC": 0.8647,
+            "held full context": 0.7739,
+            "held no context": 1.3863
+          }
+        },
+        {
+          "text": " possesses",
+          "nll": {
+            "held AC": 2.1573,
+            "held full context": 4.4113,
+            "held no context": 4.8929
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.0054,
+            "held full context": 0.0015,
+            "held no context": 0.0178
+          }
+        },
+        {
+          "text": " oracle",
+          "nll": {
+            "held AC": 1.0949,
+            "held full context": 0.0905,
+            "held no context": 11.0882
+          }
+        },
+        {
+          "text": " property",
+          "nll": {
+            "held AC": 0.0702,
+            "held full context": 0.0,
+            "held no context": 0.0954
+          }
+        },
+        {
+          "text": ",",
+          "nll": {
+            "held AC": 0.292,
+            "held full context": 0.2172,
+            "held no context": 1.2115
+          }
+        },
+        {
+          "text": " having",
+          "nll": {
+            "held AC": 1.2724,
+            "held full context": 1.6617,
+            "held no context": 3.0673
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.0115,
+            "held full context": 0.0001,
+            "held no context": 0.0237
+          }
+        },
+        {
+          "text": " same",
+          "nll": {
+            "held AC": 0.0044,
+            "held full context": 0.0003,
+            "held no context": 0.0053
+          }
+        },
+        {
+          "text": " first",
+          "nll": {
+            "held AC": 0.1146,
+            "held full context": 0.0004,
+            "held no context": 0.1039
+          }
+        },
+        {
+          "text": "-order",
+          "nll": {
+            "held AC": 0.0004,
+            "held full context": 0.0,
+            "held no context": 0.0002
+          }
+        },
+        {
+          "text": " asympt",
+          "nll": {
+            "held AC": 0.0037,
+            "held full context": 0.0,
+            "held no context": 0.0013
+          }
+        },
+        {
+          "text": "otic",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": " distribution",
+          "nll": {
+            "held AC": 0.0021,
+            "held full context": 0.0,
+            "held no context": 0.004
+          }
+        },
+        {
+          "text": " as",
+          "nll": {
+            "held AC": 0.0992,
+            "held full context": 0.0676,
+            "held no context": 0.0553
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 1.2805,
+            "held full context": 0.4128,
+            "held no context": 2.5503
+          }
+        },
+        {
+          "text": " IV",
+          "nll": {
+            "held AC": 0.1804,
+            "held full context": 0.0067,
+            "held no context": 0.0852
+          }
+        },
+        {
+          "text": " estimator",
+          "nll": {
+            "held AC": 0.0079,
+            "held full context": 0.0,
+            "held no context": 0.0007
+          }
+        },
+        {
+          "text": " assuming",
+          "nll": {
+            "held AC": 0.9054,
+            "held full context": 0.1134,
+            "held no context": 4.8775
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 3.5585,
+            "held full context": 0.0531,
+            "held no context": 1.4858
+          }
+        },
+        {
+          "text": " true",
+          "nll": {
+            "held AC": 0.0268,
+            "held full context": 0.0001,
+            "held no context": 0.0502
+          }
+        },
+        {
+          "text": " classification",
+          "nll": {
+            "held AC": 0.0163,
+            "held full context": 0.0002,
+            "held no context": 0.0802
+          }
+        },
+        {
+          "text": " is",
+          "nll": {
+            "held AC": 0.0093,
+            "held full context": 0.0619,
+            "held no context": 0.0773
+          }
+        },
+        {
+          "text": " known",
+          "nll": {
+            "held AC": 0.0005,
+            "held full context": 0.0,
+            "held no context": 0.0022
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.0028,
+            "held full context": 0.0004,
+            "held no context": 0.0165
+          }
+        }
+      ],
+      "source_ids": [
+        "bright/economics/frisch/FanQingliangEndogeno"
+      ],
+      "analysis": {
+        "title": "The property is preserved without its label",
+        "classification": "Correct paraphrase",
+        "finding": "Both responses state the same first-order asymptotic distribution under known classification. Full context also names the oracle property; AC describes it without the label.",
+        "nll_reading": "The full-context reference loss is concentrated on alternate phrasing, notably \u201cpossesses.\u201d The substantive claim is present in both decoded answers.",
+        "support_excerpt": "The resulting IV estimator is shown to have the oracle property (to have the same first-order asymptotic distribution as the IV estimator, assuming the true classification is known)."
+      },
+      "rechecked_no_context_nll_error": 0.007995999999999892
+    },
+    {
+      "index": 8,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:104:86b8e2a1af5543a6:0",
+      "domain": "web",
+      "question": "Which specific biomes are found in India's Himalayan region and along its west coast?",
+      "gold": "Alpine biomes are found in the Himalayas, while Tropical Rainforests exist along the west coast.",
+      "answers": {
+        "AC": "The Himalayan region has Alpine biomes, while the west coast features Tropical Rainforest and Tropical Savanna biomes.",
+        "full context": "Alpine biomes are found in the Himalayan region, and Tropical Rainforest biomes are found along the west coast.",
+        "no context": "The Himalayan region contains alpine and temperate biomes, while the west coast features tropical rainforest and coastal scrub biomes."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Himalayan region has Alpine biomes, while the west coast features Tropical Rainforest and Tropical Savanna biomes.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nAlpine biomes are found in the Himalayan region, and Tropical Rainforest biomes are found along the west coast.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Himalayan region contains alpine and temperate biomes, while the west coast features tropical rainforest and coastal scrub biomes.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.52685,
+        "full context": 0.72125,
+        "no context": 1.4446136363636364
+      },
+      "gold_token_scores": [
+        {
+          "text": "Al",
+          "nll": {
+            "held AC": 1.1099,
+            "held full context": 0.2615,
+            "held no context": 4.0473
+          }
+        },
+        {
+          "text": "pine",
+          "nll": {
+            "held AC": 0.0016,
+            "held full context": 0.0,
+            "held no context": 0.0023
+          }
+        },
+        {
+          "text": " bi",
+          "nll": {
+            "held AC": 2.2762,
+            "held full context": 0.7168,
+            "held no context": 4.6577
+          }
+        },
+        {
+          "text": "omes",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0003,
+            "held no context": 0.0011
+          }
+        },
+        {
+          "text": " are",
+          "nll": {
+            "held AC": 0.4511,
+            "held full context": 0.0487,
+            "held no context": 0.6984
+          }
+        },
+        {
+          "text": " found",
+          "nll": {
+            "held AC": 0.5245,
+            "held full context": 0.0013,
+            "held no context": 0.0037
+          }
+        },
+        {
+          "text": " in",
+          "nll": {
+            "held AC": 0.0126,
+            "held full context": 0.0001,
+            "held no context": 0.0005
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.1348,
+            "held full context": 0.4414,
+            "held no context": 1.2193
+          }
+        },
+        {
+          "text": " Himal",
+          "nll": {
+            "held AC": 0.0024,
+            "held full context": 0.0004,
+            "held no context": 0.0029
+          }
+        },
+        {
+          "text": "ayas",
+          "nll": {
+            "held AC": 0.1689,
+            "held full context": 3.153,
+            "held no context": 3.5783
+          }
+        },
+        {
+          "text": ",",
+          "nll": {
+            "held AC": 1.0126,
+            "held full context": 0.2187,
+            "held no context": 0.4172
+          }
+        },
+        {
+          "text": " while",
+          "nll": {
+            "held AC": 0.0905,
+            "held full context": 1.672,
+            "held no context": 1.4353
+          }
+        },
+        {
+          "text": " Tropical",
+          "nll": {
+            "held AC": 0.5808,
+            "held full context": 0.4715,
+            "held no context": 3.6291
+          }
+        },
+        {
+          "text": " Rain",
+          "nll": {
+            "held AC": 0.9012,
+            "held full context": 0.0465,
+            "held no context": 3.2379
+          }
+        },
+        {
+          "text": "fore",
+          "nll": {
+            "held AC": 1.8666,
+            "held full context": 1.5415,
+            "held no context": 1.3938
+          }
+        },
+        {
+          "text": "sts",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0001,
+            "held no context": 0.0
+          }
+        },
+        {
+          "text": " exist",
+          "nll": {
+            "held AC": 2.1081,
+            "held full context": 6.6953,
+            "held no context": 7.0355
+          }
+        },
+        {
+          "text": " along",
+          "nll": {
+            "held AC": 0.2168,
+            "held full context": 0.0056,
+            "held no context": 0.1178
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.0078,
+            "held full context": 0.3669,
+            "held no context": 0.1156
+          }
+        },
+        {
+          "text": " west",
+          "nll": {
+            "held AC": 0.0857,
+            "held full context": 0.0178,
+            "held no context": 0.0904
+          }
+        },
+        {
+          "text": " coast",
+          "nll": {
+            "held AC": 0.0082,
+            "held full context": 0.0001,
+            "held no context": 0.0003
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.0302,
+            "held full context": 0.208,
+            "held no context": 0.0971
+          }
+        }
+      ],
+      "source_ids": [
+        "msmarco:train:2846"
+      ],
+      "analysis": {
+        "title": "AC adds an unsupported location claim",
+        "classification": "Unsupported specificity",
+        "finding": "Both responses place Alpine biomes in the Himalayas. The passage ties tropical rainforest to the west coast, while mentioning savanna more generally. AC additionally places savanna on the west coast; that specific attribution is not established by the supplied text.",
+        "nll_reading": "Full context stays within the stated mapping, despite receiving a higher gold NLL. The metric is not a semantic ranking of these generated sentences.",
+        "support_excerpt": "Tropical and Sub-tropical Savanna but you will also Tropical Rainforest along the west coast, and Alpine in the Himalayans."
+      },
+      "rechecked_no_context_nll_error": 0.0017318181818182232
+    },
+    {
+      "index": 9,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+      "domain": "code",
+      "question": "According to the documentation, what are the three specific statistics tracked by this cache class to measure its effectiveness?",
+      "gold": "The three statistics are Request Count (total requests issued), Network Count (requests requiring network use), and Hit Count (responses served by the cache).",
+      "answers": {
+        "AC": "The class tracks request count, network count, and hit count.",
+        "full context": "Request Count, Network Count, and Hit Count.",
+        "no context": "hit rate, miss rate, and average latency"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe class tracks request count, network count, and hit count.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nRequest Count, Network Count, and Hit Count.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nhit rate, miss rate, and average latency\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 1.1207862068965517,
+        "full context": 0.28216896551724135,
+        "no context": 2.4618827586206895
+      },
+      "gold_token_scores": [
+        {
+          "text": "The",
+          "nll": {
+            "held AC": 0.529,
+            "held full context": 1.1549,
+            "held no context": 1.5882
+          }
+        },
+        {
+          "text": " three",
+          "nll": {
+            "held AC": 2.4115,
+            "held full context": 0.0558,
+            "held no context": 0.7097
+          }
+        },
+        {
+          "text": " statistics",
+          "nll": {
+            "held AC": 0.7093,
+            "held full context": 0.1556,
+            "held no context": 1.9251
+          }
+        },
+        {
+          "text": " are",
+          "nll": {
+            "held AC": 0.8247,
+            "held full context": 0.5938,
+            "held no context": 0.7703
+          }
+        },
+        {
+          "text": " Request",
+          "nll": {
+            "held AC": 1.4053,
+            "held full context": 0.8878,
+            "held no context": 12.4914
+          }
+        },
+        {
+          "text": " Count",
+          "nll": {
+            "held AC": 0.6387,
+            "held full context": 0.0014,
+            "held no context": 0.9591
+          }
+        },
+        {
+          "text": " (",
+          "nll": {
+            "held AC": 1.7758,
+            "held full context": 0.4825,
+            "held no context": 4.0152
+          }
+        },
+        {
+          "text": "total",
+          "nll": {
+            "held AC": 4.2902,
+            "held full context": 0.5841,
+            "held no context": 3.1006
+          }
+        },
+        {
+          "text": " requests",
+          "nll": {
+            "held AC": 1.1466,
+            "held full context": 1.7486,
+            "held no context": 0.7004
+          }
+        },
+        {
+          "text": " issued",
+          "nll": {
+            "held AC": 1.793,
+            "held full context": 0.5983,
+            "held no context": 6.4353
+          }
+        },
+        {
+          "text": "),",
+          "nll": {
+            "held AC": 0.0324,
+            "held full context": 0.0119,
+            "held no context": 0.3288
+          }
+        },
+        {
+          "text": " Network",
+          "nll": {
+            "held AC": 0.1029,
+            "held full context": 0.0001,
+            "held no context": 10.0016
+          }
+        },
+        {
+          "text": " Count",
+          "nll": {
+            "held AC": 0.0103,
+            "held full context": 0.0,
+            "held no context": 1.759
+          }
+        },
+        {
+          "text": " (",
+          "nll": {
+            "held AC": 0.0056,
+            "held full context": 0.0,
+            "held no context": 0.0026
+          }
+        },
+        {
+          "text": "requests",
+          "nll": {
+            "held AC": 0.5211,
+            "held full context": 0.0058,
+            "held no context": 0.739
+          }
+        },
+        {
+          "text": " requiring",
+          "nll": {
+            "held AC": 2.1227,
+            "held full context": 0.0394,
+            "held no context": 3.2529
+          }
+        },
+        {
+          "text": " network",
+          "nll": {
+            "held AC": 0.471,
+            "held full context": 0.0021,
+            "held no context": 0.9412
+          }
+        },
+        {
+          "text": " use",
+          "nll": {
+            "held AC": 5.6495,
+            "held full context": 0.0791,
+            "held no context": 7.9614
+          }
+        },
+        {
+          "text": "),",
+          "nll": {
+            "held AC": 0.0011,
+            "held full context": 0.0002,
+            "held no context": 0.0304
+          }
+        },
+        {
+          "text": " and",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0,
+            "held no context": 0.0004
+          }
+        },
+        {
+          "text": " Hit",
+          "nll": {
+            "held AC": 0.0019,
+            "held full context": 0.0,
+            "held no context": 2.6232
+          }
+        },
+        {
+          "text": " Count",
+          "nll": {
+            "held AC": 0.0006,
+            "held full context": 0.0,
+            "held no context": 0.4285
+          }
+        },
+        {
+          "text": " (",
+          "nll": {
+            "held AC": 0.0007,
+            "held full context": 0.0,
+            "held no context": 0.0062
+          }
+        },
+        {
+          "text": "responses",
+          "nll": {
+            "held AC": 3.1944,
+            "held full context": 1.7097,
+            "held no context": 5.8877
+          }
+        },
+        {
+          "text": " served",
+          "nll": {
+            "held AC": 1.298,
+            "held full context": 0.0001,
+            "held no context": 1.4552
+          }
+        },
+        {
+          "text": " by",
+          "nll": {
+            "held AC": 3.1716,
+            "held full context": 0.0549,
+            "held no context": 2.3272
+          }
+        },
+        {
+          "text": " the",
+          "nll": {
+            "held AC": 0.3076,
+            "held full context": 0.016,
+            "held no context": 0.7311
+          }
+        },
+        {
+          "text": " cache",
+          "nll": {
+            "held AC": 0.052,
+            "held full context": 0.0,
+            "held no context": 0.1203
+          }
+        },
+        {
+          "text": ").",
+          "nll": {
+            "held AC": 0.0353,
+            "held full context": 0.0008,
+            "held no context": 0.1026
+          }
+        }
+      ],
+      "source_ids": [
+        "square/okhttp@9aa12688/okhttp/src/main/java/com/squareup/okhttp/Cache.java"
+      ],
+      "analysis": {
+        "title": "AC gives all three names, despite NLL above 1",
+        "classification": "Correct concise answer",
+        "finding": "Both responses name Request Count, Network Count and Hit Count. The question asks for the three statistics; the gold also explains each one. Omitting those explanations still answers this question.",
+        "nll_reading": "AC is less likely to continue with the reference\u2019s explanatory parentheticals. The scored tokens include \u201ctotal,\u201d \u201cresponses\u201d and \u201cuse.\u201d Exact match is zero, but that is not evidence that the list is wrong.",
+        "support_excerpt": "To measure cache effectiveness, this class tracks three statistics:\nRequest Count: the number of HTTP requests issued since this cache was created.\nNetwork Count: the number of those requests that required network use.\nHit Count: the number of those requests whose responses were served by the cache."
+      },
+      "rechecked_no_context_nll_error": 0.0015068965517239796
+    },
+    {
+      "index": 10,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:495:545721c9a6c0d3b7:0",
+      "domain": "numeric",
+      "question": "On what date was the Amendment to Employment Agreement between Cano Health, Inc., Cano Health, LLC, and Mr. Eladio Gil executed?",
+      "gold": "March 28, 2024",
+      "answers": {
+        "AC": "March 28, 2024",
+        "full context": "March 28, 2024",
+        "no context": "January 1, 2020"
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nMarch 28, 2024\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nMarch 28, 2024\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nJanuary 1, 2020\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 0.014729999999999998,
+        "full context": 0.00041000000000000005,
+        "no context": 0.75589
+      },
+      "gold_token_scores": [
+        {
+          "text": "March",
+          "nll": {
+            "held AC": 0.1281,
+            "held full context": 0.004,
+            "held no context": 2.1742
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.0003,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 0.0014,
+            "held full context": 0.0,
+            "held no context": 1.17
+          }
+        },
+        {
+          "text": "8",
+          "nll": {
+            "held AC": 0.0147,
+            "held full context": 0.0,
+            "held no context": 2.309
+          }
+        },
+        {
+          "text": ",",
+          "nll": {
+            "held AC": 0.0023,
+            "held full context": 0.0001,
+            "held no context": 0.0022
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0,
+            "held no context": 0.0001
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.0,
+            "held full context": 0.0,
+            "held no context": 0.0
+          }
+        },
+        {
+          "text": "2",
+          "nll": {
+            "held AC": 0.0001,
+            "held full context": 0.0,
+            "held no context": 0.4552
+          }
+        },
+        {
+          "text": "4",
+          "nll": {
+            "held AC": 0.0003,
+            "held full context": 0.0,
+            "held no context": 1.448
+          }
+        }
+      ],
+      "source_ids": [
+        "loong/2024-Cano Health, Inc.-j.txt"
+      ],
+      "analysis": {
+        "title": "The date is copied exactly",
+        "classification": "Exact match",
+        "finding": "Both models return March 28, 2024, the date listed for the amendment. The source says \u201cdated as of\u201d; these answers reproduce that listed date.",
+        "nll_reading": "This is an easy literal retrieval at this checkpoint. It provides a useful low-loss reference point among the more ambiguous examples.",
+        "support_excerpt": "Amendment to Employment Agreement, dated as of March 28, 2024, by and among Cano Health, Inc., Cano Health, LLC and Mr. Eladio Gil."
+      },
+      "rechecked_no_context_nll_error": 0.0014399999999998858
+    },
+    {
+      "index": 11,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "domain": "code",
+      "question": "When the `check` function receives a response with status 'unknown', what specific action does it take to retry the request?",
+      "gold": "It schedules a recursive call to `checkCallback` using `setTimeout` with a delay of 1000 milliseconds.",
+      "answers": {
+        "AC": "It calls `self.queue.put(response)` to re-queue the response for processing.",
+        "full context": "It calls the `checkCallback` function again after a 1-second delay.",
+        "no context": "It retries the request with a 5-second delay."
+      },
+      "raw_responses": {
+        "AC": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt calls `self.queue.put(response)` to re-queue the response for processing.\n</parameter>\n</function>\n</tool_call>\n",
+        "full context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt calls the `checkCallback` function again after a 1-second delay.\n</parameter>\n</function>\n</tool_call>\n",
+        "no context": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt retries the request with a 5-second delay.\n</parameter>\n</function>\n</tool_call>\n"
+      },
+      "answer_nll": {
+        "AC": 1.257592,
+        "full context": 0.45724800000000004,
+        "no context": 1.635868
+      },
+      "gold_token_scores": [
+        {
+          "text": "It",
+          "nll": {
+            "held AC": 0.0158,
+            "held full context": 0.0469,
+            "held no context": 0.1414
+          }
+        },
+        {
+          "text": " schedules",
+          "nll": {
+            "held AC": 3.5278,
+            "held full context": 1.0639,
+            "held no context": 5.3641
+          }
+        },
+        {
+          "text": " a",
+          "nll": {
+            "held AC": 0.5176,
+            "held full context": 0.305,
+            "held no context": 0.4164
+          }
+        },
+        {
+          "text": " recursive",
+          "nll": {
+            "held AC": 3.6837,
+            "held full context": 2.8061,
+            "held no context": 8.7285
+          }
+        },
+        {
+          "text": " call",
+          "nll": {
+            "held AC": 0.3568,
+            "held full context": 0.2193,
+            "held no context": 0.4675
+          }
+        },
+        {
+          "text": " to",
+          "nll": {
+            "held AC": 0.0865,
+            "held full context": 0.0146,
+            "held no context": 0.1145
+          }
+        },
+        {
+          "text": " `",
+          "nll": {
+            "held AC": 0.5608,
+            "held full context": 1.8925,
+            "held no context": 3.0842
+          }
+        },
+        {
+          "text": "check",
+          "nll": {
+            "held AC": 0.3954,
+            "held full context": 0.001,
+            "held no context": 0.0885
+          }
+        },
+        {
+          "text": "Callback",
+          "nll": {
+            "held AC": 15.5957,
+            "held full context": 0.0061,
+            "held no context": 13.6681
+          }
+        },
+        {
+          "text": "`",
+          "nll": {
+            "held AC": 0.1261,
+            "held full context": 0.0081,
+            "held no context": 0.0898
+          }
+        },
+        {
+          "text": " using",
+          "nll": {
+            "held AC": 1.4237,
+            "held full context": 1.6547,
+            "held no context": 3.9613
+          }
+        },
+        {
+          "text": " `",
+          "nll": {
+            "held AC": 0.0647,
+            "held full context": 0.0402,
+            "held no context": 0.0874
+          }
+        },
+        {
+          "text": "setTimeout",
+          "nll": {
+            "held AC": 0.4495,
+            "held full context": 0.0006,
+            "held no context": 0.195
+          }
+        },
+        {
+          "text": "`",
+          "nll": {
+            "held AC": 0.118,
+            "held full context": 0.0987,
+            "held no context": 0.2824
+          }
+        },
+        {
+          "text": " with",
+          "nll": {
+            "held AC": 0.7089,
+            "held full context": 0.54,
+            "held no context": 0.2724
+          }
+        },
+        {
+          "text": " a",
+          "nll": {
+            "held AC": 0.1797,
+            "held full context": 0.0007,
+            "held no context": 0.169
+          }
+        },
+        {
+          "text": " delay",
+          "nll": {
+            "held AC": 0.9347,
+            "held full context": 1.8242,
+            "held no context": 0.3141
+          }
+        },
+        {
+          "text": " of",
+          "nll": {
+            "held AC": 0.6189,
+            "held full context": 0.0002,
+            "held no context": 0.3809
+          }
+        },
+        {
+          "text": " ",
+          "nll": {
+            "held AC": 0.2514,
+            "held full context": 0.0004,
+            "held no context": 0.3296
+          }
+        },
+        {
+          "text": "1",
+          "nll": {
+            "held AC": 0.7958,
+            "held full context": 0.0,
+            "held no context": 0.7268
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.201,
+            "held full context": 0.1846,
+            "held no context": 0.3486
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.2323,
+            "held full context": 0.0001,
+            "held no context": 0.1851
+          }
+        },
+        {
+          "text": "0",
+          "nll": {
+            "held AC": 0.2898,
+            "held full context": 0.0,
+            "held no context": 0.2514
+          }
+        },
+        {
+          "text": " milliseconds",
+          "nll": {
+            "held AC": 0.1343,
+            "held full context": 0.0139,
+            "held no context": 0.6452
+          }
+        },
+        {
+          "text": ".",
+          "nll": {
+            "held AC": 0.1709,
+            "held full context": 0.7094,
+            "held no context": 0.5845
+          }
+        }
+      ],
+      "source_ids": [
+        "opencv/cvat@acdc7bb8/cvat/apps/auto_annotation/static/auto_annotation/js/dashboardPlugin.js"
+      ],
+      "analysis": {
+        "title": "The question asks about the wrong branch",
+        "classification": "Confirmed premise / gold error",
+        "finding": "For status \u201cunknown,\u201d the code calls error(...) and breaks. The retry is in the default branch; another timeout starts the initial poll. The gold and full-context response describe a retry, accepting the false premise. AC\u2019s Python queue call appears nowhere in this JavaScript evidence.",
+        "nll_reading": "The full-context answer\u2019s lower NLL reflects similarity to the flawed gold; it does not make that answer correct for the asked branch.",
+        "support_excerpt": "case 'unknown':\n    error(`Checking request has returned the \"${data.status}\" status.`);\n    break;\n[\u2026]\ndefault:\n    setTimeout(checkCallback, 1000);"
+      },
+      "rechecked_no_context_nll_error": 0.011623999999999857
+    }
+  ]
+}

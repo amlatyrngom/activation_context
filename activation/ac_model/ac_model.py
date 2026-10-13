@@ -15,10 +15,11 @@ Forward of one part: its activation_context children first (recursively, cached)
 recursive adapter into the side input space; `tokenize_with_parts` renders the part under the side
 chat template with a pad-id placeholder run per child; side input embeddings with the child rows
 written over the placeholders, scale-aligned with positional encoding -> blocked-local mixer
--> V pooled content summaries
-with one shared marker and positions -> the causal side decoder with its LoRA -> the final V
-positions -> `target_head` (into the target width) or, for a recursive child, returned for the
-parent's `recursive_adapter`.
+-> V pooled content summaries with one shared marker and positions -> the causal side decoder with
+its LoRA over the content and the summaries (`summary_layout`: the summaries appended after the
+content, or each interleaved right after its pooling bin) -> the summaries' final states, read out
+over the content's final states -> `target_head` (into the target width) or, for a recursive child,
+returned for the parent's `recursive_adapter`.
 
 Modes: rollout (no grad, CPU row cache keyed by the part's content, an encode queue that batches
 concurrent requests) and training (grad, no cache, the caller batches). Trainable AC modules are
@@ -55,7 +56,10 @@ from .ac_model_utils import (
     EncodeRequest,
     RowCache,
     RowHead,
+    WindowedPooling,
     direct_parts,
+    interleaved_positions,
+    is_dense_piece,
     normalize_messages,
     resolve_intervention_layers,
     row_cache_key,
@@ -75,8 +79,11 @@ ROLLOUT, TRAINING = "rollout", "training"
 ARCHITECTURE_VERSION = 2
 INTERVENTION_INIT_SEED_MASK = 0xDEE9    # the intervention modules draw from a forked stream (initial seed ^ mask): the shared modules and the adapters draw as before
 INTERVENTION_MODULE_PREFIXES = ("delta_heads.", "passage_attention.")   # state-dict / parameter-name prefixes of the intervention modules
+READOUT_MODULE_PREFIXES = ("row_readout.", "recursive_readout.")
+POOLING_MODULE_PREFIX = "pooling."          # the read-outs in front of the row heads: fresh (identity) when a checkpoint predates them
+SUMMARY_LAYOUTS = ("appended", "interleaved")
 DIAGNOSTIC_CAPACITY = 256        # per layer, the encoder keeps at most this many diagnostic values between trace points
-PreparedPart = tuple[list[int], list[tuple[int, int]], list[torch.Tensor], int, bool]
+PreparedPart = tuple[list[int], list[tuple[int, int]], list[torch.Tensor], int, bool, list[torch.Tensor]]   # ids, part spans, child rows, V, recursive, child states
 
 
 class CompletedEpoch(t.TypedDict):
@@ -89,8 +96,13 @@ class CompletedEpoch(t.TypedDict):
 class ActivationContextModelConfig:
     """
     The AC model's shape. The encoder is fixed: the side base's frozen embeddings -> `mixer_layers` bidirectional blocked-local
-    attention layers -> summary pooling into V rows -> one causal pass of the side base with its LoRA over [content; summaries]
-    -> the final V states through the row head (identity-skip FFN, RMS-normalized, learned scale) into the reader's input space.
+    attention layers -> summary pooling into V rows -> one causal pass of the side base with its LoRA over the content and the
+    summaries (`summary_layout` 'appended': [content; summaries], the rows are the final V positions; 'interleaved': each summary
+    right after the tokens of its pooling bin, so the causal pass reaches every summary from its own bin onwards, the rows are
+    gathered from the summary positions) -> the V final states, each read out through a PassageAttention over the level's key set (the passage's final side states
+    and, with `recursive_keys`, the final states its children returned), through the row head (identity-skip FFN, RMS-normalized,
+    learned scale) into the reader's input space; a recursive part's rows go through the same kind of read-out and the recursive
+    adapter instead. Optional content pooling (`input_pooling_stride`) shortens the decoder's content block to about 1/stride.
     A deep model (`intervention_frequency` != 0 or explicit `intervention_layers`) adds, per intervention layer, a read-out in
     which the row's final side state attends over the passage tokens' final side states (PassageAttention, zero-initialized
     output) and a zero-initialized bottleneck head (DeltaHead) whose output the reader adds to its residual stream at the row
@@ -117,8 +129,37 @@ class ActivationContextModelConfig:
                                              # -1 = every full-attention layer of the reader (0 excluded; the last-layer flag is moot) - the validated setting
     intervention_layers: list[int] | None = None   # explicit reader layers instead of the frequency rule (with intervention_frequency 0; 0 < layer < depth, unique)
     add_last_layer_intervention: bool = True # ... plus the last reader block (inert at frequency 0)
+    recursive_keys: bool = False             # the read-outs of a level also attend the final states its children returned (nested parts)
+    input_pooling_stride: int = 0            # content pooling before the side decoder: one vector per `input_pooling_window`-wide window every
+                                             # `stride` rows (the content block becomes about 1/stride of the tokens); 0 = off, the tokens go through
+    input_pooling_window: int = 8
+    summary_layout: str = "appended"         # where the summaries sit in the causal side pass: 'appended' after the content, or 'interleaved',
+                                             # each right after its pooling bin (equal token-count intervals of the input)
+    bin_density_weight: float = 0.           # summary bins at equal cumulative token weight 1 + this·dense instead of equal token counts (dense: a side
+                                             # token whose text holds a digit, a code/math symbol or a non-ASCII non-letter, ac_model_utils.is_dense_piece),
+                                             # so notation gets finer rows and prose coarser ones at the same V; 0 = equal-token bins, bit for bit
+    row_head_linear_skip: bool = False       # unequal widths: the row head adds W·state to its FFN (zero at init), W the least-squares map from the
+                                             # side base's input-embedding table to the reader's over their shared vocabulary, filled once at the first
+                                             # placement of a fresh model and saved with the checkpoint — the identity skip's analogue: a fresh model's
+                                             # rows start as that map applied to the final side states (the skip's premise: a tied-embedding base's
+                                             # final states live near its embedding space); off = the plain FFN head (today's unequal-width model)
+    kv_transfer: bool = False                # key/value transfer: the encoder is a second copy of the reader's base (own adapter) reading the part with one
+                                             # learned marker embedding after every bin (interleaved; no mixer, no pooling, no row head), and the keys and
+                                             # values its layers compute at the markers become attention entries of the reader's layers (ACOutput.kv_values;
+                                             # harness/kv_transfer.py). The reader keeps inert placeholders where the rows were. Flat parts only.
+    kv_overwrite: bool = False               # with kv_transfer, for hybrid bases (recurrent blocks between the attention blocks): the rows are real reader
+                                             # positions that start from the marker embedding and propagate as usual, and at every attention block the keys
+                                             # and values at the row positions are replaced by the encoder's (no inert placeholders, no extra entries)
 
     def __post_init__(self) -> None:
+        if self.summary_layout not in SUMMARY_LAYOUTS:
+            raise ValueError(f"summary_layout must be one of {SUMMARY_LAYOUTS}")
+        if self.input_pooling_stride < 0:
+            raise ValueError("Content pooling stride must be nonnegative")
+        if self.summary_layout != "appended" and self.input_pooling_stride:
+            raise ValueError("Interleaved summaries follow the unpooled content's bins: no content pooling with them")
+        if self.input_pooling_stride and not 0 < self.input_pooling_stride <= self.input_pooling_window:
+            raise ValueError("Positive pooling stride must not exceed its positive window")
         if self.intervention_frequency < -1:
             raise ValueError("intervention_frequency must be -1 (every full-attention layer), 0 or positive")
         if self.intervention_layers is not None:
@@ -128,8 +169,15 @@ class ActivationContextModelConfig:
             if not layers or len(set(layers)) != len(layers) or any(layer <= 0 for layer in layers):
                 raise ValueError("intervention_layers must be a non-empty list of distinct positive reader layers")
             self.intervention_layers = sorted(layers)
+        if self.kv_transfer and (self.summary_layout != "interleaved" or self.input_pooling_stride or self.intervention_frequency != 0
+                                 or self.intervention_layers is not None or self.recursive_keys or self.row_head_linear_skip):
+            raise ValueError("kv_transfer takes summary_layout 'interleaved' and none of: content pooling, residual interventions, recursive_keys, row_head_linear_skip")
+        if self.kv_overwrite and not self.kv_transfer:
+            raise ValueError("kv_overwrite is a mode of kv_transfer")
         if not 0 < self.min_view_rows <= self.max_view_rows:
             raise ValueError("Invalid view-row bounds")
+        if not self.bin_density_weight >= 0:
+            raise ValueError("bin_density_weight must be a nonnegative number (0: equal-token bins)")
 
 
 @dataclass
@@ -169,8 +217,12 @@ class ActivationContextModules(nn.Module):
         self.input_scale = nn.Parameter(torch.tensor(1.0))
         self.register_buffer("embedding_scale", torch.tensor(1.0))
         self.recursive_adapter = RowHead(d_side, d_side)
-        # The rows start as the (normalized) final side state itself when the widths allow the identity skip.
-        self.target_head = RowHead(d_side, d_target, skip=d_side == d_target)
+        # The rows start as the (normalized) final side state itself when the widths allow the identity skip, or as its embedding-map
+        # image when the linear skip is asked for (unequal widths; the map is filled at the first placement).
+        if config.row_head_linear_skip and d_side == d_target:
+            raise ValueError("row_head_linear_skip is for unequal side and reader widths (equal widths use the identity skip)")
+        # (the linear skip's zeroed Linear draws under a forked stream: the marker and the adapters draw what they draw without it)
+        self.target_head = RowHead(d_side, d_target, skip=d_side == d_target, linear_skip=config.row_head_linear_skip)
         self.register_buffer("scales_initialized", torch.tensor(False))
         nn.init.normal_(self.summary_marker, std=0.02)
         # Deep inputs: one read-out block and one bottleneck head per intervention layer, registered (parameters, state-dict keys)
@@ -187,6 +239,25 @@ class ActivationContextModules(nn.Module):
             with torch.random.fork_rng(devices=[]):
                 torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 1)
                 self.passage_attention = nn.ModuleDict({str(layer): PassageAttention(d_side, r) for layer in self.intervention_layers})
+        # The read-outs in front of the row heads (the same block the delta heads have): identity at init (zero output projection), so
+        # a checkpoint that predates them loads with them fresh and reproduces its outputs. Forked streams, created last: every module
+        # above draws exactly the sequence it drew before.
+        r_side = max(1, d_side // 4)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 2)
+            self.row_readout = PassageAttention(d_side, r_side)
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 3)
+            self.recursive_readout = PassageAttention(d_side, r_side)
+        # Key/value transfer: the one embedding that stands at every summary position of the encoder's sequence (registered only
+        # then; filled with the side base's mean input embedding at the first placement, no random draw).
+        if config.kv_transfer:
+            self.kv_marker = nn.Parameter(torch.zeros(d_side))
+        self.pooling: WindowedPooling | None = None
+        if config.input_pooling_stride:
+            with torch.random.fork_rng(devices=[]):
+                torch.manual_seed((torch.initial_seed() ^ INTERVENTION_INIT_SEED_MASK) + 4)
+                self.pooling = WindowedPooling(d_side, config.mixer_heads, config.input_pooling_window, config.input_pooling_stride)
 
     @property
     def is_deep(self) -> bool:
@@ -210,6 +281,13 @@ class ActivationContextModel:
         self.d_side = self.side.model_config.model_description.d_model
         self.d_target = self.target.model_config.model_description.d_model
         self.intervention_layers = self._resolve_intervention_layers()
+        if config.row_head_linear_skip and self.side.tokenizer.get_vocab() != self.target.tokenizer.get_vocab():
+            raise ValueError("The linear row-head skip maps the side base's embedding table onto the reader's token by token: the two need the same vocabulary")
+        if config.kv_transfer:
+            side_layers, target_layers = (len(model.model_config.model_description.layer_descriptions) for model in (self.side, self.target))
+            if self.d_side != self.d_target or side_layers != target_layers:
+                raise ValueError(f"kv_transfer writes the encoder's keys and values into the reader layer by layer: the two bases need the same shape "
+                                 f"(widths {self.d_side} / {self.d_target}, layers {side_layers} / {target_layers})")
         self.modules = ActivationContextModules(config, self.d_side, self.d_target, self.intervention_layers)
         self.intervention_diagnostics: dict[str, dict[int | str, list[torch.Tensor]]] = {"cosine": {}, "delta_rms": {}}   # per layer, per encoded example: cosine(delta, input row) and the delta RMS; the trainer drains them
         self.version = 0
@@ -222,6 +300,7 @@ class ActivationContextModel:
         self.epoch_number = 0
         tokenizer = self.side.tokenizer
         self.pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else (tokenizer.eos_token_id or 0)
+        self._dense_vocab: torch.Tensor | None = None   # per side-vocabulary id: is_dense_piece of its text (built at the first density-weighted encode)
 
     # ------------------------------------------------------------------------------------------ placement and modes
     def num_view_rows(self, num_side_tokens: int, compression_ratio: float | None = None) -> int:
@@ -273,7 +352,8 @@ class ActivationContextModel:
         self.modules.to(SOURCE_DEVICE)
 
     def _ensure_scales(self) -> None:
-        """Head scales start at the RMS of the destination embeddings, so rows land at the scale the decoders expect."""
+        """Head scales start at the RMS of the destination embeddings, so rows land at the scale the decoders expect; the row head's
+        linear skip, when configured, is filled with the side->reader embedding map at the same time (once per fresh model)."""
         if bool(self.modules.scales_initialized):
             return
         with torch.no_grad():
@@ -283,18 +363,51 @@ class ActivationContextModel:
             self.modules.input_scale.fill_(side_rms)
             self.modules.recursive_adapter.scale.fill_(side_rms)
             self.modules.target_head.scale.fill_(target_rms)
+            if self.modules.target_head.linear is not None:
+                weight, fit = self._embedding_map(self.side, self.target, self.modules.target_head.linear.weight.device)
+                self.modules.target_head.linear.weight.copy_(weight.T)
+                print(f"{self.name} - Row head linear skip filled with the side->reader embedding map (mean cosine of the fit {fit:.3f})")
+            if self.config.kv_transfer:                     # the marker starts as the mean input embedding at the table's mean row scale
+                weight = self._embedding_weight(self.side)
+                mean = weight[: min(weight.shape[0], 65_536)].float().mean(dim=0)
+                self.modules.kv_marker.copy_((mean / mean.pow(2).mean().sqrt().clamp_min(1e-8) * side_rms).to(self.modules.kv_marker))
             self.modules.scales_initialized.fill_(True)
         print(f"{self.name} - Head scales initialized: side {side_rms:.4f}, target {target_rms:.4f}")
 
     @staticmethod
-    def _embedding_rms(loaded_model: "LoadedModel") -> float:
+    def _embedding_weight(loaded_model: "LoadedModel") -> torch.Tensor:
         if loaded_model.model is not None:
-            weight = loaded_model.model.get_input_embeddings().weight
-        else:
-            loaded_model.embedding_layer_to_device(SOURCE_DEVICE)
-            weight = loaded_model.embedding_layer.weight
+            return loaded_model.model.get_input_embeddings().weight
+        loaded_model.embedding_layer_to_device(SOURCE_DEVICE)
+        return loaded_model.embedding_layer.weight
+
+    @classmethod
+    def _embedding_rms(cls, loaded_model: "LoadedModel") -> float:
+        weight = cls._embedding_weight(loaded_model)
         sample = weight[: min(weight.shape[0], 65_536)].float()
         return float(sample.pow(2).mean(dim=-1).sqrt().mean())
+
+    @classmethod
+    def _embedding_map(cls, side: "LoadedModel", target: "LoadedModel", device: torch.device) -> tuple[torch.Tensor, float]:
+        """The ridge least-squares map W [d_side, d_target] from the side base's input embeddings to the reader's, token by token over
+        their shared vocabulary (fp32 normal equations in chunks; ridge 1e-3 of the mean diagonal), and the mean cosine of the fit
+        on an evenly spaced sample of 4,096 tokens."""
+        side_weight, target_weight = cls._embedding_weight(side), cls._embedding_weight(target)
+        if side_weight.shape[0] != target_weight.shape[0]:
+            raise ValueError(f"The linear row-head skip needs side and reader bases with the same vocabulary ({side_weight.shape[0]} vs {target_weight.shape[0]} embeddings)")
+        vocab, d_side = side_weight.shape
+        gram = torch.zeros(d_side, d_side, device=device, dtype=torch.float32)
+        cross = torch.zeros(d_side, target_weight.shape[1], device=device, dtype=torch.float32)
+        for start in range(0, vocab, 16_384):
+            x = side_weight[start:start + 16_384].to(device, torch.float32)
+            y = target_weight[start:start + 16_384].to(device, torch.float32)
+            gram += x.T @ x
+            cross += x.T @ y
+        gram += torch.eye(d_side, device=device) * (1e-3 * gram.diagonal().mean())
+        weight = torch.linalg.solve(gram, cross)
+        sample = torch.linspace(0, vocab - 1, min(vocab, 4_096)).round().long()      # a host index reads a table on either device
+        fit = F.cosine_similarity(side_weight[sample].to(device, torch.float32) @ weight, target_weight[sample].to(device, torch.float32), dim=-1).mean()
+        return weight, float(fit)
 
     def parameters(self) -> list[nn.Parameter]:
         """The AC modules' parameters (the side LoRA's come from the module manager)."""
@@ -321,6 +434,7 @@ class ActivationContextModel:
         if not self.is_deep:
             return {}
         return {"layers": list(self.intervention_layers), "source": "passage_attention", "attention_depth": "final", "target": "residual", "head_style": "lora",
+                "readouts": "rows,recursive,deltas", "recursive_keys": bool(self.config.recursive_keys),
                 "head_parameters": sum(parameter.numel() for parameter in self.modules.delta_heads.parameters()),
                 "attention_parameters": sum(parameter.numel() for parameter in self.modules.passage_attention.parameters())}
 
@@ -349,6 +463,8 @@ class ActivationContextModel:
         With `with_layers`, each result is the complete ACOutput (rows plus the deep model's per-layer deltas)."""
         if not requests:
             return []
+        if self.config.kv_transfer and not with_layers:
+            raise RuntimeError(f"{self.name} transfers keys and values: encode_batch(with_layers=True) returns them; a rows-only consumer would get inert placeholders")
         if self.is_deep and not with_layers:
             raise RuntimeError(f"{self.name} is a deep AC model: encode_batch(with_layers=True) returns its rows with their deltas; a rows-only consumer would drop them silently")
         results: list[ACOutput | None] = [None] * len(requests)
@@ -395,12 +511,18 @@ class ActivationContextModel:
             parts = direct_parts(request.messages)
             child_slices.append((len(child_requests), len(child_requests) + len(parts)))
             child_requests.extend(self._child_request(part, request.compression_ratio) for part in parts)
-        child_rows = [output.input_embeds for output in self.encode_batch(child_requests, with_layers=True)] if child_requests else []
+        child_outputs = self.encode_batch(child_requests, with_layers=True) if child_requests else []
         prepared: list[PreparedPart] = []
         for request, (start, end) in zip(requests, child_slices):
-            rows = child_rows[start:end]
+            outputs = child_outputs[start:end]
+            rows = [output.input_embeds for output in outputs]
+            states: list[torch.Tensor] = []
+            if self.config.recursive_keys:
+                if any(output.states is None for output in outputs):
+                    raise RuntimeError("recursive_keys needs the children's final states (a recursive result without `states`)")
+                states = [output.states for output in outputs]
             ids, spans = tokenize_with_parts(self.side.tokenizer, request.messages, [r.shape[0] for r in rows], self.pad_id, tools=request.tools)
-            prepared.append((ids, spans, rows, self.num_view_rows(len(ids), request.compression_ratio), request.is_recursive))
+            prepared.append((ids, spans, rows, self.num_view_rows(len(ids), request.compression_ratio), request.is_recursive, states))
         order = sorted(range(len(prepared)), key=lambda index: len(prepared[index][0]))
         results: list[ACOutput | None] = [None] * len(prepared)
         batch: list[int] = []
@@ -426,7 +548,73 @@ class ActivationContextModel:
         self.stats.phase_seconds[name] = self.stats.phase_seconds.get(name, 0.0) + now - started
         return now
 
+    def _bin_weights(self, ids: list[int], device: torch.device) -> torch.Tensor | None:
+        """The summary bins' token weights 1 + bin_density_weight·dense for a part's side ids (None at weight 0: equal-token bins);
+        dense = the id's text is_dense_piece; special ids (child placeholders, padding) weigh 1."""
+        weight = self.config.bin_density_weight
+        if not weight:
+            return None
+        if self._dense_vocab is None:   # content ids only: special and added ids (<think>, <tool_call>, ...) and template markers (<|...|>: special in
+            tokenizer = self.side.tokenizer   # Qwen's tokenizer, plain vocabulary in the test one) weigh 1
+            special = set(tokenizer.all_special_ids) | set(tokenizer.get_added_vocab().values())
+            pieces = [tokenizer.decode([i]) for i in range(len(tokenizer))]
+            self._dense_vocab = torch.tensor([i not in special and not (piece.startswith("<|") and piece.endswith("|>")) and is_dense_piece(piece)
+                                              for i, piece in enumerate(pieces)], dtype=torch.bool)
+        if self._dense_vocab.device != device:
+            self._dense_vocab = self._dense_vocab.to(device)
+        return 1 + weight * self._dense_vocab[torch.tensor(ids, device=device)].float()
+
+    def _encode_kv_batch(self, items: list[PreparedPart], indexes: list[int], results: list[ACOutput | None], device: torch.device) -> None:
+        """Key/value transfer: the side base with its adapter reads each part's tokens as they are, with the marker embedding
+        after every bin (the interleaved layout's positions); the result is, per layer, the keys and values that layer computes
+        at the markers (not rotated), the markers' positions and the sequence length. Before any training the encoder is the
+        plain base model reading the part with markers in it."""
+        from ..harness.kv_transfer import LayerInputCapture
+        started = time.time()
+        base = self.side.model
+        base_dtype = next(base.parameters()).dtype
+        embedding = base.get_input_embeddings()
+        sequences, summary_positions = [], []
+        for ids, spans, _, num_rows, is_recursive, _ in items:
+            if spans or is_recursive:
+                raise RuntimeError("kv_transfer encodes flat parts only (no nested activation_context parts)")
+            with torch.no_grad():
+                embedded = embedding(torch.tensor(ids, device=device)).to(base_dtype)
+            token_positions, positions = interleaved_positions(len(ids), num_rows, device, self._bin_weights(ids, device))
+            marker = self.modules.kv_marker.to(base_dtype).expand(num_rows, -1)
+            sequences.append(embedded.new_zeros(len(ids) + num_rows, self.d_side).index_copy(0, token_positions, embedded).index_copy(0, positions, marker))
+            summary_positions.append(positions)
+        seq_lengths = [int(sequence.shape[0]) for sequence in sequences]
+        if self.profile_phases:
+            self.stats.decoder_sequences.extend(seq_lengths)
+        max_seq = max(seq_lengths)
+        inputs_embeds = torch.zeros(len(items), max_seq, self.d_side, device=device, dtype=base_dtype)
+        for row, sequence in enumerate(sequences):
+            inputs_embeds[row, :sequence.shape[0]] = sequence
+        attention_mask = None
+        if len(items) > 1:
+            attention_mask = torch.zeros(len(items), max_seq, device=device, dtype=torch.long)
+            for row, length in enumerate(seq_lengths):
+                attention_mask[row, :length] = 1
+        enabled = (self.mode == TRAINING and torch.is_grad_enabled() and self.config.side_gradient_checkpointing
+                   and getattr(self, "_training_gradient_checkpointing", True)
+                   and max_seq >= getattr(self, "_side_gradient_checkpointing_min_tokens", 0))
+        capture = LayerInputCapture(summary_positions)
+        self.side.decoder_forward(inputs_embeds, attention_mask, lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled, capture=capture)
+        for row, (ids, _, _, num_rows, _, _) in enumerate(items):
+            # Attention-entry mode: zero rows (inert placeholders). Overwrite mode: every row enters the reader as the marker embedding.
+            rows = self.modules.kv_marker.float().expand(num_rows, -1) if self.config.kv_overwrite else torch.zeros(num_rows, self.d_target, device=device)
+            results[indexes[row]] = ACOutput(rows, kv_values={layer: (capture.keys[layer][row].float(), capture.values[layer][row].float()) for layer in sorted(capture.keys)},
+                                             kv_positions=summary_positions[row], kv_length=seq_lengths[row], kv_overwrite=bool(self.config.kv_overwrite))
+            self.stats.encodes += 1
+            self.stats.side_tokens += len(ids)
+            self.stats.view_rows += num_rows
+        self.stats.encode_batches += 1
+        self.stats.encode_seconds.append(time.time() - started)
+
     def _encode_prepared_batch(self, items: list[PreparedPart], indexes: list[int], results: list[ACOutput | None], device: torch.device) -> None:
+        if self.config.kv_transfer:
+            return self._encode_kv_batch(items, indexes, results, device)
         started = time.time()
         phase_started = started
         modules = self.modules
@@ -435,10 +623,11 @@ class ActivationContextModel:
         embedding = base.get_input_embeddings()
         batch_size = len(items)
         lengths = [len(ids) for ids, *_ in items]
+        bin_weights = [self._bin_weights(ids, device) for ids, *_ in items]   # None at bin_density_weight 0: equal-token bins
         max_length = max(lengths)
         x = torch.zeros(batch_size, max_length, self.d_side, device=device, dtype=torch.float32)
         valid = torch.zeros(batch_size, max_length, device=device, dtype=torch.bool)
-        for row, (ids, spans, child_rows, _, _) in enumerate(items):
+        for row, (ids, spans, child_rows, _, _, _) in enumerate(items):
             with torch.no_grad():
                 embedded = embedding(torch.tensor(ids, device=device)).float()
             if spans:                                                                              # child rows over their placeholder runs
@@ -465,13 +654,26 @@ class ActivationContextModel:
             for layer in modules.mixer:
                 x = run(layer, x, valid)
             phase_started = self._phase("mixer", phase_started, device)
+            if modules.pooling is not None:                                 # content pooling: about 1/stride of the tokens enter the decoder
+                pooled, window_valid = run(modules.pooling, x, valid)
+                phase_started = self._phase("pooling", phase_started, device)
             sequences = []
-            for row, (_, _, _, num_rows, _) in enumerate(items):
+            positions: list[tuple[torch.Tensor, torch.Tensor] | None] = []   # interleaved: the content and summary positions of the decoder sequence
+            for row, (_, _, _, num_rows, _, _) in enumerate(items):
                 mixed = x[row, :lengths[row]]
-                summaries = run(modules.summary_pooling, mixed, num_rows)
+                content = mixed if modules.pooling is None else pooled[row][window_valid[row]]
+                weights = bin_weights[row]
+                summaries = run(modules.summary_pooling, mixed, num_rows, *([weights] if weights is not None else []))   # the summaries always pool from the unpooled content
                 summaries = (unit_rows(summaries) + modules.summary_marker
                              + modules.position_scale * sinusoidal_positions(num_rows, self.d_side, device))
-                sequences.append(torch.cat([unit_rows(mixed), unit_rows(summaries)], dim=0) * modules.input_scale)
+                sequence = torch.cat([unit_rows(content), unit_rows(summaries)], dim=0)
+                if self.config.summary_layout == "interleaved":               # each summary right after the tokens of its bin (natural positions)
+                    token_positions, summary_positions = interleaved_positions(lengths[row], num_rows, device, weights)
+                    sequence = sequence[torch.argsort(torch.cat([token_positions, summary_positions]))]
+                    positions.append((token_positions, summary_positions))
+                else:
+                    positions.append(None)
+                sequences.append(sequence * modules.input_scale)
         phase_started = self._phase("summaries", phase_started, device)
         seq_lengths = [int(sequence.shape[0]) for sequence in sequences]
         if self.profile_phases:
@@ -491,20 +693,30 @@ class ActivationContextModel:
         hidden = self.side.decoder_forward(inputs_embeds.to(base_dtype), attention_mask,
                                            lora_name=self.config.base_side_model_lora_name, gradient_checkpointing=enabled)
         phase_started = self._phase("side_decoder", phase_started, device)
-        for row, (ids, _, _, num_rows, is_recursive) in enumerate(items):
+        for row, (ids, _, _, num_rows, is_recursive, child_states) in enumerate(items):
             end = seq_lengths[row]
-            rows = hidden[row, end - num_rows:end].float()
-            if is_recursive:
-                results[indexes[row]] = ACOutput(modules.recursive_adapter(rows))
+            # The rows: the summaries' final states. The level's key set: the passage positions' final side states (one fp32 copy
+            # per example, shared by every read-out) plus, with recursive_keys, the final states its children returned (the parent
+            # reads a child at the child's granularity).
+            if positions[row] is None:
+                rows = hidden[row, end - num_rows:end].float()
+                keys = hidden[row, :end - num_rows].float()
             else:
-                input_embeds = modules.target_head(rows)
+                token_positions, summary_positions = positions[row]
+                rows = hidden[row, summary_positions].float()
+                keys = hidden[row, token_positions].float()
+            if child_states:
+                keys = torch.cat([keys, *[states.to(keys.dtype) for states in child_states]], dim=0)
+            if is_recursive:
+                results[indexes[row]] = ACOutput(modules.recursive_adapter(modules.recursive_readout(rows, keys)), states=rows if self.config.recursive_keys else None)   # states ride the cache only when a parent reads them
+            else:
+                input_embeds = modules.target_head(modules.row_readout(rows, keys))
                 deltas = {}
                 if modules.is_deep:
-                    passage = hidden[row, :end - num_rows].float()      # the passage tokens' final side states: one fp32 copy per example, shared by the layers
                     for layer in self.intervention_layers:
-                        source = modules.passage_attention[str(layer)](rows, passage)
+                        source = modules.passage_attention[str(layer)](rows, keys)
                         deltas[layer] = modules.delta_heads[str(layer)](source)
-                        if self.mode == TRAINING:                              # does the delta re-inject the row? cosine with the input row, per layer; and the delta's RMS (0-d tensors, read at the trace point)
+                        if self.mode == TRAINING and torch.is_grad_enabled():   # does the delta re-inject the row? cosine with the input row, per layer; and the delta's RMS (0-d tensors, read at the trace point)
                             with torch.no_grad():
                                 cosine = F.cosine_similarity(deltas[layer].detach(), input_embeds.detach(), dim=-1).mean()
                             self._record_diagnostic("cosine", layer, cosine)
@@ -578,10 +790,33 @@ class ActivationContextModel:
             raise ValueError("Checkpoint model identities or widths differ from the loaded bases")
         structural = ("mixer_layers", "mixer_window", "mixer_heads", "min_view_rows", "max_view_rows", "side_lora_rank", "default_compression_ratio")
         differences = [name for name in structural if state["config"].get(name) != getattr(self.config, name)]
+        saved_stride = int(state["config"].get("input_pooling_stride", 0) or 0)
+        # An unpooled checkpoint into a pooled model is a migration (the pooler is a new module, trained from its init on top of the
+        # loaded encoder: that is how the strided arms warm-start). Every other stride change is refused, the reverse direction included.
+        pooling_fresh = saved_stride == 0 and self.config.input_pooling_stride > 0
+        if saved_stride != self.config.input_pooling_stride and not pooling_fresh:
+            differences.append(f"input_pooling_stride (checkpoint {saved_stride}, model {self.config.input_pooling_stride})")
+        elif saved_stride and int(state["config"].get("input_pooling_window", 0) or 0) != self.config.input_pooling_window:
+            differences.append("input_pooling_window")
         if bool(state["config"].get("row_head_skip", False)) != self.modules.target_head.skip:
             differences.append("row_head_skip")
-        if state["config"].get("input_pooling_stride", 0) or state["config"].get("encoder_passes", 1) != 1 or state["config"].get("pool_surprisal", 0.0):
-            differences.append("encoder (content pooling, iterative passes or surprisal pooling are no longer part of the model)")
+        if bool(state["config"].get("kv_transfer", False)) != self.config.kv_transfer:
+            differences.append(f"kv_transfer (checkpoint {bool(state['config'].get('kv_transfer', False))}, model {self.config.kv_transfer})")
+        if bool(state["config"].get("kv_overwrite", False)) != self.config.kv_overwrite:
+            differences.append(f"kv_overwrite (checkpoint {bool(state['config'].get('kv_overwrite', False))}, model {self.config.kv_overwrite})")
+        if bool(state["config"].get("row_head_linear_skip", False)) != self.config.row_head_linear_skip:
+            differences.append(f"row_head_linear_skip (checkpoint {bool(state['config'].get('row_head_linear_skip', False))}, model {self.config.row_head_linear_skip})")
+        # An appended-layout checkpoint into an interleaved model is a migration (same modules; the summaries move to their bins):
+        # that is how the interleaved arm can warm-start. The reverse is refused: those weights were trained on interleaved sequences.
+        saved_layout = str(state["config"].get("summary_layout", "appended") or "appended")
+        layout_migrates = saved_layout == "appended" and self.config.summary_layout == "interleaved"
+        if saved_layout != self.config.summary_layout and not layout_migrates:
+            differences.append(f"summary_layout (checkpoint {saved_layout}, model {self.config.summary_layout})")
+        # A different bin density weight is a migration in either direction (same modules; the bins move): noted, never refused.
+        saved_bin_weight = float(state["config"].get("bin_density_weight", 0.) or 0.)
+        bins_move = saved_bin_weight != self.config.bin_density_weight
+        if state["config"].get("encoder_passes", 1) != 1 or state["config"].get("pool_surprisal", 0.0):
+            differences.append("encoder (iterative passes or surprisal pooling are no longer part of the model)")
         saved_interventions = state.get("interventions") or {}
         saved_layers = [int(layer) for layer in saved_interventions.get("layers", [])]   # absent in input-only checkpoints
         migrate = self.is_deep and not saved_layers          # input-only checkpoint into a deep model: shared modules loaded, intervention modules fresh
@@ -602,14 +837,32 @@ class ActivationContextModel:
         for name in list(modules_state):        # inert calibration state that earlier deep checkpoints carried
             if name in ("intervention_calibration", "interventions_calibrated") or (name.startswith("delta_heads.") and name.split(".")[-1] in ("relative", "rms")):
                 modules_state.pop(name)
+        # Two kinds of keys may be absent: the intervention modules when an input-only checkpoint migrates into a deep model, and the
+        # row read-outs when the checkpoint predates them (identity at init: the outputs are the checkpoint's). Anything else raises.
+        deep_keys = {name for name in self.modules.state_dict() if name.startswith(INTERVENTION_MODULE_PREFIXES)} if migrate else set()
+        readout_keys = {name for name in self.modules.state_dict() if name.startswith(READOUT_MODULE_PREFIXES)}
+        pooling_keys = {name for name in self.modules.state_dict() if name.startswith(POOLING_MODULE_PREFIX)} if pooling_fresh else set()
+        expected = set(self.modules.state_dict()); saved = set(modules_state)
+        missing, unexpected = expected - saved, saved - expected               # decided before anything is written: a mismatch leaves the modules untouched
+        fresh_readouts = missing & readout_keys
+        if (missing - deep_keys - readout_keys - pooling_keys) or unexpected or (fresh_readouts and fresh_readouts != readout_keys) \
+                or (migrate and not deep_keys <= missing) or (pooling_fresh and not pooling_keys <= missing):
+            raise ValueError(f"Checkpoint modules do not match (missing {sorted(missing - deep_keys - readout_keys - pooling_keys)}, unexpected {sorted(unexpected)})")
+        self.modules.load_state_dict(modules_state, strict=False)
+        if bool(state["config"].get("recursive_keys", False)) != self.config.recursive_keys:
+            print(f"{self.name} - Note: the checkpoint was trained with recursive_keys={state['config'].get('recursive_keys', False)}; this model uses {self.config.recursive_keys} (the read-outs see a different key set)")
         if migrate:
-            deep_keys = {name for name in self.modules.state_dict() if name.startswith(INTERVENTION_MODULE_PREFIXES)}
-            result = self.modules.load_state_dict(modules_state, strict=False)
-            if set(result.missing_keys) != deep_keys or result.unexpected_keys:
-                raise ValueError(f"Checkpoint modules do not match (missing {sorted(set(result.missing_keys) - deep_keys)}, unexpected {list(result.unexpected_keys)})")
             print(f"{self.name} - Migrated an input-only checkpoint into a deep model: shared modules loaded, {len(self.intervention_layers)} intervention layers fresh (seeded init)")
-        else:
-            self.modules.load_state_dict(modules_state)
+        if fresh_readouts:
+            print(f"{self.name} - Row read-outs fresh (identity at init): the checkpoint predates the read-outs in front of the row heads")
+        if pooling_fresh:
+            print(f"{self.name} - Content pooling fresh (stride {self.config.input_pooling_stride}, window {self.config.input_pooling_window}): "
+                  "the checkpoint was trained on unpooled content, the pooler starts at its init")
+        if layout_migrates:
+            print(f"{self.name} - Summaries interleaved: the checkpoint was trained with the summaries appended after the content")
+        if bins_move:
+            print(f"{self.name} - Summary bins at density weight {self.config.bin_density_weight} (the checkpoint was trained at {saved_bin_weight}): "
+                  "same modules, the bins move")
         self.version = max(self.version, int(state.get("version", 0)))
         self.epoch_number = int(state.get("epoch_number", 0))
         self.invalidate_encoded_rows()

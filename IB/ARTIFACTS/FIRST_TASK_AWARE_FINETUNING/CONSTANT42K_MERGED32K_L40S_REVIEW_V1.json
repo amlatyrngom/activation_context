@@ -1,0 +1,1556 @@
+{
+  "summary": {
+    "created_utc": "2026-09-23T15:52:16.676709+00:00",
+    "status": "complete100_content_review",
+    "view_key": "constant42k_merged32k_l40s",
+    "snapshot_sha256": "7050fef460a077298cb8c1c2ce906a53a7648b876ccfaf1f42edbfa8deca6d39",
+    "judgments_sha256": "3fdf66cf5b37f663d2d0cbe334a5d0fa7a7072bcf64ee19d31e93164fcdfcad7",
+    "receipt_sha256": "e4799ebfee62d57be716a2366fdaffed73fe50e967c66e9b0bdbabd0b1a1375d",
+    "judgments_path": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_merged32k_l40s_review/responses_constant42k_merged32k_l40s.json",
+    "source_labels_unchanged": true,
+    "supported_n": 87,
+    "reference_concern_indices": [
+      0,
+      6,
+      19,
+      25,
+      27,
+      29,
+      36,
+      67,
+      76,
+      84,
+      85,
+      89,
+      95
+    ],
+    "all100_statuses": {
+      "partial": 6,
+      "correct": 70,
+      "incorrect": 22,
+      "ambiguous": 2
+    },
+    "supported_statuses": {
+      "correct": 66,
+      "incorrect": 17,
+      "partial": 4
+    },
+    "reference_concern_statuses": {
+      "partial": 2,
+      "correct": 4,
+      "incorrect": 5,
+      "ambiguous": 2
+    },
+    "by_generator_cohort": {
+      "27b": {
+        "all100": {
+          "partial": 3,
+          "correct": 33,
+          "incorrect": 13,
+          "ambiguous": 1
+        },
+        "supported": {
+          "correct": 32,
+          "incorrect": 11,
+          "partial": 2
+        },
+        "supported_n": 45
+      },
+      "9b": {
+        "all100": {
+          "correct": 37,
+          "incorrect": 9,
+          "partial": 3,
+          "ambiguous": 1
+        },
+        "supported": {
+          "correct": 34,
+          "incorrect": 6,
+          "partial": 2
+        },
+        "supported_n": 42
+      }
+    },
+    "paired": {
+      "native_2k": {
+        "old_supported_statuses": {
+          "correct": 71,
+          "incorrect": 11,
+          "partial": 5
+        },
+        "new_supported_statuses": {
+          "correct": 66,
+          "incorrect": 17,
+          "partial": 4
+        },
+        "gains": [
+          69
+        ],
+        "losses": [
+          7,
+          22,
+          28,
+          31,
+          55,
+          62
+        ],
+        "both_correct": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          20,
+          21,
+          24,
+          26,
+          30,
+          32,
+          33,
+          34,
+          35,
+          38,
+          39,
+          41,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          52,
+          53,
+          54,
+          56,
+          58,
+          59,
+          60,
+          61,
+          63,
+          65,
+          66,
+          68,
+          70,
+          71,
+          73,
+          75,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          86,
+          87,
+          88,
+          90,
+          91,
+          92,
+          93,
+          96,
+          97,
+          99
+        ],
+        "neither_correct": [
+          8,
+          11,
+          18,
+          23,
+          37,
+          40,
+          42,
+          50,
+          51,
+          57,
+          64,
+          72,
+          74,
+          94,
+          98
+        ]
+      },
+      "piecewise_32k": {
+        "old_supported_statuses": {
+          "correct": 58,
+          "incorrect": 18,
+          "partial": 10,
+          "ambiguous": 1
+        },
+        "new_supported_statuses": {
+          "correct": 66,
+          "incorrect": 17,
+          "partial": 4
+        },
+        "gains": [
+          5,
+          20,
+          21,
+          35,
+          46,
+          47,
+          78,
+          81,
+          83,
+          86,
+          91,
+          96
+        ],
+        "losses": [
+          7,
+          28,
+          55,
+          72
+        ],
+        "both_correct": [
+          1,
+          2,
+          3,
+          4,
+          9,
+          10,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          24,
+          26,
+          30,
+          32,
+          33,
+          34,
+          38,
+          39,
+          41,
+          43,
+          44,
+          45,
+          48,
+          49,
+          52,
+          53,
+          54,
+          56,
+          58,
+          59,
+          60,
+          61,
+          63,
+          65,
+          66,
+          68,
+          69,
+          70,
+          71,
+          73,
+          75,
+          77,
+          79,
+          80,
+          82,
+          87,
+          88,
+          90,
+          92,
+          93,
+          97,
+          99
+        ],
+        "neither_correct": [
+          8,
+          11,
+          18,
+          22,
+          23,
+          31,
+          37,
+          40,
+          42,
+          50,
+          51,
+          57,
+          62,
+          64,
+          74,
+          94,
+          98
+        ]
+      }
+    },
+    "format": {
+      "ended_at_eos": 100,
+      "reached_token_budget": 0,
+      "post_first_wrapper_text": 0
+    },
+    "metrics": {
+      "all100_answer_nll": 0.6314022820800373,
+      "scoring_seconds": 277.9018599591218,
+      "scoring_peak_allocated_gib": 28.272393703460693
+    },
+    "limitations": [
+      "Fixed development selection; no random-population accuracy claim.",
+      "Merged L40S versus earlier piecewise/native RTX execution; layout and device/runtime differ.",
+      "Same weights, gold, fixed selection, full32k evidence and total compressed rows as piecewise32k verified in input receipt.",
+      "All100 annotations retained; semantic primary denominator is unchanged supported87.",
+      "Original teacher-forced gold NLLs are untouched, including13reference concerns.",
+      "AC-only qualitative review; optional matched full-context answers not yet reviewed.",
+      "No quality judgment was assigned from an NLL threshold."
+    ],
+    "borderline_adjudication": {
+      "68": "Counted correct: it names the exact specific physical limitation asked about. Repeating poor fliers is unnecessary; no unsupported causal detail is added.",
+      "31": "Incorrect3.7.0: full evidence has actual3.9.0 and2.8.4 announcements; the3.7 mentions are Python instructions, not a pytest release. Existing piecewise2.8.4 ambiguity remains unchanged."
+    }
+  },
+  "input_receipt": {
+    "status": "frozen",
+    "inputs": {
+      "input_new.json": {
+        "source": "/workspace/IB/TMP/SYNC/TASK_AWARE_QA/continuation_merged_l40s_cohort100/continue32k_10k_final_lr__merged_32k_l40s/result.json",
+        "sha256": "7050fef460a077298cb8c1c2ce906a53a7648b876ccfaf1f42edbfa8deca6d39",
+        "bytes": 29466095
+      },
+      "input_native2k.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/continuation_cohort_review/continue32k_10k_final_lr.json",
+        "sha256": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6",
+        "bytes": 3744671
+      },
+      "input_piecewise32k.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/input_new.json",
+        "sha256": "a25798cdae7fc50ab84f921344c4491bc89ee9fa6859df6dd1fdf5758e8bc6cb",
+        "bytes": 30165249
+      },
+      "source_notes.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_cohort_review/source_notes.json",
+        "sha256": "393e4dba9b6728763f79ab2584463fea0c2818e2cf28c6cdd5778935151846a1",
+        "bytes": 30198
+      },
+      "sources.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_cohort_review/sources.json",
+        "sha256": "f5a1fdbc303b9e8fab55e18a8fb8c062cb711304e795918097d4e0141d899dca",
+        "bytes": 1088533
+      },
+      "prior_native_judgments.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/continuation_cohort_review/responses_constant_final.json",
+        "sha256": "e9b953906ff7b8de0f05d2817b6609f3f4b3a4fe4a475f922101f61617c6c2cc",
+        "bytes": 19521
+      },
+      "prior_piecewise_judgments.json": {
+        "source": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/responses_constant42k_32k.json",
+        "sha256": "193787c6d69719fc143c04051b3d806dbda8fc724d7967606c3baaf74a6d7906",
+        "bytes": 26589
+      }
+    },
+    "same100_samegold_samepairedweights": true,
+    "same32k_full_evidence_and_totalrows": true,
+    "reference_labels": "Original87 supported/13 concerns unchanged",
+    "new_runtime": {
+      "torch": "2.13.0+cu130",
+      "cuda": "13.0",
+      "device": "NVIDIA L40S",
+      "tf32_matmul": true,
+      "tf32_cudnn": true,
+      "bf16_reduced_precision_reduction": true,
+      "bf16_reduction_split_k": true,
+      "autotuning": {
+        "fla": [
+          "shared",
+          "shared"
+        ],
+        "seconds": 1.139,
+        "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+        "logits": "heuristic: bounded vocabulary scratch",
+        "memory_budget_bytes": 20333264896
+      }
+    },
+    "piecewise_runtime": {
+      "torch": "2.13.0+cu130",
+      "cuda": "13.0",
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "tf32_matmul": true,
+      "tf32_cudnn": true,
+      "bf16_reduced_precision_reduction": true,
+      "bf16_reduction_split_k": true,
+      "autotuning": {
+        "fla": [
+          "shared",
+          "shared"
+        ],
+        "seconds": 0.211,
+        "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+        "logits": "heuristic: bounded vocabulary scratch",
+        "memory_budget_bytes": 74469998592
+      }
+    },
+    "native_runtime": null,
+    "ac_complete": true
+  },
+  "judgments": {
+    "0": {
+      "item_id": "770164ac47e4be0e8307301a122aa3b8eb6295dc0935f551a819ae5c13eae3df",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Gets the supplied-handler branch direction, but explicit non-None is weaker than the code's truthiness test; the frozen reference concern remains."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "The branch tests truthiness (if not default_handler / else), not identity with None. The gold's true-valued alternative is correct, but non-None falsey values such as an empty string still take the filename branch."
+    },
+    "1": {
+      "item_id": "f8c8f913f5478622ddb97795b55ec0fb1da8476f4b905d89eed9232960a887a9",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Accurately says absence of actual confusion is inconclusive and likelihood must be assessed in the circumstances, consistent with the opinion."
+      },
+      "source_reference": "supported",
+      "source_note": "The opinion repeatedly states that section2(d) tests likelihood rather than actual confusion and that the president's lack of awareness cannot conclusively negate confusion."
+    },
+    "2": {
+      "item_id": "b5440997c3b19136f9d24228c568c5597a0900edea600a15704b7c5ebfac1b7a",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies serviceIdPattern and a null URI as the stated matching conditions."
+      },
+      "source_reference": "supported",
+      "source_note": "With an initially null cached pattern, non-null serviceIdRegex is compiled. Unset uriRegex leaves the initially null uriPattern unchanged; ordinary valid-regex configuration is assumed."
+    },
+    "3": {
+      "item_id": "ee4c3a29adc0cd9a9f7736b4ad160598be1ce0597c5db6e5954ef07929ef00a7",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names the supported change to Sagittarius."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage explicitly says change is essential for Sagittarius to feel their best; this is a claim about the supplied text, not independent endorsement of astrology."
+    },
+    "4": {
+      "item_id": "008b085309fbf3e9b3b2126f6eb74945cd7759e7ed53d26eab4406c171393fa8",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies save_in_scope=True as the flag for saving the distribution in scope."
+      },
+      "source_reference": "supported",
+      "source_note": "The displayed if save_in_scope branch places _save_model inside with distribution.scope(); the else calls it directly."
+    },
+    "5": {
+      "item_id": "518fae62d6b666498f1e519d0c4b69b097c1bdc0d8b8a2fea36fc27661e7147a",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names Sharding-JDBC, the component identified by the supplied passage."
+      },
+      "source_reference": "supported",
+      "source_note": "The comparison table assigns arbitrary databases, Java-only language support and high connection consumption to Sharding-JDBC."
+    },
+    "6": {
+      "item_id": "c89d2a680e23c1d8bbe4f702ac30f4f142cbbc3853e5b0a51cbd9ec1e8a89d14",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Explains mapping the modalities into a common C-space to reduce distribution differences; does not add the reference's unsupported blanket GAN conclusion."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "A/B-to-common-C and equal treatment are stated, and direct GAN transfer is criticized for randomness/identity inconsistency. However infrared-to-grayscale is itself explicitly implemented with CycleGAN; the gold's blanket avoiding GAN-based randomness claim overstates what this excerpt establishes."
+    },
+    "7": {
+      "item_id": "232b6ab3d4351975d77ecee7ee4db3099e441454f4385971e7e40307fad6cd39",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 1 + pi/2 instead of 2pi + pi/2 = 5pi/2 for F2(1); the increasing-direction statement does not fix the wrong value."
+      },
+      "source_reference": "supported",
+      "source_note": "Substituting even n=2 into F_n(1)=n*pi+(-1)^n*pi/2 gives5pi/2; assertion(ii) says even branches increase."
+    },
+    "8": {
+      "item_id": "6efc127b2b897cdcc7f20668889e93d53a996d84769d7a5d367d6bff030cf269",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Mentions the former-employee exception, but omits unrepresented and incorrectly says Humana lacked counsel during Grasch/Cowen's later contacts; that timing belongs to the earlier contacts."
+      },
+      "source_reference": "supported",
+      "source_note": "The excerpt explicitly quotes KBAE-381: communicating with unrepresented former organizational employees does not violate SCR3.130(4.2), and applies it to Grasch/Cowen's contacts."
+    },
+    "9": {
+      "item_id": "53aa124521ec8ee502905698d5cdba83383fe5ec670dacc18ec8d819af8540b6",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies Double and radians, both requested properties."
+      },
+      "source_reference": "supported",
+      "source_note": "The Arg1 parameter table explicitly requires Double and describes the angle as radians."
+    },
+    "10": {
+      "item_id": "41a8287ef36af8d6f63d05de84bd059e04a8612589578b02adc096d8a00cc68d",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Correctly subtracts 3 to obtain excess kurtosis."
+      },
+      "source_reference": "supported",
+      "source_note": "The displayed kurtosis equation ends with minus3, matching the stated normal-distribution baseline."
+    },
+    "11": {
+      "item_id": "38c4eb9bbf2c7182fb16c76b7b4b875565d57fe18c12e2fbbdcdbe3937de9efb",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Chooses Standard 145; the displayed maximum belongs to Claeys at 744."
+      },
+      "source_reference": "supported",
+      "source_note": "The40-solar-mass column lists145,142,293,1.6,744,145; Claeys744 is the maximum."
+    },
+    "12": {
+      "item_id": "3d2ab154d67609992ba82f443cb47001073db04f673775167d2c7ae1eeeed823",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives Fogle's stated explanation in terms of shared neurochemicals and brain regions."
+      },
+      "source_reference": "supported",
+      "source_note": "The final paragraph attributes precisely this identical-neurochemicals/brain-regions argument to BruceFogle in1992."
+    },
+    "13": {
+      "item_id": "0d51c5de70050176cfe80bb2f674754271aaa56c8ffbe3e475e3847ac421ec34",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names both ONAP and PACHA as specified in the supplied document."
+      },
+      "source_reference": "supported",
+      "source_note": "The supplied HIV/AIDS-policy paragraph explicitly names ONAP and PACHA as the two organizations dissolved in2017; review is of source support, not an external historical fact check."
+    },
+    "14": {
+      "item_id": "636fce7fe18c851977201a78df23c55c8252232b6985f0ab902ef44e652fc9c9",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies anxiety and fear of failure as the described impediments."
+      },
+      "source_reference": "supported",
+      "source_note": "The JobRedesign paragraph explicitly says enrichment for low-achievement-need/external-locus employees may increase anxiety and fear of failure."
+    },
+    "15": {
+      "item_id": "46705052f4432e60a55a7b266f7d059893067be84c6c8e24a672558295f0c68f",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies Malayalam as the first language on Day 1."
+      },
+      "source_reference": "supported",
+      "source_note": "The Malayalam regional object explicitly sets firstDay:1."
+    },
+    "16": {
+      "item_id": "a85b72bf321e5aa9a1f521ca918d6f4257f3af5daa13f73ffcd4ddf22d8b40e8",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Correctly identifies sqrt(20) as irrational with a nonterminating, nonrepeating decimal."
+      },
+      "source_reference": "supported",
+      "source_note": "The supplied irrational-number definition gives nonterminating/nonrepeating decimals; sqrt20=2sqrt5 is a standard directly derivable irrational example because5 is not a square."
+    },
+    "17": {
+      "item_id": "a3e3e477d2fcdef8fb39e52f92bccd939646fc7155140fa35dd7eb408d9ab025",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Reports the LOGGER.error action, no raised exception, and return value 1."
+      },
+      "source_reference": "supported",
+      "source_note": "For a nonzero exit and failOnError=false, the else logs the error-stream string and returns exitCode; no failure exception is deliberately raised. This does not assert immunity from unrelated I/O errors."
+    },
+    "18": {
+      "item_id": "0fbc49d27a4873ad8a43659eea5c27b9a72815626f2b5ad5e089ea9c107362dc",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Includes the runnable microbatch and GPU count and accumulation of 1, but omits division by model_parallelism from the batch-size formula."
+      },
+      "source_reference": "supported",
+      "source_note": "MaxTrainBatchSize states runnable microbatch times gradient accumulation times GPU count, integer-divided by model parallelism; omitted accumulation defaults to1 as specified in the question."
+    },
+    "19": {
+      "item_id": "9ac9803fa4ea721205822ea91a3fd4fd37427ef35483cf86e73ddbcd1aca1284",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Reproduces the supported p = J - 2 K^I + K_+^II + K_-^II expression without endorsing the defective symmetry premise."
+      },
+      "source_reference": "incorrect",
+      "source_note": "The gold formula for p is copied correctly, but the question places p under su(2,2). The source explicitly assigns[q1,p,q2] to su(4), and[s+,r,s-] to su(2,2). The rho/delta-text notation is also malformed; the symmetry-group premise is materially wrong."
+    },
+    "20": {
+      "item_id": "b755e1e9e883b7adf96e7cd197a4e8d7d0481a66f8c46ec23ec381703c28272c",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives Yakima and 1860, the supported location and date."
+      },
+      "source_reference": "supported",
+      "source_note": "The first sentence explicitly dates the Yakima boarding-school establishment to1860."
+    },
+    "21": {
+      "item_id": "59e88e731fc68eb2eff3e5a62726dcfc4fbb948e7f0b5b83ca6c5be653b51734",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies outprop as the concatenation of propA and propB with a space."
+      },
+      "source_reference": "supported",
+      "source_note": "resD.propA directly uses pulumi.all([resA.outprop,resB.outprop]).apply(([a,b])=>`${a} ${b}`), combining the resolved values with one space."
+    },
+    "22": {
+      "item_id": "8385cc53b576537b175de6a06d68f7e2cc15ef817b6ee264dfaffb7991e0cd3a",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Names Malaysia; the supplied source identifies Papua New Guinea."
+      },
+      "source_reference": "supported",
+      "source_note": "The supplied lists put PapuaNewGuinea in APEC, ASEAN Observers, and Current Commonwealth realms with monarchy; their intersection supports the answer."
+    },
+    "23": {
+      "item_id": "9aff89987a7eb1fafa0d71ecd1517cf04b84e38a53951e96fa7ff7aea82b5822",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives p-k instead of d^(p-k), losing the exponential count."
+      },
+      "source_reference": "supported",
+      "source_note": "The outer sum indexes words rho of length p-|tau|=p-k over d generators, yielding d^(p-k) terms by elementary counting."
+    },
+    "24": {
+      "item_id": "10f56d1edd978753dbb41d13de3ff6b7870c68fbb4e4533f3b4569a00736ae7a",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Describes the sequential window list and the last window's application to remaining blocks."
+      },
+      "source_reference": "supported",
+      "source_note": "VariableSparsityConfig explicitly assigns successive list entries to successive windows and repeats the final entry for remaining windows."
+    },
+    "25": {
+      "item_id": "c8bc2ea286a26c779e86ac11c2732426d141999e4bf7961579698912a3d969db",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Returns 1 despite the supplied 16-13 calculation equalling 3; the frozen missing-hypotheses concern is separate."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "sqrt(4^2-13)=sqrt3 follows under the proposition's assumptions, but it additionally requires x very general and the negative-curve hypothesis on Y=Bl_x(X). The question does not locate the hypothesis or restrict x, so the constant is not determined for an arbitrary x."
+    },
+    "26": {
+      "item_id": "36fd60967e71ab1e6aaeb60a9a381c313c9bb5fe70ee8300a5e55b1a8e606e52",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names Abd Allah and correctly places the name before Islam as Muhammad's father's name."
+      },
+      "source_reference": "supported",
+      "source_note": "The excerpt explicitly cites AbdAllah, God's servant, as Muhammad's father's pre-Islamic name in the argument."
+    },
+    "27": {
+      "item_id": "c1468f834444904911845e1e2348ff46165fec17ea671f7270cc96657e346624",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Uses 762 where the multiplicity is 254, producing 4,632; the source calculation is 2*(30+3*254)=1,584, and the original gold is also flawed."
+      },
+      "source_reference": "incorrect",
+      "source_note": "The exact assertion is2*(30+3*254)=2*(30+762)=1584 bytes. Gold says1554 despite giving the correct expression, so its numerical result is wrong."
+    },
+    "28": {
+      "item_id": "6cf30e4a895348187de9770bceff18a8800f34d9bad9112de492517cb2b3a851",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Names para-Bannai-Ito polynomials rather than the stated monic generalized Gegenbauer polynomials."
+      },
+      "source_reference": "supported",
+      "source_note": "The alternative q/a/b parameterization is followed by an explicit identification of the recurrence as monic generalized Gegenbauer polynomials."
+    },
+    "29": {
+      "item_id": "189b3772bda0cfc21c8a5fd5922d667976e46ef49119572d526a3273fdadfc4b",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the literal supported RuntimeError for multiple yields; the frozen broader reference qualification is unchanged."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "The quoted message is exact, but teardown raises it when next(it) actually yields a second value. Merely containing multiple yield statements (for example in mutually exclusive branches) is not sufficient; the question leaves that runtime condition implicit."
+    },
+    "30": {
+      "item_id": "f603807e5ec9f05c708f5a90d10098f1fb710c3a37d41ed0a0c9e7b64beb4f23",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the correct open domain (-4/3, infinity)."
+      },
+      "source_reference": "supported",
+      "source_note": "The worked example requires3x+4>0, giving x>-4/3 and open interval(-4/3,infinity)."
+    },
+    "31": {
+      "item_id": "192bb43a637fe64738491bbe467306d0659d3f3a1b9b04adb2c66360cbe65286",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Answers pytest 3.7.0, which is not an announcement in the supplied evidence; it contains 3.9.0 and another 2.8.4 announcement, plus Python 3.7 instructions."
+      },
+      "source_reference": "supported",
+      "source_note": "Both title and opening announcement identify pytest3.9.0."
+    },
+    "32": {
+      "item_id": "63196daeeed9d738ef1aaa2c460556c01fe42bfd988fa5ae9cea922c4a923854",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives someInt the supported value 5."
+      },
+      "source_reference": "supported",
+      "source_note": "doSomething directly calls setSomeInt(5), whose body assigns its argument to this.someInt."
+    },
+    "33": {
+      "item_id": "3d4c6f24eb3649b092d925618494ec26f692a08b5202a9be45d3717014694daf",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Specifies an outer merge with both left_index and right_index true."
+      },
+      "source_reference": "supported",
+      "source_note": "The OuterMerge call explicitly sets both left_index=True and right_index=True."
+    },
+    "34": {
+      "item_id": "1c3b354c8b2024ae336d9f6a9337b1b6866b8ac050d05a8851f195bb6bbaa38b",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Limits the relevant royalties to those accruing after expiration, as the passage states."
+      },
+      "source_reference": "supported",
+      "source_note": "The Brulotte paragraph says later-accruing royalties are uncollectable but that this does not affect the payment due long before expiration."
+    },
+    "35": {
+      "item_id": "d7f361e923decf0736b92b6639beb9042ef700490152eba4e373a9380e883aa4",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Lists all five requested elements, including advantages."
+      },
+      "source_reference": "supported",
+      "source_note": "The dataloader loop has assert not gather_and_equal for precisely sequences,action_log_probs,values,reward,advantages; the following comment exempts potentially identical masks."
+    },
+    "36": {
+      "item_id": "34829bc78cdb5b970e3c74122f7555c55e280486696abbf1eddb67ee57836eec",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the stated remedial rationale of protecting revenue and compensating investigation loss; the frozen concern about other imputation conditions remains."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "The remedial/revenue-protection rationale is stated, but the source says shareholder protection may not be appropriate only so long as the other elements of imputing fraud are present. The question/gold strengthen this into an unqualified consequence of remedial character."
+    },
+    "37": {
+      "item_id": "3fdf307b5965ab5ee01c9037cb0ae671874f487888d5f5161c7c9ed4e676d27a",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Correctly identifies the East India Company but gives an Ireland-India difference of 165 instead of 65."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage supplies Ireland615 and India550, whose difference is65, and explicitly dates EastIndiaCompany founding to1600."
+    },
+    "38": {
+      "item_id": "e3eb27b653413c5252c121e6bad5ed71061ea7fde4dd6ceb46c27af5998680ab",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported FAILED status."
+      },
+      "source_reference": "supported",
+      "source_note": "testHTTPGETReadTimeOut sets readTimeOut(-1), calls start and asserts Status.FAILED."
+    },
+    "39": {
+      "item_id": "47a1c4ec5fb9e16ea2ecbaa11480be395a52c74a06ff916d86b25b6d47a6f6c3",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives both supported assigned values, 33 and 113."
+      },
+      "source_reference": "supported",
+      "source_note": "The web group has id113, the secret has id33, and the assignment expectation explicitly calls assign(33,113,callback)."
+    },
+    "40": {
+      "item_id": "57340c5146d42a96122c3825833dc8713666d806534df440b3a3d566ab208d49",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Identifies the case-insensitive pneumonia stream, but substitutes its name for the required numeric stream_id of 3."
+      },
+      "source_reference": "supported",
+      "source_note": "The mixed-case query is explicitly labeled case-insensitive and yields pneumonia.stream_id, defined as3."
+    },
+    "41": {
+      "item_id": "7a6c5f1127ee2829c21630d100b29eaed709175f9a2adc6494f264a3383c3445",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies the mediastinum."
+      },
+      "source_reference": "supported",
+      "source_note": "The source repeatedly defines the mediastinum as the central thoracic compartment containing the named organs."
+    },
+    "42": {
+      "item_id": "a77a6822f59bf6d0217d6fe8b447167d0424c85c218eed2422848e1a6f0a8903",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 0.0001 instead of the supported probability approximately 0.1273."
+      },
+      "source_reference": "supported",
+      "source_note": "7/12-(28+19*sqrt19)/243 is approximately0.1272877, rounding to0.1273. These are the two specified source bounds."
+    },
+    "43": {
+      "item_id": "5c9f4bba457681bc3e59101393dda303b1ad88de74c845dbaf63abe9f3bed553",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies the Ocmulgee/Oconee confluence and subsequent Ohoopee tributary."
+      },
+      "source_reference": "supported",
+      "source_note": "The confluence sentence names Ocmulgee and Oconee nearLumberCity, followed downstream by Ohoopee."
+    },
+    "44": {
+      "item_id": "128308cfd2ebd677f2c62ddd10419c0525e8369c05eac4bddfdb29e240de79bd",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Accurately reflects the passage's explanation of immature puppy immunity and infection risk."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage explicitly attributes the frequent puppy vet visits to weak immune systems; the answer reports that stated rationale."
+    },
+    "45": {
+      "item_id": "1326eb67488434318c90e87108257bc60e0cc1e2a639c022437967d1b85b241a",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported !unqualified value."
+      },
+      "source_reference": "supported",
+      "source_note": "The qualifier Javadoc explicitly gives prefix! and the example qualifier=\"!unqualified\" for absence of the named qualifier."
+    },
+    "46": {
+      "item_id": "38087e20e174cab80a8e8148ec81b995b26f2748453862a886c269884c007515",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names UF/IFAS Extension's Solutions for Your Life resource."
+      },
+      "source_reference": "supported",
+      "source_note": "The Extension navigation link has the sfyl.ifas.ufl.edu URL and title UF/IFAS Extension–SolutionsforYourLife."
+    },
+    "47": {
+      "item_id": "9842b5c5c12c2489e497176a93eec32025a52f86cfb935992bafa4531caffe25",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives BioEssence's supported figure 223,752."
+      },
+      "source_reference": "supported",
+      "source_note": "The2024 table supplies-33173,-120827,+377752; their sum is223752, also listed as net income."
+    },
+    "48": {
+      "item_id": "aa8572d12a0a8dda8f1455506ac6e0c9c2d6b99feee6c5c0f8e6dbcc9c005c5b",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies the CellRun.copy flag."
+      },
+      "source_reference": "supported",
+      "source_note": "CellRun declares copy:bool with the comment True if the text should be copied over."
+    },
+    "49": {
+      "item_id": "e28676b0746aa4dcaf4c9ffb6fa0e93a88e3992da24e8f4dea3453dda742a976",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Specifies the inclusive 1000 through 9999 range."
+      },
+      "source_reference": "supported",
+      "source_note": "The loop runs k=1000 while k<10000 and inserts missing members, ensuring the inclusive1000–9999 block."
+    },
+    "50": {
+      "item_id": "343a1a3d08afbe6203fb59d093aed337b24a6ed9eb2c5d344c1be9e7bd037883",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives MixR values 1,1,2,8 rather than the supplied 2,2,8,8 sequence."
+      },
+      "source_reference": "supported",
+      "source_note": "The sparse MixR definition explicitly sets both q values to2 and both p values to8. The extra Source:0 suffix is unnecessary citation text, not a factual error."
+    },
+    "51": {
+      "item_id": "5db04297006c36eb264840bb3fe6505af127a3f3e3e5fbbc497681b7b19a11b6",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives ThunderbirdOK instead of the requested GetMail value."
+      },
+      "source_reference": "supported",
+      "source_note": "Step6 says GetMail triggers access and the password prompt; the preceding OK/restart steps are supplied in the passage."
+    },
+    "52": {
+      "item_id": "786c2f5c368772e9a56e31e968e04ffdc91a3083ad3c82480a9fa9acc6a186db",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported intangible-assets figure 1,365,000."
+      },
+      "source_reference": "supported",
+      "source_note": "The2024 supplemental noncash row Issuancesofstockforintangibleassets is1365000."
+    },
+    "53": {
+      "item_id": "c8ed81c3a53621c27545d84436e110ab1e4285ad8393354107ea3be9a252cf49",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names all five countries in the source: England, Scotland, the Netherlands, Switzerland and France."
+      },
+      "source_reference": "supported",
+      "source_note": "The supplied sentence explicitly lists England,Scotland,Netherlands,Switzerland and alliesFrance; the unnamed person's identity is not needed for this requested list."
+    },
+    "54": {
+      "item_id": "692f02dd9bb858ae362094afbf0748a1ed37398fb676b6dbde6c0b70f89b518e",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives AMP_TYPE.TORCH."
+      },
+      "source_reference": "supported",
+      "source_note": "Both prose and configuration set fp16=dict(mode=AMP_TYPE.TORCH)."
+    },
+    "55": {
+      "item_id": "cf63575e46a790c8bea02a6a65a873efe958f0ef93906d3d9b8bb88b13382cdd",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Correctly says the event is redacted, but invents a PDU redact method; the actual routine uses prune_event(pdu)."
+      },
+      "source_reference": "supported",
+      "source_note": "The routine precomputes prune_event(pdu), and its hash-failure callback returns that redacted object, matching the stated action."
+    },
+    "56": {
+      "item_id": "92921f89741aed3fc0656b94aeb3c65a217fbaeffbe3c4aeb7f975e9456bff23",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Explains that cumulative BPD fees are deducted as specified."
+      },
+      "source_reference": "supported",
+      "source_note": "SectionII.B explicitly reduces the application fee by cumulative previously paid initial,annual,and/or reactivation BPDfees for the same product, under the question's assumed prior-payment scenario."
+    },
+    "57": {
+      "item_id": "f134f35df1eec37b868d6be10f73ba2efc3ae5d7f4dccc71196a16d06765cb8c",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 62.5 instead of the supported 333.8."
+      },
+      "source_reference": "supported",
+      "source_note": "The Leadingmu top-process entries are228.1,66.3 and39.4; their sum is333.8, excluding the row labeled negligible."
+    },
+    "58": {
+      "item_id": "a4d31e3fb340d592c0aa121e680c41c47ab2574dd422c4f7547a13ba3e88c402",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Correctly identifies Gamma with Sigma_1."
+      },
+      "source_reference": "supported",
+      "source_note": "The paragraph directly states equality of the symmetrized Gamma and Sigma_1 sets in dimension2."
+    },
+    "59": {
+      "item_id": "4b304b25d00855a06464cb5cdacbf186eaf524a60e833c023d5f16446e7606f6",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names Sri Krishna."
+      },
+      "source_reference": "supported",
+      "source_note": "The NarakasuraVadha sentence explicitly credits SriKrishna with destroying the demon."
+    },
+    "60": {
+      "item_id": "593e556b543f0735e00ef076ef3f8eb324dec599a4ec48f4793d160436f22efc",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies both the duodenum and failure of the protective mucus layer."
+      },
+      "source_reference": "supported",
+      "source_note": "The source explicitly says most ulcers occur in the duodenum and describes breakdown of the protective mucus layer as the mechanism."
+    },
+    "61": {
+      "item_id": "dd3c0398b49884560ab890671add48f3ec63052bf9a6a70035a12cfc6959194d",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Accurately connects basic nutrition knowledge to correct feeding decisions for pet birds."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage says general nutrition knowledge helps bird owners make decisions and provides a starting point for correct feeding choices."
+    },
+    "62": {
+      "item_id": "6e8f12064d578b8da7494b4b53b701779bf8f81b120cd7538560e1aeb96ebb7c",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 3,260,888; the displayed liabilities differ by 27,468,403 - 24,407,145 = 3,061,258."
+      },
+      "source_reference": "supported",
+      "source_note": "The displayed total current liabilities are 27,468,403 and 24,407,145; their difference is 3,061,258. The balance-table column date headers are outside this excerpt; the question supplies the current/prior-period framing."
+    },
+    "63": {
+      "item_id": "e0aefeda9cc64c2df1e3bf44e67d764e59bf7c730e76971f790bcfc5760d4658",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the passage's term fire fountaining."
+      },
+      "source_reference": "supported",
+      "source_note": "The source directly names jets of basaltic lava lasting hours to days during Hawaiian eruptions as fire fountaining."
+    },
+    "64": {
+      "item_id": "2d7f73064011be0ad4162abe6e7650e88434a786e57a305725ef7126ba505ea9",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Says there are no default extras, contrary to the documented default extras."
+      },
+      "source_reference": "supported",
+      "source_note": "Under this draft PEP's proposed semantics, the exact mixed dependency-tree example requires default extras when at least one occurrence specifies no extras. This establishes the proposal's behavior, not current installer implementation."
+    },
+    "65": {
+      "item_id": "ece4df76775532bbf7d593515359be7f04f12a65281fb6c9b3ee36c67f6dd898",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names ResourceGraphBarStylesEx."
+      },
+      "source_reference": "supported",
+      "source_note": "The Remarks explicitly direct users to ResourceGraphBarStylesEx for hexadecimal RGB color values."
+    },
+    "66": {
+      "item_id": "f00a16e16d8fbe0900f06c711b7d39596011a6be32660a64b5a9860b087ae59c",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies the requested axis, rgb and hsv components."
+      },
+      "source_reference": "supported",
+      "source_note": "The source identifies axis() as the low-level axis-control function and explicitly mentions both rgb() and hsv() for color specification. The question's “besides red, green, blue” wording is loose, but the listed functions are directly supported."
+    },
+    "67": {
+      "item_id": "ec3bc1a733ba49cbd25bbf0b8cf9c130cb40e1aa49b0f152e0f8a4aeca1f3655",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 120 and 135 minutes instead of the source ranges 160-165 and 175-180; the original upper-bound-only reference concern remains."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "The high-heat instructions give 10–15 initial minutes plus 20 minutes per pound: a 7.5-pound bird therefore takes 160–165 minutes, or 175–180 when stuffed. The gold chooses the upper endpoints without saying so; the accompanying weight/time line is also garbled."
+    },
+    "68": {
+      "item_id": "92cf39bbc11e8f8229bb42eab0869551341cb305caa54ce6d85dd4d1c1af7f98",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "States the specific difficulty righting themselves after falling on their backs, an explicit physical limitation in the passage; the answer need not repeat the accompanying poor-fliers adjective."
+      },
+      "source_reference": "supported",
+      "source_note": "The source calls adult gall flies clumsy poor fliers, notes their difficulty righting themselves, and immediately says they mostly travel by walking."
+    },
+    "69": {
+      "item_id": "a8ed48d4c1552e32a2e4e74abb7b203135b690f3c44acb71b75cd316e2db2cf5",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies an en dash, U+2013."
+      },
+      "source_reference": "supported",
+      "source_note": "Only PAGES_EXP_BIBLATEX includes the separator alternative \\u2013; the BibTeX separator expression contains only plus and double hyphen."
+    },
+    "70": {
+      "item_id": "e4eaad3272d69b0ae9302d6f9df1897c4e5894561d3105df3ffade20d1e7e918",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported ten-minute rest."
+      },
+      "source_reference": "supported",
+      "source_note": "Step 8 explicitly requires resting the turkey leg on a serving plate for 10 minutes to redistribute its juices."
+    },
+    "71": {
+      "item_id": "8ec081682d91586f5284a8d1bf3a9d97852bb61f24be0df10c7f75dbe9ee20ac",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the relative parameter offset 2*group_index+1."
+      },
+      "source_reference": "supported",
+      "source_note": "The asymmetric store() method writes &offset to params + 2 * group_index + 1, separately from store_scale at the preceding element."
+    },
+    "72": {
+      "item_id": "d2b879fbec21daffd6fd462d3b010663dfe8ad8e19b200f8ac6595a67b2b83f8",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Invents a first-dimension mesh-list length and omits the source's [0,1] initialization."
+      },
+      "source_reference": "supported",
+      "source_note": "collate_strategies() sets mesh_list = [0, 1] and passes that variable to distributed_strategy() in the distributed branch."
+    },
+    "73": {
+      "item_id": "c433f71170bff42d992c819b9fa09358122eed817147a023292432604e5267c4",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies get_input_ids and both requested flags as true."
+      },
+      "source_reference": "supported",
+      "source_note": "The script directly calls frontend.get_input_ids(sentence, merge_sentences=True, get_tone_ids=True) before copying the returned phone/tone tensors to the predictor."
+    },
+    "74": {
+      "item_id": "a4560c6a9eac78fa8253e1f908e306b2de16550eba86a79076245f59d0d3e1b6",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Equates 65 mph with about ten feet per second; the passage says ten feet per one-tenth second (or thirty feet per three-tenths)."
+      },
+      "source_reference": "supported",
+      "source_note": "The drone-speed footnote explicitly gives approximately 65 mph = 10 ft/0.1 sec = 30 ft/0.3 sec; the gold repeats the requested conversion."
+    },
+    "75": {
+      "item_id": "c2959dc1427a45e7727aa6aed10edf0be8251b12e1c13047d6a9740589b3518d",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Explains that accessing EndConnectionSite when the connector end is unattached causes the documented invalid-property-access error."
+      },
+      "source_reference": "supported",
+      "source_note": "The Remarks explicitly say EndConnectionSite raises an error if the connector end is unattached, which directly covers the assignment in the example."
+    },
+    "76": {
+      "item_id": "4a1521ca0701f4909cbc4ddb2cb93350ada43613590e4a918c602a38234e5086",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Ignores the explicitly supplied slots=True argument that the wrapper forwards; the contradictory docstring is already a fixed reference concern."
+      },
+      "source_reference": "incorrect",
+      "source_note": "On Python <3.10, dataclass_kwargs is empty, so the wrapper omits its automatic slots default. It does not ignore an explicitly supplied slots=True: {**dataclass_kwargs, **kwargs} preserves that keyword and forwards it to stdlib_dataclass. The gold repeats the misleading docstring instead of this code behavior."
+    },
+    "77": {
+      "item_id": "42317a52cf96ecb7a7ce36cab3715d9ee3638c4fb970e8c480d80726f110453a",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported value 0.95."
+      },
+      "source_reference": "supported",
+      "source_note": "The instructions explicitly state that a 95% confidence level must be entered as the decimal 0.95."
+    },
+    "78": {
+      "item_id": "4d98e458f3c032eced922697afd11d8181630d1d3ad9177f601f0bedb159df2b",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Identifies Meigs on April 12 and Tupper on April 25."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage directly gives Meigs's April 12, 1788 arrival and Tupper's April 25 arrival within the same 1788 account."
+    },
+    "79": {
+      "item_id": "14933818b2392e7b521b1b31166c943968d420efdd96f74248fc9e7d8e1b4a43",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names _PYTHON_SYSCONFIGDATA_NAME as the override."
+      },
+      "source_reference": "supported",
+      "source_note": "The Upstream support section explicitly identifies overriding the sysconfig data module name through _PYTHON_SYSCONFIGDATA_NAME as required for cross-builds."
+    },
+    "80": {
+      "item_id": "fbb1c49657a40aad9c62eb630052826e8242a64c657579674e517b2dc4d30378",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives both the absence of thrombosis and the passage's explanation of clotting in healing."
+      },
+      "source_reference": "supported",
+      "source_note": "The provided passage explicitly makes both claims: negative normal D-dimer indicates no thrombosis and normal values indicate the clotting healing system is doing well. This is passage support only, not independent medical verification."
+    },
+    "81": {
+      "item_id": "c0af4633c06d580c45de7cade233f216143048c6bdc29ef65eb9f7aa183ad031",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names Document.AfterDocumentMerge and Documents.AfterDocumentMerge."
+      },
+      "source_reference": "supported",
+      "source_note": "The Visio object description explicitly lists Document.AfterDocumentMerge and Documents.AfterDocumentMerge as the receiving events."
+    },
+    "82": {
+      "item_id": "2530b9afbee02ad5a4b2a9278c6d72d59801ca60473343dd1fca29dcbf134e89",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Requires non-None total/circulating values and nonzero total, otherwise returning NaN, matching the implementation."
+      },
+      "source_reference": "supported",
+      "source_note": "The if condition checks both supplies against None and total_supply against zero, then divides circulating by total supply; its else branch assigns np.nan."
+    },
+    "83": {
+      "item_id": "bcb7b1200d3d0eeb37c2f6d233e42f5be792a1e6b2ffef04b001076dd3aef50d",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Computes the supported decrease 22,959 - 2,217 = 20,742."
+      },
+      "source_reference": "supported",
+      "source_note": "The source explicitly reports forfeited coupon income of $2,217 in 2024 and $22,959 in 2023; 22,959 minus 2,217 equals the stated $20,742 decrease."
+    },
+    "84": {
+      "item_id": "371f4a3c3bbc3c85bf3089bfa443caf925b78c8f3876f1cf3d6cd715e4309e57",
+      "constant42k_merged32k_l40s": {
+        "status": "partial",
+        "note": "Gives the right value 2 but adds the source-unsupported claim that hide suppresses upstream behavior; the frozen causal-premise concern remains."
+      },
+      "source_reference": "insufficient",
+      "source_note": "The test directly proves the observed value is 2, but supplies no implementation or description establishing that hide() suppresses upstream values. The displayed lambda ignores v and returns Mono.just(2); the gold's causal explanation about hide() is not supported by this evidence."
+    },
+    "85": {
+      "item_id": "4548643294534aa751410ca005635086fd25a58a7ccf021936da38ab750f008a",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 1,600,000 under an already false reduction premise; it does not resolve the source's stated direction or figures."
+      },
+      "source_reference": "incorrect",
+      "source_note": "The table reports a positive $88 thousand provision, not an $88 thousand reduction between the two March dates. Its rollforward is 4,388 + 1,809 + 88 = 6,285, and the prose explicitly says ACL increased from March 31, 2023 to March 31, 2024. The question's direction and the gold's interpretation are wrong."
+    },
+    "86": {
+      "item_id": "f96063b2b4e610852b44ccad6e0e0e04e3b0a78df7d02cf75e6dd735613d1592",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives Chelsea the supported four goals."
+      },
+      "source_reference": "supported",
+      "source_note": "The source gives Chelsea's $1 fair-share adjustment and half of the $6 surplus: $1 + $3 = $4 per week."
+    },
+    "87": {
+      "item_id": "5f8e95d36670b4b1285e9ae1a2f69d3c9148f6c29b666264f4f1f97c4409644c",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Accurately reflects the passage's limited off-host survival and lack of habitual wandering on furniture."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage explicitly says lice do not roam rugs or furniture seeking hosts and spend their lives on the head; this directly supplies the question's intended explanation about environmental cleaning."
+    },
+    "88": {
+      "item_id": "d828eadfcec07a432974a6beb8e2dfae4bb99a007cdfa226b4f9670785f46b03",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives num_classes=50 and the resulting (1,50) output shape."
+      },
+      "source_reference": "supported",
+      "source_note": "The fine-tuning example sets num_classes=NUM_FINETUNE_CLASSES. Substituting 50 and retaining the shown single-image batch dimension gives logits shaped [1, 50] before indexing and softmax."
+    },
+    "89": {
+      "item_id": "26b02ff46fd603f6992bc33913a00f054cc03c4860ef248c4bc20d57585fd80b",
+      "constant42k_merged32k_l40s": {
+        "status": "ambiguous",
+        "note": "Repeats the self-serving/conclusory-affidavit characterization, but the excerpt presents it as a party argument, not a settled judicial finding; the frozen attribution concern remains."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "The self-serving/conclusory/no-specific-facts characterization is expressly attributed to Defendants' submission. The court affirms summary judgment based on the broad release language; the excerpt does not separately state that it adopts this precise affidavit-credibility rationale. The gold blurs a party's argument with the court's finding."
+    },
+    "90": {
+      "item_id": "c23353f1b9bbec05cc75e0fe64c3bbaba0340202203bc7c1cc92bde8cb19e635",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names MethodGraph.Node.Simple."
+      },
+      "source_reference": "supported",
+      "source_note": "testNodeLocation() asserts the located node has the prototype of new MethodGraph.Node.Simple(methodDescription); setUp supplies its mocked SignatureToken."
+    },
+    "91": {
+      "item_id": "ed6721d1712b7f31cf7cb9beee932e485eb5d1d09c81b787a0a1b4d9e8f41b8d",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives ROLE_ANONYMOUS."
+      },
+      "source_reference": "supported",
+      "source_note": "The enum explicitly contains ROLE_ANONYMOUS, the named anonymous-access authority; no other listed role suggests unauthenticated access."
+    },
+    "92": {
+      "item_id": "73a29c2a857bd8d8b1c99cd60ef0dc5126fc960495ae94d9e0755444725b18c2",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives the supported approximate probability 0.2857."
+      },
+      "source_reference": "supported",
+      "source_note": "The survey table gives 10 Computer Information Technology students among 3+8+2+12+10=35; its supplied answer also states 10/35 = 2/7, approximately 0.2857."
+    },
+    "93": {
+      "item_id": "bcaa227eb948d65417e0db90d97883bcdd499141d868b1d2e7d9331005274732",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Describes the supported move from unilateral to mutual arrangements."
+      },
+      "source_reference": "supported",
+      "source_note": "The source twice explicitly describes the policy as changing a unilateral Monroe Doctrine manifesto into arrangements for mutual action against aggressors."
+    },
+    "94": {
+      "item_id": "f66108a07b880194709c00da96807da04083d48ec919881d4a6d2cde5b382f0d",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Keeps the colon attached to This; the actual tokenizer output separates the colon as its own token."
+      },
+      "source_reference": "supported",
+      "source_note": "The doctest shows the exact same sentence and options with another removed handle; the output is identical after stripping @user, and the length-reduction code supports the triple repeated characters."
+    },
+    "95": {
+      "item_id": "b64c0410aa3bb6cc59f1830eb684979a7fecc698cd998fe922a89429d05522fd",
+      "constant42k_merged32k_l40s": {
+        "status": "ambiguous",
+        "note": "Says maximum entry timestamp without the initializer qualification; the frozen empty/earlier-entry ambiguity remains."
+      },
+      "source_reference": "ambiguous",
+      "source_note": "With the default timestamp=None, the loop returns the maximum entry timestamp, as in the shown fetch_order_book call. However, the method also accepts an initial timestamp and takes max against it; a larger supplied initial value survives. The gold needs the default-initial-timestamp condition to be fully general."
+    },
+    "96": {
+      "item_id": "c075b1b2535608169e184f7f260ad45be5ce7c7fe43ebb8727a3049bec67ac0e",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Deletes the previous list items before repopulating, as the source requires."
+      },
+      "source_reference": "supported",
+      "source_note": "The loop repeatedly deletes item 1 for the initial item count, clearing existing entries before the five explicit AddItem calls for Yellow, Red, Blue, Green, and Black."
+    },
+    "97": {
+      "item_id": "53b80a454f73678afb22157e92dc51709351f9cb263f6fe5273614df13c1faec",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Gives false and 0."
+      },
+      "source_reference": "supported",
+      "source_note": "The displayed no-argument execute() explicitly returns false, and getUpdateCount() explicitly returns 0."
+    },
+    "98": {
+      "item_id": "43edfe992a7a1ba1e2bdd368a9402f3628c4a06989a9b42f898ecd00620392bf",
+      "constant42k_merged32k_l40s": {
+        "status": "incorrect",
+        "note": "Gives 4.49; the requested source calculation is approximately 4.99, or 5 when rounded."
+      },
+      "source_reference": "supported",
+      "source_note": "The source lists improvements 0.89, 2.35, and 1.75. Their sum is 4.99, which rounds to the gold's 5.0 at one decimal place; the gold also preserves all three exact addends."
+    },
+    "99": {
+      "item_id": "3306a2818ba0691e74b9f3f99482cddf614dc2b950d94674ca6b41e384f45b76",
+      "constant42k_merged32k_l40s": {
+        "status": "correct",
+        "note": "Names corundum."
+      },
+      "source_reference": "supported",
+      "source_note": "The passage explicitly states that corundum, identified there as a metamorphic mineral, is used for abrasives."
+    }
+  },
+  "examples": [
+    {
+      "index": 5,
+      "item_id": "518fae62d6b666498f1e519d0c4b69b097c1bdc0d8b8a2fea36fc27661e7147a",
+      "question": "In the comparison of ShardingSphere components, which product supports arbitrary databases but is restricted to the Java language, resulting in high connection consumption?",
+      "gold": "Sharding-JDBC",
+      "new_answer": "Sharding-JDBC",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Names Sharding-JDBC, the component identified by the supplied passage."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nSharding-JDBC\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nShardingSphere-Proxy\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The comparison table assigns arbitrary databases, Java-only language support and high connection consumption to Sharding-JDBC."
+      }
+    },
+    {
+      "index": 20,
+      "item_id": "b755e1e9e883b7adf96e7cd197a4e8d7d0481a66f8c46ec23ec381703c28272c",
+      "question": "In what year did the Bureau of Indian Affairs establish the first Indian boarding school on the Yakima Indian Reservation in Washington state?",
+      "gold": "1860",
+      "new_answer": "1860",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Gives Yakima and 1860, the supported location and date."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n1860\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n1871\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The first sentence explicitly dates the Yakima boarding-school establishment to1860."
+      }
+    },
+    {
+      "index": 47,
+      "item_id": "9842b5c5c12c2489e497176a93eec32025a52f86cfb935992bafa4531caffe25",
+      "question": "Calculate the total net income for Bio Essence Corp for the three months ended March 31, 2024, by combining the net loss from continuing operations, the loss from discontinued operations, and the gain from the disposal of discontinued operations.",
+      "gold": "$223,752",
+      "new_answer": "$223,752",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Gives BioEssence's supported figure 223,752."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$223,752\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$9,961,000\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The2024 table supplies-33173,-120827,+377752; their sum is223752, also listed as net income."
+      }
+    },
+    {
+      "index": 81,
+      "item_id": "c0af4633c06d580c45de7cade233f216143048c6bdc29ef65eb9f7aa183ad031",
+      "question": "Which specific events receive the CoauthMergeEvent object as a parameter to handle merging of changes by various authors?",
+      "gold": "The Document.AfterDocumentMerge and Documents.AfterDocumentMerge events.",
+      "new_answer": "The Document.AfterDocumentMerge and Documents.AfterDocumentMerge events.",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Names Document.AfterDocumentMerge and Documents.AfterDocumentMerge."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nDocument.AfterDocumentMerge and Documents.AfterDocumentMerge events.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe Document.AfterDocumentMerge and Document.AfterDocumentMergeAsync events.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The Visio object description explicitly lists Document.AfterDocumentMerge and Documents.AfterDocumentMerge as the receiving events."
+      }
+    },
+    {
+      "index": 83,
+      "item_id": "bcb7b1200d3d0eeb37c2f6d233e42f5be792a1e6b2ffef04b001076dd3aef50d",
+      "question": "What is the total revenue recognized from forfeited product coupons for the three months ended March 31, 2023, and how does this compare to the revenue recognized from the same source in the corresponding 2024 period?",
+      "gold": "$22,959 in 2023 compared to $2,217 in 2024, a decrease of $20,742.",
+      "new_answer": "$22,959 in 2023 versus $2,217 in 2024, representing a decrease of $20,742.",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Computes the supported decrease 22,959 - 2,217 = 20,742."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$22,959 in 2023 compared to $2,217 in 2024, representing a decrease of $20,742.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$2,295,900 in 2023 compared to $0 in 2024.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The source explicitly reports forfeited coupon income of $2,217 in 2024 and $22,959 in 2023; 22,959 minus 2,217 equals the stated $20,742 decrease."
+      }
+    },
+    {
+      "index": 91,
+      "item_id": "ed6721d1712b7f31cf7cb9beee932e485eb5d1d09c81b787a0a1b4d9e8f41b8d",
+      "question": "Which specific authority in the `GoAuthority` enum is designated for users accessing the system without authentication?",
+      "gold": "ROLE_ANONYMOUS",
+      "new_answer": "ROLE_ANONYMOUS",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Gives ROLE_ANONYMOUS."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nROLE_ANONYMOUS\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nROLE_ANONYMOUS_USER\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The enum explicitly contains ROLE_ANONYMOUS, the named anonymous-access authority; no other listed role suggests unauthenticated access."
+      }
+    },
+    {
+      "index": 96,
+      "item_id": "c075b1b2535608169e184f7f260ad45be5ce7c7fe43ebb8727a3049bec67ac0e",
+      "question": "In the provided VBA subroutine, what is the specific purpose of the `Delete` method call within the `For...Next` loop before adding new items to the ListBoxItems collection?",
+      "gold": "To clear any existing items from the web list box control before populating it with five new color names.",
+      "new_answer": "To remove existing items from the ListBoxItems collection before adding new ones, ensuring the collection is cleared of previous data.",
+      "new_judgment": {
+        "status": "correct",
+        "note": "Deletes the previous list items before repopulating, as the source requires."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nTo remove the existing items from the ListBoxItems collection before populating it with new items, ensuring the list is cleared.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nTo remove the item at the current index from the ListBoxItems collection before inserting a new item, effectively replacing the old value.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The loop repeatedly deletes item 1 for the initial item count, clearing existing entries before the five explicit AddItem calls for Yellow, Red, Blue, Green, and Black."
+      }
+    },
+    {
+      "index": 7,
+      "item_id": "232b6ab3d4351975d77ecee7ee4db3099e441454f4385971e7e40307fad6cd39",
+      "question": "Determine the value of F_2(1) using the formula in assertion (iv), and state whether F_2 is increasing or decreasing on [-1, 1].",
+      "gold": "5π/2; increasing",
+      "new_answer": "F_2(1) = 1 + π/2; F_2 is strictly increasing on [-1, 1].",
+      "new_judgment": {
+        "status": "incorrect",
+        "note": "Gives 1 + pi/2 instead of 2pi + pi/2 = 5pi/2 for F2(1); the increasing-direction statement does not fix the wrong value."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nF_2(1) = 2π + π/2; F_2 is strictly increasing on [-1, 1].\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nF_2(1) = 2π + π/2; F_2 is strictly increasing on [-1, 1].\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "Substituting even n=2 into F_n(1)=n*pi+(-1)^n*pi/2 gives5pi/2; assertion(ii) says even branches increase."
+      }
+    },
+    {
+      "index": 28,
+      "item_id": "6cf30e4a895348187de9770bceff18a8800f34d9bad9112de492517cb2b3a851",
+      "question": "If the little $-1$ Jacobi polynomials are recovered by taking the limit $\\varepsilon \\to 0$ with parameters $q=-e^\\varepsilon$, $a=-e^{\\varepsilon\\alpha}$, and $b=-e^{\\varepsilon\\beta}$, which specific set of polynomials results from using the alternative parameterization $a=-e^{\\varepsilon(2\\alpha+1)}$ and $b=e^{2\\varepsilon\\beta}$ instead?",
+      "gold": "The monic generalized Gegenbauer polynomials.",
+      "new_answer": "The para-Bannai-Ito polynomials.",
+      "new_judgment": {
+        "status": "incorrect",
+        "note": "Names para-Bannai-Ito polynomials rather than the stated monic generalized Gegenbauer polynomials."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe generalized Gegenbauer polynomials.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe monic generalized Gegenbauer polynomials.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The alternative q/a/b parameterization is followed by an explicit identification of the recurrence as monic generalized Gegenbauer polynomials."
+      }
+    },
+    {
+      "index": 55,
+      "item_id": "cf63575e46a790c8bea02a6a65a873efe958f0ef93906d3d9b8bb88b13382cdd",
+      "question": "If a PDU fails its content hash check during federation verification, what specific action is taken regarding that event before it is returned to the caller?",
+      "gold": "The event is redacted by calling prune_event on it.",
+      "new_answer": "The event is redacted by calling the redact method on the PDU object.",
+      "new_judgment": {
+        "status": "partial",
+        "note": "Correctly says the event is redacted, but invents a PDU redact method; the actual routine uses prune_event(pdu)."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe event is redacted by removing the tampered content before being returned.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe event is redacted and returned to the caller without modification to the list.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The routine precomputes prune_event(pdu), and its hash-failure callback returns that redacted object, matching the stated action."
+      }
+    },
+    {
+      "index": 62,
+      "item_id": "6e8f12064d578b8da7494b4b53b701779bf8f81b120cd7538560e1aeb96ebb7c",
+      "question": "What was the increase in DynaResource, Inc.'s total current liabilities from the prior period to the current period ending March 31, 2024?",
+      "gold": "$3,061,258",
+      "new_answer": "$3,260,888",
+      "new_judgment": {
+        "status": "incorrect",
+        "note": "Gives 3,260,888; the displayed liabilities differ by 27,468,403 - 24,407,145 = 3,061,258."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$3,061,258\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$3,061,658\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The displayed total current liabilities are 27,468,403 and 24,407,145; their difference is 3,061,258. The balance-table column date headers are outside this excerpt; the question supplies the current/prior-period framing."
+      }
+    },
+    {
+      "index": 31,
+      "item_id": "192bb43a637fe64738491bbe467306d0659d3f3a1b9b04adb2c66360cbe65286",
+      "question": "Which specific release version of pytest is detailed in the provided announcement?",
+      "gold": "pytest-3.9.0",
+      "new_answer": "pytest 3.7.0",
+      "new_judgment": {
+        "status": "incorrect",
+        "note": "Answers pytest 3.7.0, which is not an announcement in the supplied evidence; it contains 3.9.0 and another 2.8.4 announcement, plus Python 3.7 instructions."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\npytest 3.9.0\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\npytest 2.8.4\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "Both title and opening announcement identify pytest3.9.0."
+      }
+    },
+    {
+      "index": 68,
+      "item_id": "92cf39bbc11e8f8229bb42eab0869551341cb305caa54ce6d85dd4d1c1af7f98",
+      "question": "What specific physical limitation causes adult Goldenrod Gall Flies to rely primarily on walking rather than flying for travel?",
+      "gold": "They are clumsy poor fliers that have difficulty righting themselves if they fall on their backs.",
+      "new_answer": "They have difficulty righting themselves if they fall on their backs.",
+      "new_judgment": {
+        "status": "correct",
+        "note": "States the specific difficulty righting themselves after falling on their backs, an explicit physical limitation in the passage; the answer need not repeat the accompanying poor-fliers adjective."
+      },
+      "native_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThey are clumsy and poor fliers with difficulty righting themselves if they fall on their backs.\n</parameter>\n</function>\n</tool_call>",
+      "piecewise_response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThey are poor fliers and have difficulty righting themselves if they fall on their backs.\n</parameter>\n</function>\n</tool_call>",
+      "fixed_source_assessment": {
+        "reference": "supported",
+        "source_note": "The source calls adult gall flies clumsy poor fliers, notes their difficulty righting themselves, and immediately says they mostly travel by walking."
+      }
+    }
+  ],
+  "supporting_excerpts": [
+    {
+      "index": 47,
+      "excerpt": "52              -%\n\n operations\n\nNet income (loss)                          $   223,752            -%  $  (178,836)           -%  $    402,588         225.12%\n\n \n\nSales",
+      "source": "required_source.text in frozen input_new.json"
+    },
+    {
+      "index": 83,
+      "excerpt": "t revenues.\n\n \n\nFor the three months ended March 31, 2024 and 2023, the Company recognized $2,217 and $22,959, as forfeited coupon income, respectively.\n\n \n\nThe Company had contracts for the sales of health and wellness products ",
+      "source": "required_source.text in frozen input_new.json"
+    },
+    {
+      "index": 7,
+      "excerpt": "x^{2}}}\\) on \\(I\\).\n(iv) \\(F_{n}(-1)=F_{n-1}(-1)=n \\pi-(-1)^{n} \\frac{\\pi}{2} ; F_{n}(1)=F_{n-1}(1)=n \\pi+(-1)^{n} \\frac{\\pi}{2}\\).\n- Proof\n-\nThe proof is obvious from (12) and the properties of \\(F_{0}.\\) Assertion (iv) ensures that the graphs of ",
+      "source": "required_source.text in frozen input_new.json"
+    },
+    {
+      "index": 55,
+      "excerpt": "         content hash check.\n        \"\"\"\n\n        redacted_pdus = [\n            prune_event(pdu)\n            for pdu in pdus\n        ]\n\n        deferreds = preserve_fn(self.keyring.verify_json_objects_for_server)([\n ",
+      "source": "required_source.text in frozen input_new.json"
+    },
+    {
+      "index": 62,
+      "excerpt": "s                                                                               27,468,403      24,407,145 \n\nOperating lease payable, less current portion                                                        ",
+      "source": "required_source.text in frozen input_new.json"
+    },
+    {
+      "index": 68,
+      "excerpt": "dult gall flies are small (about 5 mm) , clumsy and are poor fliers. (They have difficulty righting themselves if they fall on their backs!) They do most of their traveling by walking. Adult flies only live about 2 weeks, during w",
+      "source": "required_source.text in frozen input_new.json"
+    }
+  ],
+  "review_method": "All100 actual AC responses compared against the question and immutable source/reference annotations. Direct supplied-source checks resolved changed or borderline factual details; full32k evidence inspected where a distractor could support a response. No NLL-based or exact-match automatic judgments, reference relabeling, or confirmation access."
+}

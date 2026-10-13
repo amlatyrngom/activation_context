@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-23T06:38:22.657740Z",
+  "status": "released",
+  "hashes": {
+    "probe_reader_checkpoint_v1.py": "0e0b3d33989882194ba0278ecaf79b224620536a351dfbadded8113f2011edbb",
+    "probe_reader_checkpoint_v1.sbatch": "f63f63ede6a5acb9be8ece8501ffefbdb3c3a978a4871cac474ac36a7fc3aa3b",
+    "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381"
+  },
+  "job": 23533352,
+  "dependency": 23528662,
+  "scope": "Isolated reader0 vs4096, encoder0 and65536 packing unchanged. Strict deterministic all-gradient proof then ordinary-kernel4-update timing. No model saves or active-training changes.",
+  "allocation": "OneRTX64GiB15min after native50k100 readout;840s app budget.",
+  "review": "Root reviewed complete wrapper and mature-Adam loader; tinyCPU exact proof reused; syntax/hash checks pass.",
+  "held_job": "JobId=23533352 JobName=qa_reader_checkpoint UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23528662(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:15:00 TimeMin=N/A SubmitTime=2026-09-23T02:38:22 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T02:38:22 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:4035506 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_reader_checkpoint_v1.sbatch SubmitLine=sbatch --parsable --hold --exclude=node5101,node5104 --dependency=afterok:23528662 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/reader_checkpoint_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/probe_reader_checkpoint_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/reader_checkpoint_23533352.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+}

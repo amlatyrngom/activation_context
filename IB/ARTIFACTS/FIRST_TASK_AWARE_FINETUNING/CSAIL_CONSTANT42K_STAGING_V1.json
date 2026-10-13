@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "created_utc": "2026-09-23T14:58:14.035777+00:00",
+  "cpu_job_id": "2181811",
+  "destination": "/data/scratch/ngom/activation/taskaware/constant42k_adam5250_staging_v1",
+  "pair_sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7",
+  "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+  "optimizer_sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac",
+  "manifest_sha256": "d2adf5e54c2fc0496f37adbba1c8f80208684dd9c35afbc9a2b7887261a02b5d",
+  "files": 18,
+  "payload_bytes": 7659206392,
+  "source_files": 90,
+  "qos_override": "tig-main (partition allows tig-main,tig-free; normal rejected without job creation)",
+  "gpu_jobs_submitted": 0,
+  "source_originals_unchanged": true,
+  "released_utc": "2026-09-23T14:58:29.911814+00:00",
+  "verification": {
+    "status": "complete",
+    "job_id": "2181811",
+    "host": "groenig-3.csail.mit.edu",
+    "verified_utc": "2026-09-23T15:00:04.649352+00:00",
+    "manifest_sha256": "d2adf5e54c2fc0496f37adbba1c8f80208684dd9c35afbc9a2b7887261a02b5d",
+    "pair_sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7",
+    "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+    "payload_sha256": {
+      "ac_modules": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+      "encoder_config": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+      "encoder_weights": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+      "reader_config": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+      "reader_weights": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+    },
+    "optimizer_sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac",
+    "optimizer_states": 615,
+    "adam_parameter_steps": 5250,
+    "stage_updates_done": 0,
+    "stage_epoch_number": 0,
+    "param_group_counts": [
+      374,
+      256
+    ],
+    "optimizer_bytes_unchanged": true,
+    "source_path": "/data/scratch/ngom/activation/taskaware/train_ws_night_v1",
+    "source_files_verified": 90,
+    "total_bytes": 7659206392,
+    "original_orcd_pair_unchanged": true,
+    "files": {
+      "PRESERVE": {
+        "bytes": 124,
+        "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+      },
+      "ac/PRESERVE": {
+        "bytes": 124,
+        "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+      },
+      "ac/ac_modules.pt": {
+        "bytes": 1208881673,
+        "sha256": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93"
+      },
+      "ac/optimizer.pt": {
+        "bytes": 4676633951,
+        "sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac"
+      },
+      "ac/side_lora/adapter_config.json": {
+        "bytes": 1150,
+        "sha256": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342"
+      },
+      "ac/side_lora/adapter_model.safetensors": {
+        "bytes": 349204488,
+        "sha256": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5"
+      },
+      "material.json": {
+        "bytes": 493218587,
+        "sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9"
+      },
+      "pair.json": {
+        "bytes": 10867,
+        "sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7"
+      },
+      "pair.orcd.json": {
+        "bytes": 10068,
+        "sha256": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c"
+      },
+      "parent_checkpoint_metadata.json": {
+        "bytes": 3922,
+        "sha256": "68ffa907b396f287bc2a357bc7c5cd896aa9867bbaa414c8ee3e6f36c90dc630"
+      },
+      "parent_completed_epoch.json": {
+        "bytes": 132,
+        "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+      },
+      "parent_native_readout_identity.json": {
+        "bytes": 56137,
+        "sha256": "9a8774ff7a0c12953441b54a073b36ba56d0ceb8ee1661fd199a966b9f73e8e5"
+      },
+      "reader/PRESERVE": {
+        "bytes": 124,
+        "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+      },
+      "reader/adapter_config.json": {
+        "bytes": 1147,
+        "sha256": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0"
+      },
+      "reader/adapter_model.safetensors": {
+        "bytes": 931173960,
+        "sha256": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+      },
+      "source_material_design.json": {
+        "bytes": 6833,
+        "sha256": "280f910ecdb8405b02bd73dc4ee8c2636083e346a1afcdf33c88a8a9df55b5d5"
+      },
+      "verify_stage.py": {
+        "bytes": 2707,
+        "sha256": "cb21504d1f4d6159f8ec8bd6411994443f32c09c61c10b291110663768a5cc8a"
+      },
+      "verify_stage.sbatch": {
+        "bytes": 398,
+        "sha256": "e697e4c21a34a6634681ede75dd5c9d2a68c0f392fc907ad08e3c02b5e83e334"
+      }
+    }
+  },
+  "receipt_sha256": "77aa6ea2858b1358d575f3b1130ce2bb187758fc1f548f37b1fe56ebb5092ca7"
+}

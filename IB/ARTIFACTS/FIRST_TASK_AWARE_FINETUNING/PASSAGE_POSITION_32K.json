@@ -1,0 +1,4906 @@
+{
+  "scope": "Exploratory correlations in frozen control900, same 100 old development questions,32k evidence, equal1/16 total rows. No rerun, score change, reranking or training.",
+  "inputs": {
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/PASSAGE_LAYOUT32K_COHORT100.evidence.json": "08918a4cc5eb33b34be1705f8444da2a6781554cd62fddc60087d9f7e0bc16fa",
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/long_adaptation_material/material.json": "f937470fde3f231aac98e7fe4f209488108699b329ac00f222a919e3a0a4bc4e",
+    "IB/TMP/FIRST_TASK_AWARE_FINETUNING/passage_layout32k_review/full_inputs.json": "243a8245440eb47123627e5e4e0527ff84b2916635b99c189388542bedf20e6c"
+  },
+  "methods": {
+    "position": "Exact equality of required-source unit text against numbered passages from saved rebuilt full evidence. Validate the intended shuffled location using the pinned builder seed and own-source-first construction.",
+    "bins": "Early:0<=j/(N-1)<1/3; middle:1/3<=j/(N-1)<2/3; late:2/3<=j/(N-1)<=1. j is zero-based passage position, N is the per-item passage count.",
+    "ambiguity": "Primary analysis excludes any item whose exact required source appears more than once. All100 have one source unit; no multi-unit positions are collapsed.",
+    "token_check": "Sensitivity uses cumulative recorded separate-part encoder lengths and the source part midpoint. This includes repeated question/template overhead and is a proxy, not the exact token offset in merged encoding.",
+    "semantics": "Reuse existing source-grounded labels. Fully supported means status=correct; partial answers remain separate. Show original supported-reference and pre-existing adjusted-reference denominators; create no new gold corrections.",
+    "nll": "All uniquely located questions retained for literal gold-answer NLL, including annotation concerns. Mean within question then equal mean across questions.",
+    "limitations": "One fixed checkpoint and shuffle, nonrandom old development cohort, unequal small domain bins. Associations are not causal position effects or evidence of a capacity limit; source elsewhere can also contain useful/ambiguous information."
+  },
+  "checks": {
+    "source_identity_and_full_inputs_match": true,
+    "seeded_shuffle_matches_intended_source": true,
+    "source_unit_counts": {
+      "1": 100
+    },
+    "passage_count_range": [
+      13,
+      64
+    ],
+    "duplicate_source_items": [
+      24
+    ]
+  },
+  "primary_total": {
+    "questions": 99,
+    "domains": {
+      "code": 30,
+      "documents": 20,
+      "numeric": 25,
+      "web": 19,
+      "wiki": 5
+    },
+    "answer_nll": {
+      "merged": 0.8797367872602372,
+      "parts": 0.8046128673782673,
+      "full": 0.3743603618776996
+    },
+    "gap_to_full": {
+      "merged": 0.5053764253825376,
+      "parts": 0.4302525055005677
+    },
+    "parts_minus_merged_nll": -0.07512391988196992,
+    "semantics": {
+      "original_reference_supported": {
+        "questions": 87,
+        "supported": {
+          "merged": 51,
+          "parts": 47,
+          "full": 84
+        },
+        "status_counts": {
+          "merged": {
+            "partial": 12,
+            "correct": 51,
+            "incorrect": 24
+          },
+          "parts": {
+            "correct": 47,
+            "incorrect": 31,
+            "abstain": 1,
+            "partial": 8
+          },
+          "full": {
+            "correct": 84,
+            "partial": 2,
+            "incorrect": 1
+          }
+        }
+      },
+      "existing_adjusted_reference": {
+        "questions": 84,
+        "supported": {
+          "merged": 51,
+          "parts": 46,
+          "full": 82
+        },
+        "status_counts": {
+          "merged": {
+            "partial": 12,
+            "correct": 51,
+            "incorrect": 21
+          },
+          "parts": {
+            "correct": 46,
+            "incorrect": 29,
+            "abstain": 1,
+            "partial": 8
+          },
+          "full": {
+            "correct": 82,
+            "partial": 2
+          }
+        }
+      }
+    }
+  },
+  "passage_bins": {
+    "early": {
+      "questions": 34,
+      "domains": {
+        "code": 12,
+        "numeric": 8,
+        "web": 4,
+        "documents": 9,
+        "wiki": 1
+      },
+      "answer_nll": {
+        "merged": 0.6445616208196899,
+        "parts": 0.7468460660636247,
+        "full": 0.34317455091876914
+      },
+      "gap_to_full": {
+        "merged": 0.30138706990092085,
+        "parts": 0.4036715151448556
+      },
+      "parts_minus_merged_nll": 0.10228444524393475,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 31,
+          "supported": {
+            "merged": 21,
+            "parts": 20,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "partial": 4,
+              "incorrect": 6
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 8,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30,
+              "incorrect": 1
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 30,
+          "supported": {
+            "merged": 21,
+            "parts": 20,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "partial": 4,
+              "incorrect": 5
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 7,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30
+            }
+          }
+        }
+      }
+    },
+    "middle": {
+      "questions": 26,
+      "domains": {
+        "documents": 3,
+        "wiki": 1,
+        "code": 9,
+        "web": 7,
+        "numeric": 6
+      },
+      "answer_nll": {
+        "merged": 1.0410711795811851,
+        "parts": 0.8665455400749703,
+        "full": 0.38729343756052675
+      },
+      "gap_to_full": {
+        "merged": 0.6537777420206584,
+        "parts": 0.4792521025144436
+      },
+      "parts_minus_merged_nll": -0.17452563950621483,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 22,
+          "supported": {
+            "merged": 8,
+            "parts": 6,
+            "full": 22
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 8,
+              "incorrect": 11
+            },
+            "parts": {
+              "correct": 6,
+              "incorrect": 13,
+              "partial": 3
+            },
+            "full": {
+              "correct": 22
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 21,
+          "supported": {
+            "merged": 8,
+            "parts": 6,
+            "full": 21
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 8,
+              "incorrect": 10
+            },
+            "parts": {
+              "correct": 6,
+              "incorrect": 12,
+              "partial": 3
+            },
+            "full": {
+              "correct": 21
+            }
+          }
+        }
+      }
+    },
+    "late": {
+      "questions": 39,
+      "domains": {
+        "numeric": 11,
+        "documents": 8,
+        "web": 8,
+        "wiki": 3,
+        "code": 9
+      },
+      "answer_nll": {
+        "merged": 0.9772050297893131,
+        "parts": 0.8136852200598973,
+        "full": 0.3929259414892414
+      },
+      "gap_to_full": {
+        "merged": 0.5842790883000717,
+        "parts": 0.4207592785706558
+      },
+      "parts_minus_merged_nll": -0.16351980972941588,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 34,
+          "supported": {
+            "merged": 22,
+            "parts": 21,
+            "full": 32
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 22,
+              "incorrect": 7,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 21,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 32,
+              "partial": 2
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 33,
+          "supported": {
+            "merged": 22,
+            "parts": 20,
+            "full": 31
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 22,
+              "incorrect": 6,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 31,
+              "partial": 2
+            }
+          }
+        }
+      }
+    }
+  },
+  "token_proxy_bins": {
+    "early": {
+      "questions": 34,
+      "domains": {
+        "code": 12,
+        "numeric": 9,
+        "web": 4,
+        "documents": 8,
+        "wiki": 1
+      },
+      "answer_nll": {
+        "merged": 0.6794773070941997,
+        "parts": 0.77361003665186,
+        "full": 0.34346082542857304
+      },
+      "gap_to_full": {
+        "merged": 0.33601648166562675,
+        "parts": 0.430149211223287
+      },
+      "parts_minus_merged_nll": 0.09413272955766024,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 31,
+          "supported": {
+            "merged": 20,
+            "parts": 19,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 20,
+              "partial": 4,
+              "incorrect": 7
+            },
+            "parts": {
+              "correct": 19,
+              "incorrect": 9,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30,
+              "incorrect": 1
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 30,
+          "supported": {
+            "merged": 20,
+            "parts": 19,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 20,
+              "partial": 4,
+              "incorrect": 6
+            },
+            "parts": {
+              "correct": 19,
+              "incorrect": 8,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30
+            }
+          }
+        }
+      }
+    },
+    "middle": {
+      "questions": 27,
+      "domains": {
+        "documents": 4,
+        "wiki": 1,
+        "code": 9,
+        "web": 8,
+        "numeric": 5
+      },
+      "answer_nll": {
+        "merged": 0.9614543457695364,
+        "parts": 0.8095142237758973,
+        "full": 0.4157739275274208
+      },
+      "gap_to_full": {
+        "merged": 0.5456804182421156,
+        "parts": 0.39374029624847656
+      },
+      "parts_minus_merged_nll": -0.151940121993639,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 23,
+          "supported": {
+            "merged": 10,
+            "parts": 8,
+            "full": 23
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 10,
+              "incorrect": 10
+            },
+            "parts": {
+              "correct": 8,
+              "incorrect": 12,
+              "partial": 3
+            },
+            "full": {
+              "correct": 23
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 22,
+          "supported": {
+            "merged": 10,
+            "parts": 8,
+            "full": 22
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 10,
+              "incorrect": 9
+            },
+            "parts": {
+              "correct": 8,
+              "incorrect": 11,
+              "partial": 3
+            },
+            "full": {
+              "correct": 22
+            }
+          }
+        }
+      }
+    },
+    "late": {
+      "questions": 38,
+      "domains": {
+        "numeric": 11,
+        "documents": 8,
+        "web": 7,
+        "wiki": 3,
+        "code": 9
+      },
+      "answer_nll": {
+        "merged": 1.0008538463627161,
+        "parts": 0.8288696995351577,
+        "full": 0.37258188731790565
+      },
+      "gap_to_full": {
+        "merged": 0.6282719590448104,
+        "parts": 0.45628781221725206
+      },
+      "parts_minus_merged_nll": -0.1719841468275584,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 33,
+          "supported": {
+            "merged": 21,
+            "parts": 20,
+            "full": 31
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "incorrect": 7,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 31,
+              "partial": 2
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 32,
+          "supported": {
+            "merged": 21,
+            "parts": 19,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "incorrect": 6,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 19,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 30,
+              "partial": 2
+            }
+          }
+        }
+      }
+    }
+  },
+  "domain_passage_bins": {
+    "code": {
+      "early": {
+        "questions": 12,
+        "domains": {
+          "code": 12
+        },
+        "answer_nll": {
+          "merged": 0.8080637821960198,
+          "parts": 0.9604836649354977,
+          "full": 0.4229347673064064
+        },
+        "gap_to_full": {
+          "merged": 0.38512901488961343,
+          "parts": 0.5375488976290914
+        },
+        "parts_minus_merged_nll": 0.15241988273947799,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 9,
+            "supported": {
+              "merged": 7,
+              "parts": 5,
+              "full": 9
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 7,
+                "incorrect": 1,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 4
+              },
+              "full": {
+                "correct": 9
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 9,
+            "supported": {
+              "merged": 7,
+              "parts": 5,
+              "full": 9
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 7,
+                "incorrect": 1,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 4
+              },
+              "full": {
+                "correct": 9
+              }
+            }
+          }
+        }
+      },
+      "middle": {
+        "questions": 9,
+        "domains": {
+          "code": 9
+        },
+        "answer_nll": {
+          "merged": 1.3082384074289222,
+          "parts": 1.1263089429633253,
+          "full": 0.637977923313019
+        },
+        "gap_to_full": {
+          "merged": 0.6702604841159032,
+          "parts": 0.4883310196503064
+        },
+        "parts_minus_merged_nll": -0.18192946446559685,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 7,
+            "supported": {
+              "merged": 2,
+              "parts": 3,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "incorrect": 4,
+                "correct": 2,
+                "partial": 1
+              },
+              "parts": {
+                "incorrect": 3,
+                "correct": 3,
+                "partial": 1
+              },
+              "full": {
+                "correct": 7
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 7,
+            "supported": {
+              "merged": 2,
+              "parts": 3,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "incorrect": 4,
+                "correct": 2,
+                "partial": 1
+              },
+              "parts": {
+                "incorrect": 3,
+                "correct": 3,
+                "partial": 1
+              },
+              "full": {
+                "correct": 7
+              }
+            }
+          }
+        }
+      },
+      "late": {
+        "questions": 9,
+        "domains": {
+          "code": 9
+        },
+        "answer_nll": {
+          "merged": 1.51559745014245,
+          "parts": 1.342105534798535,
+          "full": 0.3750895311355311
+        },
+        "gap_to_full": {
+          "merged": 1.140507919006919,
+          "parts": 0.9670160036630037
+        },
+        "parts_minus_merged_nll": -0.17349191534391536,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 8,
+            "supported": {
+              "merged": 5,
+              "parts": 5,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "partial": 2,
+                "incorrect": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 3
+              },
+              "full": {
+                "correct": 7,
+                "partial": 1
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 8,
+            "supported": {
+              "merged": 5,
+              "parts": 5,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "partial": 2,
+                "incorrect": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 3
+              },
+              "full": {
+                "correct": 7,
+                "partial": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "documents": {
+      "early": {
+        "questions": 9,
+        "domains": {
+          "documents": 9
+        },
+        "answer_nll": {
+          "merged": 0.6809639053989054,
+          "parts": 0.904048426207593,
+          "full": 0.20059840652882321
+        },
+        "gap_to_full": {
+          "merged": 0.48036549887008223,
+          "parts": 0.7034500196787697
+        },
+        "parts_minus_merged_nll": 0.2230845208086875,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 9,
+            "supported": {
+              "merged": 4,
+              "parts": 4,
+              "full": 9
+            },
+            "status_counts": {
+              "merged": {
+                "partial": 3,
+                "incorrect": 2,
+                "correct": 4
+              },
+              "parts": {
+                "abstain": 1,
+                "incorrect": 2,
+                "correct": 4,
+                "partial": 2
+              },
+              "full": {
+                "correct": 9
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 9,
+            "supported": {
+              "merged": 4,
+              "parts": 4,
+              "full": 9
+            },
+            "status_counts": {
+              "merged": {
+                "partial": 3,
+                "incorrect": 2,
+                "correct": 4
+              },
+              "parts": {
+                "abstain": 1,
+                "incorrect": 2,
+                "correct": 4,
+                "partial": 2
+              },
+              "full": {
+                "correct": 9
+              }
+            }
+          }
+        }
+      },
+      "middle": {
+        "questions": 3,
+        "domains": {
+          "documents": 3
+        },
+        "answer_nll": {
+          "merged": 0.8882427867494824,
+          "parts": 0.9021087494824017,
+          "full": 0.41608269979296064
+        },
+        "gap_to_full": {
+          "merged": 0.4721600869565218,
+          "parts": 0.4860260496894411
+        },
+        "parts_minus_merged_nll": 0.01386596273291929,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 3,
+            "supported": {
+              "merged": 1,
+              "parts": 1,
+              "full": 3
+            },
+            "status_counts": {
+              "merged": {
+                "partial": 2,
+                "correct": 1
+              },
+              "parts": {
+                "correct": 1,
+                "partial": 1,
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 3
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 3,
+            "supported": {
+              "merged": 1,
+              "parts": 1,
+              "full": 3
+            },
+            "status_counts": {
+              "merged": {
+                "partial": 2,
+                "correct": 1
+              },
+              "parts": {
+                "correct": 1,
+                "partial": 1,
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 3
+              }
+            }
+          }
+        }
+      },
+      "late": {
+        "questions": 8,
+        "domains": {
+          "documents": 8
+        },
+        "answer_nll": {
+          "merged": 0.8217955119853029,
+          "parts": 0.49976561538626435,
+          "full": 0.26813401876410703
+        },
+        "gap_to_full": {
+          "merged": 0.5536614932211958,
+          "parts": 0.23163159662215732
+        },
+        "parts_minus_merged_nll": -0.3220298965990385,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 7,
+            "supported": {
+              "merged": 5,
+              "parts": 5,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "incorrect": 1,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 2
+              },
+              "full": {
+                "correct": 7
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 7,
+            "supported": {
+              "merged": 5,
+              "parts": 5,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "incorrect": 1,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 5,
+                "incorrect": 2
+              },
+              "full": {
+                "correct": 7
+              }
+            }
+          }
+        }
+      }
+    },
+    "numeric": {
+      "early": {
+        "questions": 8,
+        "domains": {
+          "numeric": 8
+        },
+        "answer_nll": {
+          "merged": 0.46118763663419915,
+          "parts": 0.3043884916125541,
+          "full": 0.3476452056277056
+        },
+        "gap_to_full": {
+          "merged": 0.1135424310064935,
+          "parts": -0.04325671401515152
+        },
+        "parts_minus_merged_nll": -0.15679914502164502,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 8,
+            "supported": {
+              "merged": 5,
+              "parts": 7,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "incorrect": 3
+              },
+              "parts": {
+                "correct": 7,
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 7,
+                "incorrect": 1
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 7,
+            "supported": {
+              "merged": 5,
+              "parts": 7,
+              "full": 7
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 5,
+                "incorrect": 2
+              },
+              "parts": {
+                "correct": 7
+              },
+              "full": {
+                "correct": 7
+              }
+            }
+          }
+        }
+      },
+      "middle": {
+        "questions": 6,
+        "domains": {
+          "numeric": 6
+        },
+        "answer_nll": {
+          "merged": 1.3360961050724638,
+          "parts": 0.8189809178743961,
+          "full": 0.07105661231884057
+        },
+        "gap_to_full": {
+          "merged": 1.2650394927536233,
+          "parts": 0.7479243055555556
+        },
+        "parts_minus_merged_nll": -0.5171151871980676,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 6,
+            "supported": {
+              "merged": 1,
+              "parts": 0,
+              "full": 6
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1,
+                "incorrect": 5
+              },
+              "parts": {
+                "incorrect": 6
+              },
+              "full": {
+                "correct": 6
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 5,
+            "supported": {
+              "merged": 1,
+              "parts": 0,
+              "full": 5
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1,
+                "incorrect": 4
+              },
+              "parts": {
+                "incorrect": 5
+              },
+              "full": {
+                "correct": 5
+              }
+            }
+          }
+        }
+      },
+      "late": {
+        "questions": 11,
+        "domains": {
+          "numeric": 11
+        },
+        "answer_nll": {
+          "merged": 1.1025360140364686,
+          "parts": 0.9099387339932794,
+          "full": 0.47266102907193813
+        },
+        "gap_to_full": {
+          "merged": 0.6298749849645304,
+          "parts": 0.43727770492134127
+        },
+        "parts_minus_merged_nll": -0.1925972800431892,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 10,
+            "supported": {
+              "merged": 6,
+              "parts": 7,
+              "full": 9
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 6,
+                "incorrect": 3,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 7,
+                "incorrect": 2,
+                "partial": 1
+              },
+              "full": {
+                "correct": 9,
+                "partial": 1
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 9,
+            "supported": {
+              "merged": 6,
+              "parts": 6,
+              "full": 8
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 6,
+                "incorrect": 2,
+                "partial": 1
+              },
+              "parts": {
+                "correct": 6,
+                "incorrect": 2,
+                "partial": 1
+              },
+              "full": {
+                "correct": 8,
+                "partial": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "web": {
+      "early": {
+        "questions": 4,
+        "domains": {
+          "web": 4
+        },
+        "answer_nll": {
+          "merged": 0.48521336996336994,
+          "parts": 0.6424879578754579,
+          "full": 0.4995258882783883
+        },
+        "gap_to_full": {
+          "merged": -0.014312518315018338,
+          "parts": 0.14296206959706956
+        },
+        "parts_minus_merged_nll": 0.1572745879120879,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 4,
+            "supported": {
+              "merged": 4,
+              "parts": 3,
+              "full": 4
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 4
+              },
+              "parts": {
+                "incorrect": 1,
+                "correct": 3
+              },
+              "full": {
+                "correct": 4
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 4,
+            "supported": {
+              "merged": 4,
+              "parts": 3,
+              "full": 4
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 4
+              },
+              "parts": {
+                "incorrect": 1,
+                "correct": 3
+              },
+              "full": {
+                "correct": 4
+              }
+            }
+          }
+        }
+      },
+      "middle": {
+        "questions": 7,
+        "domains": {
+          "web": 7
+        },
+        "answer_nll": {
+          "merged": 0.6501331185355862,
+          "parts": 0.6516605168239339,
+          "full": 0.3558590029624753
+        },
+        "gap_to_full": {
+          "merged": 0.29427411557311095,
+          "parts": 0.2958015138614586
+        },
+        "parts_minus_merged_nll": 0.0015273982883476506,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 5,
+            "supported": {
+              "merged": 3,
+              "parts": 2,
+              "full": 5
+            },
+            "status_counts": {
+              "merged": {
+                "incorrect": 2,
+                "correct": 3
+              },
+              "parts": {
+                "correct": 2,
+                "partial": 1,
+                "incorrect": 2
+              },
+              "full": {
+                "correct": 5
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 5,
+            "supported": {
+              "merged": 3,
+              "parts": 2,
+              "full": 5
+            },
+            "status_counts": {
+              "merged": {
+                "incorrect": 2,
+                "correct": 3
+              },
+              "parts": {
+                "correct": 2,
+                "partial": 1,
+                "incorrect": 2
+              },
+              "full": {
+                "correct": 5
+              }
+            }
+          }
+        }
+      },
+      "late": {
+        "questions": 8,
+        "domains": {
+          "web": 8
+        },
+        "answer_nll": {
+          "merged": 0.6236020178400031,
+          "parts": 0.5803592798010813,
+          "full": 0.4336877082990539
+        },
+        "gap_to_full": {
+          "merged": 0.18991430954094923,
+          "parts": 0.1466715715020274
+        },
+        "parts_minus_merged_nll": -0.043242738038921855,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 6,
+            "supported": {
+              "merged": 4,
+              "parts": 2,
+              "full": 6
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 4,
+                "partial": 1,
+                "incorrect": 1
+              },
+              "parts": {
+                "incorrect": 2,
+                "correct": 2,
+                "partial": 2
+              },
+              "full": {
+                "correct": 6
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 6,
+            "supported": {
+              "merged": 4,
+              "parts": 2,
+              "full": 6
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 4,
+                "partial": 1,
+                "incorrect": 1
+              },
+              "parts": {
+                "incorrect": 2,
+                "correct": 2,
+                "partial": 2
+              },
+              "full": {
+                "correct": 6
+              }
+            }
+          }
+        }
+      }
+    },
+    "wiki": {
+      "early": {
+        "questions": 1,
+        "domains": {
+          "wiki": 1
+        },
+        "answer_nll": {
+          "merged": 0.45930000000000004,
+          "parts": 0.7254666666666667,
+          "full": 0.008066666666666668
+        },
+        "gap_to_full": {
+          "merged": 0.4512333333333334,
+          "parts": 0.7174
+        },
+        "parts_minus_merged_nll": 0.26616666666666666,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 1,
+            "supported": {
+              "merged": 1,
+              "parts": 1,
+              "full": 1
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1
+              },
+              "parts": {
+                "correct": 1
+              },
+              "full": {
+                "correct": 1
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 1,
+            "supported": {
+              "merged": 1,
+              "parts": 1,
+              "full": 1
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1
+              },
+              "parts": {
+                "correct": 1
+              },
+              "full": {
+                "correct": 1
+              }
+            }
+          }
+        }
+      },
+      "middle": {
+        "questions": 1,
+        "domains": {
+          "wiki": 1
+        },
+        "answer_nll": {
+          "merged": 0.06146818181818182,
+          "parts": 0.2115681818181818,
+          "full": 0.16222727272727272
+        },
+        "gap_to_full": {
+          "merged": -0.10075909090909091,
+          "parts": 0.049340909090909074
+        },
+        "parts_minus_merged_nll": 0.15009999999999998,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 1,
+            "supported": {
+              "merged": 1,
+              "parts": 0,
+              "full": 1
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1
+              },
+              "parts": {
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 1
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 1,
+            "supported": {
+              "merged": 1,
+              "parts": 0,
+              "full": 1
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 1
+              },
+              "parts": {
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 1
+              }
+            }
+          }
+        }
+      },
+      "late": {
+        "questions": 3,
+        "domains": {
+          "wiki": 3
+        },
+        "answer_nll": {
+          "merged": 0.25984757249918544,
+          "parts": 0.3348161779081134,
+          "full": 0.37815360052134245
+        },
+        "gap_to_full": {
+          "merged": -0.11830602802215702,
+          "parts": -0.04333742261322904
+        },
+        "parts_minus_merged_nll": 0.07496860540892798,
+        "semantics": {
+          "original_reference_supported": {
+            "questions": 3,
+            "supported": {
+              "merged": 2,
+              "parts": 2,
+              "full": 3
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 2,
+                "incorrect": 1
+              },
+              "parts": {
+                "correct": 2,
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 3
+              }
+            }
+          },
+          "existing_adjusted_reference": {
+            "questions": 3,
+            "supported": {
+              "merged": 2,
+              "parts": 2,
+              "full": 3
+            },
+            "status_counts": {
+              "merged": {
+                "correct": 2,
+                "incorrect": 1
+              },
+              "parts": {
+                "correct": 2,
+                "incorrect": 1
+              },
+              "full": {
+                "correct": 3
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "linear_checks": {
+    "relative_passage_position": {
+      "pearson_nll": {
+        "merged": 0.17470388993648578,
+        "parts": 0.030811202902348164,
+        "full": 0.07443684963653593
+      },
+      "pearson_gap_to_full": {
+        "merged": 0.14297163376756802,
+        "parts": -0.0028310746315523645
+      },
+      "within_domain_centered_pearson_nll": {
+        "merged": 0.21020476877793506,
+        "parts": 0.0710797040047255,
+        "full": 0.09420032478551911
+      }
+    },
+    "encoded_part_token_midpoint_proxy": {
+      "pearson_nll": {
+        "merged": 0.15406200105857767,
+        "parts": 0.01609625225784003,
+        "full": 0.0641693559727369
+      },
+      "pearson_gap_to_full": {
+        "merged": 0.1266391524625609,
+        "parts": -0.012683286447398264
+      },
+      "within_domain_centered_pearson_nll": {
+        "merged": 0.1952266576810295,
+        "parts": 0.06175487900720031,
+        "full": 0.08667239488096813
+      }
+    }
+  },
+  "all100_intended_position_sensitivity": {
+    "early": {
+      "questions": 34,
+      "domains": {
+        "code": 12,
+        "numeric": 8,
+        "web": 4,
+        "documents": 9,
+        "wiki": 1
+      },
+      "answer_nll": {
+        "merged": 0.6445616208196899,
+        "parts": 0.7468460660636247,
+        "full": 0.34317455091876914
+      },
+      "gap_to_full": {
+        "merged": 0.30138706990092085,
+        "parts": 0.4036715151448556
+      },
+      "parts_minus_merged_nll": 0.10228444524393475,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 31,
+          "supported": {
+            "merged": 21,
+            "parts": 20,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "partial": 4,
+              "incorrect": 6
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 8,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30,
+              "incorrect": 1
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 30,
+          "supported": {
+            "merged": 21,
+            "parts": 20,
+            "full": 30
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 21,
+              "partial": 4,
+              "incorrect": 5
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 7,
+              "abstain": 1,
+              "partial": 2
+            },
+            "full": {
+              "correct": 30
+            }
+          }
+        }
+      }
+    },
+    "middle": {
+      "questions": 27,
+      "domains": {
+        "documents": 3,
+        "wiki": 1,
+        "code": 9,
+        "web": 8,
+        "numeric": 6
+      },
+      "answer_nll": {
+        "merged": 1.020425024781882,
+        "parts": 0.8542158110774847,
+        "full": 0.3953398446350046
+      },
+      "gap_to_full": {
+        "merged": 0.6250851801468774,
+        "parts": 0.4588759664424801
+      },
+      "parts_minus_merged_nll": -0.16620921370439737,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 23,
+          "supported": {
+            "merged": 8,
+            "parts": 6,
+            "full": 23
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 8,
+              "incorrect": 12
+            },
+            "parts": {
+              "correct": 6,
+              "incorrect": 14,
+              "partial": 3
+            },
+            "full": {
+              "correct": 23
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 22,
+          "supported": {
+            "merged": 8,
+            "parts": 6,
+            "full": 22
+          },
+          "status_counts": {
+            "merged": {
+              "partial": 3,
+              "correct": 8,
+              "incorrect": 11
+            },
+            "parts": {
+              "correct": 6,
+              "incorrect": 13,
+              "partial": 3
+            },
+            "full": {
+              "correct": 22
+            }
+          }
+        }
+      }
+    },
+    "late": {
+      "questions": 39,
+      "domains": {
+        "numeric": 11,
+        "documents": 8,
+        "web": 8,
+        "wiki": 3,
+        "code": 9
+      },
+      "answer_nll": {
+        "merged": 0.9772050297893131,
+        "parts": 0.8136852200598973,
+        "full": 0.3929259414892414
+      },
+      "gap_to_full": {
+        "merged": 0.5842790883000717,
+        "parts": 0.4207592785706558
+      },
+      "parts_minus_merged_nll": -0.16351980972941588,
+      "semantics": {
+        "original_reference_supported": {
+          "questions": 34,
+          "supported": {
+            "merged": 22,
+            "parts": 21,
+            "full": 32
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 22,
+              "incorrect": 7,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 21,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 32,
+              "partial": 2
+            }
+          }
+        },
+        "existing_adjusted_reference": {
+          "questions": 33,
+          "supported": {
+            "merged": 22,
+            "parts": 20,
+            "full": 31
+          },
+          "status_counts": {
+            "merged": {
+              "correct": 22,
+              "incorrect": 6,
+              "partial": 5
+            },
+            "parts": {
+              "correct": 20,
+              "incorrect": 10,
+              "partial": 3
+            },
+            "full": {
+              "correct": 31,
+              "partial": 2
+            }
+          }
+        }
+      }
+    }
+  },
+  "rows": [
+    {
+      "index": 0,
+      "display_item": 1,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+      "domain": "code",
+      "passages": 21,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          6
+        ]
+      ],
+      "intended_passage_1based": 6,
+      "unique_source_position": true,
+      "relative_passage_position": 0.25,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.25734242821398784,
+      "token_proxy_bin": "early",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 1.0057,
+        "parts": 0.795435,
+        "full": 0.593615
+      },
+      "semantic_status": {
+        "merged": "ambiguous",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 1,
+      "display_item": 2,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:34:06cafccd01e38f4a:0",
+      "domain": "documents",
+      "passages": 31,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          19
+        ]
+      ],
+      "intended_passage_1based": 19,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6003473448722477,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.062956,
+        "parts": 1.114516,
+        "full": 0.751104
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 2,
+      "display_item": 3,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:51:6fdde0a0eede9a02:0",
+      "domain": "numeric",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.05555555555555555,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.04087519971595952,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.5066333333333334,
+        "parts": 0.6365333333333333,
+        "full": 0.9726
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 3,
+      "display_item": 4,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:215:89483ebd01e8c7c6:0",
+      "domain": "web",
+      "passages": 21,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.05,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.10506219610416728,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.2725047619047619,
+        "parts": 0.49717619047619044,
+        "full": 0.7988238095238096
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 4,
+      "display_item": 5,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:4:2adc2846ef98019c:0",
+      "domain": "wiki",
+      "passages": 24,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          15
+        ]
+      ],
+      "intended_passage_1based": 15,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6086956521739131,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.5466762835609986,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.06146818181818182,
+        "parts": 0.2115681818181818,
+        "full": 0.16222727272727272
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 5,
+      "display_item": 6,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+      "domain": "code",
+      "passages": 28,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          8
+        ]
+      ],
+      "intended_passage_1based": 8,
+      "unique_source_position": true,
+      "relative_passage_position": 0.25925925925925924,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.19603021774551918,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.45077,
+        "parts": 0.39446499999999995,
+        "full": 0.47722
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 6,
+      "display_item": 7,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:317:e6416f4186c41bd5:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          18
+        ]
+      ],
+      "intended_passage_1based": 18,
+      "unique_source_position": true,
+      "relative_passage_position": 1.0,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9900172065978403,
+      "token_proxy_bin": "late",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 1.1139750000000002,
+        "parts": 1.1499333333333335,
+        "full": 1.3957166666666667
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "incorrect"
+      }
+    },
+    {
+      "index": 7,
+      "display_item": 8,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:43:a254f3e834bcaf78:0",
+      "domain": "documents",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          16
+        ]
+      ],
+      "intended_passage_1based": 16,
+      "unique_source_position": true,
+      "relative_passage_position": 1.0,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9858789109147361,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.80952,
+        "parts": 0.365668,
+        "full": 0.298416
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 8,
+      "display_item": 9,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:104:86b8e2a1af5543a6:0",
+      "domain": "web",
+      "passages": 55,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          43
+        ]
+      ],
+      "intended_passage_1based": 43,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7777777777777778,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7729180440969328,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.44481363636363636,
+        "parts": 0.7873545454545454,
+        "full": 0.7303272727272727
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 9,
+      "display_item": 10,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+      "domain": "code",
+      "passages": 22,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.012384039010466223,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.9778206896551724,
+        "parts": 1.198296551724138,
+        "full": 0.31174482758620686
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 10,
+      "display_item": 11,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:495:545721c9a6c0d3b7:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          16
+        ]
+      ],
+      "intended_passage_1based": 16,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8823529411764706,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9179746835443038,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.07798999999999999,
+        "parts": 0.01336,
+        "full": 0.00103
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 11,
+      "display_item": 12,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "domain": "code",
+      "passages": 27,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          18
+        ]
+      ],
+      "intended_passage_1based": 18,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6538461538461539,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6199917450396533,
+      "token_proxy_bin": "middle",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 1.18984,
+        "parts": 0.897776,
+        "full": 0.49398800000000004
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 12,
+      "display_item": 13,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:8:855b8499db6b289e:0",
+      "domain": "documents",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.0028139289482940555,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.26845714285714284,
+        "parts": 0.26345714285714283,
+        "full": 0.2857904761904762
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "abstain",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 13,
+      "display_item": 14,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:113:ba2899ad5c9a5342:0",
+      "domain": "web",
+      "passages": 24,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          10
+        ]
+      ],
+      "intended_passage_1based": 10,
+      "unique_source_position": true,
+      "relative_passage_position": 0.391304347826087,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.33739813305674915,
+      "token_proxy_bin": "middle",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.18545416666666667,
+        "parts": 0.12199583333333332,
+        "full": 0.14387916666666667
+      },
+      "semantic_status": {
+        "merged": "ambiguous",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 14,
+      "display_item": 15,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:228:c48aea5a0811af19:0",
+      "domain": "numeric",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.009723351094253289,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.11824999999999998,
+        "parts": 0.059033333333333333,
+        "full": 0.07143333333333333
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 15,
+      "display_item": 16,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:555:a889e6fbc311ebc5:0",
+      "domain": "code",
+      "passages": 26,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          11
+        ]
+      ],
+      "intended_passage_1based": 11,
+      "unique_source_position": true,
+      "relative_passage_position": 0.4,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.3949153542145933,
+      "token_proxy_bin": "middle",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.35373333333333334,
+        "parts": 0.45294666666666666,
+        "full": 0.4848266666666667
+      },
+      "semantic_status": {
+        "merged": "ambiguous",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 16,
+      "display_item": 17,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:256:23767ddda07ab252:0",
+      "domain": "documents",
+      "passages": 36,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.08571428571428572,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.0678481452523673,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.52336,
+        "parts": 1.52678,
+        "full": 0.0008200000000000001
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 17,
+      "display_item": 18,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:367:9fa873a21e8973b4:0",
+      "domain": "web",
+      "passages": 34,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          24
+        ]
+      ],
+      "intended_passage_1based": 24,
+      "unique_source_position": true,
+      "relative_passage_position": 0.696969696969697,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.6520695773582711,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.07855,
+        "parts": 0.236675,
+        "full": 1.166
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 18,
+      "display_item": 19,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:254:5dc5baf913fb62d4:0",
+      "domain": "numeric",
+      "passages": 15,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          7
+        ]
+      ],
+      "intended_passage_1based": 7,
+      "unique_source_position": true,
+      "relative_passage_position": 0.42857142857142855,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.43494241242820153,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.0084375,
+        "parts": 0.5174500000000001,
+        "full": 0.0025875
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 19,
+      "display_item": 20,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:195:be4803fcedbb80bd:0",
+      "domain": "code",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          6
+        ]
+      ],
+      "intended_passage_1based": 6,
+      "unique_source_position": true,
+      "relative_passage_position": 0.2777777777777778,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.2993411289843889,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.9791447368421051,
+        "parts": 0.9883763157894737,
+        "full": 0.5977315789473684
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 20,
+      "display_item": 21,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:172:6127f5c86879b4c3:0",
+      "domain": "code",
+      "passages": 32,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0967741935483871,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.1523957539147264,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.507059090909091,
+        "parts": 0.9687181818181817,
+        "full": 0.3903727272727273
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 21,
+      "display_item": 22,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:299:d9a7ec351051774c:0",
+      "domain": "documents",
+      "passages": 29,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          26
+        ]
+      ],
+      "intended_passage_1based": 26,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8928571428571429,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8355413900475883,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.46017272727272723,
+        "parts": 0.3567545454545455,
+        "full": 0.4941636363636363
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 22,
+      "display_item": 23,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:493:24ed4ce6d64411a1:0",
+      "domain": "numeric",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          3
+        ]
+      ],
+      "intended_passage_1based": 3,
+      "unique_source_position": true,
+      "relative_passage_position": 0.125,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.1270444632905258,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.21064285714285713,
+        "parts": 0.18081428571428573,
+        "full": 0.23534285714285713
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 23,
+      "display_item": 24,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:313:4081aacf79b1b94b:0",
+      "domain": "web",
+      "passages": 63,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          41,
+          49
+        ]
+      ],
+      "intended_passage_1based": 41,
+      "unique_source_position": false,
+      "relative_passage_position": 0.6451612903225806,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.7218252633938579,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.48362499999999997,
+        "parts": 0.5336428571428572,
+        "full": 0.6045464285714285
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 24,
+      "display_item": 25,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:42:11b9b02fd9bca823:0",
+      "domain": "wiki",
+      "passages": 27,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          19
+        ]
+      ],
+      "intended_passage_1based": 19,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6923076923076923,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7413904750691706,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.4726545454545455,
+        "parts": 0.4440727272727273,
+        "full": 0.712690909090909
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 25,
+      "display_item": 26,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:128:e5d972a3dfeb4425:0",
+      "domain": "code",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          18
+        ]
+      ],
+      "intended_passage_1based": 18,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8947368421052632,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8557923838401855,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.40059000000000006,
+        "parts": 0.50702,
+        "full": 0.8445
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 26,
+      "display_item": 27,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:474:9651f63084be5eee:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          16
+        ]
+      ],
+      "intended_passage_1based": 16,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8823529411764706,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8596193369672058,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 2.3692333333333333,
+        "parts": 0.30223333333333335,
+        "full": 0.12903333333333333
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 27,
+      "display_item": 28,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:242:33180160d794f93c:0",
+      "domain": "documents",
+      "passages": 22,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          9
+        ]
+      ],
+      "intended_passage_1based": 9,
+      "unique_source_position": true,
+      "relative_passage_position": 0.38095238095238093,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.49480469215195905,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.4693652173913044,
+        "parts": 0.4726173913043478,
+        "full": 0.16288695652173912
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 28,
+      "display_item": 29,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:149:fee17604735987d1:0",
+      "domain": "web",
+      "passages": 55,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          11
+        ]
+      ],
+      "intended_passage_1based": 11,
+      "unique_source_position": true,
+      "relative_passage_position": 0.18518518518518517,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.14030540373020792,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.0907,
+        "parts": 0.19385000000000002,
+        "full": 0.032089999999999994
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 29,
+      "display_item": 30,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:43:b95a0b30327d06b1:0",
+      "domain": "code",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.13636363636363635,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.11825189020623106,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.7299,
+        "parts": 0.9533571428571429,
+        "full": 0.059171428571428576
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 30,
+      "display_item": 31,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:131:1330d324692a53d9:0",
+      "domain": "numeric",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.631578947368421,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.63016651798989,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.3297391304347825,
+        "parts": 0.5276521739130434,
+        "full": 0.03325217391304348
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 31,
+      "display_item": 32,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:165:a3ea5870ff862595:0",
+      "domain": "code",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          17
+        ]
+      ],
+      "intended_passage_1based": 17,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7272727272727273,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7719438049701907,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.58968,
+        "parts": 0.594008,
+        "full": 0.374936
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 32,
+      "display_item": 33,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:187:f70a357c668ba9a1:0",
+      "domain": "documents",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.75,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7658463832960477,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.8990666666666667,
+        "parts": 0.8071999999999999,
+        "full": 0.007466666666666667
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 33,
+      "display_item": 34,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:225:4ecef38afc69de31:0",
+      "domain": "web",
+      "passages": 36,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          35
+        ]
+      ],
+      "intended_passage_1based": 35,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9714285714285714,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9497866370491611,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.08373846153846154,
+        "parts": 0.08546923076923077,
+        "full": 0.1890769230769231
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 34,
+      "display_item": 35,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:466:a700a6b92e5f04f9:0",
+      "domain": "numeric",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          17
+        ]
+      ],
+      "intended_passage_1based": 17,
+      "unique_source_position": true,
+      "relative_passage_position": 1.0,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9859569783701765,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.469,
+        "parts": 1.5001923076923078,
+        "full": 0.3764461538461538
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 35,
+      "display_item": 36,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:67:22ee4510407593f0:0",
+      "domain": "code",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          10
+        ]
+      ],
+      "intended_passage_1based": 10,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5625,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6065576212608748,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.4264533333333334,
+        "parts": 2.1225199999999997,
+        "full": 1.1060733333333335
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 36,
+      "display_item": 37,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:297:a417245decd9548f:0",
+      "domain": "documents",
+      "passages": 43,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          20
+        ]
+      ],
+      "intended_passage_1based": 20,
+      "unique_source_position": true,
+      "relative_passage_position": 0.4523809523809524,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.4750496379350619,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.132407142857143,
+        "parts": 1.1191928571428573,
+        "full": 0.33425714285714286
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 37,
+      "display_item": 38,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:238:ffe5f9054fa0d6fa:0",
+      "domain": "web",
+      "passages": 29,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.42857142857142855,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.41854106937014157,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.4052833333333333,
+        "parts": 0.15514166666666668,
+        "full": 0.2645416666666666
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 38,
+      "display_item": 39,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:434:82a6d7468db168e0:0",
+      "domain": "numeric",
+      "passages": 25,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          17
+        ]
+      ],
+      "intended_passage_1based": 17,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6666666666666666,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.6958056417072811,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.7005142857142858,
+        "parts": 0.9277428571428572,
+        "full": 0.5467714285714286
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 39,
+      "display_item": 40,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:436:8409565f6c92be58:0",
+      "domain": "code",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          10
+        ]
+      ],
+      "intended_passage_1based": 10,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.4354021626425715,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.5755405405405405,
+        "parts": 1.626945945945946,
+        "full": 0.6404054054054054
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 40,
+      "display_item": 41,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:469:0c013addad13c363:0",
+      "domain": "code",
+      "passages": 24,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          17
+        ]
+      ],
+      "intended_passage_1based": 17,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6956521739130435,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7609018095520617,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.07883333333333334,
+        "parts": 0.06493333333333333,
+        "full": 0.0022666666666666664
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 41,
+      "display_item": 42,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:314:29b98bfecd1d1dce:0",
+      "domain": "documents",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          12
+        ]
+      ],
+      "intended_passage_1based": 12,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7333333333333333,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7677979883153647,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.20869444444444443,
+        "parts": 0.007155555555555556,
+        "full": 0.09272777777777778
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 42,
+      "display_item": 43,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:172:bb5a1ec72fcaf354:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          7
+        ]
+      ],
+      "intended_passage_1based": 7,
+      "unique_source_position": true,
+      "relative_passage_position": 0.35294117647058826,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.34851817722422046,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 3.2502999999999997,
+        "parts": 0.8313999999999999,
+        "full": 0.19486666666666666
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 43,
+      "display_item": 44,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:5:ba36ccc8dc4ac2b3:0",
+      "domain": "web",
+      "passages": 46,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          22
+        ]
+      ],
+      "intended_passage_1based": 22,
+      "unique_source_position": true,
+      "relative_passage_position": 0.4666666666666667,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6038359406569301,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.46939677419354836,
+        "parts": 0.47537741935483874,
+        "full": 0.4959258064516129
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 44,
+      "display_item": 45,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:89:9a8411d4bc97aa5a:0",
+      "domain": "wiki",
+      "passages": 32,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          23
+        ]
+      ],
+      "intended_passage_1based": 23,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7096774193548387,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7914757780864836,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.11343333333333334,
+        "parts": 0.11284999999999999,
+        "full": 0.3600666666666667
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 45,
+      "display_item": 46,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:65:c1c43aed65e8765b:0",
+      "domain": "code",
+      "passages": 25,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          12
+        ]
+      ],
+      "intended_passage_1based": 12,
+      "unique_source_position": true,
+      "relative_passage_position": 0.4583333333333333,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.5104720548268935,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.5416882352941177,
+        "parts": 1.6473941176470588,
+        "full": 0.8755235294117647
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 46,
+      "display_item": 47,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:345:e52a1e9b23f9c343:0",
+      "domain": "numeric",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          12
+        ]
+      ],
+      "intended_passage_1based": 12,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7333333333333333,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7751065669061317,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.3976833333333332,
+        "parts": 0.8774333333333333,
+        "full": 1.1142833333333333
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 47,
+      "display_item": 48,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:293:4b7e1cce6bf2394e:0",
+      "domain": "documents",
+      "passages": 24,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          23
+        ]
+      ],
+      "intended_passage_1based": 23,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9565217391304348,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9746674549216672,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.542058064516129,
+        "parts": 0.5168516129032258,
+        "full": 0.10329354838709677
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 48,
+      "display_item": 49,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:329:4c09427d9d896bb2:0",
+      "domain": "web",
+      "passages": 32,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          27
+        ]
+      ],
+      "intended_passage_1based": 27,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8387096774193549,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8835820895522388,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.8886382352941177,
+        "parts": 0.7415705882352941,
+        "full": 0.39530000000000004
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 49,
+      "display_item": 50,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:125:8c029b2673909da9:0",
+      "domain": "code",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          12
+        ]
+      ],
+      "intended_passage_1based": 12,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5789473684210527,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.5711738484398217,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.964,
+        "parts": 0.4718,
+        "full": 0.8071
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 50,
+      "display_item": 51,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:331:5cc65ccb3cb55da0:0",
+      "domain": "numeric",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          11
+        ]
+      ],
+      "intended_passage_1based": 11,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5263157894736842,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.53487477056072,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.3766833333333333,
+        "parts": 1.2034666666666667,
+        "full": 0.1758333333333333
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 51,
+      "display_item": 52,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:50:1ffad2afefccf3a5:0",
+      "domain": "code",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          14
+        ]
+      ],
+      "intended_passage_1based": 14,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7222222222222222,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7163361324519087,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 4.7675,
+        "parts": 3.6882,
+        "full": 0.2343
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 52,
+      "display_item": 53,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:325:aa293860d590ab5c:0",
+      "domain": "documents",
+      "passages": 24,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          20
+        ]
+      ],
+      "intended_passage_1based": 20,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8260869565217391,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8104774970920695,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.6846105263157894,
+        "parts": 1.0756631578947369,
+        "full": 0.8472263157894737
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 53,
+      "display_item": 54,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:376:88cc316a18d14799:0",
+      "domain": "web",
+      "passages": 42,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.07317073170731707,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.10974866496401207,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.3964769230769231,
+        "parts": 0.5509307692307692,
+        "full": 0.5596538461538462
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 54,
+      "display_item": 55,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:271:ee9f439e65f3b86c:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          5
+        ]
+      ],
+      "intended_passage_1based": 5,
+      "unique_source_position": true,
+      "relative_passage_position": 0.23529411764705882,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.2797057770350919,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.30243,
+        "parts": 0.00636,
+        "full": 0.0009399999999999999
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 55,
+      "display_item": 56,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:457:8637ac81d68d9d01:0",
+      "domain": "code",
+      "passages": 29,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          25
+        ]
+      ],
+      "intended_passage_1based": 25,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8571428571428571,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8269981508115882,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 3.1474,
+        "parts": 2.4195,
+        "full": 0.1233
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 56,
+      "display_item": 57,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:27:bb99223e6735bfdf:0",
+      "domain": "documents",
+      "passages": 34,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          6
+        ]
+      ],
+      "intended_passage_1based": 6,
+      "unique_source_position": true,
+      "relative_passage_position": 0.15151515151515152,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.16633344923504867,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.1492,
+        "parts": 0.24525,
+        "full": 0.0353
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 57,
+      "display_item": 58,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:272:a279452d4e436332:0",
+      "domain": "web",
+      "passages": 34,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          16
+        ]
+      ],
+      "intended_passage_1based": 16,
+      "unique_source_position": true,
+      "relative_passage_position": 0.45454545454545453,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.505751680018781,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.411172,
+        "parts": 0.800036,
+        "full": 0.427464
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 58,
+      "display_item": 59,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:205:d1c57989194640d7:0",
+      "domain": "numeric",
+      "passages": 15,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8571428571428571,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8667918566872336,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.8022000000000002,
+        "parts": 1.63878,
+        "full": 0.1762
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 59,
+      "display_item": 60,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:386:5250f83f167ced0d:0",
+      "domain": "code",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          12
+        ]
+      ],
+      "intended_passage_1based": 12,
+      "unique_source_position": true,
+      "relative_passage_position": 0.6875,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.6867138481667608,
+      "token_proxy_bin": "late",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.8644153846153847,
+        "parts": 0.9745153846153846,
+        "full": 0.8069769230769231
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "incorrect"
+      }
+    },
+    {
+      "index": 60,
+      "display_item": 61,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:308:de1dadea95c8efe0:0",
+      "domain": "code",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.058823529411764705,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.07210510688836104,
+      "token_proxy_bin": "early",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 1.0208074074074074,
+        "parts": 1.078237037037037,
+        "full": 0.41365555555555555
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 61,
+      "display_item": 62,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:339:e04db17f9a8e81d5:0",
+      "domain": "documents",
+      "passages": 49,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.00262343024255978,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.24382500000000001,
+        "parts": 0.4697375,
+        "full": 0.14543124999999998
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 62,
+      "display_item": 63,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:201:c537c602a7892fe7:0",
+      "domain": "numeric",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          8
+        ]
+      ],
+      "intended_passage_1based": 8,
+      "unique_source_position": true,
+      "relative_passage_position": 0.3888888888888889,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.42953440510633223,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.8330333333333334,
+        "parts": 0.7718666666666666,
+        "full": 0.007066666666666666
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 63,
+      "display_item": 64,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:279:14e1747129943430:0",
+      "domain": "web",
+      "passages": 52,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          27
+        ]
+      ],
+      "intended_passage_1based": 27,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5098039215686274,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.4560569403027063,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.5144,
+        "parts": 0.6810571428571428,
+        "full": 0.4451857142857143
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 64,
+      "display_item": 65,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:69:3c282e5f2c89aa5c:0",
+      "domain": "wiki",
+      "passages": 28,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          20
+        ]
+      ],
+      "intended_passage_1based": 20,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7037037037037037,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8173449182847179,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.19345483870967745,
+        "parts": 0.44752580645161294,
+        "full": 0.06170322580645161
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 65,
+      "display_item": 66,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:230:f90e40ecfaa3692c:0",
+      "domain": "code",
+      "passages": 31,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.1,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.08956516632901729,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.1043,
+        "parts": 1.3642,
+        "full": 0.02086666666666667
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 66,
+      "display_item": 67,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:242:659b32181ba0f57a:0",
+      "domain": "numeric",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.2,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.19441539426898138,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.1124875,
+        "parts": 0.0161875,
+        "full": 0.0026
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 67,
+      "display_item": 68,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:324:870ad99de4282196:0",
+      "domain": "documents",
+      "passages": 15,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.07142857142857142,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.06973356162326154,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.3426,
+        "parts": 3.897677777777778,
+        "full": 0.010511111111111112
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 68,
+      "display_item": 69,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:3:d6b416fa3d9e41f4:0",
+      "domain": "web",
+      "passages": 29,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.10714285714285714,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.10306908366767212,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.1811717948717948,
+        "parts": 1.3279948717948717,
+        "full": 0.6075358974358974
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 69,
+      "display_item": 70,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:351:fc98eb7967bbdb86:0",
+      "domain": "code",
+      "passages": 25,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          23
+        ]
+      ],
+      "intended_passage_1based": 23,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9166666666666666,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9260472357675812,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.0914583333333334,
+        "parts": 0.8091416666666666,
+        "full": 0.7260833333333333
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 70,
+      "display_item": 71,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:212:e93312bf95e71f31:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          6
+        ]
+      ],
+      "intended_passage_1based": 6,
+      "unique_source_position": true,
+      "relative_passage_position": 0.29411764705882354,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.29171943791086186,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.01136,
+        "parts": 0.00506,
+        "full": 0.0004
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 71,
+      "display_item": 72,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:21:98436efb85b1b4a0:0",
+      "domain": "code",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.631578947368421,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6478267341470676,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.8652666666666667,
+        "parts": 0.9102208333333334,
+        "full": 0.3772125
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 72,
+      "display_item": 73,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:71:1e0ebc7f203a1c9f:0",
+      "domain": "documents",
+      "passages": 53,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          9
+        ]
+      ],
+      "intended_passage_1based": 9,
+      "unique_source_position": true,
+      "relative_passage_position": 0.15384615384615385,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.1305926244798393,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.3653027027027027,
+        "parts": 0.43572432432432434,
+        "full": 0.12207297297297298
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 73,
+      "display_item": 74,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:230:67ffb3c6b5208d10:0",
+      "domain": "web",
+      "passages": 64,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          46
+        ]
+      ],
+      "intended_passage_1based": 46,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7142857142857143,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.7627279253409907,
+      "token_proxy_bin": "late",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.5005,
+        "parts": 0.8038705882352941,
+        "full": 0.4068764705882353
+      },
+      "semantic_status": {
+        "merged": "ambiguous",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 74,
+      "display_item": 75,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:171:007770e82e120321:0",
+      "domain": "numeric",
+      "passages": 19,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          18
+        ]
+      ],
+      "intended_passage_1based": 18,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9444444444444444,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9269475191693768,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.5369777777777778,
+        "parts": 1.0237666666666667,
+        "full": 0.4169222222222222
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "partial"
+      }
+    },
+    {
+      "index": 75,
+      "display_item": 76,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:399:e1d3671b763282f7:0",
+      "domain": "code",
+      "passages": 21,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          17
+        ]
+      ],
+      "intended_passage_1based": 17,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.863220207562925,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.3726,
+        "parts": 2.6731,
+        "full": 0.05296000000000001
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 76,
+      "display_item": 77,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:316:5cb570b88f16fe3c:0",
+      "domain": "documents",
+      "passages": 21,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          7
+        ]
+      ],
+      "intended_passage_1based": 7,
+      "unique_source_position": true,
+      "relative_passage_position": 0.3,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.3491463922431741,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.03125,
+        "parts": 0.152075,
+        "full": 0.003
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 77,
+      "display_item": 78,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:82:85d3b0dd5f46993e:0",
+      "domain": "web",
+      "passages": 48,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          23
+        ]
+      ],
+      "intended_passage_1based": 23,
+      "unique_source_position": true,
+      "relative_passage_position": 0.46808510638297873,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.5301646642504495,
+      "token_proxy_bin": "middle",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.43806999999999996,
+        "parts": 0.43922666666666665,
+        "full": 0.20204999999999998
+      },
+      "semantic_status": {
+        "merged": "ambiguous",
+        "parts": "incorrect",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 78,
+      "display_item": 79,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:84:814d440a23aa2426:0",
+      "domain": "numeric",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          15
+        ]
+      ],
+      "intended_passage_1based": 15,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9333333333333333,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9114492579462837,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.4403757575757576,
+        "parts": 2.4431909090909087,
+        "full": 1.0272848484848485
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 79,
+      "display_item": 80,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:213:a3a77f99839461ee:0",
+      "domain": "code",
+      "passages": 27,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          25
+        ]
+      ],
+      "intended_passage_1based": 25,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9230769230769231,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.903712433706541,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.32789999999999997,
+        "parts": 0.3485314285714286,
+        "full": 0.2104828571428571
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "partial"
+      }
+    },
+    {
+      "index": 80,
+      "display_item": 81,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:73:982a40cd7903cd17:0",
+      "domain": "code",
+      "passages": 27,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.0059010976041543725,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.2766125,
+        "parts": 0.483625,
+        "full": 0.23450000000000001
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 81,
+      "display_item": 82,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:2:cccb8c9a93f84683:0",
+      "domain": "documents",
+      "passages": 15,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          14
+        ]
+      ],
+      "intended_passage_1based": 14,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9285714285714286,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9422352448723316,
+      "token_proxy_bin": "late",
+      "reference_status": "ambiguous",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 2.248875,
+        "parts": 0.28845,
+        "full": 0.11995
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "ambiguous",
+        "full": "ambiguous"
+      }
+    },
+    {
+      "index": 82,
+      "display_item": 83,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:375:122e937202c9ef34:0",
+      "domain": "numeric",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          18
+        ]
+      ],
+      "intended_passage_1based": 18,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8947368421052632,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9164147837797396,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.18783,
+        "parts": 0.09236,
+        "full": 0.0111
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 83,
+      "display_item": 84,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:59:2ec894318e1119da:0",
+      "domain": "web",
+      "passages": 28,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          21
+        ]
+      ],
+      "intended_passage_1based": 21,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7407407407407407,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8016421907648842,
+      "token_proxy_bin": "late",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.6696519999999999,
+        "parts": 0.80812,
+        "full": 0.255096
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "incorrect"
+      }
+    },
+    {
+      "index": 84,
+      "display_item": 85,
+      "item_id": "taskaware_wiki:study:4694c5773a09d52f:20260921:98:87308029c513bafe:0",
+      "domain": "wiki",
+      "passages": 31,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.03333333333333333,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.006341219397363465,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.45930000000000004,
+        "parts": 0.7254666666666667,
+        "full": 0.008066666666666668
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 85,
+      "display_item": 86,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:493:cdcf7b5e99a31d32:0",
+      "domain": "code",
+      "passages": 43,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          24
+        ]
+      ],
+      "intended_passage_1based": 24,
+      "unique_source_position": true,
+      "relative_passage_position": 0.5476190476190477,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.5324783331874289,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.28289230769230767,
+        "parts": 0.39247692307692306,
+        "full": 0.2664
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 86,
+      "display_item": 87,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:296:aacf297e750bb859:0",
+      "domain": "numeric",
+      "passages": 20,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          5
+        ]
+      ],
+      "intended_passage_1based": 5,
+      "unique_source_position": true,
+      "relative_passage_position": 0.21052631578947367,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.24389770248872158,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.8479545454545455,
+        "parts": 0.6200909090909091,
+        "full": 0.7891454545454546
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 87,
+      "display_item": 88,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:308:78001b404721f37d:0",
+      "domain": "documents",
+      "passages": 16,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          15
+        ]
+      ],
+      "intended_passage_1based": 15,
+      "unique_source_position": true,
+      "relative_passage_position": 0.9333333333333333,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.903381282081891,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.7213666666666666,
+        "parts": 0.5803820512820513,
+        "full": 0.1818282051282051
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 88,
+      "display_item": 89,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:371:61584cd3bcc60609:0",
+      "domain": "web",
+      "passages": 35,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          25
+        ]
+      ],
+      "intended_passage_1based": 25,
+      "unique_source_position": true,
+      "relative_passage_position": 0.7058823529411765,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.6778223812432731,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.3863238095238095,
+        "parts": 0.8757142857142858,
+        "full": 0.2985333333333333
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 89,
+      "display_item": 90,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:500:79498013db4c1e7f:0",
+      "domain": "code",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          11
+        ]
+      ],
+      "intended_passage_1based": 11,
+      "unique_source_position": true,
+      "relative_passage_position": 0.45454545454545453,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.4244636471990465,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.57473125,
+        "parts": 1.6147,
+        "full": 0.690271875
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 90,
+      "display_item": 91,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:473:ebfb8cc9f2b8183c:0",
+      "domain": "numeric",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          15
+        ]
+      ],
+      "intended_passage_1based": 15,
+      "unique_source_position": true,
+      "relative_passage_position": 0.875,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.9256612184249629,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.03211666666666667,
+        "parts": 0.04033333333333333,
+        "full": 0.004483333333333333
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 91,
+      "display_item": 92,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:345:199643515ea7e4da:0",
+      "domain": "code",
+      "passages": 21,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          1
+        ]
+      ],
+      "intended_passage_1based": 1,
+      "unique_source_position": true,
+      "relative_passage_position": 0.0,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.010655324698420225,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.6938884615384615,
+        "parts": 0.5104500000000001,
+        "full": 0.8387269230769232
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 92,
+      "display_item": 93,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:35:2865156df982ab9e:0",
+      "domain": "documents",
+      "passages": 13,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          3
+        ]
+      ],
+      "intended_passage_1based": 3,
+      "unique_source_position": true,
+      "relative_passage_position": 0.16666666666666666,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.1790573733885134,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.5017636363636364,
+        "parts": 0.6155090909090909,
+        "full": 0.6871181818181819
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 93,
+      "display_item": 94,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:381:a00fd1bbc97aad32:0",
+      "domain": "web",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          11
+        ]
+      ],
+      "intended_passage_1based": 11,
+      "unique_source_position": true,
+      "relative_passage_position": 0.625,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.6287029563865723,
+      "token_proxy_bin": "middle",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.1271555555555555,
+        "parts": 1.888788888888889,
+        "full": 0.5119666666666667
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 94,
+      "display_item": 95,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:94:3d68a07e05894572:0",
+      "domain": "numeric",
+      "passages": 17,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          4
+        ]
+      ],
+      "intended_passage_1based": 4,
+      "unique_source_position": true,
+      "relative_passage_position": 0.1875,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.18567019268226903,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 1.5797428571428571,
+        "parts": 0.9110285714285714,
+        "full": 0.7087
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "incorrect"
+      }
+    },
+    {
+      "index": 95,
+      "display_item": 96,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:11:beb7b13f3d176952:0",
+      "domain": "code",
+      "passages": 28,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          2
+        ]
+      ],
+      "intended_passage_1based": 2,
+      "unique_source_position": true,
+      "relative_passage_position": 0.037037037037037035,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.03606450850661626,
+      "token_proxy_bin": "early",
+      "reference_status": "defect",
+      "original_semantic_eligible": false,
+      "adjusted_semantic_eligible": false,
+      "answer_nll": {
+        "merged": 0.43549375,
+        "parts": 0.39150625,
+        "full": 0.680975
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 96,
+      "display_item": 97,
+      "item_id": "taskaware_documents:study:4694c5773a09d52f:20260921:159:04fed4813751a0c8:0",
+      "domain": "documents",
+      "passages": 55,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          13
+        ]
+      ],
+      "intended_passage_1based": 13,
+      "unique_source_position": true,
+      "relative_passage_position": 0.2222222222222222,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.24984602463605823,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.7029166666666667,
+        "parts": 0.5302250000000001,
+        "full": 0.5153416666666667
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "correct",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 97,
+      "display_item": 98,
+      "item_id": "taskaware_web:study:4694c5773a09d52f:20260921:271:745509975c6f43d8:0",
+      "domain": "web",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          19
+        ]
+      ],
+      "intended_passage_1based": 19,
+      "unique_source_position": true,
+      "relative_passage_position": 0.8181818181818182,
+      "position_bin": "late",
+      "encoded_part_token_midpoint_proxy": 0.8430308422301305,
+      "token_proxy_bin": "late",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 0.9366,
+        "parts": 0.3041,
+        "full": 0.02829166666666667
+      },
+      "semantic_status": {
+        "merged": "correct",
+        "parts": "partial",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 98,
+      "display_item": 99,
+      "item_id": "taskaware_numeric:study:7fbee06117275ef7:20260921:26:16a4345c6997f1f1:0",
+      "domain": "numeric",
+      "passages": 18,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          7
+        ]
+      ],
+      "intended_passage_1based": 7,
+      "unique_source_position": true,
+      "relative_passage_position": 0.35294117647058826,
+      "position_bin": "middle",
+      "encoded_part_token_midpoint_proxy": 0.3316458711771538,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 1.2183833333333334,
+        "parts": 1.06205,
+        "full": 0.012733333333333333
+      },
+      "semantic_status": {
+        "merged": "incorrect",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    },
+    {
+      "index": 99,
+      "display_item": 100,
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:54:04dc05031284503e:0",
+      "domain": "code",
+      "passages": 23,
+      "source_units": 1,
+      "matching_passages_1based": [
+        [
+          5
+        ]
+      ],
+      "intended_passage_1based": 5,
+      "unique_source_position": true,
+      "relative_passage_position": 0.18181818181818182,
+      "position_bin": "early",
+      "encoded_part_token_midpoint_proxy": 0.12524033484189664,
+      "token_proxy_bin": "early",
+      "reference_status": "supported",
+      "original_semantic_eligible": true,
+      "adjusted_semantic_eligible": true,
+      "answer_nll": {
+        "merged": 2.51526875,
+        "parts": 2.3991375,
+        "full": 0.4566375
+      },
+      "semantic_status": {
+        "merged": "partial",
+        "parts": "incorrect",
+        "full": "correct"
+      }
+    }
+  ]
+}

@@ -29,6 +29,14 @@ EXEC_GRACE_SECONDS = 10   # how long the client waits past the in-container `tim
 def podman_available() -> bool:
     return shutil.which("podman") is not None
 
+class TaskUnavailable(RuntimeError):
+    """
+    Raised by an env setup when the task cannot run at all (its source repository is gone, its gold file is absent at
+    the base commit, or the fetch kept failing). The agent prepares its env before the first turn, so such a run ends
+    with finish_reason "task_unavailable" and no generated turn; it is recorded, not retried.
+    """
+
+
 class AgentEnvSetup:
     """
     Task-specific preparation of a fresh env: files, checkouts, small data. Libraries and large shared data

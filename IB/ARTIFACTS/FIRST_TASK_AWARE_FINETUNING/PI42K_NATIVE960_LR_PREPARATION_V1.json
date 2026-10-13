@@ -1,0 +1,48 @@
+{
+  "status": "prepared_pending_root_review_no_gpu_submission",
+  "checks": 72,
+  "files_sha256": {
+    "run_qa_pi42k_native960_lr_v1.py": "469ff46fa9c1d6395acd83345be2f1ed751067fbf27cac1a063142d92f44ab80",
+    "prepare_pi42k_native960_lr_v1.py": "dc4c382fb63ddd3c24e7ee46c93278136b60ab3c9ac2381521e370b024f49731",
+    "train_pi42k_native960_lr_v1.sbatch": "78fd108e6ba73462754e8991e07ab2917b14fce87d820acc3a1454a07e776dbf",
+    "PI42K_NATIVE960_FLOOR_DESIGN_V1.json": "be9650c2942f10227738d2e61e9f175f243ac1ab6ad4ec0e858dae51ceaafcdb",
+    "PI42K_NATIVE960_2X_DESIGN_V1.json": "c10cb89931b35aa18289ff47c34af6285f254ba4313fed350cf73844153f967b"
+  },
+  "checks_sha256": "6b31e5fb4d81636d6847b259dc76da8f808a1ba3d3b0d5ea62a3b2cc5a1588ef",
+  "frozen_inputs_reused": [
+    "material49f711e3",
+    "subset578a8955",
+    "originalORCDpair33fc87f7",
+    "unchanged actualAdam5250"
+  ],
+  "runtime_evidence": {
+    "path": "IB/TMP/SYNC/TASK_AWARE_QA/adam_moment_offload_probe_v1/resident.json",
+    "sha256": "b9857a56cefc505ed25250b2c6a0b5b0d01ac5c292859632ef00cf16be875fec",
+    "step_seconds": [
+      29.554066750220954,
+      26.977525177877396
+    ],
+    "peak_memory_gib": 32.60331583023071,
+    "scope": "Two deterministic native2k/micro1 first-batch updates with expensive proof instrumentation; not complete960 memory/throughput validation."
+  },
+  "planned_minutes_per_arm": [
+    60,
+    95
+  ],
+  "allocation_minutes": 120,
+  "trainer_seconds": 6600,
+  "oom_policy": "Fail immediately; no changed shape/precision/offload retry.",
+  "product_edits": false,
+  "remote_calls": false,
+  "gpu_submissions": false,
+  "handoff_update": {
+    "status": "root_frozen_initial_submission_environment_fix_pending",
+    "submission_receipt": "PI_NATIVE960_LR_SUBMISSION_V1.json",
+    "initial_jobs": [
+      23557303,
+      23557305
+    ],
+    "operational_caveat": "Root reports2x23557305 failed before modelinit/training_config due inherited incomplete HF_HOME; floor held pending. Root preparing unchanged-code/design resubmission with explicit complete HF cache. Follow submission receipt for replacements.",
+    "scope": "Resident native2k diagnostic; no moment-offload adoption. Original preparation fields/hashes retained as history."
+  }
+}

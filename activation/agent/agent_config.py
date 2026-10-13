@@ -157,7 +157,7 @@ class AgentRunResult:
     compactions: list["AgentRunResult"] = field(default_factory=list)   # this agent's earlier segments, oldest first (finish_reason "compacted")
     injected_input: list[dict] = field(default_factory=list)   # serialized ToolCallResults placed ahead of the task in the first user message
                                                                # (a program's augment_context; the parent's context for a subagent)
-    finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded
+    finish_reason: str = ""                                    # submitted | max_turns | max_tool_errors | max_duration | no_tool_call | context_exceeded | task_unavailable
                                                                # | trajectory_cap | compaction_refused | compacted (a segment) | simulated | error
     seed: int = 0
     prompt_token_ids: list[int] = field(default_factory=list)  # the segment's first prompt (system + first messages + tools, templated once)

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/reconstruction-20260922/P4",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/reconstruction-20260922/P4/",
+  "checkpoint": "P4 original epoch001 paired reconstruction checkpoint",
+  "completed_pair": {
+    "epoch_number": 1,
+    "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+    "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+  },
+  "encoder": "Qwen/Qwen3.5-4B",
+  "reader": "Qwen/Qwen3.5-9B",
+  "held_reconstruction_nll": 0.32318348463416346,
+  "selection": "Best available compatible 4B encoder reconstruction pair; original weights, not smoke-trained weights.",
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/AC_MODELS/rag_poc/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/AC_MODELS/rag_poc/epoch_001/ac_modules.pt",
+      "bytes": 1773108789,
+      "sha256": "00b243c4be47d9ee59e02dbc13c493990da8a94b5c8a149b4ccefb01b45684dc",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/AC_MODELS/rag_poc/epoch_001/side_lora/README.md",
+      "bytes": 5184,
+      "sha256": "7ca7236d36dfb58dae5ae922c1642238fd05f0f6b8742e7dc3221af529f8a28a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "298cd1ff7d06f3d3850c267ef304a3bfc7d05d48681c2823ef80832b77165771",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors",
+      "bytes": 679515592,
+      "sha256": "6557bf6ee0ea3afc5ad53ee1aaa8d8bfb8a5f250a9eb6348122b99d2d6879856",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/LORAS/rag_reader/epoch_001/README.md",
+      "bytes": 5184,
+      "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/LORAS/rag_reader/epoch_001/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "453ccbf67b652b2a76539870057c435befb6e60feba13d2d5e8d52d01b50260f",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/LORAS/rag_reader/epoch_001/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "542bf7bc1408fef2870ff90f54ae8835c1e7e226d74e575012f3db5ed5b76f1a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/checkpoint_identity.json",
+      "bytes": 2708,
+      "sha256": "81162338fb9b31fe338c77d35886b59738495988146f7fb42cbf482f5b623e7e",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/gpu_restore_smoke_result.json",
+      "bytes": 20639,
+      "sha256": "c7e724d16f1a606eddbb2c4827b74e417e0d93010f69238c00ebf95940d77a48",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/reconstruction-20260922/P4/reconstruction_result.json",
+      "bytes": 15513,
+      "sha256": "df1d3f5fc996edc1ea1f37717234fe44f95aa1c10f99d454bd6d2be709974759",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 3383849998,
+  "contents": "Original paired AC modules, side and reader LoRAs, epoch marker and provenance; excludes optimizer state and base models.",
+  "validation": "Required paired paths, expected byte counts, adapter model IDs/ranks and reconstruction-result hash checked locally. Every S3 object create-only and SHA256/size verified; manifest published last. Existing GPU23436039 passed restore/train/evaluate/pairedsave; no extra GPU run for archival."
+}

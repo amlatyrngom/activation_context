@@ -1,0 +1,37 @@
+{
+  "checked_utc": "2026-09-23T02:03:31.002834Z",
+  "status": "released",
+  "old_states": {
+    "23516714": "PREEMPTED",
+    "23516715": "CANCELLED"
+  },
+  "saved_pair": {
+    "epoch_number": 1,
+    "step": 250,
+    "steps": 1250,
+    "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00250",
+    "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00250"
+  },
+  "saved_questions": 2000,
+  "last_logged_questions": 2368,
+  "questions_replayed": 368,
+  "payload_sizes": {
+    "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/optimizer.pt": 4676641912,
+    "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/ac_modules.pt": 1208881737,
+    "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/side_lora/adapter_model.safetensors": 349204488,
+    "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/LORAS/rag_reader/epoch_001_step_00250/adapter_model.safetensors": 931173960
+  },
+  "hashes": {
+    "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+    "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+  },
+  "jobs": {
+    "training": 23520578,
+    "readout": 23520579
+  },
+  "released": [
+    23520578,
+    23520579
+  ],
+  "protocol": "Same original optimizer/order/1250-update schedule; exclude nodes5101/5104 after recent preemptions. No other experiment settings changed."
+}

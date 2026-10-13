@@ -1,0 +1,31 @@
+{
+  "B1": {
+    "complete": true,
+    "fresh_questions": 512,
+    "student_step_seconds": 1124.6802606992424,
+    "attempt_wall_seconds": 1752.5028654718772,
+    "peak_memory_gib": 47.92471122741699,
+    "penalty_rng_sha256": "634306a22e313c6b7ac40ff9b4c390e8138e1c824059074fce441a3f7280351b",
+    "held_answer_nll": 0.8745578509733605,
+    "learning_answer_nll": 0.7114320224795199
+  },
+  "B2": {
+    "complete": true,
+    "fresh_questions": 512,
+    "student_step_seconds": 997.2234326293692,
+    "attempt_wall_seconds": 1496.863816366531,
+    "peak_memory_gib": 48.8181586265564,
+    "penalty_rng_sha256": "634306a22e313c6b7ac40ff9b4c390e8138e1c824059074fce441a3f7280351b",
+    "held_answer_nll": 0.8199779970745076,
+    "learning_answer_nll": 0.6187157085797382
+  },
+  "comparison": {
+    "student_speedup_B2": 1.1278117058820099,
+    "wall_speedup_B2": 1.1707831041877153,
+    "held_NLL_B2_minus_B1": -0.05457985389885289,
+    "learning_NLL_B2_minus_B1": -0.09271631389978163
+  },
+  "scope": "Same initial1680 checkpoint/Adam/order/LR;512 freshquestions \u00d71epoch; graph2both, readerbatch1vs2; single stochasticpair,100held; B2stillfailsnumerical-equivalence gate.",
+  "recorded_utc": "2026-09-24T19:54:16.834730+00:00",
+  "next": "Keepproductionunchanged. Preparea separate2048fresh-question comparison fromsameimmutable1680pair; preservefailednumerical-equivalence label."
+}

@@ -1,0 +1,48 @@
+{
+  "checked_utc": "2026-09-23T02:58:52.528822+00:00",
+  "condition": "Original32k final paired weights, independentpassage layout, before fresh8klongadaptation",
+  "selection": "Samefixed100developmentquestions;50pergenerator",
+  "contexts": {
+    "2k": {
+      "nll": {
+        "AC": 0.701900517100079,
+        "full context": 0.6372490929256699,
+        "no context": 1.8395687616692975
+      },
+      "mean_encoder_tokens": 2025.58,
+      "mean_rows": 124.1,
+      "mean_passages": 2.16,
+      "any_row_cap": false,
+      "shared_input_fingerprint": "cc3996ac3c11f83982102818d6765f4e628f879efce3d169672e5698201f5db1",
+      "ac_input_fingerprint": "f90c90c099fec59d59cfb2852fe47208b1494724efaef54492ae5f5916f36d5b"
+    },
+    "8k": {
+      "nll": {
+        "AC": 0.7352496575853942,
+        "full context": 0.6031717553207395,
+        "no context": 1.839110465102392
+      },
+      "mean_encoder_tokens": 8310.35,
+      "mean_rows": 502.89,
+      "mean_passages": 7.19,
+      "any_row_cap": false,
+      "shared_input_fingerprint": "6ffc199f008d329773af7bc09594ca3cbadca619f50b9fe72d7a540b2c643069",
+      "ac_input_fingerprint": "2fff0d9f31ecb0ba02dca7543cd3d4b3741eb6267a2f6fe690e7d312d5212744"
+    },
+    "32k": {
+      "nll": {
+        "AC": 0.75366491226064,
+        "full context": 0.5764541090762331,
+        "no context": 1.8395687616692975
+      },
+      "mean_encoder_tokens": 33840.96,
+      "mean_rows": 2055.33,
+      "mean_passages": 22.43,
+      "any_row_cap": false,
+      "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+      "ac_input_fingerprint": "a7864a62fe9096fa2a638dda49474b25a3449b7cf4e872406611aff108710143"
+    }
+  },
+  "scope": "32kaddsretrieveddistractors, not distributed-required-evidence reasoning. Only8k has100actualdecodedanswers.",
+  "caveat": "8k usesmicrobatch2/original400scoring then selected100;2k/32k microbatch1/selected100. Smallnoctxdifferences are numerical. Native32kparent2k mergedlayout .607904 is distinct from these independentpassageinputs."
+}

@@ -1,0 +1,91 @@
+{
+  "submitted_utc": "2026-09-24T09:43:30.147543+00:00",
+  "job_id": 2203328,
+  "host": "csail",
+  "source_commit": "492a51a5d3cbb51e889007e035309a6a23a80c9f",
+  "output": "/data/scratch/ngom/activation/trajectory_compaction/live_compaction_initial_v1",
+  "worker": "bench/probe_live_compaction.py",
+  "scope": "Private serial HF live-tool probe with all deep heads; six scripted-real-read fixtures, free generated continuations, initial full/nohistory/AC. Not production vLLM or natural benchmark.",
+  "review": "Pre-run failure recording fixed after bounded review; no tolerance/quality filtering.",
+  "cpu_fixture_tokens": [
+    {
+      "case": "8192_20",
+      "prefix": 7635,
+      "encoder": 7628,
+      "after": 587,
+      "parts": 5
+    },
+    {
+      "case": "8192_80",
+      "prefix": 7647,
+      "encoder": 7640,
+      "after": 587,
+      "parts": 5
+    },
+    {
+      "case": "16384_20",
+      "prefix": 15593,
+      "encoder": 15586,
+      "after": 587,
+      "parts": 10
+    },
+    {
+      "case": "16384_80",
+      "prefix": 15586,
+      "encoder": 15579,
+      "after": 587,
+      "parts": 10
+    },
+    {
+      "case": "32768_20",
+      "prefix": 31515,
+      "encoder": 31508,
+      "after": 587,
+      "parts": 21
+    },
+    {
+      "case": "32768_80",
+      "prefix": 31508,
+      "encoder": 31501,
+      "after": 587,
+      "parts": 21
+    }
+  ],
+  "gpu_validation": "pending",
+  "initial_result": {
+    "status": "complete",
+    "full_history_successes": 6,
+    "no_history_successes": 0,
+    "initial_ac_successes": 0,
+    "cases": 6,
+    "job_runtime": "00:05:02",
+    "gpu": "H200",
+    "result": "IB/TMP/SYNC/TRAJECTORY_COMPACTION/csail/live_compaction_initial_v1/report/result.json"
+  },
+  "trained_followup": {
+    "job_id": "2203552",
+    "queued_utc": "2026-09-24T10:29:15.790835+00:00",
+    "training_cuts": 1848,
+    "training_assistant_tokens": 5210764,
+    "source": "source_v12 unchanged",
+    "pair": "/data/scratch/ngom/activation/trajectory_compaction/compaction_1848_staging_v1/pair.json",
+    "transfer_manifest": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/compaction_1848_staging_v1/transfer_manifest.json",
+    "output": "/data/scratch/ngom/activation/trajectory_compaction/live_compaction_1848_v1",
+    "same_fixtures": "/data/scratch/ngom/activation/trajectory_compaction/live_tool_fixtures_v1",
+    "views": [
+      "trained AC",
+      "trained reader without history"
+    ],
+    "result": {
+      "status": "complete",
+      "successes": {
+        "trained AC": 1,
+        "trained reader without history": 0
+      },
+      "successful_case": "16384_20",
+      "notes": "Exact service/version/rollback/workers, real tool commit then exact receipt. Other five fail; three attempt commit first versus zero initial AC first commits.",
+      "runtime": "00:05:39",
+      "result": "IB/TMP/SYNC/TRAJECTORY_COMPACTION/csail/live_compaction_1848_v1/report/result.json"
+    }
+  }
+}

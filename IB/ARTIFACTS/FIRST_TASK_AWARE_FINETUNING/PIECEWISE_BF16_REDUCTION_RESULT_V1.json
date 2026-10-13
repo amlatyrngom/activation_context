@@ -1,0 +1,191 @@
+{
+  "status": "bf16_only_avenue_stopped_no_adoption",
+  "job_id": 23522375,
+  "proof_sha256": "1333e139b64f0d48b373a97d365d4e4d168e0208fc630efe052e3600a012c146",
+  "original_flags": {
+    "reduced_precision_reduction": true,
+    "split_k": true,
+    "tf32_matmul": true
+  },
+  "flags_restored": true,
+  "parent_payloads_unchanged": true,
+  "backward_calls": 0,
+  "optimizer_updates": 0,
+  "equivalence_validated": false,
+  "policies": {
+    "original_enabled": {
+      "flags": {
+        "reduced_precision_reduction": true,
+        "split_k": true,
+        "tf32_matmul": true
+      },
+      "unchanged_repeat_max_abs": 0.0,
+      "first_nonzero": {
+        "2": "2:side_layer_03_output",
+        "11": "11:mixer_00_output"
+      },
+      "shortest_all_stages_max_abs": 0.8203125,
+      "longest": {
+        "mixer_00_output": {
+          "relative_l2": 8.971019907066164e-05,
+          "rms_error": 9.786468325478494e-05,
+          "max_abs": 0.00390625,
+          "passed": true
+        },
+        "mixer_01_output": {
+          "relative_l2": 0.00015344672492422753,
+          "rms_error": 0.00016631271283197907,
+          "max_abs": 0.004150390625,
+          "passed": true
+        },
+        "side_input": {
+          "relative_l2": 0.0006040879399987847,
+          "rms_error": 1.031798912544372e-05,
+          "max_abs": 0.00048828125,
+          "passed": true
+        },
+        "side_layer_00_output": {
+          "relative_l2": 0.004428498505177776,
+          "rms_error": 0.0002604484389220188,
+          "max_abs": 0.03125,
+          "passed": true
+        },
+        "side_layer_03_output": {
+          "relative_l2": 0.008158159751193546,
+          "rms_error": 0.0008427898021767798,
+          "max_abs": 0.09375,
+          "passed": true
+        },
+        "side_final_norm": {
+          "relative_l2": 0.021495656439068957,
+          "rms_error": 0.06904819803721675,
+          "max_abs": 1.125,
+          "passed": true
+        },
+        "output_input_rows": {
+          "relative_l2": 0.016938228113241065,
+          "rms_error": 0.0010626802454015982,
+          "max_abs": 0.013924684375524521,
+          "passed": true
+        },
+        "output_delta_11": {
+          "relative_l2": 0.030870177594901717,
+          "rms_error": 0.002670371926458818,
+          "max_abs": 0.04693517088890076,
+          "passed": false
+        },
+        "output_delta_19": {
+          "relative_l2": 0.031099882397425026,
+          "rms_error": 0.002666292785643593,
+          "max_abs": 0.03227180242538452,
+          "passed": false
+        }
+      },
+      "failed_selected_outputs": {
+        "11:output_delta_11": {
+          "relative_l2": 0.030870177594901717,
+          "max_abs": 0.04693517088890076
+        },
+        "11:output_delta_19": {
+          "relative_l2": 0.031099882397425026,
+          "max_abs": 0.03227180242538452
+        }
+      }
+    },
+    "reduction_disabled": {
+      "flags": {
+        "reduced_precision_reduction": false,
+        "split_k": true,
+        "tf32_matmul": true
+      },
+      "unchanged_repeat_max_abs": 0.0,
+      "first_nonzero": {
+        "2": null,
+        "11": "11:side_layer_00_output"
+      },
+      "shortest_all_stages_max_abs": 0.0,
+      "longest": {
+        "mixer_00_output": {
+          "relative_l2": 0.0,
+          "rms_error": 0.0,
+          "max_abs": 0.0,
+          "passed": true
+        },
+        "mixer_01_output": {
+          "relative_l2": 0.0,
+          "rms_error": 0.0,
+          "max_abs": 0.0,
+          "passed": true
+        },
+        "side_input": {
+          "relative_l2": 0.0,
+          "rms_error": 0.0,
+          "max_abs": 0.0,
+          "passed": true
+        },
+        "side_layer_00_output": {
+          "relative_l2": 0.0001378609230791888,
+          "rms_error": 8.108157975838836e-06,
+          "max_abs": 0.001953125,
+          "passed": true
+        },
+        "side_layer_03_output": {
+          "relative_l2": 0.00628628447512507,
+          "rms_error": 0.0006494041187097909,
+          "max_abs": 0.0625,
+          "passed": true
+        },
+        "side_final_norm": {
+          "relative_l2": 0.02074825636198278,
+          "rms_error": 0.06664760143653593,
+          "max_abs": 1.25,
+          "passed": true
+        },
+        "output_input_rows": {
+          "relative_l2": 0.01759772915243971,
+          "rms_error": 0.0011040588212322048,
+          "max_abs": 0.02314268797636032,
+          "passed": true
+        },
+        "output_delta_11": {
+          "relative_l2": 0.03172180863027891,
+          "rms_error": 0.002745605281709786,
+          "max_abs": 0.05059662461280823,
+          "passed": false
+        },
+        "output_delta_19": {
+          "relative_l2": 0.031149548786758484,
+          "rms_error": 0.0026725811026008387,
+          "max_abs": 0.03589492291212082,
+          "passed": false
+        }
+      },
+      "failed_selected_outputs": {
+        "11:output_delta_11": {
+          "relative_l2": 0.03172180863027891,
+          "max_abs": 0.05059662461280823
+        },
+        "11:output_delta_19": {
+          "relative_l2": 0.031149548786758484,
+          "max_abs": 0.03589492291212082
+        }
+      }
+    }
+  },
+  "cross_policy": {
+    "disabled_65536_vs_original_65536": {
+      "tensor_count": 18,
+      "failed_count": 0,
+      "max_relative_l2": 0.026588072736084704,
+      "scope": "Different comparison; cannot replace within-policy packing gate."
+    },
+    "disabled_32768_vs_original_65536": {
+      "tensor_count": 18,
+      "failed_count": 0,
+      "max_relative_l2": 0.028148529645107993,
+      "scope": "Different comparison; cannot replace within-policy packing gate."
+    }
+  },
+  "decision": "Keep encoder budget65536 and original production flags. No further precision probe justified by present operator evidence; preserve failed receipts and gates.",
+  "remaining_limit": "Whole side layer0 is a gated-delta block containing several BF16/FP32 projection, convolution, recurrent-attention, normalization and MLP operations. Its first differing internal operator and backward effects are not measured."
+}

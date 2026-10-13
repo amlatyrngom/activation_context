@@ -1,0 +1,123 @@
+{
+  "checked_utc": "2026-09-23T01:42:20.549135+00:00",
+  "job": 23515979,
+  "slurm_status": "COMPLETED0:0",
+  "slurm_seconds": 66,
+  "proof_sha256": "7546b0a58e29c14d76d89eab64b0e808a7b222e329c23d4c14b703e295ebb5a3",
+  "diagnostic_complete": true,
+  "equivalence_validated": false,
+  "unchanged_repeat_all_captured_stages_bitwise_exact": true,
+  "metadata_changed": [],
+  "first_nonzero": {
+    "2": "2:side_layer_03_output",
+    "11": "11:mixer_00_output"
+  },
+  "first_gate_failure": {
+    "2": null,
+    "11": "11:output_delta_11"
+  },
+  "selected_stages": {
+    "2": {
+      "mixer_input": {
+        "relative_l2": 0.0,
+        "rms_error": 0.0,
+        "max_abs": 0.0,
+        "passed": true
+      },
+      "mixer_00_output": {
+        "relative_l2": 0.0,
+        "rms_error": 0.0,
+        "max_abs": 0.0,
+        "passed": true
+      },
+      "side_input": {
+        "relative_l2": 0.0,
+        "rms_error": 0.0,
+        "max_abs": 0.0,
+        "passed": true
+      },
+      "side_layer_00_output": {
+        "relative_l2": 0.0,
+        "rms_error": 0.0,
+        "max_abs": 0.0,
+        "passed": true
+      },
+      "side_layer_03_output": {
+        "relative_l2": 0.003171559711801773,
+        "rms_error": 0.00035504859587349254,
+        "max_abs": 0.015625,
+        "passed": true
+      },
+      "side_final_norm": {
+        "relative_l2": 0.018831114029154567,
+        "rms_error": 0.05882747080708626,
+        "max_abs": 0.8203125,
+        "passed": true
+      },
+      "output_delta_11": {
+        "relative_l2": 0.016366213287637005,
+        "rms_error": 0.002144427504390478,
+        "max_abs": 0.011876605451107025,
+        "passed": true
+      },
+      "output_delta_19": {
+        "relative_l2": 0.022994445263445754,
+        "rms_error": 0.0024846410378813744,
+        "max_abs": 0.011856842786073685,
+        "passed": true
+      }
+    },
+    "11": {
+      "mixer_input": {
+        "relative_l2": 0.0,
+        "rms_error": 0.0,
+        "max_abs": 0.0,
+        "passed": true
+      },
+      "mixer_00_output": {
+        "relative_l2": 8.971019907066164e-05,
+        "rms_error": 9.786468325478494e-05,
+        "max_abs": 0.00390625,
+        "passed": true
+      },
+      "side_input": {
+        "relative_l2": 0.0006040879399987847,
+        "rms_error": 1.031798912544372e-05,
+        "max_abs": 0.00048828125,
+        "passed": true
+      },
+      "side_layer_00_output": {
+        "relative_l2": 0.004428498505177776,
+        "rms_error": 0.0002604484389220188,
+        "max_abs": 0.03125,
+        "passed": true
+      },
+      "side_layer_03_output": {
+        "relative_l2": 0.008158159751193546,
+        "rms_error": 0.0008427898021767798,
+        "max_abs": 0.09375,
+        "passed": true
+      },
+      "side_final_norm": {
+        "relative_l2": 0.021495656439068957,
+        "rms_error": 0.06904819803721675,
+        "max_abs": 1.125,
+        "passed": true
+      },
+      "output_delta_11": {
+        "relative_l2": 0.030870177594901717,
+        "rms_error": 0.002670371926458818,
+        "max_abs": 0.04693517088890076,
+        "passed": false
+      },
+      "output_delta_19": {
+        "relative_l2": 0.031099882397425026,
+        "rms_error": 0.002666292785643593,
+        "max_abs": 0.03227180242538452,
+        "passed": false
+      }
+    }
+  },
+  "scope": "Two preselected shortest/longest passages from the exact affected24-passage microbatch. Forward only; no reader, backward, updates or saves.",
+  "inference": "Findings are consistent with small batch-shape numerical differences accumulating through the encoder; exact differing operators and backward effects remain unproven. Original batching retained."
+}

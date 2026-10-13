@@ -1,0 +1,23 @@
+{
+  "status": "prepared_not_staged_or_submitted",
+  "condition": "42,000 unique questions; constant-floor continuation final",
+  "worker": "bench/evaluate_continuation_layout_l40s_v1.py",
+  "worker_sha256": "1fa4169108b6da2027a20fa79848debcf3164c7ba70d6de9382cd0d84cb6c460",
+  "launcher": "bench/evaluate_continuation_layout_l40s_v1.sbatch",
+  "launcher_sha256": "7494ebe6933c67a19b74ea67864bbd7707efbe019276fe09a21c287b3adaa1d7",
+  "cpu_check": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/CONTINUATION_LAYOUT_L40S_CPU_V1.json",
+  "resource_request": "ORCD normal singleL40S,8CPU,64GiBhost,25min;application1400s",
+  "model_loads": 1,
+  "new_measurements": {
+    "native2k": "AC/full/noctx; all400 originalbatch2 for exact batch partners, then same fixed100 reported",
+    "passagewise32k": "AC fixed100/batch1;65536encoderpacking and original32k/64passage evidence/actualrows"
+  },
+  "control_reuse": "Only full/noctx32k from completed-core currentL40S merged run after exact pair/source/design/input/token/runtime/precision/logits-chunk checks; previousRTX scores never copied",
+  "optional": "Passagewise32k100 AC greedy160 answers after allNLL; actualIDs/EOS/caps retained, partial responses remainvisible",
+  "output": "taskaware/reports/continuation_layout_l40s_cohort100/result.json",
+  "dependency_recommendation": "Root owns normalGPUslots; current mergedL40S core must be complete, but optional parent decoding need not finish before the immutable snapshot is captured.",
+  "limits": "Input-binding CPU checks passed; new same-device score/model-reuse execution remainsunrun. Keep all100 reference labels unchanged; no training or optimizer loading.",
+  "cpu_check_count": 8,
+  "control_snapshot": "Allocated launcher captures exact complete-core bytes once at output/input_merged_core.json with atomic create-only publication; resumes reuse that file without rereading the live parent result.",
+  "check_command": "python IB/TMP/FIRST_TASK_AWARE_FINETUNING/check_continuation_layout_l40s_v1.py"
+}

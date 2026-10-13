@@ -1,0 +1,112 @@
+{
+  "status": "prepared; GPU unrun; no adoption",
+  "worker_sha256": {
+    "reader_checkpoint_geometry_v1.py": "bbf73551bd29ce834f663cd0eee5a61fe789f8afdefedcbb234c5598d58697fb",
+    "probe_reader_memory_v1.py": "eb5a0e79ab374452bcdc6dcd8991e1e3e8245d53cd217844d51bb6ab159d7122",
+    "probe_reader_memory_v1.sbatch": "95c624e77a0e69705516bf8bb9c6c513178f3e5c5826b05e06a964d75389821b"
+  },
+  "input_sha256": {
+    "selected_cases.json": "26c7415001609454340de20f29d57c0fe6489ab864c05b74b759cf62ea5cd0c2",
+    "summary.json": "b4d4fa47e32da915f606b6b9f9268a6ff7e036fdf4c9cdbc3367120d803d0c27",
+    "all_batches.json": "3e2a1c7b0097c0212b726526d320a2857a8c1f88de24e32b7a4fa1600719ae2f"
+  },
+  "prior_completed_proof_sha256": "3729c748ebbeeb4cf8595417cd2384344372b87370dd280a00924913f60adee5",
+  "cpu_checks": {
+    "status": "passed",
+    "checks": [
+      "encoder budget uses content length and adds rows only for actual padded geometry",
+      "exact4096 reader gate plus sorted microbatches",
+      "seeded epoch ordering and penalty draws deterministic",
+      "actual completed615-gradient exact GPU proof accepted",
+      "reject partial",
+      "reject wrong_threshold",
+      "reject loss_changed",
+      "Python AST and shell syntax",
+      "selected-case SHA matches published census",
+      "three training-only fixed-axis cases",
+      "selected real items match all-item hashes and original epoch microbatches",
+      "exact penalty ID draws reproduce from original stream offset",
+      "existing diagnostic helper pins retained"
+    ],
+    "scope": "Pure CPU geometry/control fixtures plus existing completed GPU-proof receipt; new selected-case GPU fitting remains unrun.",
+    "full_census_complete": true,
+    "source_sha256": {
+      "reader_checkpoint_geometry_v1.py": "bbf73551bd29ce834f663cd0eee5a61fe789f8afdefedcbb234c5598d58697fb",
+      "probe_reader_memory_v1.py": "eb5a0e79ab374452bcdc6dcd8991e1e3e8245d53cd217844d51bb6ab159d7122",
+      "probe_reader_memory_v1.sbatch": "95c624e77a0e69705516bf8bb9c6c513178f3e5c5826b05e06a964d75389821b"
+    },
+    "selected_cases_sha256": "26c7415001609454340de20f29d57c0fe6489ab864c05b74b759cf62ea5cd0c2",
+    "census_summary_sha256": "b4d4fa47e32da915f606b6b9f9268a6ff7e036fdf4c9cdbc3367120d803d0c27"
+  },
+  "pool_summary": {
+    "strong8k": {
+      "questions": 8000,
+      "logical_batches": 1000,
+      "microbatches": 4000,
+      "reader_padded_positions_max": 2454,
+      "reader_checkpointed_at4096": 0,
+      "penalty_padded_positions_max": 1226,
+      "penalty_checkpointed_at4096": 0,
+      "encoder_padded_positions_max": 72999,
+      "encoder_max_padded_batch": 69540,
+      "compressed_rows_per_microbatch_max": 1042
+    },
+    "gentle4k": {
+      "questions": 4000,
+      "logical_batches": 500,
+      "microbatches": 2000,
+      "reader_padded_positions_max": 2454,
+      "reader_checkpointed_at4096": 0,
+      "penalty_padded_positions_max": 1218,
+      "penalty_checkpointed_at4096": 0,
+      "encoder_padded_positions_max": 70740,
+      "encoder_max_padded_batch": 69606,
+      "compressed_rows_per_microbatch_max": 1043
+    }
+  },
+  "production_totals_check": {
+    "strong8k": {
+      "measured": {
+        "questions": 8000,
+        "encoded_source_tokens": 65979986,
+        "compressed_rows": 3986645
+      },
+      "matches_actual_production": true,
+      "production_row_budget_sha256": "80691b91ae8af27a11c007769b7906f175a2b04d75fba7dfc3cf9e5246c5552a"
+    },
+    "gentle4k": {
+      "measured": {
+        "questions": 4000,
+        "encoded_source_tokens": 33014865,
+        "compressed_rows": 1995278
+      },
+      "matches_actual_production": true,
+      "production_row_budget_sha256": "ebed4ea4422aecb5ee5240c26bb2308882f71c987f8468a8d0eaaeee1a69d264"
+    }
+  },
+  "census_execution": {
+    "executed_source_sha256": "094bf68300a419583098dbdb434046c00bd25a65c76c9f929a0f48809a906b32",
+    "current_source_sha256": "bbf73551bd29ce834f663cd0eee5a61fe789f8afdefedcbb234c5598d58697fb",
+    "note": "Only redundant per-item metadata copy into selected cases was added after launch; copied from the same completed all_batches receipt here. Geometry, selection and all measured values are unchanged.",
+    "postprocess_sha256": "28af35186293ae31343487a39083263fd1c574e6ab9a168839900ea6492e0560"
+  },
+  "selected_cases": [
+    "strong8k_0220",
+    "strong8k_0822",
+    "strong8k_0802"
+  ],
+  "allocation": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "host_memory_gib": 64,
+    "wall_seconds": 900,
+    "application_seconds": 840
+  },
+  "method": "Three independently reloaded original32k final/Adam4000 cases; one ordinary full private update each, actual615 Adam clocks4001 checked, no checkpoint save and parent rehash; reuse exact completed numerical proof.",
+  "limits": [
+    "One finite shape screen, not an all-batch peak guarantee or new speed measurement.",
+    "Selection uses separate reader/encoder/penalty extremes, not a fitted peak-memory model.",
+    "No future32k-context or altered-pool memory-safety claim.",
+    "No staging, remote calls or GPU submission in this task."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "runner": "bench/run_qa_night_v2.py",
+  "sha256": "25663ab1991a8bc8da3e809674e17d6615267e7409c02f0a04149f5a14f7c4c4",
+  "product_source": "train_ws_night_v1",
+  "changes": [
+    "Per-cohort answer NLL plots computed from the same evaluation results; no extra model passes.",
+    "Smoke auxiliary checks use the training mode/kernel scope verified by32k job23410837; failures retain completed-training status.",
+    "Per-builder cache of unchanged BM25 candidate token counts; avoids repeated tokenization.",
+    "Save paired recovery at least every main panel or50updates, whichever is sooner:8updates for the80-update long study, limiting preemption loss."
+  ],
+  "validation": [
+    "Focused cohort masks/identity/partition tests passed.",
+    "Python compile passed.",
+    "Existing32k standalone equivalent mode/kernel scope passed onGPU; new inline smoke wrapper has not separately run.",
+    "Existing private builder fixture passed full/AC input, target and row-budget equivalence after cache change. Cohort fixture includes transformed full-context IDs."
+  ],
+  "active_runs_unchanged": "Data-budget arms remain on immutable run_qa_night_v1.py."
+}

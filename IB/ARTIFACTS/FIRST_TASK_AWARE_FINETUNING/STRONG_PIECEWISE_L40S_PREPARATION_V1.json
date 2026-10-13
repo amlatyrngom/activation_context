@@ -1,0 +1,71 @@
+{
+  "status": "ready_fallback_CPU_pass_GPU_unrun",
+  "created_utc": "2026-09-23T00:21:13.094407+00:00",
+  "files_sha256": {
+    "probe_strong_piecewise_l40s_v1.py": "715ce90d1840d9699d02591fb941dcace1c645ad7095ecf54d5a40e7fc028286",
+    "probe_strong_piecewise_l40s_v1.sbatch": "798fae1a8b80a7d6ad385038032b04473d2a58b810a88a2c451071266a5eb274",
+    "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381"
+  },
+  "parent_receipt_sha256": "fad49337c29ef6269d9c5a89d349ccec7fff7e7d6ca05a3b33fea27d1d1bc13b",
+  "validation": {
+    "cpu_proof": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/STRONG_PIECEWISE_L40S_CPU_PROOF.json",
+    "cpu_proof_sha256": "598748b547bd6f0f62496031b8ff8b6703090110683e3320678c2d87adbabae7",
+    "controller_check": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/STRONG_PIECEWISE_L40S_CONTROLLER_CHECK.json",
+    "controller_check_sha256": "3247228ce5eb4e28d9824535701a258e3c7c2226a498f727649dc6dd363392c1",
+    "frozen_source_sha256": {
+      "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+    },
+    "parameter_count": 202,
+    "nonempty_gradient_count": 187,
+    "syntax": "Python compile and bash -n passed"
+  },
+  "resources": {
+    "partition": "mit_normal_gpu",
+    "gpu": "l40s:1",
+    "cpus": 8,
+    "host_memory_GiB": 96,
+    "wall_minutes": 45,
+    "controller_seconds": 2520
+  },
+  "proof": {
+    "budgets": [
+      65536,
+      32768,
+      16384
+    ],
+    "saved_activation_offload": true,
+    "unchanged_repeat": true,
+    "unchanged_gates": true
+  },
+  "timing": {
+    "budgets": [
+      32768,
+      16384
+    ],
+    "saved_activation_offload": false,
+    "warmup_updates_per_case": 1,
+    "steady_updates_per_case": 3,
+    "cases": [
+      "failing",
+      "quantiles"
+    ],
+    "optimizer_clock": [
+      4000,
+      4004
+    ],
+    "checkpoints_saved": false,
+    "penalty_selection": "Same logical question/update IDs, including warmup; exact IDs persisted"
+  },
+  "output_directory": "~/orcd/pool/activation/taskaware/reports/strong_piecewise_l40s_probe_v1",
+  "limitations": [
+    "GPU execution pending",
+    "CPU offload cannot eliminate live forward workspaces",
+    "Throughput applies only to the measured L40S",
+    "Cases do not prove maximum memory over all8000 future training questions"
+  ],
+  "remote_staging": "not performed",
+  "GPU_submission": "not performed",
+  "scheduling_note": "Root reports RTX strong-parent probe23511648 started onnode4004 around2026-09-23T00:19UTC. Prefer that same-hardware measurement; this L40S fallback remains local, unstaged and unsubmitted."
+}

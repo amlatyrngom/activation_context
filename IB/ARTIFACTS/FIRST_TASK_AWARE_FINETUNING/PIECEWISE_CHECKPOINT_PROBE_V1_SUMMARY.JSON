@@ -1,0 +1,12 @@
+{
+  "status": "proof_failed",
+  "script_sha256": "12df00c8fcac924cf7a11525006c626d8ef572b6fdefa809468124512fba2139",
+  "conditions": {
+    "proof": {
+      "status": "failed",
+      "returncode": 1,
+      "worker_status": "failed"
+    }
+  },
+  "seconds_budget": 1080
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/",
+  "checkpoint": {
+    "schema_version": 1,
+    "name": "hill_control/update_00900",
+    "task": "synthesized RAG QA",
+    "selection": "Lowest development answer NLL among this arm\u2019s reported checkpoints; confirmation split unused for selection. This is not an independent test-set result.",
+    "checkpoint_kind": "selected paired weights for evaluation or new training; optimizer state excluded",
+    "pair": {
+      "ac_checkpoint": "ac",
+      "reader_checkpoint": "reader"
+    },
+    "model_ids": {
+      "encoder": "Qwen/Qwen3.5-2B",
+      "reader": "Qwen/Qwen3.5-9B"
+    },
+    "lora_rank": 128,
+    "compression_ratio_rows_per_source_token": 0.0625,
+    "content_pooling": false,
+    "global_update": 900,
+    "planned_global_updates": 1000,
+    "epoch": 2,
+    "completed_updates_in_current_epoch": 400,
+    "updates_per_epoch": 500,
+    "train_items": 4000,
+    "planned_epochs": 2,
+    "examples_per_update": 8,
+    "training_example_presentations_at_checkpoint": 7200,
+    "is_final_training_checkpoint": false,
+    "development_items": 100,
+    "learning_panel_items": 32,
+    "development_scores": {
+      "held AC": 0.5871496524547275,
+      "held full context": 0.42591854524040257,
+      "held no context": 1.8805056276634289,
+      "training AC": 0.3292910374153422
+    },
+    "evaluation_controls": "AC, full-context and no-context use the same current reader LoRA and fixed answers; full-context includes the same evidence/distractors. Gold-answer token NLL excludes tool wrapper syntax.",
+    "training_target": "Fixed synthesized gold answer SFT. Reader-preservation penalty KL(original base || current reader), weight1 on25% of examples scaled4.",
+    "material_sha256": "7525c46543d6beebe6a46e2bac3afbeba450f60d579372da321fac990ec14009",
+    "material_ids_sha256": "9975db760867a8468e5c0773e8eac98356b7ac1eb10ee99c8f01b33c4875d0d9",
+    "initialization_record": "initialization.json",
+    "original_cluster_pair": "/home/ngom/orcd/pool/activation/taskaware/hill_control/selected/update_00900",
+    "slurm_job_id": "23403857",
+    "source_bench_sha256": "fe473fd7f8de02c6a421ef4fbd6ad9b475eb0c935485d20a43eb170198bba5f8"
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "2d9662a6b2e73114cca560d3641ba0a540a9b3f55c6ce3e38776c1a738c4e566",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/ac/side_lora/README.md",
+      "bytes": 5184,
+      "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "f709b366292c5cf19c34e324bd0d8b7a4d279f01360dbd71d8f732b2c68ca7de",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "9375e2b072aa2763c846cc027066e97f3cdf2132647ea15b86dcf12936921611",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/checkpoint_metadata.json",
+      "bytes": 2051,
+      "sha256": "9a84e5fe79222cb80101cda7ef372c757027a24b1bd3fbdd3d07b0c720419f44",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/initialization.json",
+      "bytes": 3886,
+      "sha256": "e18d80eff6f77fd8be992fa21b2376f9729443c2e9577151952a4abe46ab4d47",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/material_ids.json",
+      "bytes": 339188,
+      "sha256": "9975db760867a8468e5c0773e8eac98356b7ac1eb10ee99c8f01b33c4875d0d9",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/panel_00900.json",
+      "bytes": 466467,
+      "sha256": "b7fe1f0886e1345065817bf7a99f8d79d6b6d633ca26d693c3929a231687b247",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/reader/README.md",
+      "bytes": 5184,
+      "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "8669f0e1a679ee6aad139f11170567e9d1f529ae9fccbafb206351768f19b9e9",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "90c3dfa6875fdc27bac45d3e1fc03e3dd1da8390b1bfd5b839394ad2b9f72c69",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/run_recipe.json",
+      "bytes": 635,
+      "sha256": "7aea17fefed702754c3487833a2706c2314e9892fb2e2ddb1eb0ec9d0fed35da",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/selected_checkpoint.json",
+      "bytes": 348,
+      "sha256": "c5327ba298eafd58274a4e25de5cab9577c11102a66bb7f6e41c972fa4ad3f17",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/training_config.json",
+      "bytes": 1013,
+      "sha256": "8a5d545f4d399c402d5a9197a4cb35bc21410df642b03ed99cc37178fa151c64",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2490086374,
+  "contents": "Selected paired AC modules, encoder LoRA, reader LoRA and frozen selection/training metadata. Base weights, optimizer state, other checkpoints and full training corpus excluded.",
+  "validation": "Every PUT supplied SHA256 with create-only IfNoneMatch; each object then matched S3 HEAD checksum and byte count. This manifest was uploaded and verified last. No new GPU restoration test was run for archival."
+}

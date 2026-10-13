@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-23T17:06:22.392296+00:00",
+  "reason": "ORCD H20023558386 allocated and initialized successfully; cancel still-pending duplicate960 adaptation and its dependent readout; retain27B synthesis",
+  "actions": [
+    {
+      "job": "2182017",
+      "before": "2182017|pi42k_merged32k|PENDING|(Priority)",
+      "action": "cancelled_pending_duplicate_of_ORCD23558386"
+    },
+    {
+      "job": "2182208",
+      "before": "2182208|pi42k_final100|PENDING|(Dependency)",
+      "action": "cancelled_pending_duplicate_of_ORCD23558386"
+    }
+  ]
+}

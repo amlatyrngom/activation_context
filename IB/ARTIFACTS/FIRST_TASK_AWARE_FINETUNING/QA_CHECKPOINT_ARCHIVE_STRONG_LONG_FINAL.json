@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/",
+  "checkpoint": {
+    "name": "strong32k_piecewise_8k_8k",
+    "display_name": "32,000 parent questions +8,000 fresh questions \u00d71 pass at8k;40,000 lifetime unique",
+    "is_final_training_checkpoint": true,
+    "stage_unique_questions": 8000,
+    "parent_questions": 32000,
+    "total_unique_questions": 40000,
+    "stage_epochs": 1,
+    "stage_updates": 1000,
+    "source_ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/AC_MODELS/rag_poc/epoch_001",
+    "source_reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/LORAS/rag_reader/epoch_001",
+    "archive_ac_directory": "ac",
+    "archive_reader_directory": "reader",
+    "encoder_base": "Qwen/Qwen3.5-2B",
+    "reader_base": "Qwen/Qwen3.5-9B",
+    "lora_rank": 128,
+    "compression_ratio": 0.0625,
+    "training_evidence_tokens": 8192,
+    "training_max_passages": 16,
+    "passage_parts": true,
+    "synthesis_teacher": "27B",
+    "optimizer": "Fresh Adam at start of8k long-adaptation stage, own resume state on preemption; parent Adam not inherited. Stage completed1000 updates. Optimizer excluded from archive; original remote optimizer untouched.",
+    "learning_rates": {
+      "encoder_and_heads": 2e-05,
+      "reader": 8e-06,
+      "warmup_updates": 50,
+      "schedule": "cosine to25% (5e-6/2e-6)"
+    },
+    "selection": "Preselected completed final only. Important development result; best evaluated long-context final in the current campaign, not a universal or independently confirmed winner.",
+    "development": {
+      "8k_400_answer_nll": 0.5968171752457129,
+      "8k_selected100_answer_nll": 0.63475038565147,
+      "32k_selected100_answer_nll": 0.6497265241384987,
+      "no400question32k_score": true,
+      "all3_8k400_panel_replays_exact": true
+    },
+    "qualitative": {
+      "reviewed_per_context": 100,
+      "fixed_supported_denominator": 87,
+      "8k_correct": 65,
+      "32k_correct": 60,
+      "original32k_parent_8k_correct": 58,
+      "constant_floor42k_8k_correct": 61,
+      "constant_floor42k_32k_correct": 58,
+      "scope": "Repeated development cohort, fixed87/13 source flags; current-reader full/noctx NLL-only, frozenP2decodedcontrols8k."
+    },
+    "source_pool_overlap": "Fresh8k is first8k of same presentation pool as native10k continuations; not an independent source sample.",
+    "parent_archive_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/",
+    "parent_archive_manifest_sha256": "c52d8cbf140dbf491273ea1739119d14bd81d9746ae998a4b8d8a9d9f2356666",
+    "material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+    "material_ids_sha256": "ebeba63325b12bcd56ab23f600fba7434845d71c1bf9f3a45e6542e8863f0ce1",
+    "payload_sha256": {
+      "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+      "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+      "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+      "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+      "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+    },
+    "reserved_confirmation": "Not read or used for preservation selection.",
+    "train_job_id": "23514939",
+    "readout8k_job_id": "23514947",
+    "readout32k_decode_job_id": "23520611",
+    "restore": "Restore ac/ and reader/ together with separately available bases. Original paths need relocation. Inference/fresh-optimizer fine-tuning archive; optimizer omitted, not exact training resume."
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/checkpoint_metadata.json",
+      "bytes": 3526,
+      "sha256": "bac3a1182dfc21703370f190e32fefda66f6b0aa41d776d0b78a5bf1e1c817a7",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/compute_staging_receipt.json",
+      "bytes": 3258,
+      "sha256": "35eb512015767aafb134ac307eb73d2bcaae66b23295fb42639520a43de62b82",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/initial_pair.json",
+      "bytes": 862,
+      "sha256": "e9be3f58cf7fb5d4679529844ec158a865d65c7ef8bda8ea4d62075d50b09a6a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/long_adaptation_design.json",
+      "bytes": 6480,
+      "sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/material_ids.json",
+      "bytes": 604835,
+      "sha256": "36e7f81195063b38eff65bdc2e5fbe0e2782d3b73486f31c783358b67d083153",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/panel_01000.json",
+      "bytes": 2934632,
+      "sha256": "9d3fb590b170599dded572eb0d4964194d784ebb38b1dfb68d2a24cf467640d0",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/parent_archive_manifest.json",
+      "bytes": 10941,
+      "sha256": "c52d8cbf140dbf491273ea1739119d14bd81d9746ae998a4b8d8a9d9f2356666",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/qualitative_32k_receipt.json",
+      "bytes": 2165,
+      "sha256": "b4b6d8296fef4ea9959a4f8e2a8bb6a3a25a3c25ec50d650dbe1c159d0b3511b",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/qualitative_32k_summary.json",
+      "bytes": 28837,
+      "sha256": "e809a2fafac35f8b4d5b4d1777a6e55e74cfe2d106d1fd01dd99b6626a477073",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/qualitative_8k_receipt.json",
+      "bytes": 2160,
+      "sha256": "c09857e07a39481eb99eeddb12759f964672ba92095875c2b83d339456a1d023",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/qualitative_8k_summary.json",
+      "bytes": 20711,
+      "sha256": "ab43291a10bf121c5c18270fcbe8d1d8481244f51e1600061bd91038f77c9c80",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/readout_32k_identity.json",
+      "bytes": 118945,
+      "sha256": "73554fbcfde84de106ca949d01ba8e8fbf157a5724255139cb5a72a108a69f94",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/readout_8k_identity.json",
+      "bytes": 422420,
+      "sha256": "d5a5ae78301b463cbc1519ac52571809372d604404eb091c17b1e128ed3e3488",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/result.json",
+      "bytes": 1457631,
+      "sha256": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/row_budget.json",
+      "bytes": 867,
+      "sha256": "80691b91ae8af27a11c007769b7906f175a2b04d75fba7dfc3cf9e5246c5552a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/run_identity.json",
+      "bytes": 575,
+      "sha256": "943b4bf55872a692c22ba2888bdcd2493f1d7b320b91d7dd845f97d55d63d253",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/run_recipe.json",
+      "bytes": 1765,
+      "sha256": "727996f266fc1f94646e981d28e44b25cf49969a8a9d179f6a7d091586366c97",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/source_receipt.json",
+      "bytes": 1210,
+      "sha256": "9f978aa3de34503dba285f94bb660d1b2e7c2716da9e4da08320b2d9450162bd",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/strong32k_piecewise_8k_8k/epoch_001/training_config.json",
+      "bytes": 1012,
+      "sha256": "c92779e45681c920b8cce94e398864636a0605456525c56b886e00d479c31191",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2494885382,
+  "contents": "Important final paired AC/encoderLoRA/readerLoRA plus complete recipe, ancestry, final metadata and readout identities. Excludes optimizer, bases, corpus and intermediate checkpoints.",
+  "validation": "Heavy staging/checks on CPU compute, guarded explicit transfer, local pinned SHA256 validation. Create-only SHA256 PUT+HEAD verified; this manifest published last. No GPU restore rerun."
+}

@@ -1,0 +1,115 @@
+{
+  "created_at": "2026-09-23T20:06:13.418090+00:00",
+  "baseline_root": "/source",
+  "backup_branch": "checkpoint/pre-trajectory-cleanup-20260923",
+  "backup_commit": "600137587987f13f0055c06494b788638cd0745b",
+  "files": {
+    "activation/ac_model/ac_model.py": {
+      "before_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "after_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3",
+      "backup_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/ac_model/ac_model.py"
+    },
+    "activation/ac_model/ac_model_reporter.py": {
+      "before_sha256": "23eef560f7993814d9bcf44defeebb952a730068e7d1a9a7582c1e8f6984cb28",
+      "after_sha256": "57fd719f037917eb163bbd7b164eb40b56125be9530d30a8ef19568183f1b256",
+      "backup_sha256": "57fd719f037917eb163bbd7b164eb40b56125be9530d30a8ef19568183f1b256",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/ac_model/ac_model_reporter.py"
+    },
+    "activation/ac_model/ac_model_study.py": {
+      "before_sha256": "332a3cbac69b691d2576eabfbed2196dfbd3241dd2a71e26a9ae8f5349098d7b",
+      "after_sha256": "05ee745a2e9a3b32e43300cf7f2ee06dd80be8c6465d5e3ec8061063246680b9",
+      "backup_sha256": "05ee745a2e9a3b32e43300cf7f2ee06dd80be8c6465d5e3ec8061063246680b9",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/ac_model/ac_model_study.py"
+    },
+    "activation/ac_model/ac_model_training.py": {
+      "before_sha256": "f0eb298ba1b5714a0e4f4a79269b32989670f0fd84c61985d7d27a4de9e0d601",
+      "after_sha256": "f65dabee597f88257d46bbe53ea1bc54a1493a4d3bd97913567389c750280d21",
+      "backup_sha256": "f65dabee597f88257d46bbe53ea1bc54a1493a4d3bd97913567389c750280d21",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/ac_model/ac_model_training.py"
+    },
+    "activation/ac_model/ac_model_utils.py": {
+      "before_sha256": "081297c4a4f1062ce26f0e9f847e2ce728cc0db8d5076526bdb626359e5bfbbb",
+      "after_sha256": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c",
+      "backup_sha256": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/ac_model/ac_model_utils.py"
+    },
+    "activation/bench/agent_probes/cheap_synthetic_bench.py": {
+      "before_sha256": "48224857b1c8719288801716c11e451d525b4340cd9ce08ab1b7732a48e50fed",
+      "after_sha256": "48ffd4ebfc977acf41343afcf310220bc005528f2b71c63cf0a75a35cda5ad69",
+      "backup_sha256": "48224857b1c8719288801716c11e451d525b4340cd9ce08ab1b7732a48e50fed",
+      "changed_in_cleanup": true,
+      "staged_path": "activation/bench/agent_probes/cheap_synthetic_bench.py"
+    },
+    "activation/common/reporting.py": {
+      "before_sha256": "821532bd96b0ce50eb805a1e3d387b3ca75e48d59f5f4910c139fdea8cb4577e",
+      "after_sha256": "1d8cef4d94c585fc8f8abacdcea230f8a87eea2719cc41d9670353c95718bbfa",
+      "backup_sha256": "1d8cef4d94c585fc8f8abacdcea230f8a87eea2719cc41d9670353c95718bbfa",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/common/reporting.py"
+    },
+    "activation/dataset/dataset.py": {
+      "before_sha256": "4090e96af0946617cdfb3a44809aca94a75a4b87cc3c6afef67864f962c48196",
+      "after_sha256": "dfe83053f6251088856a4a4a5cd51501f5c7c29681a4bceb694dd5aa78b8cd17",
+      "backup_sha256": "dfe83053f6251088856a4a4a5cd51501f5c7c29681a4bceb694dd5aa78b8cd17",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/dataset/dataset.py"
+    },
+    "activation/dataset/dataset_manager.py": {
+      "before_sha256": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5",
+      "after_sha256": "8a195afe841c7c4b2dd651f202e934363fd55e4d17ecb51fca950f66b721b2f2",
+      "backup_sha256": "8a195afe841c7c4b2dd651f202e934363fd55e4d17ecb51fca950f66b721b2f2",
+      "changed_in_cleanup": false,
+      "staged_path": "activation/dataset/dataset_manager.py"
+    },
+    "activation/dataset/dataset_study.py": {
+      "before_sha256": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18",
+      "after_sha256": "df79a3441f760dc43763057ecc90d47b9766f3a29f3848e2589811983452e77e",
+      "backup_sha256": "5eca5b199cbe2390b06fc4eb7be0f9b7ad627c62cd2881e7fdd1a50367c853b9",
+      "changed_in_cleanup": true,
+      "staged_path": "activation/dataset/dataset_study.py"
+    },
+    "activation/dataset/dataset_study_prompts.py": {
+      "before_sha256": null,
+      "after_sha256": "50dae9e1f2348998a9a7c1ea121819fd0ec071ad2df472290c14eee4d01bc22d",
+      "backup_sha256": "e48682a08586012b530ffef9135c293a2c302fd75f16ab52e901ead810694f3b",
+      "changed_in_cleanup": true,
+      "staged_path": "activation/dataset/dataset_study_prompts.py"
+    }
+  },
+  "excluded": [
+    "Mainline/private tests",
+    "Historical experiment runners and results",
+    "Unrelated existing activation/bench/agent_probes/agentic_program_probe.py"
+  ],
+  "patch_sha256": "ac40ea0caf75099bae816fce6f1205682a50819820090c0158b9a0d1aa75f6ba",
+  "validation": {
+    "python_ast_files": 11,
+    "forward_patch_check": true,
+    "patch_replays_exact_staged_bytes": true,
+    "reverse_patch_check": true,
+    "cleanup_files": {
+      "activation/bench/agent_probes/cheap_synthetic_bench.py": {
+        "before_lines": 186,
+        "after_lines": 186
+      },
+      "activation/dataset/dataset_study.py": {
+        "before_lines": 454,
+        "after_lines": 440
+      },
+      "activation/dataset/dataset_study_prompts.py": {
+        "before_lines": 136,
+        "after_lines": 101
+      }
+    },
+    "new_cleanup_tests": "15 passed",
+    "existing_taskaware_tests": "6 passed",
+    "gpu_rerun": false,
+    "editor_visual_check": false
+  }
+}

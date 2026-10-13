@@ -1,0 +1,55 @@
+{
+  "status": "cpu_checks_passed_gpu_unrun",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "negative_mask_checks": 3,
+  "worker_sha256": "01152f8f977931b6091d9c76e1ff28254bac83a9d6c408a08d3426caf139189c",
+  "launcher_sha256": "478c17d92ad4583a46ab897d7cddc66457b67bd7feede5cae2c8746b43cd5503",
+  "cpu_log_sha256": "287672cb4c9000284f401bcb8c78f042b51ce3adf217ec6f412afce90ad0fed9",
+  "captured_native_stages": 38,
+  "side_shapes": {
+    "baseline": [
+      3,
+      20,
+      16
+    ],
+    "unchanged_repeat": [
+      3,
+      20,
+      16
+    ],
+    "32768": [
+      1,
+      10,
+      16
+    ]
+  },
+  "unchanged_repeat_max_abs": 0.0,
+  "cpu_smaller_batch_first_nonzero": "attention.native_output",
+  "cpu_smaller_batch_reference_difference": {
+    "relative_l2": 0.0,
+    "rms_error": 0.0,
+    "max_abs": 0.0,
+    "passed": true
+  },
+  "all_hooks_restored": true,
+  "nonzero_LoRA_B_fixture": true,
+  "no_reader_backward_or_update": true,
+  "gpu_allocation": "one RTX PRO6000, 5 minutes, 64GiB host, 8 CPU",
+  "gpu_expected_time": "About1\u20133 minutes based on the previous66-second full-encoder diagnostic; five-minute allocation is a bound, not a measured runtime.",
+  "gpu_complete_does_not_validate_packing_equivalence": true,
+  "checks": [
+    "py_compile",
+    "bash -n",
+    "real tiny Qwen3.5 with frozen AC/trainer/utils",
+    "GQA reference shape",
+    "mask/cause/padding rejection",
+    "registry/method/hook restoration",
+    "nonzero LoRA branches",
+    "unchanged repeated forward",
+    "parent rehash retained from reviewed loader"
+  ]
+}

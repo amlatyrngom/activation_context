@@ -1,0 +1,5452 @@
+{
+  "status": "memory_measurements_complete",
+  "equivalence_approved": false,
+  "reason": "Numerical gate remains separate; original ordinary-kernel repeatability failed. Deterministic check pending.",
+  "cases": {
+    "pieces_failing": {
+      "status": "complete",
+      "condition": "pieces_failing",
+      "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+      "builder_sha256": "86231c5ea0464a4de7c5fbb8cb386500ebd3c1a1374ea61fd41ea2af70d7981f",
+      "source": {
+        "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+        "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+        "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+      },
+      "helper_sha256": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+      "selection": {
+        "original_logical_batch": 16,
+        "completed_prior_updates": 15,
+        "original_epoch": 1,
+        "shuffle_seed": 20260922,
+        "original_interleaved_indexes": [
+          3934,
+          2604,
+          2424,
+          327,
+          2163,
+          3031,
+          3899,
+          930
+        ],
+        "shuffled_index_order_sha256": "d246e497ca2dc0f1a3271ab53cb1c6b78e0bb433ca834cda999db63deeb00f62",
+        "material_ids_sha256": "eb9cbaf282c8698872d6d1891825ca988135642821a3d74a704039edd0f67e1e",
+        "metadata_sha256": {
+          "material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+          "run_identity.json": "37839ad2d4588d59df4432fde2d1b150e8f0ce6b6dc38704cd424ecdf97736d9",
+          "training_config.json": "22cdf493730a9059c65703f35cd1c70d582a7830bc8486256b7dfd97a62175e5"
+        },
+        "quantile_positions": [
+          0,
+          571,
+          1143,
+          1714,
+          2285,
+          2856,
+          3428,
+          3999
+        ],
+        "note": "Exact failed batch membership; trainer sorts these eight by reader length before grouping into microbatches of two. All probe weights/moments start fresh from P2."
+      },
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "threshold": 0,
+      "encode_batch_max_tokens": 65536,
+      "passage_parts": true,
+      "micro_batch_examples": 2,
+      "examples_per_update": 8,
+      "P2_pair_sha256": {
+        "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+        "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+        "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+        "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+        "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+      },
+      "geometry_before_forward": [
+        {
+          "item_ids": [
+            "79fe48ae598739f8bfc295401b7cb75750877eb3dc93b4296403ad44635b3f9a",
+            "d0dab0b2ec2113437aff3f0ce6186097c100b0ecc50cf784a4ccdea5d383edaa"
+          ],
+          "reader_lengths": [
+            747,
+            803
+          ],
+          "reader_old_checkpoint": false,
+          "side_batches": [
+            {
+              "parts": 32,
+              "content_lengths": [
+                122,
+                129,
+                144,
+                151,
+                158,
+                164,
+                169,
+                175,
+                181,
+                215,
+                360,
+                366,
+                376,
+                383,
+                400,
+                427,
+                429,
+                433,
+                446,
+                457,
+                459,
+                464,
+                469,
+                488,
+                490,
+                509,
+                510,
+                512,
+                519,
+                521,
+                524,
+                560
+              ],
+              "rows": [
+                4,
+                5,
+                7,
+                6,
+                7,
+                8,
+                7,
+                8,
+                8,
+                10,
+                20,
+                21,
+                21,
+                21,
+                23,
+                25,
+                24,
+                25,
+                25,
+                26,
+                26,
+                26,
+                27,
+                29,
+                28,
+                30,
+                30,
+                30,
+                31,
+                30,
+                31,
+                33
+              ],
+              "sequence_lengths": [
+                126,
+                134,
+                151,
+                157,
+                165,
+                172,
+                176,
+                183,
+                189,
+                225,
+                380,
+                387,
+                397,
+                404,
+                423,
+                452,
+                453,
+                458,
+                471,
+                483,
+                485,
+                490,
+                496,
+                517,
+                518,
+                539,
+                540,
+                542,
+                550,
+                551,
+                555,
+                593
+              ],
+              "padded_tokens": 18976,
+              "old_checkpoint": false,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+            "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce"
+          ],
+          "reader_lengths": [
+            956,
+            961
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 24,
+              "content_lengths": [
+                109,
+                133,
+                142,
+                144,
+                164,
+                181,
+                201,
+                353,
+                366,
+                409,
+                427,
+                428,
+                444,
+                474,
+                479,
+                761,
+                972,
+                1025,
+                1026,
+                1048,
+                1146,
+                2083,
+                2328,
+                2360
+              ],
+              "rows": [
+                4,
+                5,
+                6,
+                6,
+                7,
+                8,
+                10,
+                19,
+                20,
+                23,
+                24,
+                24,
+                25,
+                27,
+                27,
+                45,
+                58,
+                61,
+                62,
+                63,
+                69,
+                128,
+                145,
+                147
+              ],
+              "sequence_lengths": [
+                113,
+                138,
+                148,
+                150,
+                171,
+                189,
+                211,
+                372,
+                386,
+                432,
+                451,
+                452,
+                469,
+                501,
+                506,
+                806,
+                1030,
+                1086,
+                1088,
+                1111,
+                1215,
+                2211,
+                2473,
+                2507
+              ],
+              "padded_tokens": 60168,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+            "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b"
+          ],
+          "reader_lengths": [
+            971,
+            975
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 20,
+              "content_lengths": [
+                166,
+                179,
+                183,
+                307,
+                350,
+                382,
+                398,
+                432,
+                435,
+                454,
+                477,
+                478,
+                790,
+                868,
+                1446,
+                1498,
+                1644,
+                1987,
+                2198,
+                2591
+              ],
+              "rows": [
+                7,
+                8,
+                8,
+                16,
+                19,
+                21,
+                22,
+                24,
+                25,
+                26,
+                27,
+                27,
+                47,
+                52,
+                89,
+                91,
+                102,
+                121,
+                135,
+                160
+              ],
+              "sequence_lengths": [
+                173,
+                187,
+                191,
+                323,
+                369,
+                403,
+                420,
+                456,
+                460,
+                480,
+                504,
+                505,
+                837,
+                920,
+                1535,
+                1589,
+                1746,
+                2108,
+                2333,
+                2751
+              ],
+              "padded_tokens": 55020,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "028fbeaae5c3298a65dfa9ac7707d8e9134d16a49a060a76f26062831a400aa9",
+            "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f"
+          ],
+          "reader_lengths": [
+            977,
+            1004
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 8,
+              "content_lengths": [
+                259,
+                1442,
+                1676,
+                2178,
+                2497,
+                2503,
+                2737,
+                3344
+              ],
+              "rows": [
+                13,
+                87,
+                102,
+                133,
+                154,
+                155,
+                168,
+                207
+              ],
+              "sequence_lengths": [
+                272,
+                1529,
+                1778,
+                2311,
+                2651,
+                2658,
+                2905,
+                3551
+              ],
+              "padded_tokens": 28408,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        }
+      ],
+      "trace": [
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            450,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 23.98160409927368
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            452,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.02036476135254
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            463,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.020992279052734
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            495,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.02174472808838
+        },
+        {
+          "kind": "prepared",
+          "batch": 32,
+          "content_lengths": [
+            122,
+            129,
+            144,
+            151,
+            158,
+            164,
+            169,
+            175,
+            181,
+            215,
+            360,
+            366,
+            376,
+            383,
+            400,
+            427,
+            429,
+            433,
+            446,
+            457,
+            459,
+            464,
+            469,
+            488,
+            490,
+            509,
+            510,
+            512,
+            519,
+            521,
+            524,
+            560
+          ],
+          "rows": [
+            4,
+            5,
+            7,
+            6,
+            7,
+            8,
+            7,
+            8,
+            8,
+            10,
+            20,
+            21,
+            21,
+            21,
+            23,
+            25,
+            24,
+            25,
+            25,
+            26,
+            26,
+            26,
+            27,
+            29,
+            28,
+            30,
+            30,
+            30,
+            31,
+            30,
+            31,
+            33
+          ],
+          "sequence_lengths": [
+            126,
+            134,
+            151,
+            157,
+            165,
+            172,
+            176,
+            183,
+            189,
+            225,
+            380,
+            387,
+            397,
+            404,
+            423,
+            452,
+            453,
+            458,
+            471,
+            483,
+            485,
+            490,
+            496,
+            517,
+            518,
+            539,
+            540,
+            542,
+            550,
+            551,
+            555,
+            593
+          ],
+          "padded_tokens": 18976,
+          "threshold": 0,
+          "allocated_gib_before": 23.999159336090088
+        },
+        {
+          "kind": "side",
+          "shape": [
+            32,
+            593,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            32,
+            593
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 24.838897228240967
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 28.10704278945923
+        },
+        {
+          "kind": "prepared",
+          "batch": 24,
+          "content_lengths": [
+            109,
+            133,
+            142,
+            144,
+            164,
+            181,
+            201,
+            353,
+            366,
+            409,
+            427,
+            428,
+            444,
+            474,
+            479,
+            761,
+            972,
+            1025,
+            1026,
+            1048,
+            1146,
+            2083,
+            2328,
+            2360
+          ],
+          "rows": [
+            4,
+            5,
+            6,
+            6,
+            7,
+            8,
+            10,
+            19,
+            20,
+            23,
+            24,
+            24,
+            25,
+            27,
+            27,
+            45,
+            58,
+            61,
+            62,
+            63,
+            69,
+            128,
+            145,
+            147
+          ],
+          "sequence_lengths": [
+            113,
+            138,
+            148,
+            150,
+            171,
+            189,
+            211,
+            372,
+            386,
+            432,
+            451,
+            452,
+            469,
+            501,
+            506,
+            806,
+            1030,
+            1086,
+            1088,
+            1111,
+            1215,
+            2211,
+            2473,
+            2507
+          ],
+          "padded_tokens": 60168,
+          "threshold": 0,
+          "allocated_gib_before": 26.20815372467041
+        },
+        {
+          "kind": "side",
+          "shape": [
+            24,
+            2507,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            24,
+            2507
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 28.530951499938965
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.32501459121704
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            452,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.83166170120239
+        },
+        {
+          "kind": "prepared",
+          "batch": 20,
+          "content_lengths": [
+            166,
+            179,
+            183,
+            307,
+            350,
+            382,
+            398,
+            432,
+            435,
+            454,
+            477,
+            478,
+            790,
+            868,
+            1446,
+            1498,
+            1644,
+            1987,
+            2198,
+            2591
+          ],
+          "rows": [
+            7,
+            8,
+            8,
+            16,
+            19,
+            21,
+            22,
+            24,
+            25,
+            26,
+            27,
+            27,
+            47,
+            52,
+            89,
+            91,
+            102,
+            121,
+            135,
+            160
+          ],
+          "sequence_lengths": [
+            173,
+            187,
+            191,
+            323,
+            369,
+            403,
+            420,
+            456,
+            460,
+            480,
+            504,
+            505,
+            837,
+            920,
+            1535,
+            1589,
+            1746,
+            2108,
+            2333,
+            2751
+          ],
+          "padded_tokens": 55020,
+          "threshold": 0,
+          "allocated_gib_before": 26.244493007659912
+        },
+        {
+          "kind": "side",
+          "shape": [
+            20,
+            2751,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            20,
+            2751
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 28.402976512908936
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.7573184967041
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            463,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.2713623046875
+        },
+        {
+          "kind": "prepared",
+          "batch": 8,
+          "content_lengths": [
+            259,
+            1442,
+            1676,
+            2178,
+            2497,
+            2503,
+            2737,
+            3344
+          ],
+          "rows": [
+            13,
+            87,
+            102,
+            133,
+            154,
+            155,
+            168,
+            207
+          ],
+          "sequence_lengths": [
+            272,
+            1529,
+            1778,
+            2311,
+            2651,
+            2658,
+            2905,
+            3551
+          ],
+          "padded_tokens": 28408,
+          "threshold": 0,
+          "allocated_gib_before": 26.24526357650757
+        },
+        {
+          "kind": "side",
+          "shape": [
+            8,
+            3551,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            8,
+            3551
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.526805877685547
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.41876935958862
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            495,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.94843053817749
+        },
+        {
+          "kind": "prepared",
+          "batch": 32,
+          "content_lengths": [
+            122,
+            129,
+            144,
+            151,
+            158,
+            164,
+            169,
+            175,
+            181,
+            215,
+            360,
+            366,
+            376,
+            383,
+            400,
+            427,
+            429,
+            433,
+            446,
+            457,
+            459,
+            464,
+            469,
+            488,
+            490,
+            509,
+            510,
+            512,
+            519,
+            521,
+            524,
+            560
+          ],
+          "rows": [
+            4,
+            5,
+            7,
+            6,
+            7,
+            8,
+            7,
+            8,
+            8,
+            10,
+            20,
+            21,
+            21,
+            21,
+            23,
+            25,
+            24,
+            25,
+            25,
+            26,
+            26,
+            26,
+            27,
+            29,
+            28,
+            30,
+            30,
+            30,
+            31,
+            30,
+            31,
+            33
+          ],
+          "sequence_lengths": [
+            126,
+            134,
+            151,
+            157,
+            165,
+            172,
+            176,
+            183,
+            189,
+            225,
+            380,
+            387,
+            397,
+            404,
+            423,
+            452,
+            453,
+            458,
+            471,
+            483,
+            485,
+            490,
+            496,
+            517,
+            518,
+            539,
+            540,
+            542,
+            550,
+            551,
+            555,
+            593
+          ],
+          "padded_tokens": 18976,
+          "threshold": 0,
+          "allocated_gib_before": 28.423174381256104
+        },
+        {
+          "kind": "side",
+          "shape": [
+            32,
+            593,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            32,
+            593
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.262912273406982
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.54288339614868
+        },
+        {
+          "kind": "prepared",
+          "batch": 24,
+          "content_lengths": [
+            109,
+            133,
+            142,
+            144,
+            164,
+            181,
+            201,
+            353,
+            366,
+            409,
+            427,
+            428,
+            444,
+            474,
+            479,
+            761,
+            972,
+            1025,
+            1026,
+            1048,
+            1146,
+            2083,
+            2328,
+            2360
+          ],
+          "rows": [
+            4,
+            5,
+            6,
+            6,
+            7,
+            8,
+            10,
+            19,
+            20,
+            23,
+            24,
+            24,
+            25,
+            27,
+            27,
+            45,
+            58,
+            61,
+            62,
+            63,
+            69,
+            128,
+            145,
+            147
+          ],
+          "sequence_lengths": [
+            113,
+            138,
+            148,
+            150,
+            171,
+            189,
+            211,
+            372,
+            386,
+            432,
+            451,
+            452,
+            469,
+            501,
+            506,
+            806,
+            1030,
+            1086,
+            1088,
+            1111,
+            1215,
+            2211,
+            2473,
+            2507
+          ],
+          "padded_tokens": 60168,
+          "threshold": 0,
+          "allocated_gib_before": 30.586787223815918
+        },
+        {
+          "kind": "side",
+          "shape": [
+            24,
+            2507,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            24,
+            2507
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.90958499908447
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 40.70364809036255
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            450,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 41.21026277542114
+        },
+        {
+          "kind": "prepared",
+          "batch": 20,
+          "content_lengths": [
+            166,
+            179,
+            183,
+            307,
+            350,
+            382,
+            398,
+            432,
+            435,
+            454,
+            477,
+            478,
+            790,
+            868,
+            1446,
+            1498,
+            1644,
+            1987,
+            2198,
+            2591
+          ],
+          "rows": [
+            7,
+            8,
+            8,
+            16,
+            19,
+            21,
+            22,
+            24,
+            25,
+            26,
+            27,
+            27,
+            47,
+            52,
+            89,
+            91,
+            102,
+            121,
+            135,
+            160
+          ],
+          "sequence_lengths": [
+            173,
+            187,
+            191,
+            323,
+            369,
+            403,
+            420,
+            456,
+            460,
+            480,
+            504,
+            505,
+            837,
+            920,
+            1535,
+            1589,
+            1746,
+            2108,
+            2333,
+            2751
+          ],
+          "padded_tokens": 55020,
+          "threshold": 0,
+          "allocated_gib_before": 30.59944486618042
+        },
+        {
+          "kind": "side",
+          "shape": [
+            20,
+            2751,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            20,
+            2751
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.75792837142944
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 40.11227035522461
+        },
+        {
+          "kind": "prepared",
+          "batch": 8,
+          "content_lengths": [
+            259,
+            1442,
+            1676,
+            2178,
+            2497,
+            2503,
+            2737,
+            3344
+          ],
+          "rows": [
+            13,
+            87,
+            102,
+            133,
+            154,
+            155,
+            168,
+            207
+          ],
+          "sequence_lengths": [
+            272,
+            1529,
+            1778,
+            2311,
+            2651,
+            2658,
+            2905,
+            3551
+          ],
+          "padded_tokens": 28408,
+          "threshold": 0,
+          "allocated_gib_before": 30.593180656433105
+        },
+        {
+          "kind": "side",
+          "shape": [
+            8,
+            3551,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            8,
+            3551
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.874722957611084
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.76668643951416
+        },
+        {
+          "kind": "prepared",
+          "batch": 32,
+          "content_lengths": [
+            122,
+            129,
+            144,
+            151,
+            158,
+            164,
+            169,
+            175,
+            181,
+            215,
+            360,
+            366,
+            376,
+            383,
+            400,
+            427,
+            429,
+            433,
+            446,
+            457,
+            459,
+            464,
+            469,
+            488,
+            490,
+            509,
+            510,
+            512,
+            519,
+            521,
+            524,
+            560
+          ],
+          "rows": [
+            4,
+            5,
+            7,
+            6,
+            7,
+            8,
+            7,
+            8,
+            8,
+            10,
+            20,
+            21,
+            21,
+            21,
+            23,
+            25,
+            24,
+            25,
+            25,
+            26,
+            26,
+            26,
+            27,
+            29,
+            28,
+            30,
+            30,
+            30,
+            31,
+            30,
+            31,
+            33
+          ],
+          "sequence_lengths": [
+            126,
+            134,
+            151,
+            157,
+            165,
+            172,
+            176,
+            183,
+            189,
+            225,
+            380,
+            387,
+            397,
+            404,
+            423,
+            452,
+            453,
+            458,
+            471,
+            483,
+            485,
+            490,
+            496,
+            517,
+            518,
+            539,
+            540,
+            542,
+            550,
+            551,
+            555,
+            593
+          ],
+          "padded_tokens": 18976,
+          "threshold": 0,
+          "allocated_gib_before": 28.416292190551758
+        },
+        {
+          "kind": "side",
+          "shape": [
+            32,
+            593,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            32,
+            593
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.256030082702637
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.536001205444336
+        },
+        {
+          "kind": "prepared",
+          "batch": 24,
+          "content_lengths": [
+            109,
+            133,
+            142,
+            144,
+            164,
+            181,
+            201,
+            353,
+            366,
+            409,
+            427,
+            428,
+            444,
+            474,
+            479,
+            761,
+            972,
+            1025,
+            1026,
+            1048,
+            1146,
+            2083,
+            2328,
+            2360
+          ],
+          "rows": [
+            4,
+            5,
+            6,
+            6,
+            7,
+            8,
+            10,
+            19,
+            20,
+            23,
+            24,
+            24,
+            25,
+            27,
+            27,
+            45,
+            58,
+            61,
+            62,
+            63,
+            69,
+            128,
+            145,
+            147
+          ],
+          "sequence_lengths": [
+            113,
+            138,
+            148,
+            150,
+            171,
+            189,
+            211,
+            372,
+            386,
+            432,
+            451,
+            452,
+            469,
+            501,
+            506,
+            806,
+            1030,
+            1086,
+            1088,
+            1111,
+            1215,
+            2211,
+            2473,
+            2507
+          ],
+          "padded_tokens": 60168,
+          "threshold": 0,
+          "allocated_gib_before": 30.587458610534668
+        },
+        {
+          "kind": "side",
+          "shape": [
+            24,
+            2507,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            24,
+            2507
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.91025638580322
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 40.7043194770813
+        },
+        {
+          "kind": "prepared",
+          "batch": 20,
+          "content_lengths": [
+            166,
+            179,
+            183,
+            307,
+            350,
+            382,
+            398,
+            432,
+            435,
+            454,
+            477,
+            478,
+            790,
+            868,
+            1446,
+            1498,
+            1644,
+            1987,
+            2198,
+            2591
+          ],
+          "rows": [
+            7,
+            8,
+            8,
+            16,
+            19,
+            21,
+            22,
+            24,
+            25,
+            26,
+            27,
+            27,
+            47,
+            52,
+            89,
+            91,
+            102,
+            121,
+            135,
+            160
+          ],
+          "sequence_lengths": [
+            173,
+            187,
+            191,
+            323,
+            369,
+            403,
+            420,
+            456,
+            460,
+            480,
+            504,
+            505,
+            837,
+            920,
+            1535,
+            1589,
+            1746,
+            2108,
+            2333,
+            2751
+          ],
+          "padded_tokens": 55020,
+          "threshold": 0,
+          "allocated_gib_before": 30.593249320983887
+        },
+        {
+          "kind": "side",
+          "shape": [
+            20,
+            2751,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            20,
+            2751
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.75173282623291
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 40.106074810028076
+        },
+        {
+          "kind": "prepared",
+          "batch": 8,
+          "content_lengths": [
+            259,
+            1442,
+            1676,
+            2178,
+            2497,
+            2503,
+            2737,
+            3344
+          ],
+          "rows": [
+            13,
+            87,
+            102,
+            133,
+            154,
+            155,
+            168,
+            207
+          ],
+          "sequence_lengths": [
+            272,
+            1529,
+            1778,
+            2311,
+            2651,
+            2658,
+            2905,
+            3551
+          ],
+          "padded_tokens": 28408,
+          "threshold": 0,
+          "allocated_gib_before": 30.593852043151855
+        },
+        {
+          "kind": "side",
+          "shape": [
+            8,
+            3551,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            8,
+            3551
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.875394344329834
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.76735782623291
+        }
+      ],
+      "inputs": [
+        {
+          "item_id": "d0dab0b2ec2113437aff3f0ce6186097c100b0ecc50cf784a4ccdea5d383edaa",
+          "full_sha256": "0a179f2a5682bf53a7a7d39bfba122c759701100c2d0acc7b9b11989ca52f389",
+          "target_sha256": "803f0b918e75bfdc476c5ce3fce6dc9a5197ec5b1f4d66474c36335a1b012985",
+          "compressed_rows": 351,
+          "encoder_tokens": 6151
+        },
+        {
+          "item_id": "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce",
+          "full_sha256": "5fca77e3852a5ef5293035eb8cf85c1495ec7b3dc0a8f62cecb8fb711f785a79",
+          "target_sha256": "ca9b33dcc3ff16b82b4b5e398f819f1d857553d3a94ab659daad42932c05f1b9",
+          "compressed_rows": 510,
+          "encoder_tokens": 8489
+        },
+        {
+          "item_id": "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b",
+          "full_sha256": "0b3ce6019f0fdeffdc77b170443df9ff2cdef8758335c7974a88b5412f433955",
+          "target_sha256": "e3debc3882e8e308c5a5297ec21f1b343a4271518f3a408262d9f352ae0ee15a",
+          "compressed_rows": 520,
+          "encoder_tokens": 8989
+        },
+        {
+          "item_id": "028fbeaae5c3298a65dfa9ac7707d8e9134d16a49a060a76f26062831a400aa9",
+          "full_sha256": "6177356e5675e5b3f9d6384e49ce80aa128ba30aeffed72ea04cd04786d988ff",
+          "target_sha256": "5877ac6eee35e84439914aa55810afae5f17c23ee5da8e3500f9e7ad6a925671",
+          "compressed_rows": 511,
+          "encoder_tokens": 8377
+        },
+        {
+          "item_id": "79fe48ae598739f8bfc295401b7cb75750877eb3dc93b4296403ad44635b3f9a",
+          "full_sha256": "495d79a3cdde80d1e9fe804e8af0b473c63aebdf91decc13838ffbfab438fbd0",
+          "target_sha256": "c8e3d66327e3fe6ad53aa5d3060d657c812b6a499cfbf22f702a795a70df7a7c",
+          "compressed_rows": 301,
+          "encoder_tokens": 5559
+        },
+        {
+          "item_id": "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+          "full_sha256": "b5c9fa8d6d6661324ab24586432b8f966df8c65a6e9d83972805bdd4aec5027f",
+          "target_sha256": "10ea9ff918ad175fca94e38f43780b1f240a47ad8323bbd7e32cee584ec6614d",
+          "compressed_rows": 503,
+          "encoder_tokens": 8714
+        },
+        {
+          "item_id": "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+          "full_sha256": "f77d993f975a34a9ec9b672031c260d63ed1fa0283b81c0ae2a19f16c3908014",
+          "target_sha256": "062ad78c728bbc5c48b19d90072887ce9fe32d6543f6bb04e13461063775d1a8",
+          "compressed_rows": 507,
+          "encoder_tokens": 8274
+        },
+        {
+          "item_id": "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f",
+          "full_sha256": "4478fc782c398859f117be7634c57c4ea0ca99ae77073313215da02ca8820506",
+          "target_sha256": "6a8d4b27bd8546403be9f8316ff1f601e9a4454cac46998a4aed25d6450cd76b",
+          "compressed_rows": 508,
+          "encoder_tokens": 8259
+        }
+      ],
+      "initialization": "Fresh original P2, fresh optimizer; data batch16 is exact but lost original15 updates/moments are not replayed.",
+      "autotuning": {
+        "side_gradient_checkpointing_min_tokens": 0,
+        "target_gradient_checkpointing_min_tokens": 0
+      },
+      "runtime": {
+        "torch": "2.13.0+cu130",
+        "transformers": "5.15.1"
+      },
+      "optimizer_checkpoints_written": false,
+      "penalty_rng_initial_examples_consumed": 120,
+      "step_seconds": [
+        27.16396252019331,
+        23.274068664759398,
+        22.948024230077863
+      ],
+      "steady_median_seconds": 23.11104644741863,
+      "penalty_counts": [
+        3,
+        1,
+        0
+      ],
+      "loss": [
+        1.4593773037195206,
+        1.318549707531929,
+        1.0694270059466362
+      ],
+      "grad_norm_ac": [
+        17.174619674682617,
+        17.176877975463867,
+        15.786429405212402
+      ],
+      "grad_norm_reader": [
+        21.86656379699707,
+        21.414358139038086,
+        18.254426956176758
+      ],
+      "peak_memory_gib": 49.812814712524414,
+      "elapsed_seconds": 102.90126271313056
+    },
+    "pieces_quantiles": {
+      "status": "complete",
+      "condition": "pieces_quantiles",
+      "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+      "builder_sha256": "86231c5ea0464a4de7c5fbb8cb386500ebd3c1a1374ea61fd41ea2af70d7981f",
+      "source": {
+        "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+        "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+        "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+      },
+      "helper_sha256": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+      "selection": {
+        "original_logical_batch": 16,
+        "completed_prior_updates": 15,
+        "original_epoch": 1,
+        "shuffle_seed": 20260922,
+        "original_interleaved_indexes": [
+          3934,
+          2604,
+          2424,
+          327,
+          2163,
+          3031,
+          3899,
+          930
+        ],
+        "shuffled_index_order_sha256": "d246e497ca2dc0f1a3271ab53cb1c6b78e0bb433ca834cda999db63deeb00f62",
+        "material_ids_sha256": "eb9cbaf282c8698872d6d1891825ca988135642821a3d74a704039edd0f67e1e",
+        "metadata_sha256": {
+          "material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+          "run_identity.json": "37839ad2d4588d59df4432fde2d1b150e8f0ce6b6dc38704cd424ecdf97736d9",
+          "training_config.json": "22cdf493730a9059c65703f35cd1c70d582a7830bc8486256b7dfd97a62175e5"
+        },
+        "quantile_positions": [
+          0,
+          571,
+          1143,
+          1714,
+          2285,
+          2856,
+          3428,
+          3999
+        ],
+        "note": "Exact failed batch membership; trainer sorts these eight by reader length before grouping into microbatches of two. All probe weights/moments start fresh from P2."
+      },
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "threshold": 0,
+      "encode_batch_max_tokens": 65536,
+      "passage_parts": true,
+      "micro_batch_examples": 2,
+      "examples_per_update": 8,
+      "P2_pair_sha256": {
+        "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+        "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+        "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+        "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+        "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+      },
+      "geometry_before_forward": [
+        {
+          "item_ids": [
+            "9e9c9583e481be91e9ce2b95eeb7f1ca5c1f07fe3b0609096480fef73dfe1026",
+            "dbd4c3d907d7635971f3e267cbea6147a823380a9286af3bfb59765bd9d98eed"
+          ],
+          "reader_lengths": [
+            841,
+            932
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 22,
+              "content_lengths": [
+                149,
+                151,
+                179,
+                183,
+                184,
+                203,
+                205,
+                288,
+                402,
+                415,
+                421,
+                443,
+                469,
+                473,
+                495,
+                513,
+                838,
+                1545,
+                1799,
+                1895,
+                2081,
+                2246
+              ],
+              "rows": [
+                7,
+                7,
+                9,
+                9,
+                9,
+                11,
+                10,
+                16,
+                23,
+                24,
+                25,
+                26,
+                28,
+                28,
+                29,
+                31,
+                51,
+                95,
+                111,
+                119,
+                129,
+                139
+              ],
+              "sequence_lengths": [
+                156,
+                158,
+                188,
+                192,
+                193,
+                214,
+                215,
+                304,
+                425,
+                439,
+                446,
+                469,
+                497,
+                501,
+                524,
+                544,
+                889,
+                1640,
+                1910,
+                2014,
+                2210,
+                2385
+              ],
+              "padded_tokens": 52470,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "0cb164531188169ca4e2cca9e7dedaaf183a4d628a062b48f49fe0b090c41555",
+            "62818e2488d496b934eb3f2e57d466506a7209bab1ae84e288082dde205c7994"
+          ],
+          "reader_lengths": [
+            944,
+            960
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 10,
+              "content_lengths": [
+                104,
+                439,
+                441,
+                602,
+                993,
+                1532,
+                1719,
+                1968,
+                2129,
+                6173
+              ],
+              "rows": [
+                3,
+                25,
+                25,
+                34,
+                59,
+                94,
+                106,
+                121,
+                132,
+                386
+              ],
+              "sequence_lengths": [
+                107,
+                464,
+                466,
+                636,
+                1052,
+                1626,
+                1825,
+                2089,
+                2261,
+                6559
+              ],
+              "padded_tokens": 65590,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "500d7fc9eb9749366cf14ef7a72fc1712bcf9a037bf0a8cb8ae65f6c5902ec4f",
+            "7da536e7b28e78475f5bc7f02b0f1d6f1c0e305cc3c905b3c0cc66312bd864d8"
+          ],
+          "reader_lengths": [
+            984,
+            988
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 9,
+              "content_lengths": [
+                413,
+                1913,
+                1946,
+                1981,
+                1997,
+                2024,
+                2048,
+                2080,
+                2305
+              ],
+              "rows": [
+                22,
+                117,
+                119,
+                121,
+                122,
+                124,
+                126,
+                128,
+                142
+              ],
+              "sequence_lengths": [
+                435,
+                2030,
+                2065,
+                2102,
+                2119,
+                2148,
+                2174,
+                2208,
+                2447
+              ],
+              "padded_tokens": 22023,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "12df6f75ac83c903fa7a88249c0c5ddd3548adf5e64fc1755e8472b475d93e0e",
+            "173e85d393617be78931e9d7fd3322f79b78510151514433d5e3e560a4e97c38"
+          ],
+          "reader_lengths": [
+            1013,
+            1026
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 10,
+              "content_lengths": [
+                241,
+                301,
+                679,
+                1260,
+                2184,
+                2264,
+                2413,
+                2433,
+                2508,
+                2720
+              ],
+              "rows": [
+                10,
+                15,
+                38,
+                75,
+                133,
+                139,
+                148,
+                149,
+                154,
+                168
+              ],
+              "sequence_lengths": [
+                251,
+                316,
+                717,
+                1335,
+                2317,
+                2403,
+                2561,
+                2582,
+                2662,
+                2888
+              ],
+              "padded_tokens": 28880,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        }
+      ],
+      "trace": [
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            431,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 23.98085641860962
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            473,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.020512580871582
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            480,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.021678924560547
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            514,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.022903442382812
+        },
+        {
+          "kind": "prepared",
+          "batch": 22,
+          "content_lengths": [
+            149,
+            151,
+            179,
+            183,
+            184,
+            203,
+            205,
+            288,
+            402,
+            415,
+            421,
+            443,
+            469,
+            473,
+            495,
+            513,
+            838,
+            1545,
+            1799,
+            1895,
+            2081,
+            2246
+          ],
+          "rows": [
+            7,
+            7,
+            9,
+            9,
+            9,
+            11,
+            10,
+            16,
+            23,
+            24,
+            25,
+            26,
+            28,
+            28,
+            29,
+            31,
+            51,
+            95,
+            111,
+            119,
+            129,
+            139
+          ],
+          "sequence_lengths": [
+            156,
+            158,
+            188,
+            192,
+            193,
+            214,
+            215,
+            304,
+            425,
+            439,
+            446,
+            469,
+            497,
+            501,
+            524,
+            544,
+            889,
+            1640,
+            1910,
+            2014,
+            2210,
+            2385
+          ],
+          "padded_tokens": 52470,
+          "threshold": 0,
+          "allocated_gib_before": 23.999159336090088
+        },
+        {
+          "kind": "side",
+          "shape": [
+            22,
+            2385,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            22,
+            2385
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 26.038856506347656
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.906192779541016
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            431,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.3973913192749
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            104,
+            439,
+            441,
+            602,
+            993,
+            1532,
+            1719,
+            1968,
+            2129,
+            6173
+          ],
+          "rows": [
+            3,
+            25,
+            25,
+            34,
+            59,
+            94,
+            106,
+            121,
+            132,
+            386
+          ],
+          "sequence_lengths": [
+            107,
+            464,
+            466,
+            636,
+            1052,
+            1626,
+            1825,
+            2089,
+            2261,
+            6559
+          ],
+          "padded_tokens": 65590,
+          "threshold": 0,
+          "allocated_gib_before": 26.214654445648193
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            6559,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            6559
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 28.756290912628174
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.12879657745361
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            480,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.642475605010986
+        },
+        {
+          "kind": "prepared",
+          "batch": 9,
+          "content_lengths": [
+            413,
+            1913,
+            1946,
+            1981,
+            1997,
+            2024,
+            2048,
+            2080,
+            2305
+          ],
+          "rows": [
+            22,
+            117,
+            119,
+            121,
+            122,
+            124,
+            126,
+            128,
+            142
+          ],
+          "sequence_lengths": [
+            435,
+            2030,
+            2065,
+            2102,
+            2119,
+            2148,
+            2174,
+            2208,
+            2447
+          ],
+          "padded_tokens": 22023,
+          "threshold": 0,
+          "allocated_gib_before": 26.251535415649414
+        },
+        {
+          "kind": "side",
+          "shape": [
+            9,
+            2447,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            9,
+            2447
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.307764053344727
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.610134601593018
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            241,
+            301,
+            679,
+            1260,
+            2184,
+            2264,
+            2413,
+            2433,
+            2508,
+            2720
+          ],
+          "rows": [
+            10,
+            15,
+            38,
+            75,
+            133,
+            139,
+            148,
+            149,
+            154,
+            168
+          ],
+          "sequence_lengths": [
+            251,
+            316,
+            717,
+            1335,
+            2317,
+            2403,
+            2561,
+            2582,
+            2662,
+            2888
+          ],
+          "padded_tokens": 28880,
+          "threshold": 0,
+          "allocated_gib_before": 26.238327980041504
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            2888,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            2888
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.531997680664062
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 32.49859285354614
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            494,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.039772510528564
+        },
+        {
+          "kind": "prepared",
+          "batch": 22,
+          "content_lengths": [
+            149,
+            151,
+            179,
+            183,
+            184,
+            203,
+            205,
+            288,
+            402,
+            415,
+            421,
+            443,
+            469,
+            473,
+            495,
+            513,
+            838,
+            1545,
+            1799,
+            1895,
+            2081,
+            2246
+          ],
+          "rows": [
+            7,
+            7,
+            9,
+            9,
+            9,
+            11,
+            10,
+            16,
+            23,
+            24,
+            25,
+            26,
+            28,
+            28,
+            29,
+            31,
+            51,
+            95,
+            111,
+            119,
+            129,
+            139
+          ],
+          "sequence_lengths": [
+            156,
+            158,
+            188,
+            192,
+            193,
+            214,
+            215,
+            304,
+            425,
+            439,
+            446,
+            469,
+            497,
+            501,
+            524,
+            544,
+            889,
+            1640,
+            1910,
+            2014,
+            2210,
+            2385
+          ],
+          "padded_tokens": 52470,
+          "threshold": 0,
+          "allocated_gib_before": 28.424044132232666
+        },
+        {
+          "kind": "side",
+          "shape": [
+            22,
+            2385,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            22,
+            2385
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 30.463741302490234
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.3446044921875
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            404,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.83538627624512
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            104,
+            439,
+            441,
+            602,
+            993,
+            1532,
+            1719,
+            1968,
+            2129,
+            6173
+          ],
+          "rows": [
+            3,
+            25,
+            25,
+            34,
+            59,
+            94,
+            106,
+            121,
+            132,
+            386
+          ],
+          "sequence_lengths": [
+            107,
+            464,
+            466,
+            636,
+            1052,
+            1626,
+            1825,
+            2089,
+            2261,
+            6559
+          ],
+          "padded_tokens": 65590,
+          "threshold": 0,
+          "allocated_gib_before": 30.59627866744995
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            6559,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            6559
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.13791513442993
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 41.51042079925537
+        },
+        {
+          "kind": "prepared",
+          "batch": 9,
+          "content_lengths": [
+            413,
+            1913,
+            1946,
+            1981,
+            1997,
+            2024,
+            2048,
+            2080,
+            2305
+          ],
+          "rows": [
+            22,
+            117,
+            119,
+            121,
+            122,
+            124,
+            126,
+            128,
+            142
+          ],
+          "sequence_lengths": [
+            435,
+            2030,
+            2065,
+            2102,
+            2119,
+            2148,
+            2174,
+            2208,
+            2447
+          ],
+          "padded_tokens": 22023,
+          "threshold": 0,
+          "allocated_gib_before": 30.592196464538574
+        },
+        {
+          "kind": "side",
+          "shape": [
+            9,
+            2447,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            9,
+            2447
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.648425102233887
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.95079565048218
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            241,
+            301,
+            679,
+            1260,
+            2184,
+            2264,
+            2413,
+            2433,
+            2508,
+            2720
+          ],
+          "rows": [
+            10,
+            15,
+            38,
+            75,
+            133,
+            139,
+            148,
+            149,
+            154,
+            168
+          ],
+          "sequence_lengths": [
+            251,
+            316,
+            717,
+            1335,
+            2317,
+            2403,
+            2561,
+            2582,
+            2662,
+            2888
+          ],
+          "padded_tokens": 28880,
+          "threshold": 0,
+          "allocated_gib_before": 30.593310356140137
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            2888,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            2888
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.886980056762695
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.853575229644775
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            494,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.3947548866272
+        },
+        {
+          "kind": "prepared",
+          "batch": 22,
+          "content_lengths": [
+            149,
+            151,
+            179,
+            183,
+            184,
+            203,
+            205,
+            288,
+            402,
+            415,
+            421,
+            443,
+            469,
+            473,
+            495,
+            513,
+            838,
+            1545,
+            1799,
+            1895,
+            2081,
+            2246
+          ],
+          "rows": [
+            7,
+            7,
+            9,
+            9,
+            9,
+            11,
+            10,
+            16,
+            23,
+            24,
+            25,
+            26,
+            28,
+            28,
+            29,
+            31,
+            51,
+            95,
+            111,
+            119,
+            129,
+            139
+          ],
+          "sequence_lengths": [
+            156,
+            158,
+            188,
+            192,
+            193,
+            214,
+            215,
+            304,
+            425,
+            439,
+            446,
+            469,
+            497,
+            501,
+            524,
+            544,
+            889,
+            1640,
+            1910,
+            2014,
+            2210,
+            2385
+          ],
+          "padded_tokens": 52470,
+          "threshold": 0,
+          "allocated_gib_before": 28.424463748931885
+        },
+        {
+          "kind": "side",
+          "shape": [
+            22,
+            2385,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            22,
+            2385
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 30.464160919189453
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 37.34502410888672
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            104,
+            439,
+            441,
+            602,
+            993,
+            1532,
+            1719,
+            1968,
+            2129,
+            6173
+          ],
+          "rows": [
+            3,
+            25,
+            25,
+            34,
+            59,
+            94,
+            106,
+            121,
+            132,
+            386
+          ],
+          "sequence_lengths": [
+            107,
+            464,
+            466,
+            636,
+            1052,
+            1626,
+            1825,
+            2089,
+            2261,
+            6559
+          ],
+          "padded_tokens": 65590,
+          "threshold": 0,
+          "allocated_gib_before": 30.59053325653076
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            6559,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            6559
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.13216972351074
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 41.50467538833618
+        },
+        {
+          "kind": "prepared",
+          "batch": 9,
+          "content_lengths": [
+            413,
+            1913,
+            1946,
+            1981,
+            1997,
+            2024,
+            2048,
+            2080,
+            2305
+          ],
+          "rows": [
+            22,
+            117,
+            119,
+            121,
+            122,
+            124,
+            126,
+            128,
+            142
+          ],
+          "sequence_lengths": [
+            435,
+            2030,
+            2065,
+            2102,
+            2119,
+            2148,
+            2174,
+            2208,
+            2447
+          ],
+          "padded_tokens": 22023,
+          "threshold": 0,
+          "allocated_gib_before": 30.592616081237793
+        },
+        {
+          "kind": "side",
+          "shape": [
+            9,
+            2447,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            9,
+            2447
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.648844718933105
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.9512152671814
+        },
+        {
+          "kind": "prepared",
+          "batch": 10,
+          "content_lengths": [
+            241,
+            301,
+            679,
+            1260,
+            2184,
+            2264,
+            2413,
+            2433,
+            2508,
+            2720
+          ],
+          "rows": [
+            10,
+            15,
+            38,
+            75,
+            133,
+            139,
+            148,
+            149,
+            154,
+            168
+          ],
+          "sequence_lengths": [
+            251,
+            316,
+            717,
+            1335,
+            2317,
+            2403,
+            2561,
+            2582,
+            2662,
+            2888
+          ],
+          "padded_tokens": 28880,
+          "threshold": 0,
+          "allocated_gib_before": 30.593729972839355
+        },
+        {
+          "kind": "side",
+          "shape": [
+            10,
+            2888,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            10,
+            2888
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.887399673461914
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.853994846343994
+        }
+      ],
+      "inputs": [
+        {
+          "item_id": "0cb164531188169ca4e2cca9e7dedaaf183a4d628a062b48f49fe0b090c41555",
+          "full_sha256": "578ae5cfd5826af49e9e464735c79787342fc36d2210205e0c940ea02286c818",
+          "target_sha256": "a2c1fa379a90acb055a4cf22904b1124fa93c641da43f5412715824d902a18be",
+          "compressed_rows": 506,
+          "encoder_tokens": 8332
+        },
+        {
+          "item_id": "dbd4c3d907d7635971f3e267cbea6147a823380a9286af3bfb59765bd9d98eed",
+          "full_sha256": "1ee0502edd4fc46d146f2cbdea802bd0886b48b4ca78ed66c6edfe7b90794251",
+          "target_sha256": "ff681d530a90d50eef5f0067f6c83a0e9eecce6d9a83c9197527244b472635bb",
+          "compressed_rows": 500,
+          "encoder_tokens": 8164
+        },
+        {
+          "item_id": "9e9c9583e481be91e9ce2b95eeb7f1ca5c1f07fe3b0609096480fef73dfe1026",
+          "full_sha256": "aeab3f5d52fd3c7ea8227711a2eb6b2e21194478085cfb61c7d08219f07e0eb5",
+          "target_sha256": "1d89419cbad60cc876419015e03438427a4a88cb91b8cc625834f13feb860e4a",
+          "compressed_rows": 436,
+          "encoder_tokens": 7413
+        },
+        {
+          "item_id": "173e85d393617be78931e9d7fd3322f79b78510151514433d5e3e560a4e97c38",
+          "full_sha256": "736e8e5c3530e0468816b01bca524c4047db8838c80811f86e8b9031b7aa0f43",
+          "target_sha256": "0723f2814bd7e039a79900fc60c050927b2c3148e745c6b91e15b6176873abf4",
+          "compressed_rows": 511,
+          "encoder_tokens": 8457
+        },
+        {
+          "item_id": "500d7fc9eb9749366cf14ef7a72fc1712bcf9a037bf0a8cb8ae65f6c5902ec4f",
+          "full_sha256": "066aa56f94db0ec849ea087d2e4b8b9e8025d49d2b9a9fe3247fef094b95bdd0",
+          "target_sha256": "a30360188692481b7cf3860d3c99c416223ee886e05894dbfb5c2a1d543de06f",
+          "compressed_rows": 510,
+          "encoder_tokens": 8376
+        },
+        {
+          "item_id": "7da536e7b28e78475f5bc7f02b0f1d6f1c0e305cc3c905b3c0cc66312bd864d8",
+          "full_sha256": "bf67ea3c56a4688554a1db2432b9ee229b1db4c45f64f0640e02f53591f9a680",
+          "target_sha256": "b8070e1a33387759611a8bf5a02457095604752ccaebda877cbd09d68dcd9f21",
+          "compressed_rows": 511,
+          "encoder_tokens": 8331
+        },
+        {
+          "item_id": "12df6f75ac83c903fa7a88249c0c5ddd3548adf5e64fc1755e8472b475d93e0e",
+          "full_sha256": "d2251702c09ced357e11449b9371d537e6e4ecf23d9895f8c46544685c62b41d",
+          "target_sha256": "a53b158b7a2532b67dad0ee2da30d166bf1bae4650818821e78021e7ee6346d2",
+          "compressed_rows": 518,
+          "encoder_tokens": 8546
+        },
+        {
+          "item_id": "62818e2488d496b934eb3f2e57d466506a7209bab1ae84e288082dde205c7994",
+          "full_sha256": "6355fde6fa137c0827ac25be35c8054687398edc95630ee5b1d133592833e977",
+          "target_sha256": "167bb6df51a109ed115ff0a794338ab8f4890a799d05beea18e4e21d5c7bb0d8",
+          "compressed_rows": 479,
+          "encoder_tokens": 7768
+        }
+      ],
+      "initialization": "Fresh original P2, fresh optimizer; data batch16 is exact but lost original15 updates/moments are not replayed.",
+      "autotuning": {
+        "side_gradient_checkpointing_min_tokens": 0,
+        "target_gradient_checkpointing_min_tokens": 0
+      },
+      "runtime": {
+        "torch": "2.13.0+cu130",
+        "transformers": "5.15.1"
+      },
+      "optimizer_checkpoints_written": false,
+      "penalty_rng_initial_examples_consumed": 0,
+      "step_seconds": [
+        26.729221489746124,
+        24.998173898085952,
+        23.255858883727342
+      ],
+      "steady_median_seconds": 24.127016390906647,
+      "penalty_counts": [
+        4,
+        2,
+        0
+      ],
+      "loss": [
+        1.5047477632761002,
+        1.3826652690768242,
+        1.171236127614975
+      ],
+      "grad_norm_ac": [
+        16.819164276123047,
+        14.487709999084473,
+        12.626147270202637
+      ],
+      "grad_norm_reader": [
+        17.773128509521484,
+        17.765392303466797,
+        16.020156860351562
+      ],
+      "peak_memory_gib": 52.283939361572266,
+      "elapsed_seconds": 104.30683364998549
+    },
+    "merged_failing": {
+      "status": "complete",
+      "condition": "merged_failing",
+      "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+      "builder_sha256": "86231c5ea0464a4de7c5fbb8cb386500ebd3c1a1374ea61fd41ea2af70d7981f",
+      "source": {
+        "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+        "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+        "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+      },
+      "helper_sha256": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+      "selection": {
+        "original_logical_batch": 16,
+        "completed_prior_updates": 15,
+        "original_epoch": 1,
+        "shuffle_seed": 20260922,
+        "original_interleaved_indexes": [
+          3934,
+          2604,
+          2424,
+          327,
+          2163,
+          3031,
+          3899,
+          930
+        ],
+        "shuffled_index_order_sha256": "d246e497ca2dc0f1a3271ab53cb1c6b78e0bb433ca834cda999db63deeb00f62",
+        "material_ids_sha256": "eb9cbaf282c8698872d6d1891825ca988135642821a3d74a704039edd0f67e1e",
+        "metadata_sha256": {
+          "material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+          "run_identity.json": "37839ad2d4588d59df4432fde2d1b150e8f0ce6b6dc38704cd424ecdf97736d9",
+          "training_config.json": "22cdf493730a9059c65703f35cd1c70d582a7830bc8486256b7dfd97a62175e5"
+        },
+        "quantile_positions": [
+          0,
+          571,
+          1143,
+          1714,
+          2285,
+          2856,
+          3428,
+          3999
+        ],
+        "note": "Exact failed batch membership; trainer sorts these eight by reader length before grouping into microbatches of two. All probe weights/moments start fresh from P2."
+      },
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "threshold": 0,
+      "encode_batch_max_tokens": 65536,
+      "passage_parts": false,
+      "micro_batch_examples": 2,
+      "examples_per_update": 8,
+      "P2_pair_sha256": {
+        "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+        "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+        "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+        "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+        "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+      },
+      "geometry_before_forward": [
+        {
+          "item_ids": [
+            "79fe48ae598739f8bfc295401b7cb75750877eb3dc93b4296403ad44635b3f9a",
+            "d0dab0b2ec2113437aff3f0ce6186097c100b0ecc50cf784a4ccdea5d383edaa"
+          ],
+          "reader_lengths": [
+            747,
+            803
+          ],
+          "reader_old_checkpoint": false,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                4809,
+                5611
+              ],
+              "rows": [
+                301,
+                351
+              ],
+              "sequence_lengths": [
+                5110,
+                5962
+              ],
+              "padded_tokens": 11924,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+            "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce"
+          ],
+          "reader_lengths": [
+            956,
+            961
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                8039,
+                8153
+              ],
+              "rows": [
+                503,
+                510
+              ],
+              "sequence_lengths": [
+                8542,
+                8663
+              ],
+              "padded_tokens": 17326,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+            "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b"
+          ],
+          "reader_lengths": [
+            971,
+            975
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                8100,
+                8314
+              ],
+              "rows": [
+                507,
+                520
+              ],
+              "sequence_lengths": [
+                8607,
+                8834
+              ],
+              "padded_tokens": 17668,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "028fbeaae5c3298a65dfa9ac7707d8e9134d16a49a060a76f26062831a400aa9",
+            "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f"
+          ],
+          "reader_lengths": [
+            977,
+            1004
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                8121,
+                8173
+              ],
+              "rows": [
+                508,
+                511
+              ],
+              "sequence_lengths": [
+                8629,
+                8684
+              ],
+              "padded_tokens": 17368,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        }
+      ],
+      "trace": [
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            450,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 23.98160409927368
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            452,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.02036476135254
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            463,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.020992279052734
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            495,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.02174472808838
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            4809,
+            5611
+          ],
+          "rows": [
+            301,
+            351
+          ],
+          "sequence_lengths": [
+            5110,
+            5962
+          ],
+          "padded_tokens": 11924,
+          "threshold": 0,
+          "allocated_gib_before": 23.999159336090088
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            5962,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            5962
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 24.662144660949707
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.193490028381348
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8039,
+            8153
+          ],
+          "rows": [
+            503,
+            510
+          ],
+          "sequence_lengths": [
+            8542,
+            8663
+          ],
+          "padded_tokens": 17326,
+          "threshold": 0,
+          "allocated_gib_before": 26.207924842834473
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8663,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8663
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.189818859100342
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.065105438232422
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            452,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.571752548217773
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8100,
+            8314
+          ],
+          "rows": [
+            507,
+            520
+          ],
+          "sequence_lengths": [
+            8607,
+            8834
+          ],
+          "padded_tokens": 17668,
+          "threshold": 0,
+          "allocated_gib_before": 26.244096279144287
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8834,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8834
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.243659496307373
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.184677124023438
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            463,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.698720932006836
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8121,
+            8173
+          ],
+          "rows": [
+            508,
+            511
+          ],
+          "sequence_lengths": [
+            8629,
+            8684
+          ],
+          "padded_tokens": 17368,
+          "threshold": 0,
+          "allocated_gib_before": 26.24472951889038
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8684,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8684
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.230111598968506
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.125084400177002
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            495,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.65474557876587
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            4809,
+            5611
+          ],
+          "rows": [
+            301,
+            351
+          ],
+          "sequence_lengths": [
+            5110,
+            5962
+          ],
+          "padded_tokens": 11924,
+          "threshold": 0,
+          "allocated_gib_before": 28.423174381256104
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            5962,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            5962
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.086159706115723
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.6293306350708
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8039,
+            8153
+          ],
+          "rows": [
+            503,
+            510
+          ],
+          "sequence_lengths": [
+            8542,
+            8663
+          ],
+          "padded_tokens": 17326,
+          "threshold": 0,
+          "allocated_gib_before": 30.58655834197998
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8663,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8663
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.56845235824585
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.44373893737793
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            450,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.95035362243652
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8100,
+            8314
+          ],
+          "rows": [
+            507,
+            520
+          ],
+          "sequence_lengths": [
+            8607,
+            8834
+          ],
+          "padded_tokens": 17668,
+          "threshold": 0,
+          "allocated_gib_before": 30.599048137664795
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8834,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8834
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.59861135482788
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.539628982543945
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8121,
+            8173
+          ],
+          "rows": [
+            508,
+            511
+          ],
+          "sequence_lengths": [
+            8629,
+            8684
+          ],
+          "padded_tokens": 17368,
+          "threshold": 0,
+          "allocated_gib_before": 30.592646598815918
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8684,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8684
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.578028678894043
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.47300148010254
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            4809,
+            5611
+          ],
+          "rows": [
+            301,
+            351
+          ],
+          "sequence_lengths": [
+            5110,
+            5962
+          ],
+          "padded_tokens": 11924,
+          "threshold": 0,
+          "allocated_gib_before": 28.415712356567383
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            5962,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            5962
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.078697681427002
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            803,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.62186861038208
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8039,
+            8153
+          ],
+          "rows": [
+            503,
+            510
+          ],
+          "sequence_lengths": [
+            8542,
+            8663
+          ],
+          "padded_tokens": 17326,
+          "threshold": 0,
+          "allocated_gib_before": 30.586649894714355
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8663,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8663
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.568543910980225
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            961,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.443830490112305
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8100,
+            8314
+          ],
+          "rows": [
+            507,
+            520
+          ],
+          "sequence_lengths": [
+            8607,
+            8834
+          ],
+          "padded_tokens": 17668,
+          "threshold": 0,
+          "allocated_gib_before": 30.592272758483887
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8834,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8834
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.591835975646973
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            975,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.53285360336304
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8121,
+            8173
+          ],
+          "rows": [
+            508,
+            511
+          ],
+          "sequence_lengths": [
+            8629,
+            8684
+          ],
+          "padded_tokens": 17368,
+          "threshold": 0,
+          "allocated_gib_before": 30.592738151550293
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8684,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8684
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.578120231628418
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1004,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.473093032836914
+        }
+      ],
+      "inputs": [
+        {
+          "item_id": "d0dab0b2ec2113437aff3f0ce6186097c100b0ecc50cf784a4ccdea5d383edaa",
+          "full_sha256": "0a179f2a5682bf53a7a7d39bfba122c759701100c2d0acc7b9b11989ca52f389",
+          "target_sha256": "803f0b918e75bfdc476c5ce3fce6dc9a5197ec5b1f4d66474c36335a1b012985",
+          "compressed_rows": 351,
+          "encoder_tokens": 5611
+        },
+        {
+          "item_id": "1633cbf814047fda03e113bcfdcecfb201d84562bb87e1722eb1e727a602c9ce",
+          "full_sha256": "5fca77e3852a5ef5293035eb8cf85c1495ec7b3dc0a8f62cecb8fb711f785a79",
+          "target_sha256": "ca9b33dcc3ff16b82b4b5e398f819f1d857553d3a94ab659daad42932c05f1b9",
+          "compressed_rows": 510,
+          "encoder_tokens": 8153
+        },
+        {
+          "item_id": "7dec9dfd0937e14b4fad585d0d63be0c051055e72b59af11c9841fba14e9958b",
+          "full_sha256": "0b3ce6019f0fdeffdc77b170443df9ff2cdef8758335c7974a88b5412f433955",
+          "target_sha256": "e3debc3882e8e308c5a5297ec21f1b343a4271518f3a408262d9f352ae0ee15a",
+          "compressed_rows": 520,
+          "encoder_tokens": 8314
+        },
+        {
+          "item_id": "028fbeaae5c3298a65dfa9ac7707d8e9134d16a49a060a76f26062831a400aa9",
+          "full_sha256": "6177356e5675e5b3f9d6384e49ce80aa128ba30aeffed72ea04cd04786d988ff",
+          "target_sha256": "5877ac6eee35e84439914aa55810afae5f17c23ee5da8e3500f9e7ad6a925671",
+          "compressed_rows": 511,
+          "encoder_tokens": 8173
+        },
+        {
+          "item_id": "79fe48ae598739f8bfc295401b7cb75750877eb3dc93b4296403ad44635b3f9a",
+          "full_sha256": "495d79a3cdde80d1e9fe804e8af0b473c63aebdf91decc13838ffbfab438fbd0",
+          "target_sha256": "c8e3d66327e3fe6ad53aa5d3060d657c812b6a499cfbf22f702a795a70df7a7c",
+          "compressed_rows": 301,
+          "encoder_tokens": 4809
+        },
+        {
+          "item_id": "1f86b0da3cde76f0695b0b731188fbd2e51d8bded422dd22d6ce19edc1c709d3",
+          "full_sha256": "b5c9fa8d6d6661324ab24586432b8f966df8c65a6e9d83972805bdd4aec5027f",
+          "target_sha256": "10ea9ff918ad175fca94e38f43780b1f240a47ad8323bbd7e32cee584ec6614d",
+          "compressed_rows": 503,
+          "encoder_tokens": 8039
+        },
+        {
+          "item_id": "e57350dc60e6065dbb137d0df836ef2063e2ed8f4668af1144faf7b590c736ac",
+          "full_sha256": "f77d993f975a34a9ec9b672031c260d63ed1fa0283b81c0ae2a19f16c3908014",
+          "target_sha256": "062ad78c728bbc5c48b19d90072887ce9fe32d6543f6bb04e13461063775d1a8",
+          "compressed_rows": 507,
+          "encoder_tokens": 8100
+        },
+        {
+          "item_id": "8259bfbf0c8c04ac82a225b80da9dfc441f9e4e9d00491d599a41ca3bbd9556f",
+          "full_sha256": "4478fc782c398859f117be7634c57c4ea0ca99ae77073313215da02ca8820506",
+          "target_sha256": "6a8d4b27bd8546403be9f8316ff1f601e9a4454cac46998a4aed25d6450cd76b",
+          "compressed_rows": 508,
+          "encoder_tokens": 8121
+        }
+      ],
+      "initialization": "Fresh original P2, fresh optimizer; data batch16 is exact but lost original15 updates/moments are not replayed.",
+      "autotuning": {
+        "side_gradient_checkpointing_min_tokens": 0,
+        "target_gradient_checkpointing_min_tokens": 0
+      },
+      "runtime": {
+        "torch": "2.13.0+cu130",
+        "transformers": "5.15.1"
+      },
+      "optimizer_checkpoints_written": false,
+      "penalty_rng_initial_examples_consumed": 120,
+      "step_seconds": [
+        17.499445694033056,
+        14.677386355120689,
+        13.561043417081237
+      ],
+      "steady_median_seconds": 14.119214886100963,
+      "penalty_counts": [
+        3,
+        1,
+        0
+      ],
+      "loss": [
+        1.024426281452179,
+        0.9223454967141151,
+        0.7577128782868385
+      ],
+      "grad_norm_ac": [
+        12.222582817077637,
+        13.640448570251465,
+        7.18143367767334
+      ],
+      "grad_norm_reader": [
+        14.429880142211914,
+        16.768447875976562,
+        9.557657241821289
+      ],
+      "peak_memory_gib": 37.38048839569092,
+      "elapsed_seconds": 78.95193120790645
+    },
+    "merged_quantiles": {
+      "status": "complete",
+      "condition": "merged_quantiles",
+      "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+      "builder_sha256": "86231c5ea0464a4de7c5fbb8cb386500ebd3c1a1374ea61fd41ea2af70d7981f",
+      "source": {
+        "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+        "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+        "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+      },
+      "helper_sha256": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+      "selection": {
+        "original_logical_batch": 16,
+        "completed_prior_updates": 15,
+        "original_epoch": 1,
+        "shuffle_seed": 20260922,
+        "original_interleaved_indexes": [
+          3934,
+          2604,
+          2424,
+          327,
+          2163,
+          3031,
+          3899,
+          930
+        ],
+        "shuffled_index_order_sha256": "d246e497ca2dc0f1a3271ab53cb1c6b78e0bb433ca834cda999db63deeb00f62",
+        "material_ids_sha256": "eb9cbaf282c8698872d6d1891825ca988135642821a3d74a704039edd0f67e1e",
+        "metadata_sha256": {
+          "material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+          "run_identity.json": "37839ad2d4588d59df4432fde2d1b150e8f0ce6b6dc38704cd424ecdf97736d9",
+          "training_config.json": "22cdf493730a9059c65703f35cd1c70d582a7830bc8486256b7dfd97a62175e5"
+        },
+        "quantile_positions": [
+          0,
+          571,
+          1143,
+          1714,
+          2285,
+          2856,
+          3428,
+          3999
+        ],
+        "note": "Exact failed batch membership; trainer sorts these eight by reader length before grouping into microbatches of two. All probe weights/moments start fresh from P2."
+      },
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "threshold": 0,
+      "encode_batch_max_tokens": 65536,
+      "passage_parts": false,
+      "micro_batch_examples": 2,
+      "examples_per_update": 8,
+      "P2_pair_sha256": {
+        "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+        "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+        "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+        "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+        "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+      },
+      "geometry_before_forward": [
+        {
+          "item_ids": [
+            "9e9c9583e481be91e9ce2b95eeb7f1ca5c1f07fe3b0609096480fef73dfe1026",
+            "dbd4c3d907d7635971f3e267cbea6147a823380a9286af3bfb59765bd9d98eed"
+          ],
+          "reader_lengths": [
+            841,
+            932
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                6963,
+                7994
+              ],
+              "rows": [
+                436,
+                500
+              ],
+              "sequence_lengths": [
+                7399,
+                8494
+              ],
+              "padded_tokens": 16988,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "0cb164531188169ca4e2cca9e7dedaaf183a4d628a062b48f49fe0b090c41555",
+            "62818e2488d496b934eb3f2e57d466506a7209bab1ae84e288082dde205c7994"
+          ],
+          "reader_lengths": [
+            944,
+            960
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                7664,
+                8086
+              ],
+              "rows": [
+                479,
+                506
+              ],
+              "sequence_lengths": [
+                8143,
+                8592
+              ],
+              "padded_tokens": 17184,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "500d7fc9eb9749366cf14ef7a72fc1712bcf9a037bf0a8cb8ae65f6c5902ec4f",
+            "7da536e7b28e78475f5bc7f02b0f1d6f1c0e305cc3c905b3c0cc66312bd864d8"
+          ],
+          "reader_lengths": [
+            984,
+            988
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                8152,
+                8166
+              ],
+              "rows": [
+                510,
+                511
+              ],
+              "sequence_lengths": [
+                8662,
+                8677
+              ],
+              "padded_tokens": 17354,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        },
+        {
+          "item_ids": [
+            "12df6f75ac83c903fa7a88249c0c5ddd3548adf5e64fc1755e8472b475d93e0e",
+            "173e85d393617be78931e9d7fd3322f79b78510151514433d5e3e560a4e97c38"
+          ],
+          "reader_lengths": [
+            1013,
+            1026
+          ],
+          "reader_old_checkpoint": true,
+          "side_batches": [
+            {
+              "parts": 2,
+              "content_lengths": [
+                8169,
+                8286
+              ],
+              "rows": [
+                511,
+                518
+              ],
+              "sequence_lengths": [
+                8680,
+                8804
+              ],
+              "padded_tokens": 17608,
+              "old_checkpoint": true,
+              "candidate_checkpoint": true
+            }
+          ]
+        }
+      ],
+      "trace": [
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            431,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 23.98085641860962
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            473,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.020512580871582
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            480,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.021678924560547
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            514,
+            4096
+          ],
+          "checkpoint": false,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": false,
+          "base_training": true,
+          "allocated_gib_before": 24.022903442382812
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            6963,
+            7994
+          ],
+          "rows": [
+            436,
+            500
+          ],
+          "sequence_lengths": [
+            7399,
+            8494
+          ],
+          "padded_tokens": 16988,
+          "threshold": 0,
+          "allocated_gib_before": 23.999159336090088
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8494,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8494
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 24.945687770843506
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 28.60100221633911
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            431,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.092200756072998
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            7664,
+            8086
+          ],
+          "rows": [
+            479,
+            506
+          ],
+          "sequence_lengths": [
+            8143,
+            8592
+          ],
+          "padded_tokens": 17184,
+          "threshold": 0,
+          "allocated_gib_before": 26.21450185775757
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8592,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8592
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.182865142822266
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 30.982630252838135
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            480,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.496309280395508
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8152,
+            8166
+          ],
+          "rows": [
+            510,
+            511
+          ],
+          "sequence_lengths": [
+            8662,
+            8677
+          ],
+          "padded_tokens": 17354,
+          "threshold": 0,
+          "allocated_gib_before": 26.25132179260254
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8677,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8677
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.23655891418457
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.133324146270752
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8169,
+            8286
+          ],
+          "rows": [
+            511,
+            518
+          ],
+          "sequence_lengths": [
+            8680,
+            8804
+          ],
+          "padded_tokens": 17608,
+          "threshold": 0,
+          "allocated_gib_before": 26.23806095123291
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8804,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8804
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 27.2359299659729
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.178422927856445
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            494,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.719602584838867
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            6963,
+            7994
+          ],
+          "rows": [
+            436,
+            500
+          ],
+          "sequence_lengths": [
+            7399,
+            8494
+          ],
+          "padded_tokens": 16988,
+          "threshold": 0,
+          "allocated_gib_before": 28.424044132232666
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8494,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8494
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.370572566986084
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.039413928985596
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            404,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.53019571304321
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            7664,
+            8086
+          ],
+          "rows": [
+            479,
+            506
+          ],
+          "sequence_lengths": [
+            8143,
+            8592
+          ],
+          "padded_tokens": 17184,
+          "threshold": 0,
+          "allocated_gib_before": 30.596126079559326
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8592,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8592
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.564489364624023
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.36425447463989
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8152,
+            8166
+          ],
+          "rows": [
+            510,
+            511
+          ],
+          "sequence_lengths": [
+            8662,
+            8677
+          ],
+          "padded_tokens": 17354,
+          "threshold": 0,
+          "allocated_gib_before": 30.5919828414917
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8677,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8677
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.57721996307373
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.47398519515991
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8169,
+            8286
+          ],
+          "rows": [
+            511,
+            518
+          ],
+          "sequence_lengths": [
+            8680,
+            8804
+          ],
+          "padded_tokens": 17608,
+          "threshold": 0,
+          "allocated_gib_before": 30.593043327331543
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8804,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8804
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.590912342071533
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.53340530395508
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            1,
+            494,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 36.0745849609375
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            6963,
+            7994
+          ],
+          "rows": [
+            436,
+            500
+          ],
+          "sequence_lengths": [
+            7399,
+            8494
+          ],
+          "padded_tokens": 16988,
+          "threshold": 0,
+          "allocated_gib_before": 28.42413568496704
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8494,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8494
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 29.37066411972046
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            932,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 33.03950548171997
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            7664,
+            8086
+          ],
+          "rows": [
+            479,
+            506
+          ],
+          "sequence_lengths": [
+            8143,
+            8592
+          ],
+          "padded_tokens": 17184,
+          "threshold": 0,
+          "allocated_gib_before": 30.590052604675293
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8592,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8592
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.55841588973999
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            960,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.35818099975586
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8152,
+            8166
+          ],
+          "rows": [
+            510,
+            511
+          ],
+          "sequence_lengths": [
+            8662,
+            8677
+          ],
+          "padded_tokens": 17354,
+          "threshold": 0,
+          "allocated_gib_before": 30.592074394226074
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8677,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8677
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.577311515808105
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            988,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.47407674789429
+        },
+        {
+          "kind": "prepared",
+          "batch": 2,
+          "content_lengths": [
+            8169,
+            8286
+          ],
+          "rows": [
+            511,
+            518
+          ],
+          "sequence_lengths": [
+            8680,
+            8804
+          ],
+          "padded_tokens": 17608,
+          "threshold": 0,
+          "allocated_gib_before": 30.593134880065918
+        },
+        {
+          "kind": "side",
+          "shape": [
+            2,
+            8804,
+            2048
+          ],
+          "checkpoint": true,
+          "mask_is_none": false,
+          "mask_shape": [
+            2,
+            8804
+          ],
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 31.591003894805908
+        },
+        {
+          "kind": "reader",
+          "shape": [
+            2,
+            1026,
+            4096
+          ],
+          "checkpoint": true,
+          "mask_is_none": true,
+          "mask_shape": null,
+          "grad_enabled": true,
+          "base_training": true,
+          "allocated_gib_before": 35.53349685668945
+        }
+      ],
+      "inputs": [
+        {
+          "item_id": "0cb164531188169ca4e2cca9e7dedaaf183a4d628a062b48f49fe0b090c41555",
+          "full_sha256": "578ae5cfd5826af49e9e464735c79787342fc36d2210205e0c940ea02286c818",
+          "target_sha256": "a2c1fa379a90acb055a4cf22904b1124fa93c641da43f5412715824d902a18be",
+          "compressed_rows": 506,
+          "encoder_tokens": 8086
+        },
+        {
+          "item_id": "dbd4c3d907d7635971f3e267cbea6147a823380a9286af3bfb59765bd9d98eed",
+          "full_sha256": "1ee0502edd4fc46d146f2cbdea802bd0886b48b4ca78ed66c6edfe7b90794251",
+          "target_sha256": "ff681d530a90d50eef5f0067f6c83a0e9eecce6d9a83c9197527244b472635bb",
+          "compressed_rows": 500,
+          "encoder_tokens": 7994
+        },
+        {
+          "item_id": "9e9c9583e481be91e9ce2b95eeb7f1ca5c1f07fe3b0609096480fef73dfe1026",
+          "full_sha256": "aeab3f5d52fd3c7ea8227711a2eb6b2e21194478085cfb61c7d08219f07e0eb5",
+          "target_sha256": "1d89419cbad60cc876419015e03438427a4a88cb91b8cc625834f13feb860e4a",
+          "compressed_rows": 436,
+          "encoder_tokens": 6963
+        },
+        {
+          "item_id": "173e85d393617be78931e9d7fd3322f79b78510151514433d5e3e560a4e97c38",
+          "full_sha256": "736e8e5c3530e0468816b01bca524c4047db8838c80811f86e8b9031b7aa0f43",
+          "target_sha256": "0723f2814bd7e039a79900fc60c050927b2c3148e745c6b91e15b6176873abf4",
+          "compressed_rows": 511,
+          "encoder_tokens": 8169
+        },
+        {
+          "item_id": "500d7fc9eb9749366cf14ef7a72fc1712bcf9a037bf0a8cb8ae65f6c5902ec4f",
+          "full_sha256": "066aa56f94db0ec849ea087d2e4b8b9e8025d49d2b9a9fe3247fef094b95bdd0",
+          "target_sha256": "a30360188692481b7cf3860d3c99c416223ee886e05894dbfb5c2a1d543de06f",
+          "compressed_rows": 510,
+          "encoder_tokens": 8152
+        },
+        {
+          "item_id": "7da536e7b28e78475f5bc7f02b0f1d6f1c0e305cc3c905b3c0cc66312bd864d8",
+          "full_sha256": "bf67ea3c56a4688554a1db2432b9ee229b1db4c45f64f0640e02f53591f9a680",
+          "target_sha256": "b8070e1a33387759611a8bf5a02457095604752ccaebda877cbd09d68dcd9f21",
+          "compressed_rows": 511,
+          "encoder_tokens": 8166
+        },
+        {
+          "item_id": "12df6f75ac83c903fa7a88249c0c5ddd3548adf5e64fc1755e8472b475d93e0e",
+          "full_sha256": "d2251702c09ced357e11449b9371d537e6e4ecf23d9895f8c46544685c62b41d",
+          "target_sha256": "a53b158b7a2532b67dad0ee2da30d166bf1bae4650818821e78021e7ee6346d2",
+          "compressed_rows": 518,
+          "encoder_tokens": 8286
+        },
+        {
+          "item_id": "62818e2488d496b934eb3f2e57d466506a7209bab1ae84e288082dde205c7994",
+          "full_sha256": "6355fde6fa137c0827ac25be35c8054687398edc95630ee5b1d133592833e977",
+          "target_sha256": "167bb6df51a109ed115ff0a794338ab8f4890a799d05beea18e4e21d5c7bb0d8",
+          "compressed_rows": 479,
+          "encoder_tokens": 7664
+        }
+      ],
+      "initialization": "Fresh original P2, fresh optimizer; data batch16 is exact but lost original15 updates/moments are not replayed.",
+      "autotuning": {
+        "side_gradient_checkpointing_min_tokens": 0,
+        "target_gradient_checkpointing_min_tokens": 0
+      },
+      "runtime": {
+        "torch": "2.13.0+cu130",
+        "transformers": "5.15.1"
+      },
+      "optimizer_checkpoints_written": false,
+      "penalty_rng_initial_examples_consumed": 0,
+      "step_seconds": [
+        17.52795294765383,
+        16.020848479121923,
+        13.971120420377702
+      ],
+      "steady_median_seconds": 14.995984449749812,
+      "penalty_counts": [
+        4,
+        2,
+        0
+      ],
+      "loss": [
+        1.1891621947288513,
+        1.0952922105789185,
+        0.9462607130408287
+      ],
+      "grad_norm_ac": [
+        12.190055847167969,
+        11.236899375915527,
+        7.564741611480713
+      ],
+      "grad_norm_reader": [
+        14.575730323791504,
+        14.037267684936523,
+        10.351061820983887
+      ],
+      "peak_memory_gib": 37.54957103729248,
+      "elapsed_seconds": 79.07814015774056
+    }
+  },
+  "jobs": [
+    23495243,
+    23496372
+  ],
+  "shared_input_validation": "Exact question/fullcontext/target/row-budget matches between layouts for eachgeometry; source/material/P2 hashesmatch;3realupdatesandpenaltyeach."
+}

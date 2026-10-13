@@ -1,0 +1,74 @@
+{
+  "status": "complete",
+  "job_id": "23511022",
+  "hostname": "node3313",
+  "verified_utc": "2026-09-22T23:22:36.801045+00:00",
+  "design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+  "original_design_sha256": "21291814eb97ee54cfefcf5a94b447b4671a5672b455284d509482fd0229912e",
+  "material_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+  "pair_sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+  "parent_panel_sha256": "755d8bae1744480c79c07002bb540f9c2a40f2ccd1c6391b71e8d4dd8cd61a71",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "helper_sha256": {
+    "run_qa_continuation_10k_v1.py": "edc7e5ed944baa2ab846c99a81399d05024e40fd08f9e989ce67aabdb0fedad8",
+    "train_continuation_10k_csail_v1.sbatch": "c4afb18fc34f6d5c2e9823f23c480a798e94eba6347cad1bdb5c62814a800176",
+    "evaluate_continuation_10k_v1.py": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+    "continuation_cohort_csail_v1.sbatch": "bc000340f00743dbfcef07af32324d8f23bcad51ce4b10d3805c103f41796b15",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+    "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+  },
+  "initial_payload_files": {
+    "ac/PRESERVE": {
+      "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+      "bytes": 101
+    },
+    "ac/ac_modules.pt": {
+      "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+      "bytes": 1208881673
+    },
+    "ac/optimizer.pt": {
+      "sha256": "1eeb5c60f7cb2aa3b213c7cf970bfd5ec10b1295412ad9891f6dd915086dc661",
+      "bytes": 4676633951
+    },
+    "ac/side_lora/README.md": {
+      "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+      "bytes": 5184
+    },
+    "ac/side_lora/adapter_config.json": {
+      "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+      "bytes": 1150
+    },
+    "ac/side_lora/adapter_model.safetensors": {
+      "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+      "bytes": 349204488
+    },
+    "reader/PRESERVE": {
+      "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+      "bytes": 101
+    },
+    "reader/README.md": {
+      "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+      "bytes": 5184
+    },
+    "reader/adapter_config.json": {
+      "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+      "bytes": 1147
+    },
+    "reader/adapter_model.safetensors": {
+      "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+      "bytes": 931173960
+    }
+  },
+  "scientific_arm_configs_unchanged": true,
+  "original_payloads_and_optimizer_unchanged": true,
+  "platform": "ORCD RTX PRO6000 default; matched normal H200 override",
+  "verification": "Source/derived payload hashes, exact original-ORCD pair/material and frozen helper/source/config identities checked on CPU. No mutation or GPU allocation."
+}

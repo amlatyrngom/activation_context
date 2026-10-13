@@ -1,0 +1,9 @@
+{
+  "job": "23636639",
+  "utc": "2026-09-24 08:24:14 UTC",
+  "script_sha256": "d5e9d669167423677eceda6d778eea67ae53bd742415dadda1634e04f2f20845",
+  "old_producer": 23628641,
+  "scope": "Separate actual FP8 batch16 pilot; only on success, graceful confirmed handoff of same100kbank",
+  "review": "Three transition findings resolved; scheduler-failure retry followup fixed and privately tested",
+  "validation": "bash -n and marker/cancellation/transport failure fixtures pass"
+}

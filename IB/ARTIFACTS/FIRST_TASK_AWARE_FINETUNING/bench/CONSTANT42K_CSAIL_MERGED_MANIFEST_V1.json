@@ -1,0 +1,30 @@
+{
+  "kind": "constant42k_merged32k_csail_v1",
+  "helper_sha256": {
+    "evaluate_constant42k_csail_merged_v1.py": "58bb0f23138ddf4c81904d424ed932d8d7e08f70dd0fa2054f705adc578eb15d",
+    "evaluate_constant42k_csail_merged_v1.sbatch": "4f9fe40b1f664653d6dcac424f1446f7484bd6403108451cf62ca7a1264c2c76",
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "run_qa_strong_long_v1.py": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054"
+  },
+  "input_fingerprints": {
+    "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+    "ac_input_fingerprint": "7884ec421e489268f4d33454734e129c3097f6d334db4b97f14de268e715104c",
+    "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb"
+  },
+  "input_provenance": "All100 real-tokenizer original merged32k inputs from immutable piecewise42k evidence; GPU builder must reproduce hashes from fresh8k material.",
+  "input_tokenizer_receipt_sha256": "3086257d61610b39e2303132a1e73c971f052d497b65149c8a9b47a3303c63f6",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "staging_receipt_sha256": "77aa6ea2858b1358d575f3b1130ce2bb187758fc1f548f37b1fe56ebb5092ca7",
+  "pair_sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7",
+  "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+  "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051"
+}

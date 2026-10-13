@@ -1,0 +1,15 @@
+{
+  "job_id": 2203028,
+  "host": "csail",
+  "purpose": "Alternative original reconstruction P2 paired initializer on identical 100 QA items; all three candidate controls frozen",
+  "output": "/data/scratch/ngom/activation/trajectory_compaction/qa_cohort_p2",
+  "worker_sha256": "5d45eecd1179553b95b599f3905df6584d7a9be41eb8dea5f1b9479446eb59b0",
+  "launcher_sha256": "714acb6b054414c8cc58751c93dc4eff1fdbd335e86f17b9f6ff619374e1fb7e",
+  "pair": {
+    "ac_checkpoint": "/data/scratch/ngom/activation/KEEP/P2/AC_MODELS/rag_poc/epoch_001",
+    "reader_checkpoint": "/data/scratch/ngom/activation/KEEP/P2/LORAS/rag_reader/epoch_001"
+  },
+  "source": "source_v9",
+  "does_not_change_main_run_controls": true,
+  "receipt_utc": "2026-09-24T08:54:41.414698+00:00"
+}

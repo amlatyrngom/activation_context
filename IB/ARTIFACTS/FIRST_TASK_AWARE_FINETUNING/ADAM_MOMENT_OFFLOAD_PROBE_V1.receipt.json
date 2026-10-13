@@ -1,0 +1,20 @@
+{
+  "status": "completed_private_gpu_probe_pass_no_production_adoption",
+  "checks": 37,
+  "files_sha256": {
+    "probe_adam_moment_offload_v1.py": "b292c3097fac2cf9e84c8f9d03b5713dcd7bc3fd7590ac34c72b39b6dd3ebf3e",
+    "probe_adam_moment_offload_v1.sbatch": "246de7f6632d98417a698f6938cdc3cf217022ff4038ed5fa6916df7f5aa622f",
+    "ADAM_MOMENT_OFFLOAD_PROBE_V1.json": "adbe8ea07a80b51bd8cab1af92baa9c3c1809acb7c22c94e9198ad5cf8a7d9d3",
+    "check.py": "c96ea73a1220574ef14b3a12f3c68a78d6fdefa7402c563354c7a248a3538cd0",
+    "checks.json": "f4713bcd6d7cccd5ce8e21b437be61193d250e36a0527a2e57e21f65f796ba4b"
+  },
+  "guard_review_resolution": "All615 clocks exact and active-gradient IDs equal populated-state IDs; single-stale-clock/missing-gradient negatives pass.",
+  "resume_scope": "Optimizer-state serialization/load_state_dict roundtrip, not fresh-process full paired-checkpoint resume.",
+  "gpu_equivalence": "Exact two-step same-L40S native2k resident repeat/offloaded comparisons pass; all615 clocks and active IDs checked.",
+  "gpu_memory_fit": "Two merged32k logical8 batches completed,38.0417/38.0229GiB peak; whole960 unproved.",
+  "production_adoption": false,
+  "result_path": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/ADAM_MOMENT_OFFLOAD_PROBE_V1.result.json",
+  "result_sha256": "d0a21ccca30f63f60d6b0248f2241bbf56a6eee2482903e180c77728d6928aed",
+  "gpu_job_id": 23555733,
+  "planning": "Approximately2h45 training alone for960\u00d71; likely>3h with reporting/setup/checkpoints. Not a PI-deadline shortcut."
+}

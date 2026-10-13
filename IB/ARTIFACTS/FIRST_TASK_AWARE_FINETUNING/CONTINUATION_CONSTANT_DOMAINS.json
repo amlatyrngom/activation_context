@@ -1,0 +1,144 @@
+{
+  "checked_utc": "2026-09-23T03:11:16.051526+00:00",
+  "scope": "32k final versus10k additional fresh questions at constant final LR; same400 NLL and existing100 source reviews, no new judgement or selection.",
+  "domains": [
+    {
+      "domain": "code",
+      "held_questions": 120,
+      "parent_nll": 0.5868264908643844,
+      "continued_nll": 0.5475054511491703,
+      "nll_lower": 68,
+      "supported_reviewed": 24,
+      "semantic": {
+        "fresh32": {
+          "correct": 19,
+          "partial": 3,
+          "incorrect": 2
+        },
+        "constant_final": {
+          "correct": 20,
+          "partial": 2,
+          "incorrect": 2
+        },
+        "p2_full": {
+          "partial": 2,
+          "correct": 22
+        }
+      }
+    },
+    {
+      "domain": "documents",
+      "held_questions": 32,
+      "parent_nll": 0.4893418998841464,
+      "continued_nll": 0.5126558671733096,
+      "nll_lower": 12,
+      "supported_reviewed": 8,
+      "semantic": {
+        "fresh32": {
+          "incorrect": 2,
+          "correct": 4,
+          "partial": 2
+        },
+        "constant_final": {
+          "correct": 6,
+          "partial": 1,
+          "incorrect": 1
+        },
+        "p2_full": {
+          "correct": 7,
+          "partial": 1
+        }
+      }
+    },
+    {
+      "domain": "legal",
+      "held_questions": 24,
+      "parent_nll": 0.8212638817034292,
+      "continued_nll": 0.7787179711726584,
+      "nll_lower": 11,
+      "supported_reviewed": 4,
+      "semantic": {
+        "fresh32": {
+          "correct": 3,
+          "partial": 1
+        },
+        "constant_final": {
+          "correct": 3,
+          "incorrect": 1
+        },
+        "p2_full": {
+          "correct": 4
+        }
+      }
+    },
+    {
+      "domain": "numeric",
+      "held_questions": 100,
+      "parent_nll": 0.6315069109987089,
+      "continued_nll": 0.566046263791718,
+      "nll_lower": 61,
+      "supported_reviewed": 21,
+      "semantic": {
+        "fresh32": {
+          "partial": 2,
+          "correct": 11,
+          "incorrect": 8
+        },
+        "constant_final": {
+          "correct": 14,
+          "incorrect": 6,
+          "partial": 1
+        },
+        "p2_full": {
+          "correct": 15,
+          "partial": 4,
+          "incorrect": 2
+        }
+      }
+    },
+    {
+      "domain": "office",
+      "held_questions": 24,
+      "parent_nll": 0.5350233814013169,
+      "continued_nll": 0.5274670485816515,
+      "nll_lower": 14,
+      "supported_reviewed": 6,
+      "semantic": {
+        "fresh32": {
+          "correct": 5,
+          "partial": 1
+        },
+        "constant_final": {
+          "correct": 6
+        },
+        "p2_full": {
+          "correct": 6
+        }
+      }
+    },
+    {
+      "domain": "web",
+      "held_questions": 100,
+      "parent_nll": 0.457527386248371,
+      "continued_nll": 0.43015855263413155,
+      "nll_lower": 56,
+      "supported_reviewed": 24,
+      "semantic": {
+        "fresh32": {
+          "correct": 21,
+          "incorrect": 2,
+          "partial": 1
+        },
+        "constant_final": {
+          "correct": 22,
+          "partial": 1,
+          "incorrect": 1
+        },
+        "p2_full": {
+          "correct": 24
+        }
+      }
+    }
+  ],
+  "caveat": "Domain slices are descriptive and small, especially legal/office. No source weighting or pruning is changed on this evidence."
+}

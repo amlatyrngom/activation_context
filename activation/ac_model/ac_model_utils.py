@@ -7,14 +7,22 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import queue
+import random
+import re
+import shutil
 import threading
 import time
 import typing as t
+import unicodedata
 from copy import deepcopy
 from dataclasses import dataclass, field
 from collections import OrderedDict
 from concurrent.futures import Future
+from contextlib import contextmanager
+from datetime import timedelta
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -35,6 +43,24 @@ def normalize_messages(messages: list[dict] | str) -> list[dict]:
     if isinstance(messages, str):
         return [{"role": "user", "content": messages}]
     return list(messages)
+
+
+def qa_encoder_messages(messages, question, ac_name, ratio, *, encoder_sees_question=True,
+                        parent_messages=None):
+    """Question-aware, general-summary, or compressed-parent conditioning for QA."""
+    from ..common.ac_parts import ac_part
+    task = [{"role": "user", "content": f"Question: {question}" if encoder_sees_question else
+             "Summarize the useful facts and exact details in this context for later use."}]
+    if parent_messages is None:
+        return deepcopy(messages) + task
+    if not encoder_sees_question:
+        raise ValueError("Compressed question-bearing parent requires encoder_sees_question=True")
+    parent = ac_part(deepcopy(parent_messages) + task, ac_name, ratio)
+    # The fresh-evidence encoder only receives the question through its parent's rows.
+    evidence = deepcopy(messages)
+    insertion = 1 if evidence and evidence[0].get("role") == "system" else 0
+    evidence.insert(insertion, {"role": "user", "content": [parent]})
+    return evidence
 
 
 def canonical_json(value: object) -> str:
@@ -120,6 +146,17 @@ def assistant_target_ids(tokenizer, message: dict, tools: list[dict] | None = No
     if not ids:
         raise ValueError("Assistant output has no target tokens")
     return list(ids)
+
+
+def without_stop_token(tokenizer, ids: list[int]) -> list[int]:
+    """`ids` (an assistant_target_ids output) without its trailing end-of-turn token(s): a target whose stop position is
+    unpredictable by construction then carries no loss for it. Refuses a target that does not end with the end-of-turn."""
+    from ..harness.hf_utils import canonical_eot_token
+    eot = canonical_eot_token(tokenizer) or tokenizer.eos_token
+    stop = tokenizer.encode(eot, add_special_tokens=False) if eot else []
+    if not stop or len(ids) <= len(stop) or ids[-len(stop):] != stop:
+        raise ValueError("The target does not end with the tokenizer's end-of-turn token")
+    return list(ids[:-len(stop)])
 
 
 def cached_vocabulary_size(tokenizer) -> int:
@@ -378,10 +415,94 @@ class BlockedLocalAttentionLayer(nn.Module):
         return x + self.residual_scale * self.ffn(self.norm2(x))
 
 
+class WindowedPooling(nn.Module):
+    """
+    Self-attention on `window`-wide windows with `stride` stride, pooled to one vector per window,
+    then an FFN: the token sequence becomes about 1/stride of its length (the retrieval model's
+    byte pooling, on token rows).
+    """
+
+    def __init__(self, d: int, num_heads: int, window: int, stride: int) -> None:
+        super().__init__()
+        self.window, self.stride = window, stride
+        self.norm = nn.LayerNorm(d)
+        self.attention = nn.MultiheadAttention(d, num_heads, dropout=0.0, batch_first=True)
+        self.ffn = FeedForward(d, 4 * d, d)
+        self.residual_scale = nn.Parameter(torch.tensor(0.1))
+
+    def num_windows(self, length: int) -> int:
+        return 1 if length <= self.window else (length - self.window + self.stride - 1) // self.stride + 1
+
+    def forward(self, x: torch.Tensor, valid: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """x [B, L, d], valid [B, L] bool -> pooled [B, W, d], window mask [B, W] bool (exactly the windows a row gets alone)."""
+        batch_size, length, d = x.shape
+        window, stride = self.window, self.stride
+        pad = (-(length - window)) % stride if length > window else window - length
+        if pad:
+            x = F.pad(x, (0, 0, 0, pad))
+            valid = F.pad(valid, (0, pad), value=False)
+        windows = x.unfold(1, window, stride).permute(0, 1, 3, 2)                                  # [B, W, window, d]
+        window_masks = valid.unfold(1, window, stride)                                              # [B, W, window]
+        num_windows = windows.shape[1]
+        flat = windows.reshape(batch_size * num_windows, window, d)
+        flat_masks = window_masks.reshape(batch_size * num_windows, window)
+        lengths = valid.sum(dim=1)
+        num_valid = torch.where(lengths > window, (lengths - window + stride - 1) // stride + 1, torch.ones_like(lengths))
+        window_valid = (torch.arange(num_windows, device=x.device)[None, :] < num_valid[:, None]).reshape(-1)
+        key_padding = ~flat_masks
+        key_padding[~window_valid] = False                                                          # invalid windows attend harmlessly, masked downstream
+        normed = self.norm(flat)
+        attended, _ = self.attention(normed, normed, normed, key_padding_mask=key_padding, need_weights=False)
+        flat = flat + self.residual_scale * attended
+        weights = flat_masks.to(flat.dtype)[..., None]
+        pooled = (flat * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        pooled = pooled + self.residual_scale * self.ffn(pooled)
+        return pooled.view(batch_size, num_windows, d), window_valid.view(batch_size, num_windows)
+
+
 def unit_rows(rows: torch.Tensor) -> torch.Tensor:
     """Normalize fp32 rows without mixing content across positions."""
     rows = rows.float()
     return rows * rows.square().mean(dim=-1, keepdim=True).clamp_min(1e-8).rsqrt()
+
+
+DENSE_RE = re.compile(r"[0-9=+*/^_{}\[\]<>|\\#$%&~@`]")
+
+
+def is_dense_piece(piece: str) -> bool:
+    """Whether a token's text is "dense" content: a digit, a code/math symbol (DENSE_RE), or a non-ASCII character that is neither a
+    letter nor typographic punctuation / space (the rule of the study's density-weighted draws, shared with the bin weights)."""
+    piece = piece.replace("�", "")   # a byte-level token that is a fragment of a multi-byte character decodes to the replacement character
+    return bool(DENSE_RE.search(piece)) or (not piece.isascii() and any(
+        ord(ch) > 127 and not ch.isalpha() and unicodedata.category(ch) not in ("Pi", "Pf", "Pd", "Po", "Ps", "Pe", "Zs") for ch in piece))
+
+
+def summary_bins(length: int, num_rows: int, device: torch.device, weights: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
+    """The V ordered token-count bins of N content rows, as [start, end) bounds: floor/ceil bins cover the input; V>N repeats
+    nonempty bins, never padding. With `weights` (one positive weight per token) and V < N the bins hold equal cumulative weight
+    instead: bin k runs from the token whose cumulative weight first exceeds k·W/V to the one at which it first reaches (k+1)·W/V
+    (the floor/ceil rule applied to the weight axis: uniform weights give the token-count bins' ends, bins stay nonempty)."""
+    if length == 0 or num_rows < 1:
+        raise ValueError("Summary pooling needs nonempty content and a positive row count")
+    ordinal = torch.arange(num_rows, device=device)
+    if weights is None or num_rows >= length:
+        return ordinal * length // num_rows, ((ordinal + 1) * length + num_rows - 1) // num_rows
+    if weights.shape != (length,):
+        raise ValueError("Bin weights must hold one weight per content token")
+    cumulative = weights.double().cumsum(0)                                            # double: k·W/V must not round onto an integer sum (N·V > 2^24)
+    targets = cumulative[-1] * ordinal[1:].double() / num_rows                         # the V-1 interior cuts k·W/V
+    starts = torch.cat([ordinal[:1], torch.searchsorted(cumulative, targets, right=True)])
+    ends = torch.cat([torch.searchsorted(cumulative, targets, right=False) + 1, torch.tensor([length], device=device)])
+    return starts, ends
+
+
+def interleaved_positions(length: int, num_rows: int, device: torch.device, weights: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
+    """Decoder positions of the N content rows and of the V summaries when each summary follows its pooling bin: summary k
+    sits right after its bin's last token and after the k summaries before it; token j after the summaries whose bins end at
+    or before it. A permutation of range(N + V). `weights`: the bins' token weights (summary_bins)."""
+    _, ends = summary_bins(length, num_rows, device, weights)
+    tokens = torch.arange(length, device=device)
+    return tokens + torch.searchsorted(ends, tokens, right=True), ends + torch.arange(num_rows, device=device)
 
 
 class AdaptiveSummaryPooling(nn.Module):
@@ -394,15 +515,10 @@ class AdaptiveSummaryPooling(nn.Module):
         self.ffn = FeedForward(d, 4 * d, d)
         self.residual_scale = nn.Parameter(torch.tensor(0.1))
 
-    def forward(self, rows: torch.Tensor, num_rows: int) -> torch.Tensor:
-        # floor/ceil bins cover the input; V>N repeats nonempty bins, never padding.
+    def forward(self, rows: torch.Tensor, num_rows: int, weights: torch.Tensor | None = None) -> torch.Tensor:
         length = rows.shape[0]
-        if length == 0 or num_rows < 1:
-            raise ValueError("Summary pooling needs nonempty content and a positive row count")
-        ordinal = torch.arange(num_rows, device=rows.device)
-        starts = ordinal * length // num_rows
-        ends = ((ordinal + 1) * length + num_rows - 1) // num_rows
-        width = (length + num_rows - 1) // num_rows + 1
+        starts, ends = summary_bins(length, num_rows, rows.device, weights)
+        width = (length + num_rows - 1) // num_rows + 1 if weights is None or num_rows >= length else int((ends - starts).max().item())
         indexes = starts[:, None] + torch.arange(width, device=rows.device)[None]
         valid = indexes < ends[:, None]
         bins = rows[indexes.clamp_max(length - 1)]
@@ -415,22 +531,35 @@ class AdaptiveSummaryPooling(nn.Module):
 
 
 class RowHead(nn.Module):
-    """FFN x4 into the destination width, each row RMS-normalized and scaled by a learned scalar (initialized to the destination embedding RMS)."""
+    """FFN x4 into the destination width, each row RMS-normalized and scaled by a learned scalar (initialized to the destination embedding RMS).
+    `skip`: the input added to the FFN's output, which starts at zero (equal widths: the row starts as the normalized input).
+    `linear_skip`: a bias-free linear map of the input added instead (unequal widths), zero until its owner fills it with the
+    embedding map (ActivationContextModel._ensure_scales); the FFN's output starts at zero too, so the row starts as the mapped input."""
 
-    def __init__(self, d_in: int, d_out: int, initial_scale: float = 1.0, skip: bool = False) -> None:
+    def __init__(self, d_in: int, d_out: int, initial_scale: float = 1.0, skip: bool = False, linear_skip: bool = False) -> None:
         super().__init__()
         self.ffn = FeedForward(d_in, 4 * d_in, d_out)
         self.scale = nn.Parameter(torch.tensor(float(initial_scale)))
         self.skip = skip
+        self.linear: nn.Linear | None = None
+        if skip and linear_skip:
+            raise ValueError("RowHead takes one skip: identity or linear")
         if skip:
             if d_in != d_out:
                 raise ValueError("RowHead skip needs equal widths")
             nn.init.zeros_(self.ffn.down.weight); nn.init.zeros_(self.ffn.down.bias)   # identity at init: the row is the normalized input
+        if linear_skip:
+            with torch.random.fork_rng(devices=[]):                                      # zeroed anyway: the global stream draws as without it
+                self.linear = nn.Linear(d_in, d_out, bias=False)
+            nn.init.zeros_(self.linear.weight)                                          # the owner fills the map before the first encode
+            nn.init.zeros_(self.ffn.down.weight); nn.init.zeros_(self.ffn.down.bias)
 
     def forward(self, rows: torch.Tensor) -> torch.Tensor:
         out = self.ffn(rows)
         if self.skip:
             out = out + rows
+        if self.linear is not None:
+            out = out + self.linear(rows)
         rms = out.pow(2).mean(dim=-1, keepdim=True).add(1e-6).sqrt()
         return out / rms * self.scale
 
@@ -439,17 +568,29 @@ class RowHead(nn.Module):
 class ACOutput:
     """What the encoder emits for one part: the rows in the reader's input space plus, for a deep model, one residual delta per
     intervention layer ([V, d_target], `layer_inputs`) that the reader adds to that layer's input at the row positions. Recursive
-    results carry an empty map."""
+    results carry an empty map and their pre-adapter final states (`states`). A key/value-transfer model (`kv_transfer`) emits
+    zero rows (inert placeholders in the reader) and, per reader layer, the keys and values of its V summary tokens."""
     input_embeds: torch.Tensor
     layer_inputs: dict[int, torch.Tensor] = field(default_factory=dict)
+    states: torch.Tensor | None = None       # a recursive result's final V side states before the recursive adapter ([V, d_side]): the
+                                             # parent's read-outs attend them as extra keys when `recursive_keys` is on
+    kv_values: dict[int, tuple[torch.Tensor, torch.Tensor]] = field(default_factory=dict)   # reader layer -> (keys, values), each [V, kv_heads, head_dim];
+                                             # the keys are not rotated yet: the reader rotates them to where the part sits in its prompt
+    kv_positions: torch.Tensor | None = None # [V] long: the summary tokens' positions in the encoder's sequence
+    kv_length: int = 0                       # the length of the encoder's sequence (the positions the part takes up in the reader)
+    kv_overwrite: bool = False               # overwrite mode: the rows are real reader positions (input_embeds: the marker) whose keys/values are replaced
+
+    def _map(self, move: t.Callable[[torch.Tensor], torch.Tensor], index: t.Callable[[torch.Tensor], torch.Tensor]) -> "ACOutput":
+        return ACOutput(move(self.input_embeds), {int(layer): move(rows) for layer, rows in self.layer_inputs.items()},
+                        None if self.states is None else move(self.states),
+                        {int(layer): (move(keys), move(values)) for layer, (keys, values) in self.kv_values.items()},
+                        None if self.kv_positions is None else index(self.kv_positions), self.kv_length, self.kv_overwrite)
 
     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
-        move = lambda tensor: tensor.to(device=device, dtype=dtype)
-        return ACOutput(move(self.input_embeds), {int(layer): move(rows) for layer, rows in self.layer_inputs.items()})
+        return self._map(lambda tensor: tensor.to(device=device, dtype=dtype), lambda tensor: tensor.to(device=device))
 
     def detach_cpu(self, dtype: torch.dtype = torch.bfloat16) -> "ACOutput":
-        cpu = lambda tensor: tensor.detach().to(device="cpu", dtype=dtype).contiguous()
-        return ACOutput(cpu(self.input_embeds), {int(layer): cpu(rows) for layer, rows in self.layer_inputs.items()})
+        return self._map(lambda tensor: tensor.detach().to(device="cpu", dtype=dtype).contiguous(), lambda tensor: tensor.detach().to(device="cpu"))
 
     @property
     def has_interventions(self) -> bool:
@@ -457,7 +598,8 @@ class ACOutput:
 
     @property
     def tensors(self) -> list[torch.Tensor]:
-        return [self.input_embeds, *self.layer_inputs.values()]
+        return [self.input_embeds, *self.layer_inputs.values(), *([self.states] if self.states is not None else []),
+                *(tensor for pair in self.kv_values.values() for tensor in pair), *([self.kv_positions] if self.kv_positions is not None else [])]
 
     @property
     def nbytes(self) -> int:
@@ -506,7 +648,8 @@ class PassageAttention(nn.Module):
         normed = self.norm(passage)
         split = lambda tensor, n: tensor.view(n, self.heads, -1).transpose(0, 1)                   # [heads, n, r / heads]
         q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(normed), passage.shape[0]), split(self.value(normed), passage.shape[0])
-        mixed = F.scaled_dot_product_attention(q, k, v).transpose(0, 1).reshape(rows.shape[0], -1)
+        # A batch dimension lets CUDA use memory-efficient attention for these FP32 readouts.
+        mixed = F.scaled_dot_product_attention(q.unsqueeze(0), k.unsqueeze(0), v.unsqueeze(0)).squeeze(0).transpose(0, 1).reshape(rows.shape[0], -1)
         return rows + self.out(mixed)
 
 
@@ -591,6 +734,512 @@ class EncodeRequest(t.NamedTuple):
     compression_ratio: float
     is_recursive: bool
     tools: list[dict] | None = None            # the definitions the compressed segment ran with (part["tools"]); templated on the side
+
+
+def ac_execution_records(ac, examples):
+    """Actual recursive encoder work and reader lengths, shared by tuning and partitioning."""
+    counts, sequences = {}, {}
+    def request_record(request):
+        key = hashlib.sha256(canonical_json(request._asdict()).encode()).hexdigest()
+        if key not in counts:
+            children = [ac._child_request(part, request.compression_ratio) for part in direct_parts(request.messages)]
+            keys = [request_record(child) for child in children]
+            rows = [ac.num_view_rows(counts[key][0], child.compression_ratio) for key, child in zip(keys, children)]
+            ids, _ = tokenize_with_parts(ac.side.tokenizer, request.messages, rows, ac.pad_id, tools=request.tools)
+            length = len(ids) + ac.num_view_rows(len(ids), request.compression_ratio)
+            counts[key] = (len(ids), length + sum(counts[child][1] for child in keys))
+            sequences[key] = [length, *(value for child in keys for value in sequences[child])]
+        return key
+    records = []
+    for example in examples:
+        keys = [request_record(request) for request in example.part_requests]
+        records.append({"item": example.item.item_id, "request_keys": keys,
+            "encoder_tokens": sum(counts[key][1] for key in keys),
+            "encoder_sequence_tokens": [value for key in keys for value in sequences[key]],
+            "reader_tokens": len(example.student_ids), "target_tokens": len(example.target_ids),
+            "penalty_tokens": len(example.penalty.student_ids) if example.penalty else 0,
+            "weight": example.item.weight,
+            "reader_identity": hashlib.sha256(canonical_json([list(example.student_ids), list(example.student_positions), list(example.target_ids)]).encode()).hexdigest(),
+            "reference_identity": list(example.penalty.teacher_cache_key) if example.penalty else None})
+    return records
+
+
+def ac_execution_cost(record):
+    # Encoder/reader have different widths. This is a length-based scheduling estimate,
+    # not a throughput claim; hardware tuning measures complete updates separately.
+    return max(1., record["encoder_tokens"] * .25 + record["reader_tokens"]
+               + record["target_tokens"] * 2 + record["penalty_tokens"] * .25)
+
+
+def ac_execution_costs(ac, examples):
+    """Reuse CPU-prepared scheduling estimates; old prepared examples remain readable."""
+    missing = [example for example in examples if getattr(example, "execution_cost", None) is None]
+    for example, record in zip(missing, ac_execution_records(ac, missing), strict=True):
+        example.execution_cost = ac_execution_cost(record)
+    return [example.execution_cost for example in examples]
+
+
+def bucket_training_order(order, costs, batch_size, window, seed):
+    """Opt-in similar-cost batches; preserve every item and keep the partial tail last."""
+    if not window:
+        return order
+    if window < batch_size or window % batch_size:
+        raise ValueError("cost_bucket_examples must be a positive multiple of the logical batch size")
+    batches, tail = [], []
+    for start in range(0, len(order), window):
+        local = sorted(order[start:start + window], key=lambda index: -costs[index])
+        for offset in range(0, len(local), batch_size):
+            batch = local[offset:offset + batch_size]
+            if len(batch) == batch_size:
+                batches.append(batch)
+            else:
+                tail = batch
+    random.Random(seed).shuffle(batches)
+    return [index for batch in batches for index in batch] + tail
+
+
+def part_group_key(example) -> str:
+    """What an example's compressed parts are (texts, ratios, tools): equal keys mean one encoding serves both examples."""
+    return canonical_json([request._asdict() for request in example.part_requests])
+
+
+def part_grouped_order(order, keys, group, seed):
+    """Opt-in: consecutive runs of `group` examples share their compressed parts (equal `keys`), so one encoding can serve a
+    run. The runs are cut from each key's examples in the order given and shuffled as wholes; every example is kept, and the
+    examples left over (fewer than `group` per key) come last in the order given."""
+    if not group:
+        return order
+    by_key: dict[str, list[int]] = {}
+    for index in order:
+        by_key.setdefault(keys[index], []).append(index)
+    runs, rest = [], []
+    for members in by_key.values():
+        full = len(members) - len(members) % group
+        runs.extend(members[start:start + group] for start in range(0, full, group))
+        rest.extend(members[full:])
+    random.Random(seed).shuffle(runs)
+    return [index for run in runs for index in run] + rest
+
+
+def checkpoint_preserved(path):
+    """A preservation flag on either a checkpoint or its ancestor protects it."""
+    path = Path(path).absolute()
+    return any((parent / "PRESERVE").exists() for parent in (path, *path.parents))
+
+
+def check_checkpoint_space(folders, parameters, optimizer):
+    """Reserve a complete new pair and Adam state while keeping the old pair intact."""
+    parameter_bytes = sum(p.numel() * p.element_size() for p in parameters)
+    state_bytes = sum(value.numel() * value.element_size() for state in (optimizer.state.values() if optimizer else [])
+                      for value in state.values() if isinstance(value, torch.Tensor))
+    required = int((parameter_bytes + state_bytes) * 1.15) + 1024**3
+    devices = set()
+    for folder in folders:
+        parent = Path(folder).parent
+        while not parent.exists():
+            parent = parent.parent
+        device = parent.stat().st_dev
+        if device in devices:
+            continue
+        devices.add(device)
+        available = shutil.disk_usage(parent).free
+        if available < required:
+            raise OSError(f"Checkpoint needs {required / 1024**3:.1f} GiB free at {parent}; "
+                          f"{available / 1024**3:.1f} GiB available. Previous recovery pair retained.")
+    return required
+
+
+def training_storage_preflight(output, *, quota_root, quota_limit_bytes, reserve_bytes=32 * 1024**3):
+    """Check the entire quota domain on a compute node before placing large models."""
+    import subprocess
+    output, quota_root = Path(output).resolve(), Path(quota_root).resolve()
+    if not output.is_relative_to(quota_root):
+        raise ValueError("Training output is outside the supplied quota domain")
+    output.mkdir(parents=True, exist_ok=True)
+    result = subprocess.run(["du", "-sx", "--block-size=1", str(quota_root)],
+                            check=True, capture_output=True, text=True, timeout=600)
+    used = int(result.stdout.split()[0])
+    filesystem_free = shutil.disk_usage(output).free
+    quota_free = int(quota_limit_bytes) - used
+    if min(filesystem_free, quota_free) < reserve_bytes:
+        raise OSError(f"Training needs {reserve_bytes / 1024**3:.1f} GiB headroom; "
+                      f"filesystem {filesystem_free / 1024**3:.1f}, quota {quota_free / 1024**3:.1f} GiB free")
+    return {"time_unix": time.time(), "quota_root": str(quota_root), "quota_limit_bytes": quota_limit_bytes,
+            "used_bytes": used, "quota_free_bytes": quota_free, "filesystem_free_bytes": filesystem_free,
+            "required_headroom_bytes": reserve_bytes, "method": "whole quota-domain allocated bytes; conservative explicit site limit"}
+
+
+@contextmanager
+def deterministic_training(enabled: bool):
+    """Scope PyTorch's process-wide kernel controls; CUDA workspace is set at process startup."""
+    if not enabled:
+        yield
+        return
+    if torch.cuda.is_available() and os.environ.get("CUBLAS_WORKSPACE_CONFIG") not in {":4096:8", ":16:8"}:
+        raise ValueError("Deterministic CUDA training requires CUBLAS_WORKSPACE_CONFIG=:4096:8 "
+                         "(or :16:8) before process startup")
+    previous = (torch.are_deterministic_algorithms_enabled(), torch.is_deterministic_algorithms_warn_only_enabled(),
+                torch.backends.cudnn.deterministic, torch.backends.cudnn.benchmark)
+    try:
+        torch.use_deterministic_algorithms(True, warn_only=False)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        yield
+    finally:
+        torch.use_deterministic_algorithms(previous[0], warn_only=previous[1])
+        torch.backends.cudnn.deterministic, torch.backends.cudnn.benchmark = previous[2:]
+
+
+class DistributedTraining:
+    """One existing trainer per GPU; synchronize once per global logical update.
+
+    Local losses already use the global example count, so gradients are SUMmed.
+    Globally unused parameters retain grad=None, including during plain-agent SFT.
+    The caller launches with torchrun; model ownership and forward paths stay local.
+    """
+    def __init__(self, enabled: bool = False, bucket_bytes: int = 64 * 1024**2):
+        self.rank, self.world_size, self.depth = 0, 1, 0
+        self.device = torch.device("cpu")
+        self.bucket_bytes = bucket_bytes
+        self.owns_group = False
+        self.parameters = []
+        self.buckets = []
+        if not enabled:
+            if int(os.environ.get("WORLD_SIZE", "1")) > 1:
+                raise ValueError("torchrun requires distributed=True; refusing concurrent checkpoint writers")
+            return
+        import torch.distributed as dist
+        if not dist.is_initialized():
+            if "RANK" not in os.environ or "WORLD_SIZE" not in os.environ:
+                raise ValueError("Launch distributed training with torchrun")
+            if torch.cuda.is_available():
+                torch.cuda.set_device(int(os.environ.get("LOCAL_RANK", "0")))
+            dist.init_process_group("nccl" if torch.cuda.is_available() else "gloo", timeout=timedelta(minutes=30))
+            self.owns_group = True
+        self.rank, self.world_size = dist.get_rank(), dist.get_world_size()
+        if int(os.environ.get("LOCAL_WORLD_SIZE", str(self.world_size))) != self.world_size:
+            raise ValueError("AC distributed training currently supports one GPU node")
+        if dist.get_backend() == "nccl":
+            torch.cuda.set_device(int(os.environ.get("LOCAL_RANK", "0")))
+            self.device = torch.device("cuda", torch.cuda.current_device())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
+    @property
+    def is_main(self):
+        return self.rank == 0
+
+    @property
+    def active(self):
+        return self.world_size > 1
+
+    def gather(self, value):
+        if not self.active:
+            return [value]
+        import torch.distributed as dist
+        result = [None] * self.world_size
+        dist.all_gather_object(result, value)
+        return result
+
+    def any(self, value: bool) -> bool:
+        if not self.active:
+            return value
+        import torch.distributed as dist
+        flag = torch.tensor(int(value), device=self.device, dtype=torch.int32)
+        dist.all_reduce(flag, op=dist.ReduceOp.MAX)
+        return bool(flag.item())
+
+    @contextmanager
+    def local_work(self):
+        """Finish or reject local preparation/backward together, before any update."""
+        error = None
+        self.depth += 1
+        try:
+            yield
+        except Exception as caught:
+            error = caught
+        finally:
+            self.depth -= 1
+        if self.any(error is not None):
+            errors = self.gather(error)
+            raise next(value for value in errors if value is not None)
+
+    def main(self, function, *args, **kwargs):
+        """Run reporting/checkpoint I/O once; share results and exceptions."""
+        if not self.active:
+            return function(*args, **kwargs)
+        import torch.distributed as dist
+        result = [None, None]
+        if self.is_main:
+            self.depth += 1
+            try:
+                result[0] = function(*args, **kwargs)
+            except Exception as error:
+                result[1] = error
+            finally:
+                self.depth -= 1
+        dist.broadcast_object_list(result, src=0)
+        if result[1] is not None:
+            raise result[1]
+        return result[0]
+
+    def reporter(self, target):
+        """Keep root-only reporting failures on the same control flow as training."""
+        if not self.active:
+            return target
+        if not self.main(lambda: target is not None):
+            return None
+        parallel = self
+        class Reporter:
+            def __getattr__(self, name):
+                def report(*args, **kwargs):
+                    def call():
+                        return getattr(target, name)(*args, **kwargs)
+                    if parallel.depth:
+                        return call() if parallel.is_main else None
+                    return parallel.main(call)
+                return report
+        return Reporter()
+
+    def expired(self, deadline) -> bool:
+        expired = deadline is not None and time.monotonic() >= deadline
+        return expired if self.depth else self.any(expired)
+
+    def initialize(self, parameters, identity):
+        """Check the replica contract and copy the initial trainable weights once."""
+        self.parameters = list(parameters)
+        if self.parameters:
+            self.device = self.parameters[0].device
+        self.buckets = []
+        if self.bucket_bytes < 1:
+            raise ValueError("Gradient bucket size must be positive")
+        contract = (identity, [(tuple(p.shape), str(p.dtype)) for p in self.parameters])
+        if any(value != contract for value in self.gather(contract)):
+            raise ValueError("Distributed replicas have different training data/configuration/parameters")
+        bucket, size, dtype = [], 0, None
+        for index, parameter in enumerate(self.parameters):
+            nbytes = parameter.numel() * parameter.element_size()
+            if bucket and (dtype != parameter.dtype or size + nbytes > self.bucket_bytes):
+                self.buckets.append(bucket); bucket, size = [], 0
+            bucket.append(index); size += nbytes; dtype = parameter.dtype
+        if bucket:
+            self.buckets.append(bucket)
+        if self.active:
+            import torch.distributed as dist
+            with torch.no_grad():
+                for bucket in self.buckets:
+                    flat = torch.cat([self.parameters[i].detach().reshape(-1) for i in bucket])
+                    dist.broadcast(flat, src=0)
+                    offset = 0
+                    for index in bucket:
+                        parameter = self.parameters[index]; count = parameter.numel()
+                        parameter.copy_(flat[offset:offset + count].view_as(parameter)); offset += count
+
+    def identity(self, examples, config):
+        """Bind order, content, targets and weights, without retaining serialized data."""
+        if not self.active:
+            return None
+        digest = hashlib.sha256(canonical_json(config).encode())
+        for example in examples:
+            digest.update(canonical_json((example.item.item_id, example.item.weight,
+                list(example.student_ids), list(example.student_positions), list(example.target_ids),
+                [request._asdict() for request in example.part_requests],
+                getattr(example, "execution_cost", None))).encode())
+        return digest.hexdigest()
+
+    def merge_step(self, records, totals, side_tokens, started):
+        """Global accounting and slowest-rank wall time, including optimizer work."""
+        if self.device.type == "cuda":
+            torch.cuda.synchronize(self.device)
+        gathered = self.gather((records, totals, side_tokens, time.monotonic() - started))
+        merged = {"loss": 0., "agreement": 0., "tokens": 0, "penalty": []}
+        for _, values, _, _ in gathered:
+            for key in ("loss", "agreement", "tokens"):
+                merged[key] += values[key]
+            merged["penalty"].extend(values["penalty"])
+        records = sorted((record for rows, _, _, _ in gathered for record in rows), key=lambda row: row[0])
+        elapsed = time.monotonic() - started
+        if self.active:
+            import torch.distributed as dist
+            timing = torch.tensor(elapsed, device=self.device, dtype=torch.float64)
+            dist.all_reduce(timing, op=dist.ReduceOp.MAX)
+            elapsed = float(timing.item())
+        return records, merged, sum(row[2] for row in gathered), elapsed
+
+    def partition(self, indices, costs):
+        """Greedy longest-first assignment without changing global batch membership."""
+        if not self.active:
+            return list(indices)
+        loads = [0.] * self.world_size
+        assignments = [[] for _ in loads]
+        for index in sorted(indices, key=lambda i: (-costs[i], i)):
+            rank = min(range(self.world_size), key=lambda r: (loads[r], len(assignments[r]), r))
+            assignments[rank].append(index); loads[rank] += costs[index]
+        chosen = set(assignments[self.rank])
+        return [index for index in indices if index in chosen]
+
+    def reduce_gradients(self):
+        """Bucketed exact-dtype SUM; missing local gradients contribute zero."""
+        if not self.active:
+            return
+        import torch.distributed as dist
+        present = torch.tensor([p.grad is not None for p in self.parameters], device=self.device, dtype=torch.int32)
+        dist.all_reduce(present, op=dist.ReduceOp.MAX)
+        present = present.cpu().tolist()
+        for bucket in self.buckets:
+            active = [i for i in bucket if present[i]]
+            if not active:
+                continue
+            first = self.parameters[active[0]]
+            flat = torch.zeros(sum(self.parameters[i].numel() for i in active), device=first.device, dtype=first.dtype)
+            offset = 0
+            for index in active:
+                parameter = self.parameters[index]; count = parameter.numel()
+                if parameter.grad is not None:
+                    flat[offset:offset + count].copy_(parameter.grad.reshape(-1))
+                offset += count
+            dist.all_reduce(flat, op=dist.ReduceOp.SUM)
+            offset = 0
+            for index in active:
+                parameter = self.parameters[index]; count = parameter.numel()
+                if parameter.grad is None:
+                    parameter.grad = torch.empty_like(parameter)
+                parameter.grad.copy_(flat[offset:offset + count].view_as(parameter)); offset += count
+        for parameter, used in zip(self.parameters, present):
+            if not used:
+                parameter.grad = None
+
+    def checkpoint_state(self):
+        states = self.gather({"cpu": torch.get_rng_state(), "cuda": torch.cuda.get_rng_state(self.device) if self.device.type == "cuda" else None})
+        return {"world_size": self.world_size, "rng_by_rank": states, "gradient_reduction": "sum", "global_batch_unchanged": True}
+
+    def restore_rng(self, state):
+        if state is None:
+            return
+        if state["world_size"] != self.world_size:
+            raise ValueError("Exact distributed RNG resume requires the saved GPU count")
+        local = state["rng_by_rank"][self.rank]
+        torch.set_rng_state(local["cpu"])
+        if local["cuda"] is not None:
+            torch.cuda.set_rng_state(local["cuda"], self.device)
+
+    def close(self):
+        if self.owns_group:
+            import torch.distributed as dist
+            dist.destroy_process_group()
+            self.owns_group = False
+        self.world_size = 1
+
+
+def validate_execution_policy(policy: dict) -> None:
+    """An opt-in measured training policy; never changes the logical update size."""
+    allowed = {"graph_examples", "reader_batch", "encode_batch_tokens", "reuse_encodings",
+               "side_checkpoint_tokens", "target_checkpoint_tokens", "optimizer_moments"}
+    if set(policy) - allowed:
+        raise ValueError(f"Unknown AC execution settings: {sorted(set(policy) - allowed)}")
+    for name in ("graph_examples", "reader_batch", "encode_batch_tokens"):
+        if name in policy and (type(policy[name]) is not int or policy[name] < 1):
+            raise ValueError(f"{name} must be a positive integer")
+    for name in ("side_checkpoint_tokens", "target_checkpoint_tokens"):
+        if name in policy and (type(policy[name]) is not int or policy[name] < 0):
+            raise ValueError(f"{name} must be a nonnegative integer")
+    if "reuse_encodings" in policy and type(policy["reuse_encodings"]) is not bool:
+        raise ValueError("reuse_encodings must be a boolean")
+    if policy.get("optimizer_moments", "gpu") not in ("cpu", "gpu"):
+        raise ValueError("optimizer_moments must be cpu or gpu")
+
+
+def execution_groups(examples: t.Sequence, policy: dict) -> list[list[int]]:
+    """Bound live graphs inside this logical update; preserve its membership and order."""
+    size = policy.get("graph_examples", 1)
+    return [list(range(start, min(start + size, len(examples)))) for start in range(0, len(examples), size)]
+
+
+def execution_batch_loss(trainer, ac_model, examples: t.Sequence, device, penalty_flags: list[bool], policy: dict) -> list[dict]:
+    """Reuse complete differentiable encodings only until this group's single backward.
+
+    Reader batching is independent of encoder batching. Penalties are sampled by the
+    caller in logical item order, before grouping; every returned loss remains an item
+    mean. The caller applies item weights and the logical-update denominator.
+    """
+    if len(penalty_flags) != len(examples):
+        raise ValueError("One penalty decision is required per example")
+    requests, indices, known = [], [], {}
+    for example in examples:
+        positions = []
+        for request in example.part_requests:
+            # Exact ratio, tools and recursive content are all included. No persistent
+            # cache, detached tensors, or payload dictionaries cross a backward call.
+            key = canonical_json(request._asdict()) if policy.get("reuse_encodings", False) else None
+            if key is None or key not in known:
+                index = len(requests)
+                requests.append(request)
+                if key is not None:
+                    known[key] = index
+            else:
+                index = known[key]
+            positions.append(index)
+        indices.append(positions)
+    previous_budget = ac_model.config.encode_batch_max_tokens
+    try:
+        ac_model.config.encode_batch_max_tokens = policy.get("encode_batch_tokens", previous_budget)
+        outputs = ac_model.encode_batch(requests, with_layers=True) if requests else []
+    finally:
+        ac_model.config.encode_batch_max_tokens = previous_budget
+    results = []
+    size = policy.get("reader_batch", 1)
+    for start in range(0, len(examples), size):
+        stop = min(start + size, len(examples))
+        encoded = [outputs[index] for positions in indices[start:stop] for index in positions]
+        results.extend(trainer._batch_loss(ac_model, examples[start:stop], device,
+            encoded_outputs=encoded, penalty_flags=penalty_flags[start:stop]))
+    return results
+
+
+class AdamMomentPlacement:
+    """Park AdamW moments between updates without changing its step or clock tensors."""
+    def __init__(self, optimizer):
+        if not isinstance(optimizer, torch.optim.AdamW):
+            raise TypeError("Moment placement supports AdamW only")
+        if any(group.get("amsgrad") or group.get("capturable") or group.get("differentiable") for group in optimizer.param_groups):
+            raise ValueError("Moment placement requires ordinary non-AMSGrad AdamW")
+        self.optimizer = optimizer
+        self.handles = [optimizer.register_step_pre_hook(self._before), optimizer.register_step_post_hook(self._after)]
+
+    def _move(self, to_cpu: bool) -> None:
+        for parameter, state in self.optimizer.state.items():
+            if not state:
+                continue
+            if set(state) != {"step", "exp_avg", "exp_avg_sq"}:
+                raise ValueError("Unexpected AdamW state")
+            destination = torch.device("cpu") if to_cpu else parameter.device
+            for key in ("exp_avg", "exp_avg_sq"):
+                value = state[key]
+                if value.shape != parameter.shape:
+                    raise ValueError("AdamW moment/parameter shape mismatch")
+                if value.device != destination:
+                    state[key] = value.to(device=destination, non_blocking=False)
+
+    def park(self) -> None:
+        self._move(True)
+
+    def _before(self, optimizer, args, kwargs):
+        self._move(False)
+
+    def _after(self, optimizer, args, kwargs):
+        self.park()
+
+    def close(self) -> None:
+        try:
+            self.park()
+        finally:
+            for handle in self.handles:
+                handle.remove()
+            self.handles.clear()
 
 
 class EncodeQueue:

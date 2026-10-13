@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-23T02:04:07.755108Z",
+  "hashes": {
+    "decode_strong_long_32k_v1.py": "fe399c1ca687fc10db1e8f83c6a3877329d21fb86664913c595a94fa31017385",
+    "decode_strong_long_32k_v1.sbatch": "0028584ce034d8ed6acec0dfc5872287c160604d055807d628da0bec06d364e3",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "STRONG_LONG_ADAPTATION_DESIGN_V1.json": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506"
+  },
+  "predecessor_job": 23514951,
+  "review": "Root source review and existing15CPU checks accepted; pinned inputs/pair/sampler, separate100AC decode output, no repeatedNLL. No frozen source edits.",
+  "job": 23520611,
+  "status": "released"
+}

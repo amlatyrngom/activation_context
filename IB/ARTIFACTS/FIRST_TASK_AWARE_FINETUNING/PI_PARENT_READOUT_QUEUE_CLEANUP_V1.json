@@ -1,0 +1,34 @@
+{
+  "utc": "2026-09-23T16:59:43.064800+00:00",
+  "reason": "Strong42k monolithic32k is complete with same-L40S layout/control comparison and300 source-reviewed answers. Extra parentRTX/H200 readouts are no longer needed; retain alltraining/synthesisjobs.",
+  "actions": {
+    "orcd": {
+      "job_id": 23550350,
+      "before": [
+        [
+          "23550350",
+          "pi_merged32k_parent",
+          "RUNNING",
+          "3:24",
+          "node5104"
+        ]
+      ],
+      "action": "unchanged",
+      "queue": "23559860|pi960_2x_100|PENDING|0:00|(Dependency)\n23559859|pi960_floor_100|PENDING|0:00|(Dependency)\n23558378|pi960_lr_floor|RUNNING|19:23|node3511\n23558379|pi960_lr_2x|RUNNING|19:23|node3512\n23549848|pi_lr_cosine_100|PENDING|0:00|(Dependency)\n23549845|pi_lr_constant_100|PENDING|0:00|(Dependency)\n23546190|gentle42k_long100|PENDING|0:00|(Dependency)\n23546188|gentle42k_finalize500|PENDING|0:00|(QOSMaxGRESPerUser)\n23549846|pi_lr_cosine|RUNNING|3:24|node5103\n23549844|pi_lr_constant|RUNNING|3:24|node5103\n23550350|pi_merged32k_parent|RUNNING|3:24|node5104\n23558386|pi960_h200|RUNNING|3:24|node4900\n"
+    },
+    "csail": {
+      "job_id": 2182542,
+      "before": [
+        [
+          "2182542",
+          "parent42k_merged100",
+          "PENDING",
+          "0:00",
+          "(Priority)"
+        ]
+      ],
+      "action": "cancelled_pending_duplicate_parent_readout",
+      "queue": "2182587|qa27b_csail_100k|PENDING|0:00|(Priority)\n2182542|parent42k_merged100|PENDING|0:00|(Priority)\n2182208|pi42k_final100|PENDING|0:00|(Dependency)\n2182017|pi42k_merged32k|PENDING|0:00|(Priority)\n"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "stop_reason": "complete",
+  "items": 10000,
+  "examples": 10000,
+  "completed_global_updates": 1250,
+  "planned_updates": 1250,
+  "planned_epochs": 1,
+  "duration_s": 7333.9,
+  "peak_memory_gb": 62.27,
+  "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001",
+  "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_final_lr/LORAS/rag_reader/epoch_001",
+  "parent_unique_questions": 32000,
+  "continuation_schedule": "final_lr",
+  "optimizer_policy": "inherited",
+  "epochs": [
+    {
+      "training_seconds": 4654.570297186263,
+      "reporting_seconds": 1792.263077906333,
+      "checkpoint_seconds": 8.328094699885696
+    }
+  ],
+  "checked_utc": "2026-09-23T02:28:42.893538+00:00",
+  "final_panel": {
+    "update": 1250,
+    "percent": 100.0,
+    "held items": 400,
+    "AC answer NLL": 0.5326864100103368,
+    "full answer NLL": 0.649674833643876,
+    "no-context answer NLL": 1.8143435965538575,
+    "fixed training panel NLL (32 questions)": 0.5186346885452096,
+    "panel seconds": 110.0,
+    "cohorts": {
+      "9b": {
+        "held AC": 0.5794905717715764,
+        "held full context": 0.7343936831953015,
+        "held no context": 1.9902291497093139,
+        "AC \u00b7 32 fixed training questions": 0.5186346885452096
+      },
+      "27b": {
+        "held AC": 0.4858822482490972,
+        "held full context": 0.5649559840924507,
+        "held no context": 1.638458043398401,
+        "AC \u00b7 32 fixed training questions": 0.5186346885452096
+      }
+    }
+  }
+}

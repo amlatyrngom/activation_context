@@ -6,6 +6,7 @@ gives a caching id (dataset_caching.py). Nothing is written into the dataset obj
 the examples back and decide what to keep.
 """
 import json
+import hashlib
 import random
 import time
 import typing as t
@@ -33,114 +34,7 @@ if t.TYPE_CHECKING:
     from activation.harness import HarnessRuntime
 
 
-STUDY_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "has_valuable_question": {"type": "boolean"},
-        "question": {"type": ["string", "null"]},
-        "answer": {"type": ["string", "null"]},
-    },
-    "required": ["has_valuable_question", "question", "answer"],
-    "additionalProperties": False,
-}
-
-LABEL_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "positives": {"type": "array", "items": {"type": "integer"}},
-        "negatives": {"type": "array", "items": {"type": "integer"}},
-    },
-    "required": ["positives", "negatives"],
-    "additionalProperties": False,
-}
-
-
-
-def make_study_prompt(study_context: str | None, modality: DataModality = DataModality.TEXT) -> tuple[str, str, dict]:
-    """
-    Returns system prompt, instructions, json schema. The trajectory variant asks about a fact inside
-    an agent's turns; both let the model declare a snippet worthless (`has_valuable_question: false`).
-    """
-    system_prompt = """
-# Core Guidelines
-- You are a study/exam-like questions formulator.
-- You are given a snippet from the corpus students are expected to study and understand.
-- From this, your goal is to generate a hard question (unanswerable with common knowledge or simple keyword look ups).
-    - This is IMPORTANT: the question should be **hard**, or it won't test the student's learning.
-    - The question should have an accompanying answer.
-- Your priority is: a hard question along with its expected, correct answer.
-- By default, keep your question short to medium-short unless the exam recommends longer questions.
-- When the snippet holds nothing worth asking about (boilerplate, navigation, an empty listing, pure formatting), set has_valuable_question to false and leave question and answer null.
-"""
-    if modality == DataModality.TRAJECTORY:
-        system_prompt += """
-# Trajectory Snippets
-- The snippet is part of an agent's conversation: its reasoning, its tool calls and the tool results.
-- Ask about a specific fact that appears in these turns (a value a tool returned, a decision the agent took, an error it saw, a file or quantity it found), phrased so someone who read the turns can answer it.
-- Never ask something answerable from the task statement alone, and never ask about the formatting of the transcript.
-"""
-
-    if study_context:
-        system_prompt += f"""
-# Exam Context
-The following emphasizes the kind of questions students are expected to handle.
-```
------
-{study_context}
------
-```
-Frame your questions in light of this.
-"""
-    system_prompt += """
-# Response Format
-Your answer must be formatted as a json object like:
-```json
-{
-    "has_valuable_question": true|false,
-    "question": "..."|null,
-    "answer": "..."|null
-}
-```
-"""
-    instructions = f"""
-# Instructions
-Generate the exam-like question for student's study.
-"""
-    return system_prompt, instructions, STUDY_JSON_SCHEMA
-
-
-def make_label_prompt() -> tuple[str, str, dict]:
-    """
-    Returns system prompt, instructions and json schema for the snippet labeling task.
-    """
-    system_prompt = """
-# Core Guidelines
-- You are a relevance judge determining what snippets from a corpus students should pay attention to answer a question.
-- You are given the study question, its reference answer, and numbered corpus snippets.
-- Label each snippet index as:
-    - **positive**: the snippet contains information that clearly helps answer the question.
-    - **negative**: the snippet contains information that clearly does not help answer the question.
-    - Leave out anything where you are unsure.
-- Be careful:
-    - The snippets are intentionally chosen to be *related* to the question without necessarily helping.
-    - Don't mark something as positive just because of shared vocabulary.
-- Every listed index must come from the snippet numbering; never list the same index on both sides.
-"""
-    system_prompt += """
-# Response Format
-Your answer must be formatted as a json object of snippet indices like:
-```json
-{
-    "positives": [0, 2],
-    "negatives": [3, 5, 6]
-}
-```
-Each is a list of indexes that should map to one of the given snippet indices.
-"""
-    instructions = """
-Label the snippets as positives / negatives for this question. Leave out ambiguous ones.
-"""
-    return system_prompt, instructions, LABEL_JSON_SCHEMA
+from .dataset_study_prompts import make_label_prompt, make_source_study_prompt
 
 
 class DatasetStudyGenerator:
@@ -181,126 +75,142 @@ class DatasetStudyGenerator:
         chat_kwargs["sampling_params"] = sampling_params_kwargs
         return chat_kwargs
 
-    def _example_from_row(self, row: dict, kind: str, base_seed: int) -> DatasetQAExample:
-        chunk = self.dataset_index.chunks[row["chunk_id"]]
-        return DatasetQAExample(
-            example_id=f"{self.dataset_id}:study:{kind}:{base_seed}:{row['index']}",
-            dataset_id=self.dataset_id,
-            query=row["question"],
-            gold_answers=[row["answer"]],
-            origin=SYNTHETIC,
-            split=DataSplit.TRAIN,
-            positive_doc_ids=[chunk.doc_id],
-            positive_chunk_ids=[chunk.chunk_id],
-        )
-
+    def _study_source(self, chunk, mode, max_chunks, max_tokens, tokenizer):
+        """Select once and retain exactly the text shown to the generator."""
+        doc = self.loaded_dataset.documents[chunk.doc_id]
+        chunks = sorted(doc.chunks.values(), key=lambda c: c.chunk_start)
+        if mode == "document":
+            if doc.text is None:
+                return None
+            selected = chunks
+            units = [{"doc_id": doc.doc_id, "chunk_ids": [c.chunk_id for c in selected], "text": doc.text}]
+        elif mode == "window":
+            position = next(i for i, c in enumerate(chunks) if c.chunk_id == chunk.chunk_id)
+            start = max(0, position - max_chunks // 2)
+            selected = chunks[start:start + max_chunks]
+            units = []
+            covered = selected[0].chunk_start
+            for candidate in selected:
+                end = candidate.chunk_start + len(candidate.chunk_text)
+                # Keep adjacent chunks independently citable without repeating their overlap.
+                text = (doc.text[covered:end] if doc.text is not None
+                        else candidate.chunk_text[max(0, covered - candidate.chunk_start):])
+                if text:
+                    units.append({"doc_id": doc.doc_id, "chunk_ids": [candidate.chunk_id], "text": text})
+                covered = max(covered, end)
+        elif mode == "related_chunks":
+            selected = [chunk] + self.dataset_index.bm25_query_many_frozen(
+                [chunk.chunk_text], top_k=max_chunks - 1, excluded_doc_ids=[[chunk.doc_id]])[0] if max_chunks > 1 else [chunk]
+            units = [{"doc_id": c.doc_id, "chunk_ids": [c.chunk_id], "text": c.chunk_text} for c in selected]
+        else:
+            text = safe_truncate_embedding_chunk(self.dataset_index.get_chunk_section(chunk), self.chunk_input_limit)
+            units = [{"doc_id": chunk.doc_id, "chunk_ids": [chunk.chunk_id], "text": text}]
+        text = "\n\n".join(f"Source {i}:\n{unit['text']}" for i, unit in enumerate(units))
+        if max_tokens is not None and len(tokenizer.encode(text, add_special_tokens=False)) > max_tokens:
+            return None  # Explicit skip, never silently shorten a whole document.
+        return {"mode": mode, "units": units, "text": text}
 
     def generate_examples_qa(
-        self,
-        num_samples: int,
-        base_seed: int = 0,
-        study_context: str | None = None,
-        caching_id: str | None = None,
-        modality: DataModality | None = None,
+        self, num_samples: int, base_seed: int = 0, study_context: str | None = None,
+        caching_id: str | None = None, modality: DataModality | None = None,
         *, progress: t.Callable[[dict], None] | None = None,
+        source_mode: t.Literal["chunk", "window", "document", "related_chunks"] = "chunk",
+        max_source_tokens: int | None = None, max_source_chunks: int = 3,
+        prompt_kind: t.Literal["qa", "code", "numeric", "constraints"] = "qa",
+        require_multiple_sources: bool = False, max_questions_per_source: int = 1,
     ) -> list[DatasetQAExample]:
-        """
-        One question per sampled chunk (num_samples chunks of the given modality, or of every modality
-        when None; the trajectory prompt variant for trajectory chunks), minus the chunks the model
-        declares junk. Cached rows (caching_id) are served first, the engine generates the tail with
-        seed `base_seed + batch index`; `study_context` is added to the prompt. Nothing is written into
-        the dataset: the examples are returned (origin SYNTHETIC, positive chunk = the source chunk).
-        """
-        loaded_model = self.harness.loaded_models[self.qa_model_name]
+        """Generate up to N questions per source attempt; retain exact evidence and cache whole requests."""
+        if source_mode not in ("chunk", "window", "document", "related_chunks"):
+            raise ValueError(f"Unknown source_mode: {source_mode}")
+        if max_source_chunks < 1 or max_questions_per_source < 1 or (max_source_tokens is not None and max_source_tokens < 1):
+            raise ValueError("Study source and question budgets must be positive")
+        model = self.harness.loaded_models[self.qa_model_name]
         stats = self.loaded_dataset.stats
-        kind = "traj_qa" if modality == DataModality.TRAJECTORY else "qa"
-        study_samples = self._sample_study_chunks(num_samples, base_seed, modality)
-        key = None
-        cached_rows: list[dict] = []
-        if caching_id is not None:
-            key = StudyCacheKey(caching_id, self.dataset_id, loaded_model.model_config.model_id, kind, base_seed)
-            for index, row in enumerate(self.cache.read(key)):
-                if index >= len(study_samples) or row.get("chunk_id") != study_samples[index].chunk_id:
-                    break                                                          # the sampler changed under the cache: stop trusting it
-                cached_rows.append(row)
-        examples: list[DatasetQAExample] = []
-        for row in cached_rows:
-            if row.get("junk"):
-                stats.study_num_junk_skipped += 1
-            else:
-                examples.append(self._example_from_row(row, kind, base_seed))
-        stats.study_num_cached += len(cached_rows)
-        pending = list(enumerate(study_samples))[len(cached_rows):]
-        def report(completed: int, phase: str) -> None:
-            if progress is not None:
-                progress({"phase": phase, "completed": completed, "total": len(study_samples),
-                          "accepted": len(examples), "cached": len(cached_rows),
-                          "rejected": stats.study_num_junk_skipped, "failed": stats.study_num_parse_failures})
-        report(len(cached_rows), "loading QA model" if pending else "QA complete")
-        if not pending:
-            return examples
-        # vllm batches a whole conversation list inside one chat() call, so a
-        # simple single-threaded loop needs no locks.
-        loaded_model.ensure_engine_loaded() # Keep the cold load out of the batch timings.
-        system_prompt, instructions, json_schema = make_study_prompt(study_context, modality or DataModality.TEXT)
-        total_generation_time = 0
-        reporting_interval = 0
-        for batch_index, batch_start in enumerate(range(0, len(pending), self.qa_batch_size)):
-            batch = pending[batch_start:batch_start + self.qa_batch_size]
-            chat_kwargs = self._make_engine_chat_kwargs(json_schema, base_seed + batch_index)
-            conversations = []
-            for _, chunk in batch:
-                snippet = self.dataset_index.get_chunk_section(chunk)
-                snippet = safe_truncate_embedding_chunk(snippet, self.chunk_input_limit)
-                conversations.append([
-                    {
-                        "role": "system", "content": [
-                            {"type": "text", "text": system_prompt},
-                        ]
-                    },
-                    {
-                        "role": "user", "content": [
-                            {"type": "text", "text": f"# Corpus Snippet\n```\n{snippet}\n```\n{instructions}"},
-                        ]
-                    },
-                ])
-            batch_start_time = time.time()
-            report(len(cached_rows) + batch_start, "generating QA")
-            outputs = loaded_model.engine_chat_many(conversations, chat_kwargs=chat_kwargs)
-            elapsed = time.time() - batch_start_time
-            total_generation_time += elapsed
-            stats.study_batch_latencies.append(elapsed)
+        system, instructions, schema = make_source_study_prompt(study_context, modality or DataModality.TEXT,
+            prompt_kind, max_questions_per_source, require_multiple_sources)
+        recipe = hashlib.sha256(json.dumps([system, instructions, schema, source_mode, max_source_tokens,
+            max_source_chunks, self.chat_kwargs, self.chunk_input_limit], sort_keys=True, default=str).encode()).hexdigest()[:16]
+        key = StudyCacheKey(caching_id, self.dataset_id, model.model_config.model_id, "qa_" + recipe, base_seed) if caching_id else None
+        cached = self.cache.read_by_id(key, "request_id") if key else {}
+        samples = self._sample_study_chunks(num_samples, base_seed, modality)
+        requests = []
+        skipped = 0
+        for index, chunk in enumerate(samples):
+            source = self._study_source(chunk, source_mode, max_source_chunks, max_source_tokens, model.tokenizer)
+            if source is None or (require_multiple_sources and len(source["units"]) < 2):
+                skipped += 1
+                continue
+            identity = hashlib.sha256(json.dumps(source, sort_keys=True).encode()).hexdigest()[:16]
+            requests.append({"request_id": f"{recipe}:{base_seed}:{index}:{identity}", "source": source})
+        rows = {r["request_id"]: cached[r["request_id"]] for r in requests if r["request_id"] in cached}
+        pending = [r for r in requests if r["request_id"] not in rows]
+        def report(phase):
+            if progress:
+                progress({"phase": phase, "completed": len(rows) + skipped, "total": len(samples),
+                          "accepted": sum(len(r["questions"]) for r in rows.values()), "cached": len(requests) - len(pending),
+                          "skipped_sources": skipped, "failed": stats.study_num_parse_failures})
+        report("loading QA model" if pending else "QA complete")
+        if pending:
+            model.ensure_engine_loaded()
+        for start in range(0, len(pending), self.qa_batch_size):
+            batch = pending[start:start + self.qa_batch_size]
+            conversations = [[{"role": "system", "content": system},
+                              {"role": "user", "content": r["source"]["text"] + "\n\n" + instructions}] for r in batch]
+            report("generating QA")
+            began = time.monotonic()
+            outputs = model.engine_chat_many(conversations, chat_kwargs=self._make_engine_chat_kwargs(schema, base_seed + start))
+            stats.study_batch_latencies.append(time.monotonic() - began)
+            if len(outputs) != len(batch):
+                raise RuntimeError("QA engine returned the wrong batch size")
             new_rows = []
-            for (index, chunk), output in zip(batch, outputs):
+            for request, output in zip(batch, outputs):
                 stats.study_prompt_tokens.append(output.prompt_token_count)
                 stats.study_output_tokens.append(output.output_token_count)
+                questions = []
                 try:
-                    qa_pair = json.loads(output.text)
-                    valuable = bool(qa_pair["has_valuable_question"])
-                    question = str(qa_pair.get("question") or "").strip()
-                    answer = str(qa_pair.get("answer") or "").strip()
-                except (json.JSONDecodeError, KeyError, TypeError):
-                    # Structured outputs make this rare (e.g. max_tokens cutoff). Not cached: a later pass retries.
+                    result = json.loads(output.text)
+                    seen = set()
+                    for q in result["questions"][:max_questions_per_source]:
+                        question, answer = q["question"].strip(), q["answer"].strip()
+                        try:
+                            # JSON permits lone surrogate escapes; cached/model text must be valid UTF-8.
+                            question.encode("utf-8")
+                            answer.encode("utf-8")
+                        except UnicodeEncodeError:
+                            stats.study_num_parse_failures += 1
+                            continue
+                        refs = sorted(set(q["evidence_indices"]))
+                        if not question or not answer or question.casefold() in seen:
+                            continue
+                        if not refs or any(type(i) is not int or not 0 <= i < len(request["source"]["units"]) for i in refs):
+                            continue
+                        if require_multiple_sources and len(refs) < 2:
+                            continue
+                        seen.add(question.casefold())
+                        questions.append({"question": question, "answer": answer, "evidence_indices": refs})
+                except (ValueError, KeyError, TypeError, AttributeError):
                     stats.study_num_parse_failures += 1
-                    continue
-                if not valuable or not question or not answer:
-                    stats.study_num_junk_skipped += 1
-                    new_rows.append({"index": index, "chunk_id": chunk.chunk_id, "junk": True})
-                    continue
-                row = {"index": index, "chunk_id": chunk.chunk_id, "question": question, "answer": answer}
+                # Cache empty/failed attempts too: stable source positions across restart.
+                row = dict(request, questions=questions)
+                rows[request["request_id"]] = row
                 new_rows.append(row)
-                examples.append(self._example_from_row(row, kind, base_seed))
-            if key is not None:
+                stats.study_num_junk_skipped += int(not questions)
+            if key:
                 self.cache.append(key, new_rows)
-            report(len(cached_rows) + batch_start + len(batch), "generating QA")
-            if reporting_interval <= 0:
-                print(
-                    f"{self.dataset_id} - Study ({kind}): {batch_start + len(batch)}/{len(pending)} chunks, "
-                    f"{len(examples)} questions, {stats.study_num_junk_skipped} junk. {total_generation_time:.2f}s."
-                )
-                reporting_interval = max(1, len(pending) // 20)
-            reporting_interval -= len(batch)
-        report(len(study_samples), "QA complete")
+            report("generating QA")
+        examples = []
+        for request in requests:
+            row = rows[request["request_id"]]
+            for child, qa in enumerate(row["questions"]):
+                supports = [row["source"]["units"][i] for i in qa["evidence_indices"]]
+                examples.append(DatasetQAExample(
+                    example_id=f"{self.dataset_id}:study:{row['request_id']}:{child}", dataset_id=self.dataset_id,
+                    query=qa["question"], gold_answers=[qa["answer"]], origin=SYNTHETIC, split=DataSplit.TRAIN,
+                    positive_doc_ids=list(dict.fromkeys(u["doc_id"] for u in supports)),
+                    positive_chunk_ids=list(dict.fromkeys(c for u in supports for c in u["chunk_ids"])),
+                    study_source=dict(row["source"], request_id=row["request_id"])))
+        stats.study_num_cached += len(requests) - len(pending)
+        report("QA complete")
         return examples
 
 

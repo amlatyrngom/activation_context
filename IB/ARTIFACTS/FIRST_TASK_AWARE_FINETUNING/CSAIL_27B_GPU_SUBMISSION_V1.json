@@ -1,0 +1,17 @@
+{
+  "utc": "2026-09-23T15:15:18.990354Z",
+  "status": "released",
+  "target_questions": 100000,
+  "initial_published_questions": 53000,
+  "initial_accepted_questions": 53615,
+  "producer": "sole active27B writer onCSAIL; ORCD/9B remain paused",
+  "cpu_preparation_sha256": "177aeb078580395d7c33a2cbd69a1b00a2888a19ca2cc4a9534a44903a5a03cd",
+  "requeue_proof_sha256": "acdee2085cbda34bbc45dd2663ea4f41bc352034a3a86d353610224d3976143b",
+  "launcher_sha256": "39576f82038c177a351b52249c0d74e3ad38e6d39e91d9104b15e83e963cd3cf",
+  "manifest_sha256": "e8b5b45a9a3577e29926b10994663ba2687f64e3a1b0ef1503200243f825943f",
+  "active_bank": "/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/reports/synthesis_bank_27b",
+  "report_alias": "/data/scratch/ngom/activation/taskaware/reports/synthesis_bank_27b_csail",
+  "review": "Root source/launcher/trap/cursor/report ownership review; pinned model and runtime imports verified; actualGPUstartup pending.3h segments,64microbatch,portablebalanced1k releases; noEC2.",
+  "job_id": 2182587,
+  "held_state": "JobId=2182587 JobName=qa27b_csail_100k UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=03:00:00 TimeMin=N/A SubmitTime=2026-09-23T11:15:19 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:15:19 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3203170 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=100G,node=1,billing=5801,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=100G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bench/bank_csail.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bank_csail_2182587.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bank_csail_2182587.log TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n"
+}

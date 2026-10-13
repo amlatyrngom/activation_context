@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "completed_utc": "2026-09-22T10:30:47.626009+00:00",
+  "remote_staging_directory": "~/orcd/pool/activation/taskaware/bank_source_extensions_27b_20260922/published",
+  "files": {
+    "technical_web": {
+      "file": "technical_web__raw_27b_headroom_20260922_v2.jsonl",
+      "family": "technical_web",
+      "rows": 15000,
+      "sha256": "6a0858730984691de1755a39eff9c465a93fb593690893e231e947710f94d2b7",
+      "bytes": 26788160,
+      "source_ids_new_vs_base_and_prior_extensions": true,
+      "office_submix": null,
+      "documents": 14923,
+      "by_subdomain": {
+        "bright_robotics": 5000,
+        "bright_economics": 5000,
+        "bright_psychology": 5000
+      }
+    },
+    "web": {
+      "file": "web__raw_27b_headroom_20260922_v2.jsonl",
+      "family": "web",
+      "rows": 110000,
+      "sha256": "2ce75752f1ea496dce2004280f9caacc8c73cfb18472a4824cf6b475ded88df1",
+      "bytes": 128630050,
+      "source_ids_new_vs_base_and_prior_extensions": true,
+      "office_submix": null,
+      "documents": 110000,
+      "by_subdomain": {
+        "msmarco_raw_passage": 110000
+      }
+    },
+    "code": {
+      "file": "code__raw_27b_headroom_20260922_v2.jsonl",
+      "family": "code",
+      "rows": 40000,
+      "sha256": "44063dd854ee690fea2ddb3d1aa2c923607c7028666bab98bd84067aa5362300",
+      "bytes": 263380247,
+      "source_ids_new_vs_base_and_prior_extensions": true,
+      "office_submix": null,
+      "documents": 26888,
+      "by_subdomain": {
+        "repository_source": 40000
+      }
+    },
+    "office": {
+      "file": "office__raw_27b_headroom_20260922_v2.jsonl",
+      "family": "office",
+      "rows": 4000,
+      "sha256": "4fcab6ce5e7fde890a28bb099d3b2d2758b05418c8542df05443aa80fe87f0a0",
+      "bytes": 15585346,
+      "source_ids_new_vs_base_and_prior_extensions": true,
+      "office_submix": {
+        "automation": 2400,
+        "business": 1200,
+        "manuals": 400
+      },
+      "documents": 3478,
+      "by_subdomain": {
+        "office_automation_access": 1822,
+        "business_commercial_operations": 1200,
+        "office_procedural_help": 284,
+        "office_automation_excel": 578,
+        "libreoffice_sdatabase": 75,
+        "libreoffice_schart": 41
+      }
+    }
+  },
+  "total_new_raw_windows": 169000,
+  "total_bytes": 434383803,
+  "cpu_job": {
+    "id": "23470299",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 46,
+    "outcome": "Web, code and technical-web files completed and passed validation; office fallback repository unavailable. Those successful files were retained unchanged."
+  },
+  "office_recovery": {
+    "complete": true,
+    "execution": "local CPU; no additional Slurm/GPU job",
+    "elapsed_seconds": 25.73898687120527,
+    "file": {
+      "file": "office__raw_27b_headroom_20260922_v2.jsonl",
+      "family": "office",
+      "rows": 4000,
+      "sha256": "4fcab6ce5e7fde890a28bb099d3b2d2758b05418c8542df05443aa80fe87f0a0",
+      "bytes": 15585346,
+      "source_ids_new_vs_base_and_prior_extensions": true,
+      "office_submix": {
+        "automation": 2400,
+        "business": 1200,
+        "manuals": 400
+      },
+      "documents": 3478,
+      "by_subdomain": {
+        "office_automation_access": 1822,
+        "business_commercial_operations": 1200,
+        "office_procedural_help": 284,
+        "office_automation_excel": 578,
+        "libreoffice_sdatabase": 75,
+        "libreoffice_schart": 41
+      }
+    },
+    "github_revisions": {
+      "MicrosoftDocs/microsoft-365-docs": "eab9d7696cdff87474698b08a1fb328091102a2f"
+    },
+    "source_schema": "existing immutable raw-source format",
+    "validation": "Parsed every row; exact4000 count; 2400/1200/400 office mix; text/source/file SHA256; pinned provenance; no source IDs shared with base, eight prior extensions, or three freshly published extensions.",
+    "recovery_of_job": "23470299",
+    "original_failure": "CalledProcessError(128, ['git', 'ls-remote', 'https://github.com/MicrosoftDocs/OfficeDocs-Support.git', 'HEAD'])",
+    "helpers_sha256": {
+      "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/prepare_27b_source_extensions.py": "cb2c9cbf6ec0d585e9cde7d02b0df0687ff925994fe5b0c8d1e951c581df82d6",
+      "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/complete_27b_office_extension.py": "3d79809e1f5bdd649d845ed6f96bcc509779173a0f25508d073ac7fb392d2ba5"
+    }
+  },
+  "office_transport": "Validated locally before guarded rsync; rsync completed successfully; final remote byte count matches. Final staged filename published with create-only hard link; no additional remote payload hashing job.",
+  "github_revisions": {
+    "python/cpython": "a32139044a80b8973ff8e547448a2549a8f87ad9",
+    "golang/go": "12c76d447f576e6c14c566c8524c13a0c0d476b9",
+    "rust-lang/rust": "e5b95097d9a14bdec7cd9101dde67ee3aad2578a",
+    "nodejs/node": "36dd044cfdb20487951a83b75a3341af3025ca17",
+    "postgres/postgres": "77f54eb07488341025073a370f6e381a6ee05e04",
+    "django/django": "dd6f6b1531984823e3dc56740dfa93f3ceb09357",
+    "numpy/numpy": "0714bda057b351ee14e25d486b7d559b231d19e6",
+    "pandas-dev/pandas": "7d287a5a8368259c96daec9606691070245bfe2d",
+    "elastic/elasticsearch": "04fdbdf340ce72fc7cf54a6b942306b8ef7692d6",
+    "kubernetes/kubernetes": "90b175c8760fcdfea7b9757fb3c366bbe1d4a1fa",
+    "grafana/grafana": "a53c576d1ccafb90de43a34bdd6f93491f94f1d8",
+    "home-assistant/core": "8a9a566ff281d201aefbf870a026cb3dea294509",
+    "MicrosoftDocs/microsoft-365-docs": "eab9d7696cdff87474698b08a1fb328091102a2f"
+  },
+  "code_windows_by_repository": {
+    "python/cpython": 4000,
+    "golang/go": 4000,
+    "rust-lang/rust": 4000,
+    "nodejs/node": 4000,
+    "postgres/postgres": 3887,
+    "django/django": 2336,
+    "numpy/numpy": 1265,
+    "pandas-dev/pandas": 2123,
+    "elastic/elasticsearch": 4000,
+    "kubernetes/kubernetes": 4000,
+    "grafana/grafana": 4000,
+    "home-assistant/core": 2389
+  },
+  "validation": "Every row parsed; exact family counts and office60/30/10; text/source/file SHA256; pinned provenance; all source IDs differ from base/eight prior extensions and from one another across all four new files. Existing synthesis question data was not searched or audited.",
+  "baseline_inputs": {
+    "registered_source_counts.json": {
+      "bytes": 1914,
+      "sha256": "0ccf7937a262feeebf3ced9999dab6d5829c968320ad4ae59fd2f2e0c25f9898"
+    },
+    "office_automation.jsonl": {
+      "bytes": 45115160,
+      "sha256": "535846980c3d1b2a939212ea7c80a2cf95002acdd7cce6c82f60020112a592fb"
+    },
+    "base_source_index.json": {
+      "bytes": 29181613,
+      "sha256": "fa6a25c3c14d1fa5347f8c61eb9b1810f0b7d566519baf22e63240febbb92432"
+    }
+  },
+  "activation_status": "Staged only. The producer watched bank_source_extensions directory, existing immutable files, producer code and cursors have not been changed.",
+  "activation": "On compute, create-only hard-link the four named JSONL files from remote_staging_directory into ~/orcd/pool/activation/taskaware/bank_source_extensions/. Preserve old files. The existing producer loads newly available files at startup or on source exhaustion, appends after persisted extension order and preserves cursors/accepted bank. No immediate producer interruption needed.",
+  "capacity_caveat": "At the earlier lower lifetime/recent27B rates, these additions cover200k; new repository/topic windows can have different yields, so recheck acceptance/source headroom at64k."
+}

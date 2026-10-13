@@ -1,0 +1,33 @@
+{
+  "utc": "2026-09-23T16:39:19.569082Z",
+  "status": "released",
+  "cause": "Login environment HF_HOME=/home/ngom/orcd/scratch/hf selected incomplete processor cache; failed before model load, inputs, optimizer restore or training.",
+  "fix": "Explicit sbatch HF_HOME points to existing cache used by successful parent/layout/probe jobs. Frozen source/designs remain unchanged.",
+  "HF_HOME": "/home/ngom/orcd/scratch/activation/hf",
+  "failed_job": 23557305,
+  "failed_startup_archive": "/home/ngom/orcd/pool/activation/taskaware/reports/pi42k_native2k_fresh960_2x_v1/attempts/startup_failed_23557305",
+  "jobs": {
+    "floor": {
+      "old_id": 23557303,
+      "job_id": 23558378,
+      "status": "released",
+      "design_sha256": "6795aad760a2d567db5ffdea314c4a0f36db594c2598317019170cfd1ccb3951",
+      "launcher_sha256": "78fd108e6ba73462754e8991e07ab2917b14fce87d820acc3a1454a07e776dbf"
+    },
+    "2x": {
+      "old_id": null,
+      "job_id": 23558379,
+      "status": "released",
+      "design_sha256": "84273cf00dbc495a8c3746d3adfea2ac0cbd2fa20f8262c341f0a9a3b3e166a3",
+      "launcher_sha256": "78fd108e6ba73462754e8991e07ab2917b14fce87d820acc3a1454a07e776dbf"
+    },
+    "merged_h200": {
+      "old_id": 23554012,
+      "job_id": 23558386,
+      "status": "released",
+      "design_sha256": "e4c9bc3a2ea703b5450f17d0ebfa2c3fc69cbb236f9c2c9b2ee6ba064a328698",
+      "launcher_sha256": "d72f14988f8165f759e8f198eb01d065203672b8678746e2d83d27353cc46f34"
+    }
+  },
+  "released_utc": "2026-09-23T16:39:23.375855Z"
+}

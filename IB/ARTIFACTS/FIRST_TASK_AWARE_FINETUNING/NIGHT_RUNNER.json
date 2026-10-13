@@ -1,0 +1,52 @@
+{
+  "runner": "run_qa_night_v1.py",
+  "runner_sha256": "b6d22e42ebd6d89b5b2f510d4bc44df426d462444dc041122bcd3ae58eaa8744",
+  "product_manifest": {
+    "activation/ac_model/ac_model_reporter.py": {
+      "before": "23eef560f7993814d9bcf44defeebb952a730068e7d1a9a7582c1e8f6984cb28",
+      "after": "57fd719f037917eb163bbd7b164eb40b56125be9530d30a8ef19568183f1b256"
+    },
+    "activation/ac_model/ac_model_study.py": {
+      "before": "332a3cbac69b691d2576eabfbed2196dfbd3241dd2a71e26a9ae8f5349098d7b",
+      "after": "05ee745a2e9a3b32e43300cf7f2ee06dd80be8c6465d5e3ec8061063246680b9"
+    },
+    "activation/ac_model/ac_model_training.py": {
+      "before": "f0eb298ba1b5714a0e4f4a79269b32989670f0fd84c61985d7d27a4de9e0d601",
+      "after": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa"
+    },
+    "activation/common/reporting.py": {
+      "before": "821532bd96b0ce50eb805a1e3d387b3ca75e48d59f5f4910c139fdea8cb4577e",
+      "after": "1d8cef4d94c585fc8f8abacdcea230f8a87eea2719cc41d9670353c95718bbfa"
+    },
+    "activation/dataset/dataset.py": {
+      "before": "4090e96af0946617cdfb3a44809aca94a75a4b87cc3c6afef67864f962c48196",
+      "after": "dfe83053f6251088856a4a4a5cd51501f5c7c29681a4bceb694dd5aa78b8cd17"
+    },
+    "activation/dataset/dataset_manager.py": {
+      "before": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5",
+      "after": "8a195afe841c7c4b2dd651f202e934363fd55e4d17ecb51fca950f66b721b2f2"
+    },
+    "activation/dataset/dataset_study.py": {
+      "before": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18",
+      "after": "5fa9b8a016f72b2a046c7af7291c4dca2ee421402fd0f665a5b612e4feca5f43"
+    },
+    "activation/dataset/dataset_study_prompts.py": {
+      "before": null,
+      "after": "e48682a08586012b530ffef9135c293a2c302fd75f16ab52e901ead810694f3b"
+    },
+    "activation/ac_model/ac_model_utils.py": {
+      "before": "081297c4a4f1062ce26f0e9f847e2ce728cc0db8d5076526bdb626359e5bfbbb",
+      "after": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+    }
+  },
+  "default_learning_rates": {
+    "encoder": 5e-05,
+    "reader": 2e-05
+  },
+  "checks": [
+    "4 private data-budget/parts/resume tests passed",
+    "1 product passage-readout CPUcheck passed",
+    "trainedreadout GPU8k/32k output+allgradients passed"
+  ],
+  "status": "32k whole-model smoke running; no data-budget arms started yet"
+}

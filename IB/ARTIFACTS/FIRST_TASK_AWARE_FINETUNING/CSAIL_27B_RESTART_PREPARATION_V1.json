@@ -1,0 +1,38 @@
+{
+  "status": "cpu_preparation_released",
+  "destination": "/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1",
+  "manifest_sha256": "e8b5b45a9a3577e29926b10994663ba2687f64e3a1b0ef1503200243f825943f",
+  "files": 2046,
+  "payload_bytes": 3998786177,
+  "published_questions": 53000,
+  "buffered_questions": 615,
+  "target_questions": 100000,
+  "reserved_questions": 1900,
+  "producer_worker_sha256": "c8dd4d49a491eb5e2a574e58a1c1f79a0d5d7b95e92f9046e97b01d4e102a71d",
+  "launcher_sha256": "39576f82038c177a351b52249c0d74e3ad38e6d39e91d9104b15e83e963cd3cf",
+  "cpu_jobs": [
+    {
+      "job_id": "2182229",
+      "role": "source/cursor/storage/model/runtime preparation",
+      "state": "released",
+      "utc": "2026-09-23T15:07:08.996717+00:00"
+    },
+    {
+      "job_id": "2182247",
+      "role": "one automatic CPU self-requeue proof",
+      "state": "released",
+      "utc": "2026-09-23T15:07:47.015807+00:00"
+    }
+  ],
+  "gpu_jobs": [],
+  "source_cursors_unchanged": true,
+  "orcd_producer": "paused; do not run concurrently",
+  "report_transport": {
+    "alias": "/data/scratch/ngom/activation/taskaware/reports/synthesis_bank_27b_csail",
+    "target": "/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/reports/synthesis_bank_27b",
+    "activation_script": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/csail_bank27b_stage/activate_report_alias.sh",
+    "activation_script_sha256": "dad94ac5c6761b4ae9ea7265ca54077bb8489fa53d7dff87e3505a00a0293c5a",
+    "status": "prepared_not_executed",
+    "consumer_rule": "Use the active CSAIL bank explicitly; do not concatenate the paused ORCD53k copy."
+  }
+}

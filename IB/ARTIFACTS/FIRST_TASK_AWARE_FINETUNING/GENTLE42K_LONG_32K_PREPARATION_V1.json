@@ -1,0 +1,102 @@
+{
+  "status": "conditional_candidate_ready_not_staged",
+  "scope": {
+    "scored_questions": 100,
+    "decoded_AC_questions": 100,
+    "max_new_tokens": 160,
+    "scored_views": [
+      "AC",
+      "full context",
+      "no context"
+    ],
+    "context_tokens": 32768,
+    "max_passages": 64,
+    "microbatch": 1,
+    "passage_parts": true,
+    "ratio": 0.0625,
+    "encoder_budget": 65536,
+    "familiar_training_questions": 4000,
+    "unique_questions": 42000,
+    "total_presentations": 46000,
+    "new_updates_during_readout": 0
+  },
+  "check_count": 29,
+  "checks": [
+    "Exact existing32k reference and helper pins",
+    "Actual frozen gentle training design and original400 IDs match",
+    "Existing input-binding function reused directly",
+    "Every gentle design dependency remains unchanged",
+    "Hypothetical own500/Adam5750 own8k completion binds actual400/100 source/gold identity",
+    "Actual32k shared/AC/row fingerprints accepted",
+    "Incomplete own8k readout rejected",
+    "Wrong own stage rejected",
+    "Foreign pair rejected",
+    "Different payload rejected",
+    "Changed final publication/Adam receipt rejected",
+    "Different design rejected",
+    "Wrong own8k layout rejected",
+    "Native replay failure rejected",
+    "Absent own8k replay rejected",
+    "Native noctx unfinished rejected",
+    "Native actual tokenIDs missing rejected",
+    "Native selected100 order changed rejected",
+    "Gold/source disagreement rejected",
+    "Wrong long-context reference rejected",
+    "No score replay demanded from unadapted42k checkpoint",
+    "Changed rebuilt AC inputs rejected",
+    "Changed runtime row budget rejected",
+    "harness remains the completed32k implementation",
+    "material_items remains the completed32k implementation",
+    "_evaluate remains the completed32k implementation",
+    "sample_with_token_ids remains the completed32k implementation",
+    "Own final guard, source receipt and final rehash retained",
+    "Bounded30min/32GiB,1650swhole-attempt, own8k path"
+  ],
+  "worker_sha256": "1406b45f4009661a940931ee709b93dff92b89856bb4ccb3d91a608f9013771f",
+  "launcher_sha256": "f8a1428f64da601ac335ac5267c7f46679556378d6b279854b678a5e406886cc",
+  "fixture_sha256": "847bc93dd280ba34a4fd19730d31d781bf826f4c0fe9a201075e52be717c3b6e",
+  "gentle_training_design_sha256": "f7fef157964562fabc7e5fe5fd2a23f1ed24f10b6823612f612ef51f5ab4bb3f",
+  "constant42k32k_sha256": "a25798cdae7fc50ab84f921344c4491bc89ee9fa6859df6dd1fdf5758e8bc6cb",
+  "syntax": {
+    "python": "passed",
+    "shell": "passed"
+  },
+  "reused_final_guard_cpu_receipt": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/gentle42k_long_v1_cpu.json",
+  "staged": false,
+  "submitted": false,
+  "confirmation_access": false,
+  "utc": "2026-09-23T06:43:28.674357+00:00",
+  "purpose": "Separate constant42k parent long-context quality from gentle4000-familiar8k adaptation, on exactly the same32k development inputs.",
+  "condition": "gentle42k_final_lr_familiar4k_8k__32k",
+  "prerequisites": [
+    "Root decision after finalgentle8k semantic review",
+    "Own complete500-update final with actualAdam5750 and published paired marker",
+    "Own complete8k400 replay inAC/full/no-context plus100 actualAC answers",
+    "Exact constant42k32k selected100 input/row/source/gold identity"
+  ],
+  "allocation": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "host_gib": 32,
+    "wall_minutes": 30,
+    "whole_attempt_seconds": 1650
+  },
+  "runtime_evidence": {
+    "matched_parent_actual_seconds": 999.5,
+    "same_parent_ac400_elsewhere_not_used": true
+  },
+  "invocation": "evaluate_gentle42k_long_32k_v1.sbatch <same frozen GENTLE42K_LONG_DESIGN_V1.json used by training/own8k100>",
+  "output": "reports/gentle42k_long_cohort100/gentle42k_final_lr_familiar4k_8k__32k/result.json",
+  "review_points": [
+    "Future own8k readout is pinned dynamically in the output identity after complete status and exact final-pair/publication checks; no actual future checkpoint proof is claimed",
+    "Unadapted constant42k32k parent readout bytes and initial parent payload hashes are fixed; compare inputs, never force its numerical scores",
+    "Original strong-long material supplies shared held/retrieval; only small own4000 training-ID metadata is needed for the reused final guard",
+    "Same greedy160/EOS helper and exact32k builder/scorer as completed parent; preserve all raw generated IDs/caps",
+    "On completion rehash final payloads; no optimizer updates, checkpoints, confirmation or existing-output edits"
+  ],
+  "root_review": {
+    "utc": "2026-09-23T06:44:25.276187+00:00",
+    "status": "passed as conditional candidate",
+    "scope": "Reviewed siblingdiff against completed constant42k32k evaluator and own8k schema. Actual existing42k8k/32k rows match all10 cross-context invariant fields including answer_positions. Helper/file hashes and syntax checked. Existing29 CPU checks reused. No staging/submission; actualfuturefinal guard remains pending."
+  }
+}

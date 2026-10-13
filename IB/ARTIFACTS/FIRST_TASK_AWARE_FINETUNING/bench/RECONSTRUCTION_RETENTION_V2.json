@@ -1,0 +1,88 @@
+{
+  "version": 2,
+  "scope": "Pure reconstruction retained after QA specialization; four preselected paired checkpoints, same original420 held nonwiki passages, ratio1/16, no optimization.",
+  "sources": [
+    "swe",
+    "research",
+    "teacher",
+    "code",
+    "docs",
+    "math",
+    "web"
+  ],
+  "material_sha256": "e5dada77a8234e7b733576af02e51240a940aa9b96d596e10b8995f9f548ed8d",
+  "passages_sha256": "7b7ba95365a50162f1b20f9c76d3baf122d0a95828467e77ba6b5732f3999781",
+  "worker_sha256": "c54f5e8d51a28cf5f64d5002948feb26ae387893d75c2012e300729fe6fd9b2a",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c",
+    "study": "05ee745a2e9a3b32e43300cf7f2ee06dd80be8c6465d5e3ec8061063246680b9"
+  },
+  "helper_sha256": {
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986"
+  },
+  "conditions": {
+    "p2_reconstruction": {
+      "label": "Original reconstruction P2",
+      "pair": {
+        "ac_checkpoint": "/home/ngom/orcd/scratch/activation/KEEP/P2/AC_MODELS/rag_poc/epoch_001",
+        "reader_checkpoint": "/home/ngom/orcd/scratch/activation/KEEP/P2/LORAS/rag_reader/epoch_001"
+      },
+      "payload_sha256": {
+        "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+        "completed_marker": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+        "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+        "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+        "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+        "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+      }
+    },
+    "qa42k": {
+      "label": "42,000 QA questions \u00d7 1",
+      "pair": {
+        "ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001",
+        "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_final_lr/LORAS/rag_reader/epoch_001"
+      },
+      "training_result": "/home/ngom/orcd/pool/activation/taskaware/reports/continue32k_10k_final_lr/result.json",
+      "completed_stage_updates": 1250,
+      "publication_sha256": {
+        "/home/ngom/orcd/pool/activation/taskaware/reports/continue32k_10k_final_lr/result.json": "a7fa5afce4160cb5e3ff15eb3611fc58655f4d51dd915925368a9dee3c52ab77"
+      }
+    },
+    "qa50k_cosine": {
+      "label": "50,000 QA questions \u00d7 1 \u00b7 mild cosine continuation",
+      "pair": {
+        "ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue42k_8k_cosine_2x_floor/AC_MODELS/rag_poc/epoch_001",
+        "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/continue42k_8k_cosine_2x_floor/LORAS/rag_reader/epoch_001"
+      },
+      "training_result": "/home/ngom/orcd/pool/activation/taskaware/reports/continue42k_8k_cosine_2x_floor/result.json",
+      "completed_stage_updates": 1000,
+      "publication_sha256": {
+        "/home/ngom/orcd/pool/activation/taskaware/reports/continue42k_8k_cosine_2x_floor/result.json": "46a6408c6fcd09b058df3a581ac93edc9473461901ed0772cab551afbb59f2ab"
+      }
+    },
+    "qa42k_plus960_32k": {
+      "label": "42,000 QA + 960 at 32k context \u00d7 1",
+      "pair": {
+        "ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1/pi42k_merged32k_fresh960_v1/AC_MODELS/rag_poc/epoch_001",
+        "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1/pi42k_merged32k_fresh960_v1/LORAS/rag_reader/epoch_001"
+      },
+      "training_result": "/home/ngom/orcd/pool/activation/taskaware/reports/pi42k_merged32k_fresh960_orcd_h200/result.json",
+      "completed_stage_updates": 120,
+      "publication_sha256": {
+        "/home/ngom/orcd/pool/activation/taskaware/reports/pi42k_merged32k_fresh960_orcd_h200/result.json": "00af5b354c4a2cdee43dbfc47778107a2774bd5a6683f97a688127278ebe8a16"
+      }
+    }
+  },
+  "historical_context": {
+    "p2_token_weighted_nll": 0.10636879954139111,
+    "p2_token_accuracy": 0.9649908438877518,
+    "comparison": "Current deltas use freshly measured P2; historical microbatch3 evaluation is not a numerical replay gate."
+  },
+  "report_path": "IB/TMP/SYNC/TASK_AWARE_QA/reconstruction_retention_v1/report.tressoir.html",
+  "fix": "Normalize identity to JSON before cross-checkpoint comparisons; tuple/list metadata mismatch only. Rerun all four cells, with fresh P2 on the same allocation."
+}

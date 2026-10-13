@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "scope": "Real tinyCPU numerical proof on pinned trainer38ca; existing mature-Adam loader/timing path reused unchanged. Full Qwen GPU proof and memory/speed measurements remain pending.",
+  "cpu_log": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/reader_checkpoint_v1_cpu_4096.log",
+  "cpu_log_sha256": "7bfe9202742a689e04ddb162725e23ae235db53bf8b6fd00c2a35f2c89fc9c45",
+  "pinned_trainer_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+  "numeric_function_ast_sha256": "d06feca9ccd590a3ee450b3f82644bafd4d868ba67c8da95e209ded92885f2ca",
+  "cpu_proof": {
+    "passed": true,
+    "parameter_count": 202,
+    "loss_abs_difference": 0.0,
+    "maximum_gradient_relative_l2": 0.0,
+    "maximum_output_relative_l2": 0.0,
+    "baseline_calls": {
+      "side_encoder": 4,
+      "reader": 8
+    },
+    "candidate_calls": {
+      "side_encoder": 4,
+      "reader": 4
+    },
+    "unchanged_repeat_passed": true
+  },
+  "focused_control_checks": [
+    "Proof model imports deferred until reused pre-CUDA deterministic setup",
+    "Only one real case and65536 budget",
+    "Single candidate4096 requires all observed reader forwards uncheckpointed",
+    "GPU guard requires615 active gradients;630ownership entries compared",
+    "Established3%/2e-6 tensor and1e-3 loss gates unchanged",
+    "Production loader preserves original Adam4000\u21924004 andfixed penalty IDs, no checkpoint saves; final parent rehash",
+    "Post-loader guard failures mark worker failed and preserve base status; controller stops, including OOM"
+  ],
+  "worker_sha256": "0e0b3d33989882194ba0278ecaf79b224620536a351dfbadded8113f2011edbb",
+  "launcher_sha256": "f63f63ede6a5acb9be8ece8501ffefbdb3c3a978a4871cac474ac36a7fc3aa3b",
+  "base_loader_sha256": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381",
+  "staged": false,
+  "submitted": false,
+  "initial_cpu_setup_failures": "First attempts lacked tests in frozen snapshot, then stdin cwd shadowed PYTHONPATH; no numeric body ran. Final driver explicitly prepended frozen snapshot and appended only workspace tests to package search; frozen trainer hash asserted.",
+  "syntax": {
+    "python": "passed",
+    "shell": "passed"
+  },
+  "root_review": {
+    "utc": "2026-09-23T06:37:41.449993+00:00",
+    "status": "passed for isolated GPU measurement",
+    "scope": "Read complete wrapper and reused mature-Adam loader; source pins, pre-CUDA proof setup, identical inputs/penalty IDs, all615 active gradients, encoder recomputation and target threshold hooks, separate ordinary-kernel timing, no saves, parent rehash and failure gates reviewed. Reused real tinyCPU result; reran syntax and file-hash binding only.",
+    "limits": "One saved batch cannot establish whole-run speed or all-batch memory safety. Unchanged numerical gates. Do not modify active training."
+  }
+}

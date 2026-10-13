@@ -1,0 +1,569 @@
+{
+  "seed": 20260923,
+  "bank_manifest_sha256": "15fb43e7ebd690b40645a1fdca7614ec94f42c79ffbd42cb8cef736bf00cd713",
+  "input_batches": [
+    {
+      "file": "batches/batch_00001_dce264b9b8e64f83bd01572165a490b0.jsonl",
+      "sha256": "8880734e180263a0b273cf3aa61e7022447ae75fac14b13924f043e6b110213c",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 1,
+        "questions": 1000,
+        "cumulative": 1000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00002_67187a5e14b34e30a88e1a61a9908cfe.jsonl",
+      "sha256": "f4a94445655ce314974666eea481e0c3510ff9a83f5ad40597222aa5abb94df3",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 2,
+        "questions": 1000,
+        "cumulative": 2000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00003_1e593f20a7db4b5e9a2bc8a475845969.jsonl",
+      "sha256": "04745a164f5d0a061ca47c700a5e8f21bab19c5798004f606763ad06b3e5539b",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 3,
+        "questions": 1000,
+        "cumulative": 3000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00004_67882f532e6b48b4b73b82db9d879553.jsonl",
+      "sha256": "390035f2dab3da83b8d8f918b0adcc51b1419289ce784a047534473fc8704271",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 4,
+        "questions": 1000,
+        "cumulative": 4000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00005_6b8fe746f0684341acec6b9891c4a5d7.jsonl",
+      "sha256": "656c7ffcd6f79b8e1d83f32eebd4510c1ac2c70927a43b6cca009da8a210f1e2",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 5,
+        "questions": 1000,
+        "cumulative": 5000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00006_730a3f9e7d42492dab93bc3eca8dab37.jsonl",
+      "sha256": "a1d317ad70762c1aa38766a7b1cb30b3950c68d61db0d796719581005c7b640d",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 6,
+        "questions": 1000,
+        "cumulative": 6000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00007_e3ae92ed762843e9b5845313c9766a0e.jsonl",
+      "sha256": "e532bfe1b252d0d07d425a2710be4efadd4bcc280605fb580dec7482a2d241a4",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 7,
+        "questions": 1000,
+        "cumulative": 7000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00008_b9623de01da743fca1e1e060b3ade6a1.jsonl",
+      "sha256": "d5c5d13b2a21231a685692a1ec476a609dc7e71a02b01ccd5e42a4bd8111aeaf",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 8,
+        "questions": 1000,
+        "cumulative": 8000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    },
+    {
+      "file": "batches/batch_00009_340c681529f14147a74f512b5d61cddd.jsonl",
+      "sha256": "7ba55e8f942a98d786663c42bf8dbe2f008ecd2da2b8d2170efc980278b9db1f",
+      "questions": 1000,
+      "format": "qa_jsonl_v1",
+      "by_family": {
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      },
+      "by_domain": {
+        "code": 300,
+        "documents": 80,
+        "numeric": 250,
+        "legal": 60,
+        "office": 60,
+        "web": 250
+      },
+      "table": {
+        "batch": 9,
+        "questions": 1000,
+        "cumulative": 9000,
+        "code": 300,
+        "math_arxiv": 120,
+        "math_textbook": 80,
+        "financial": 50,
+        "web": 200,
+        "technical_web": 50,
+        "documents": 80,
+        "legal": 60,
+        "office": 60
+      }
+    }
+  ],
+  "source_shares": {
+    "code": 0.3,
+    "math_arxiv": 0.12,
+    "math_textbook": 0.08,
+    "financial": 0.05,
+    "web": 0.2,
+    "technical_web": 0.05,
+    "documents": 0.08,
+    "legal": 0.06,
+    "office": 0.06
+  },
+  "development": {
+    "questions": 200,
+    "source_requests": 200,
+    "by_family": {
+      "code": 60,
+      "documents": 16,
+      "financial": 10,
+      "legal": 12,
+      "math_arxiv": 24,
+      "math_textbook": 16,
+      "office": 12,
+      "technical_web": 10,
+      "web": 40
+    },
+    "source_tokens": {
+      "known": 200,
+      "sum": 250430,
+      "mean": 1252.15,
+      "median": 901.5,
+      "p95": 3005
+    },
+    "answer_tokens": {
+      "known": 200,
+      "sum": 3659,
+      "mean": 18.295,
+      "median": 18.0,
+      "p95": 37
+    }
+  },
+  "confirmation": {
+    "questions": 200,
+    "source_requests": 200,
+    "by_family": {
+      "code": 60,
+      "documents": 16,
+      "financial": 10,
+      "legal": 12,
+      "math_arxiv": 24,
+      "math_textbook": 16,
+      "office": 12,
+      "technical_web": 10,
+      "web": 40
+    },
+    "source_tokens": {
+      "known": 200,
+      "sum": 255456,
+      "mean": 1277.28,
+      "median": 1061.5,
+      "p95": 2875
+    },
+    "answer_tokens": {
+      "known": 200,
+      "sum": 4078,
+      "mean": 20.39,
+      "median": 18.5,
+      "p95": 36
+    }
+  },
+  "training": {
+    "2000": {
+      "questions": 2000,
+      "source_requests": 1921,
+      "by_family": {
+        "code": 600,
+        "documents": 160,
+        "financial": 100,
+        "legal": 120,
+        "math_arxiv": 240,
+        "math_textbook": 160,
+        "office": 120,
+        "technical_web": 100,
+        "web": 400
+      },
+      "source_tokens": {
+        "known": 2000,
+        "sum": 2601992,
+        "mean": 1300.996,
+        "median": 995.0,
+        "p95": 3206
+      },
+      "answer_tokens": {
+        "known": 2000,
+        "sum": 39334,
+        "mean": 19.667,
+        "median": 19.0,
+        "p95": 38
+      }
+    },
+    "4000": {
+      "questions": 4000,
+      "source_requests": 3698,
+      "by_family": {
+        "code": 1200,
+        "documents": 320,
+        "financial": 200,
+        "legal": 240,
+        "math_arxiv": 480,
+        "math_textbook": 320,
+        "office": 240,
+        "technical_web": 200,
+        "web": 800
+      },
+      "source_tokens": {
+        "known": 4000,
+        "sum": 5202737,
+        "mean": 1300.68425,
+        "median": 1016.0,
+        "p95": 3195
+      },
+      "answer_tokens": {
+        "known": 4000,
+        "sum": 78601,
+        "mean": 19.65025,
+        "median": 19.0,
+        "p95": 38
+      }
+    },
+    "8000": {
+      "questions": 8000,
+      "source_requests": 6882,
+      "by_family": {
+        "code": 2400,
+        "documents": 640,
+        "financial": 400,
+        "legal": 480,
+        "math_arxiv": 960,
+        "math_textbook": 640,
+        "office": 480,
+        "technical_web": 400,
+        "web": 1600
+      },
+      "source_tokens": {
+        "known": 8000,
+        "sum": 10396623,
+        "mean": 1299.577875,
+        "median": 1029.5,
+        "p95": 3179
+      },
+      "answer_tokens": {
+        "known": 8000,
+        "sum": 157185,
+        "mean": 19.648125,
+        "median": 19.0,
+        "p95": 38
+      }
+    }
+  },
+  "learning_ids": [
+    "b55bcd83cda58f695a15b673b3a5929c68cd43fcb5f5f9eb33cf7090015aeb9b",
+    "c0d040bb7f213209416f8bf57c520c1b78ac6a89f9b895e388b81f1d6cfa27ae",
+    "f8c615365c96608427f77611b9b3efc4eb0bea8cdd2c5ceee379aac0796db2f6",
+    "4d1592eab2a6170c36422162324c8378a73948e4918845868359460914e7e702",
+    "23907263f463172e0fb8107134885f697ff1e6eba2d24ec11b1d53d324982add",
+    "b7a5856505f9c332331061d562076a54ac6697f7611a65f41c1e36c7b4acccb9",
+    "aa2122dedf5a8c84d893c05bf1940529ef5404c700c6d1374107be225aedac89",
+    "48c12971185e7a6661c3bda4b95e58f20501b418f1df3c2cded0daa764c3e111",
+    "61f9e34508e67cd8aabf34623c5c8e9bc2c9924b353c07c2bc98ee4bb97e6e58",
+    "ac2efc5da8275391a8ced5fbe6014ef25472e02f4bbb117008c6513912b73847",
+    "db308248bd6c86fdfa1583c32b821c397f8d8b60498c8615d0ec6befb361207e",
+    "c22702571779440424898a131e078bac537cb268946a402aa6c622dfadf3bb02",
+    "2008e14ac1d0b4c133bf4d8bc1d28cc77eb7ccfa9201d5e94372b47f966de602",
+    "4aa28e818d8eccd4ba1a1df1afc824a58af48f3f7e2fc8e673e5f71449a11344",
+    "b0b9d60e43829a5909e050c9550865365d9c233ad9d53f673dcc079038612e07",
+    "b9315d173cc2809fae082edcfdb589ee14c03dbc69e3d350183d1bb32c42c7a8",
+    "d2ff5879ab95882c8074e53093ab7d6e5e14308210c01a14b9af45c7815b5997",
+    "614496b2529d6d910569d64bf8630fdb283bf74c8241af90c5323d4c2a5af459",
+    "2344aaa9f3ad2930a83193e306203defc987c1a9405af38f6acb2efae429c566",
+    "92921f89741aed3fc0656b94aeb3c65a217fbaeffbe3c4aeb7f975e9456bff23",
+    "55eafedd561cf85f8abd50d0de4d7088f5de2ff36c0b9abdcbd192f2ccb8b8a1",
+    "aeb7f572f0b038f1ecad70e92369681b53f321aa896069b3a9d5dcdda0982ab7",
+    "570f6f29d71302c4961d69a9975abe89326d2f2610c2766d648287235b8e6687",
+    "91d2612f1134a469b8de297e6409c8ee9dc79f66ff5faf018cc9512dc1ef73c8",
+    "393b52eb35c61a0413245afcf6dd531cf8de94146e9a6fd3daa2db7a4b8e5839",
+    "f128c4899edbbda4ac7eab7c9b5d163218f77722c32915202cc646452f3a9b55",
+    "769f67da248fb7bb516a3eeb7fe77a196c7be178298ae760d3f55f8fad14117b",
+    "56a33621a198712c7d7e67f426aadc357c4c1d4ad71c08a3c711f19be8cc059a",
+    "53a1dbee80050918c101e8599b1f46d115fb9ec136159167f85ee52c5479a499",
+    "505988d6e83371655f41f31efff5040b7e4376cda0cd15b5f49a97bb6023c019",
+    "8e0fefaa0f653529824ac415bd66ad3a44246cdd7e19a22935ed440107b6f917",
+    "8859a06299b083f5a465dc53ec6f1a5f5847adf94f5a7be915e07e400c71104d"
+  ],
+  "retrieval_questions": 8200,
+  "selection": "Nested family/length-balanced subsets; common learning questions and evidence retrieval; synthesis-request holdout",
+  "material_files": {
+    "material_8000.json": {
+      "sha256": "ef803a5c23a618af5d8ce58015e478bb29b5eb677a437b9edf29cc6cc6a7d2f9",
+      "bytes": 179964105
+    },
+    "material_4000.json": {
+      "sha256": "d787a1535f8f73f3813c6470a3b6c288a5bd529c88cd1816b5129b25156544af",
+      "bytes": 135953545
+    },
+    "confirmation.json": {
+      "sha256": "701cb2608379a65d40353ec448d932f7a78e531b461b9f382f33e6490caf83f5",
+      "bytes": 2208003
+    },
+    "material_2000.json": {
+      "sha256": "d498d1ac0aa6dd2b71306fffbdfa9202f90262c16c6950056285a83240eac315",
+      "bytes": 114005352
+    }
+  }
+}

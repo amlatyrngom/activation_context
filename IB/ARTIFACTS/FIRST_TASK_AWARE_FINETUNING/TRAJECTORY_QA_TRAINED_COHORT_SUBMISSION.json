@@ -1,0 +1,18 @@
+{
+  "job_id": 23638423,
+  "host": "orcd",
+  "receipt_utc": "2026-09-24T09:08:37.055643+00:00",
+  "dependency": "afterok:23628639",
+  "launcher_sha256": "aa8ab604bd867a5c243d01054dd30a2d4aaf11c979d404dd0db675cba8440fb3",
+  "selection": "same100 held questions; selected pair and final2000Q pair fixed only after diagnostic completes",
+  "outputs": [
+    "qa_cohort_selected",
+    "qa_cohort_2000"
+  ],
+  "source": "source_v11",
+  "views": [
+    "trained AC",
+    "trained reader without history"
+  ],
+  "initial_controls_unchanged": true
+}

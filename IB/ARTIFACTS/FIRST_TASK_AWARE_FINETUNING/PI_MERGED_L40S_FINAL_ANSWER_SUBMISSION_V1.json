@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-23T16:13:28.532365Z",
+  "status": "released",
+  "original_job": 23552209,
+  "original_state": "23552209|COMPLETED|0:0",
+  "purpose": "Existing validated evaluator resume: preserve complete AC100 and threeNLL controls, fill1 remaining optionalfullcontext answer. Local snapshot showed99/100; worker owns exact resume guards.",
+  "worker_unchanged": true,
+  "prior_preparation_note": "First pre-submission check queried purged completed job withsqueue; it failed before anynewsubmission. Replaced withactive-user listing plusconfirmed accounting.",
+  "job_id": 23555878,
+  "held_state": "JobId=23555878 JobName=pi_merged_full_last UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterany:23555091(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:10:00 TimeMin=N/A SubmitTime=2026-09-23T12:13:28 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T12:13:28 Scheduler=Main Partition=mit_normal_gpu AllocNode:Sid=login009:3476246 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:l40s=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_l40s_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged_full_last --time=00:10:00 --export=ALL,QA_EVAL_SECONDS=500 --dependency=afterany:23555091 --output /home/ngom/orcd/pool/activation/taskaware/logs/merged_l40s_last_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_l40s_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/merged_l40s_last_23555878.log TresPerNode=gres/gpu:l40s:1 TresPerTask=cpu=8\n",
+  "released_utc": "2026-09-23T16:13:29.228495Z"
+}

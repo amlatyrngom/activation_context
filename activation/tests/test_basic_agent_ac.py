@@ -9,6 +9,7 @@ accepting mixed prompts and hitting its prefix cache), not answers. `AC_CHECKPOI
 """
 import json
 import os
+import re
 from dataclasses import replace
 
 import pytest
@@ -113,12 +114,14 @@ def test_ac_agent_channels_simulated():
         assert len(agent.spans) == 1 and agent.rows[0].shape[0] == ac_model.part_view_rows(tree["messages"], tree["compression_target"], tree.get("tools"))
         assert state["embeds_shape"] == (len(agent.prefix), agent.rows[0].shape[1]) and state["row_positions"] == agent.rows[0].shape[0]
         _probe_engine(agent, "compaction")
-        # A second compaction nests the first tree verbatim.
+        # A second compaction is flat (09-26): the first compaction's summary as text, then the new segment; no tree inside.
         agent.record_assistant_turn("", [{"id": "c2", "name": "compact", "arguments": {"summary": "again"}}], tokenizer.encode("compact"), [])
         agent.compaction_due = True
         agent.simulate_step()
         outer = direct_parts(agent.run_results.prompt_messages)[0]
-        assert direct_parts(outer["messages"])[0] == tree and len(agent.run_results.compactions) == 2
+        assert not direct_parts(outer["messages"]) and len(agent.run_results.compactions) == 2
+        flat_text = json.dumps(outer["messages"])
+        assert flat_text.count("Printed 0..3; next sum the primes.") == 1 and "print(0)" not in flat_text   # the first summary as text; its segment is gone
         _probe_engine(agent, "compaction x2")
 
         # --- subagent in step mode: the child's prompt carries the parent segment; the parent's result carries the child's segment.
@@ -139,12 +142,12 @@ def test_ac_agent_channels_simulated():
         assert [p.get("type") for p in tool_step["messages"][0]["content"]] == ["activation_context", "text"]
         returned = tool_step["messages"][0]["content"][0]
         assert returned["kind"] == "subagent_return" and returned["messages"][0]["role"] == "system"
-        assert returned["messages"][1]["content"][0]["type"] == "activation_context"                          # the child's segment starts with the parent's part
+        assert not direct_parts(returned["messages"]) and returned["messages"][1]["content"] == "Find the 140th prime."   # no inherited parent context
         assert tool_step["tool_results"][0]["subagent_index"] == 0
         assert len(tool_step["ac_spans"]) == 1 and len(agent.spans) == 1
         _probe_engine(agent, "subagent")
 
-        # --- large tool output: a real python call prints 100k chars; the part holds the full text nested with the parent segment.
+        # --- large tool output: a real python call prints 100k chars; the part holds the call and the full text (flat).
         config = replace(BASE, user_prompt="Print a lot.")
         agent = synthesize_agent(harness, config, [SyntheticTurn("Printing.", [("python", {"code": "print('x' * 100000)"})])])
         state = agent.simulate_step()
@@ -156,8 +159,7 @@ def test_ac_agent_channels_simulated():
         part, text = step["messages"][0]["content"]                                             # rendered ahead of the text on the step
         assert part["type"] == "activation_context" and text["text"] == result.output
         assert part["compression_target"] == BASE.ac_tool_output_ratio and part["messages"][1]["role"] == "tool"
-        nested = direct_parts(part["messages"])[0]
-        assert len(part["messages"][1]["content"]) >= 80_000 and nested["messages"][0]["role"] == "system" and nested["messages"][1]["content"] == config.user_prompt
+        assert len(part["messages"][1]["content"]) >= 80_000 and not direct_parts(part["messages"]) and part["messages"][0]["content"].startswith("Tool call: python(")
         assert step["ac_spans"][0]["length"] == agent.rows[0].shape[0] and step["tool_results"][0]["activation_content"] == [raw]
         _probe_engine(agent, "tool output")
         agent.shutdown()
@@ -168,10 +170,11 @@ def test_ac_agent_channels_simulated():
         state = agent.simulate_step()
         result = state["results"][0]
         assert result.output.count("\n[") + result.output.startswith("[") == 3 and result.content is None and result.activation_content[0]["kind"] == "search"
-        extra = result.activation_content[0]["messages"][1]["content"]
-        assert extra.count("\n[") + extra.startswith("[") == min(SEARCH_EXTRA_MAX, 6)
+        extra = result.activation_content[0]["messages"][0]["content"]                        # evidence, then the query as the question
+        assert len(re.findall(r"(?m)^Passage \d+:$", extra)) == min(SEARCH_EXTRA_MAX, 6)
         rendered = direct_parts(agent.run_results.trajectory[-1]["messages"])[0]
-        assert rendered["compression_target"] == BASE.ac_search_ratio and rendered["messages"][0]["content"][0]["compression_target"] == BASE.ac_subagent_ratio
+        assert rendered["compression_target"] == BASE.ac_search_ratio and not direct_parts(rendered["messages"])
+        assert rendered["messages"][-1] == {"role": "user", "content": "Question: " + example.query[:200]}
         _probe_engine(agent, "search")
 
         # --- resume: the serialized record rebuilds the same prefix, spans and rows.

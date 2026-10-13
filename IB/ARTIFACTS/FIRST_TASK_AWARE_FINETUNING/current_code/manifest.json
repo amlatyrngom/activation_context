@@ -1,0 +1,193 @@
+{
+  "baseline": "/source",
+  "scope": "Runtime Python code, the two previously requested training tests, and the existing AC round-trip caller migration; other tests and bench probes excluded.",
+  "files": [
+    {
+      "path": "activation/ac_model/ac_model.py",
+      "operation": "modify",
+      "source_sha256": "32b4155acf05e52accb55415e7b7a30bf46c669643fdda867960f551ff5bc633",
+      "workspace_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd"
+    },
+    {
+      "path": "activation/ac_model/ac_model_reporter.py",
+      "operation": "modify",
+      "source_sha256": "fdec56d449dd08174e1b33745cfdaea32399cf60893cc3f1863663817ff3e07e",
+      "workspace_sha256": "23eef560f7993814d9bcf44defeebb952a730068e7d1a9a7582c1e8f6984cb28"
+    },
+    {
+      "path": "activation/ac_model/ac_model_study.py",
+      "operation": "modify",
+      "source_sha256": "a4c9c48b0b58d0b58c3db527a9fc427c84e3e927028aac0d99b19312c978cf85",
+      "workspace_sha256": "332a3cbac69b691d2576eabfbed2196dfbd3241dd2a71e26a9ae8f5349098d7b"
+    },
+    {
+      "path": "activation/ac_model/ac_model_training.py",
+      "operation": "modify",
+      "source_sha256": "ace6174f494009d5ef304bf6e9dc50f3e64b65ddb085b33dab956d17291764a7",
+      "workspace_sha256": "f0eb298ba1b5714a0e4f4a79269b32989670f0fd84c61985d7d27a4de9e0d601"
+    },
+    {
+      "path": "activation/ac_model/ac_model_utils.py",
+      "operation": "modify",
+      "source_sha256": "76c3cf1f83f0d7d90bd2a895e2967edd011db86399c0f2561a4a84dd6ac9a141",
+      "workspace_sha256": "081297c4a4f1062ce26f0e9f847e2ce728cc0db8d5076526bdb626359e5bfbbb"
+    },
+    {
+      "path": "activation/agent/agent.py",
+      "operation": "modify",
+      "source_sha256": "eab3172665bc93c0ce841cc90cace9144e48fac55b0eaa2733b156920dd11d0f",
+      "workspace_sha256": "1d79c345a7008961ae9c48ddefb6aaca691a4baa5edb2901c55018145ee5bef1"
+    },
+    {
+      "path": "activation/agent/agent_config.py",
+      "operation": "modify",
+      "source_sha256": "8140cd6d2d5d6d7e2993be4144c549a0bec9a776b015eb699235e5344414ef43",
+      "workspace_sha256": "e51e4bc66b2503ad01b9819d26c1e38e821ef939ae2dfff0d82befa9e35b467d"
+    },
+    {
+      "path": "activation/agent/agent_programs.py",
+      "operation": "delete",
+      "source_sha256": "4cb5a2f73ff90c0022a9a0c7e75f4284ae235f46007cd7cedc7ac37655bd81b8",
+      "workspace_sha256": null
+    },
+    {
+      "path": "activation/agent/agent_utils.py",
+      "operation": "modify",
+      "source_sha256": "db0674ef44eb4bcc2b3c14b654d921d8595999cb2fb27d0fcdc62db900af2a66",
+      "workspace_sha256": "a4c3bbab9f0237540bdd3874a097ff73b0764df6dadddb1b2b832757d9e02707"
+    },
+    {
+      "path": "activation/agent/rollout_caching.py",
+      "operation": "modify",
+      "source_sha256": "35b13c16e03bf126dcddc34464dfd9d9064f11cd345931a4a0c2787632eea6f7",
+      "workspace_sha256": "eb7aae61fab3cb88322697e066fa489e64da3399d764243261708c8d3b74d29f"
+    },
+    {
+      "path": "activation/agent/rollout_manager.py",
+      "operation": "modify",
+      "source_sha256": "cdaab42a9b1d84b10e91bd3fe1eefd7dfea25b7c04b6b17094deaf10d1340fd3",
+      "workspace_sha256": "785122086b07b5f7ffd03d7535bc5052679054b6cbad5036978e4ea63161cbdf"
+    },
+    {
+      "path": "activation/agent/rollout_reporter.py",
+      "operation": "modify",
+      "source_sha256": "48ce3d75849963d38d924afb8063d8f3b0fa1dd7bfdd818be730c012f92b9879",
+      "workspace_sha256": "dfaf8f81113baf03a55a222a689f12efcdf649bf892d4a37e47ae81669d3c576"
+    },
+    {
+      "path": "activation/agent_training/agent_trainer.py",
+      "operation": "modify",
+      "source_sha256": "7432ee90abbf478c94594cba6ca6a7d143721558d86f7c21a2b03a9de5703814",
+      "workspace_sha256": "8811f44a04bd9082cf584214fc061557c3b68b993c2739f31f5ab82bef413c7d"
+    },
+    {
+      "path": "activation/agent_training/agent_training_utils.py",
+      "operation": "modify",
+      "source_sha256": "85147b6ffc317a75d83f0cc73a991e4019a8c49708b40eb89d663bfc0e41cbfa",
+      "workspace_sha256": "ca283394391b8b63699357277182d6d35b2c45877e5d8fbeae64b043a833072f"
+    },
+    {
+      "path": "activation/autotuners/fla.py",
+      "operation": "modify",
+      "source_sha256": "b35dd05ee12df9ef1b0aa9691b353fcf5a0c7fce36cf587b9d541c37c42008ce",
+      "workspace_sha256": "6f32daf94c315a57da37b2b416d516d86d0baaac9a2ab15dbd26fa6f9652e219"
+    },
+    {
+      "path": "activation/autotuners/worker.py",
+      "operation": "modify",
+      "source_sha256": "5d385c139ce5677a00bc7e5fbc91a373721da1dc1ab6561fa25a667f62908bcb",
+      "workspace_sha256": "b0d6ce3b9ef81e0ac1c5fb430bac382a9fd306e66b2c1a03077f44317006616c"
+    },
+    {
+      "path": "activation/cloud/sky.py",
+      "operation": "modify",
+      "source_sha256": "fbad68c07a429120204e2537b108eaf3ab28270585ba9be86620fe049f7cb3af",
+      "workspace_sha256": "4515ba2d3ed7002efeed780b5158387231fcf94aa086215ec331a79ded143847"
+    },
+    {
+      "path": "activation/common/ac_parts.py",
+      "operation": "modify",
+      "source_sha256": "4658e0a32c36aa887f83956ed10dc70a7b8f0d92c561e13a67269eea4fd2ae70",
+      "workspace_sha256": "7c1579f66cd097522fb572ad497b028fa15faa1cdb2fc78a25ca2bbc0cdb1ec6"
+    },
+    {
+      "path": "activation/common/reporting.py",
+      "operation": "modify",
+      "source_sha256": "f01fd791ebb9257b8c6ce97c3048992e8ab2f9b4a8b34f7068d00e3d3929fda0",
+      "workspace_sha256": "821532bd96b0ce50eb805a1e3d387b3ca75e48d59f5f4910c139fdea8cb4577e"
+    },
+    {
+      "path": "activation/dataset/dataset_manager.py",
+      "operation": "modify",
+      "source_sha256": "56b9ee3cf4169154f825edcb877bcad3e55090dacb9708fe8cf46963724ee1f0",
+      "workspace_sha256": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5"
+    },
+    {
+      "path": "activation/dataset/dataset_study.py",
+      "operation": "modify",
+      "source_sha256": "70799b1a4bfde161233df7460d145452003130ce6f1529ac6da58bc96a36abac",
+      "workspace_sha256": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18"
+    },
+    {
+      "path": "activation/dataset/dataset_utils.py",
+      "operation": "modify",
+      "source_sha256": "cced85fbd20a709c62f509a908f13854e46f2f35055eb1ae8ab3b786f200f7f4",
+      "workspace_sha256": "aea89a27b24b7693c5989f16e27a0a007ca60525716e3ad3811a166092fdd2bf"
+    },
+    {
+      "path": "activation/dataset/loaders/trajectory_utils.py",
+      "operation": "modify",
+      "source_sha256": "019ca898fd99568de84a4c7850ce22e57d734638f22098fedb545040bfdc8e84",
+      "workspace_sha256": "3787d51ba8a16cb9caea59287ff4bc2b7a43fecc8c64ff4d45b5968565257646"
+    },
+    {
+      "path": "activation/harness/hf_utils.py",
+      "operation": "modify",
+      "source_sha256": "8cc50da4ab9661c115363bec7bf12859663f04cf9e422873d0bf8065a5fcce12",
+      "workspace_sha256": "25c1e3f6708524ac9201d42e2b10a0905a5e168062b1463c594212a7003dc5a9"
+    },
+    {
+      "path": "activation/harness/loaded_model.py",
+      "operation": "modify",
+      "source_sha256": "1d9c985f21384bbf053f435ea7ff679d9f20b4c64e23d7a70318320204855400",
+      "workspace_sha256": "1e5f0621c7be63cc7c164609409cbd7b05bf903aee222671b7d3b3f248adc6fc"
+    },
+    {
+      "path": "activation/harness/model_config.py",
+      "operation": "modify",
+      "source_sha256": "5ec4cb94fe27b883b66ce47f6a282deee408aab6b97a5569c6a1d9f2475b81bf",
+      "workspace_sha256": "a3db4d28fe2b372e893f425a25857c7338b51311dbfada60a9ecd14964267196"
+    },
+    {
+      "path": "activation/harness/module_manager.py",
+      "operation": "modify",
+      "source_sha256": "93a29c368deb409f2865cdc5cc7f1c14bff1f594457320054bbb48a0b86c3642",
+      "workspace_sha256": "4c54d76147c9e5a3ceb6d6c3c471a614f02e7f960f1ccd22128268bc341fc055"
+    },
+    {
+      "path": "activation/tests/test_basic_ac_self_distillation.py",
+      "operation": "add",
+      "source_sha256": null,
+      "workspace_sha256": "6a2da723ac034adec541b2c076ac0a1969787eeb81dcf5778cb8fddc1724af3f"
+    },
+    {
+      "path": "activation/tests/test_basic_agent_ac.py",
+      "operation": "modify",
+      "source_sha256": "29d636cf4d13cd6b9eb7b9425987b8a8aec3a24889721fc94c00bc85fbce0b7c",
+      "workspace_sha256": "2d7e9599df836efd5814f3612f103154f4aed7a46553d3b17625b5d05e3456c2"
+    },
+    {
+      "path": "activation/tests/test_basic_agent_ac_training.py",
+      "operation": "modify",
+      "source_sha256": "ce7a36b5d2a5cb0316ebefa71f28cb752ae32554cf7a626c0b41f39cfb809d4e",
+      "workspace_sha256": "60e172378f09cfbdc11f5474e86c982b8392e592f04773f54c2ac46ed5790250"
+    }
+  ],
+  "baseline_description": "Captured /source state before the observed 2026-09-21 source sync; source_sha256 preserves that baseline.",
+  "source_sync_observation": {
+    "checked_at_utc": "2026-09-21T15:25:36Z",
+    "all_30_paths_match_packaged_destination": true,
+    "reverse_patch_check": "passed",
+    "agent_modified_source": false
+  }
+}

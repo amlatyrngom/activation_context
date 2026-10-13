@@ -1,0 +1,26 @@
+{
+  "utc": "2026-09-23T00:59:32.299889Z",
+  "status": "released",
+  "old_jobs": "23511289|PREEMPTED|0:0\n23511290|CANCELLED|0:0",
+  "saved_pair": {
+    "epoch_number": 1,
+    "step": 100,
+    "steps": 1250,
+    "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00100",
+    "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00100"
+  },
+  "saved_questions": 800,
+  "last_logged_questions": 968,
+  "questions_to_replay": 168,
+  "optimizer_bytes": 4676641912,
+  "hashes": {
+    "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+    "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+  },
+  "jobs": {
+    "training": 23516714,
+    "readout": 23516715
+  },
+  "protocol": "Own paired checkpoint, inherited Adam, same original1250-step schedule, same data/order. No optimizer or learning-rate reset.",
+  "released_utc": "2026-09-23T00:59:32.857072Z"
+}

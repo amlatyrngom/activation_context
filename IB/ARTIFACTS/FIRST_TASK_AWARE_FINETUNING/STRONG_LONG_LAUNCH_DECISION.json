@@ -1,0 +1,40 @@
+{
+  "status": "frozen_ready_to_stage",
+  "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+  "retained_encode_budget": 65536,
+  "GPU_probe_job": 23511648,
+  "probe_sha256": "2b82693f607efaef0683c14566ef97461c2c8d09a218667a85b39525a417888d",
+  "measurement_outcome": {
+    "baseline": {
+      "passed": null,
+      "joint_loss": 0.12334547378122807,
+      "joint_loss_abs_difference": null,
+      "failed_gradient_tensors": 0,
+      "failed_output_tensors": 0
+    },
+    "unchanged_repeat": {
+      "passed": true,
+      "joint_loss": 0.12334547378122807,
+      "joint_loss_abs_difference": 0.0,
+      "failed_gradient_tensors": 0,
+      "failed_output_tensors": 0
+    },
+    "32768": {
+      "passed": false,
+      "joint_loss": 0.12285811454057693,
+      "joint_loss_abs_difference": 0.0004873592406511307,
+      "failed_gradient_tensors": 413,
+      "failed_output_tensors": 55
+    },
+    "16384": {
+      "passed": false,
+      "joint_loss": 0.12392598763108253,
+      "joint_loss_abs_difference": 0.0005805138498544693,
+      "failed_gradient_tensors": 474,
+      "failed_output_tensors": 123
+    }
+  },
+  "timings_run": false,
+  "decision": "Do not adopt smaller batches. Start useful larger adaptation with unchanged batching and validated cached/sparser controls; investigate numerical sensitivity independently.",
+  "scope": "No product-source/math/mask changes. No data-amount confirmation scores consulted."
+}

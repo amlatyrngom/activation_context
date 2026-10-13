@@ -1,0 +1,14 @@
+{
+  "ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/AC_MODELS/rag_poc/epoch_001",
+  "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/LORAS/rag_reader/epoch_001",
+  "initialization": "Preselected completed32000-question paired weights; fresh Adam for long-context adaptation.",
+  "parent_questions": 32000,
+  "parent_updates": 4000,
+  "payload_sha256": {
+    "ac_modules": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+    "encoder_config": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+    "encoder_weights": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+    "reader_config": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+    "reader_weights": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "job_id": "23644280",
+  "host": "orcd",
+  "created_utc": "2026-09-24T12:33:51.722768+00:00",
+  "run": "compaction_teacher_bank_gate_h100_v1",
+  "gpu": "H100",
+  "source": "source_v11",
+  "validation": "CPU fixtures and syntax passed; GPU pending",
+  "files": {
+    "compaction_teacher_bank_v1.py": "2a2683ff8624087acd838c242fb76d207add1cefa95ebc1e3d4fdfdff0170053",
+    "probe_compaction_teacher_bank_v1.py": "ae6967af43e28563a12d97931ec8f3dd1ff164184e7d6cd8c4b1af896628ee2a",
+    "teacher_single_projection_v1.py": "4cae211a29a6b397e65c1149f54e48c85153dc9facbf9faf53a2fe2c4e30dedf",
+    "compaction_teacher_bank_gate_h100_v1.sbatch": "80c3ee0c358165928b0ba98de6bf1ae38a05e9d3d77af0a355aa036294acd6d8"
+  },
+  "teacher": "preserved selected/frozen_teacher, copied into gate-only persistent snapshot",
+  "limits": "same-profile, reader-only producer, exact roundtrip and real gradients; no full-worker promotion"
+}

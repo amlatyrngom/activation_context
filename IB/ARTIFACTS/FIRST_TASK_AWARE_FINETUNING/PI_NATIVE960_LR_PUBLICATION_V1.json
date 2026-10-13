@@ -1,0 +1,63 @@
+{
+  "status": "published_root_reviewed",
+  "output_directory": "/workspace/IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING",
+  "summary": {
+    "floor": {
+      "held_nll": 0.549553158972316,
+      "statuses": {
+        "correct": 70,
+        "incorrect": 11,
+        "partial": 6
+      },
+      "all100_statuses": {
+        "partial": 10,
+        "correct": 74,
+        "incorrect": 14,
+        "ambiguous": 2
+      },
+      "eos": 100,
+      "caps": 0
+    },
+    "two": {
+      "held_nll": 0.5670165674148926,
+      "statuses": {
+        "correct": 71,
+        "incorrect": 9,
+        "partial": 7
+      },
+      "all100_statuses": {
+        "partial": 11,
+        "correct": 73,
+        "incorrect": 14,
+        "ambiguous": 2
+      },
+      "eos": 100,
+      "caps": 0
+    }
+  },
+  "paired": {
+    "floor": [
+      22,
+      83,
+      88,
+      96
+    ],
+    "two": [
+      5,
+      47,
+      55,
+      74,
+      98
+    ]
+  },
+  "same_answer_rating_conflicts": [],
+  "builder_sha256": "38570d49a6f26ccb29f60f09f81f8f746617f945ff29a03206c0177f67744068",
+  "files_sha256": {
+    "PI_NATIVE960_LR_COHORT100.evidence.json": "94ed27a0d6715c4e57b5edf05193651c388e9b8e322d75a7645ac57624d6e51f",
+    "PI_NATIVE960_LR_COHORT100.tressoir.html": "df1fbcf1a44a5a3be8ca1188c00b7f0e0c988b43fca022de93b92536254b5eaf"
+  },
+  "browser_receipt_sha256": "2daa104c06dc480ffc13090f7ba7b78d4658701f922ce6fe6aa0cfad16d3de62",
+  "editor_runtime_tested": false,
+  "published_utc": "2026-09-23T17:46:43.435947+00:00",
+  "root_review": "Matched runtime/input/row/model checks and60 identical-response rating consistency passed. Source spotchecks18/72/80/96; explicit flagged0/84 adjudications. Header and actual pairedanswer screenshots inspected. Agent Chromium integration receipt reused."
+}

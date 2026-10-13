@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "identity": {
+    "arm": "joint",
+    "epochs": 1,
+    "planned_updates": 80,
+    "steps_per_epoch": 80,
+    "material_sha256": "f937470fde3f231aac98e7fe4f209488108699b329ac00f222a919e3a0a4bc4e",
+    "material_ids_sha256": "c67a9e461ad5b682cbceb844ec78d91f461baa7adcbaf0ed2093775aba0db4cb",
+    "passage_parts": false,
+    "evidence_tokens": 32768,
+    "max_passages": 64,
+    "ratio": 0.0625,
+    "initial_pair_sha256": "27fa2e70c254a2ab1e211483e3b2ba0844404a56d3c1f7050c566f05d82c8297"
+  },
+  "effective_config": {
+    "loss_kind": "sft",
+    "learning_rate_ac": 5e-05,
+    "learning_rate_target_lora": 2e-05,
+    "weight_decay": 0.0,
+    "adam_betas": [
+      0.9,
+      0.95
+    ],
+    "adam_eps": 1e-08,
+    "max_grad_norm": 1.0,
+    "lr_schedule": "cosine",
+    "lr_final_fraction": 0.1,
+    "warmup_updates": 50,
+    "schedule_total_updates": 80,
+    "resume_optimizer": true,
+    "resume_skip_steps": 24,
+    "checkpoint_every_updates": 8,
+    "checkpoint_every_epoch": true,
+    "no_context_penalty_weight": 1.0,
+    "no_context_penalty_fraction": 0.25,
+    "teacher_cache_top_k": 32,
+    "deltas_off_panel": false,
+    "updates_per_epoch": 4,
+    "examples_per_update": 8,
+    "micro_batch_examples": 1,
+    "max_example_tokens": 72000,
+    "logits_chunk_tokens": null,
+    "fp32_head_matmul": false,
+    "gradient_checkpointing": true,
+    "gradient_checkpointing_min_tokens": 1700,
+    "seed": 20260921,
+    "num_epochs": 1,
+    "shuffle_examples": true,
+    "max_duration_seconds": 9600,
+    "reporting_interval": 0.1,
+    "completion_samples": 0,
+    "completion_max_new_tokens": 160
+  },
+  "source": "/orcd/pool/007/ngom/activation/taskaware/reports/long_adapt_32k/attempts/resume_002/resume_baseline.json",
+  "source_sha256": "4b5adc37f1577f01509f9a03942b3734044954774b6706dee8706c9f50cfa22a",
+  "source_mtime_ns": 1790034676713556984,
+  "resume": {
+    "updates": 24,
+    "first_epoch": 1,
+    "skip_steps": 24,
+    "remaining_epochs": 1,
+    "saved_epoch": 0,
+    "ac_path": "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/epoch_001_step_00024",
+    "reader_path": "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/LORAS/rag_reader/epoch_001_step_00024",
+    "marker": "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/partial_epoch.json"
+  },
+  "checkpoint_files": {
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/epoch_001_step_00024/ac_modules.pt": {
+      "bytes": 1208881673,
+      "mtime_ns": 1790031047929985399
+    },
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/epoch_001_step_00024/optimizer.pt": {
+      "bytes": 4676641912,
+      "mtime_ns": 1790031057057970546
+    },
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_config.json": {
+      "bytes": 1150,
+      "mtime_ns": 1790031048685984168
+    },
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_model.safetensors": {
+      "bytes": 349204488,
+      "mtime_ns": 1790031048636984248
+    },
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/LORAS/rag_reader/epoch_001_step_00024/adapter_config.json": {
+      "bytes": 1147,
+      "mtime_ns": 1790031049852982269
+    },
+    "/orcd/pool/007/ngom/activation/taskaware/long_adapt_32k/LORAS/rag_reader/epoch_001_step_00024/adapter_model.safetensors": {
+      "bytes": 931173960,
+      "mtime_ns": 1790031049774982397
+    }
+  },
+  "builder_sha256": "ba99d5feca640a69ad9da1e3cad489cb3fb776d2b1df1f4ef0e66af64f5d2c1b",
+  "trainer_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+  "measured_on": "RTX PRO6000; completed actual resume baseline from job23431235; retain as prior measurement if resumed on a different GPU",
+  "adoption": "Existing immutable published update24 pair; required files predate the completed baseline and metadata checked at receipt creation. Weight files are not content-hashed."
+}

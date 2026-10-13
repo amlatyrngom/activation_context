@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 from activation.agent_training.agent_training_teacher_study import (
-    BENCHMARKS, DEFAULT_DATASET_WEIGHTS, DEFAULT_TEACHER_WEIGHTS, ORACLE_MODEL_ID, REASONING_EFFORTS, AgentTeacherKind, AgentTrainingStudy, make_harness,
+    BENCHMARKS, DEFAULT_DATASET_WEIGHTS, DEFAULT_TEACHER_WEIGHTS, ORACLE_MODEL_ID, ORACLE_MODEL_NAME, REASONING_EFFORTS, AgentTeacherKind, AgentTrainingStudy, make_harness,
 )
 from activation.agent.rollout_caching import CACHE_FILENAME, RedoPolicy
 from activation.common.data_syncing import resolve_path
@@ -132,6 +132,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="roll out again the cached rows with these finish reasons (e.g. max_duration max_turns); the new rows supersede them")
     parser.add_argument("--redo-teacher-kinds", nargs="*", default=None, help="restrict --redo-finish-reasons to these teacher kinds")
     parser.add_argument("--redo-only", action="store_true", help="run nothing but the rows to redo (tasks without a cached row are skipped)")
+    parser.add_argument("--shard-index", type=int, default=0, help="run only the draw's tasks i, i+n, ... (one job per GPU; use a caching id per shard)")
+    parser.add_argument("--shard-count", type=int, default=1)
+    parser.add_argument("--engine-kwargs", default=None, help="JSON merged into the oracle's vLLM engine kwargs (e.g. revision, max_model_len)")
+    parser.add_argument("--env-dockerfile", default=None, help="sandbox Dockerfile path; default the richer default image")
+    parser.add_argument("--prepare-only", action="store_true", help="load the datasets (fetching checkouts), record the draw, and stop before any rollout (CPU)")
     parser.add_argument("--allow-draw-change", action="store_true",
                         help="proceed although seed, total, weights, reasoning or model differ from the draw recorded with this caching id")
     args = parser.parse_args(argv)
@@ -148,15 +153,25 @@ def main(argv: list[str] | None = None) -> int:
     check_draw(args.caching_id, {"seed": args.seed, "total": args.total, "dataset_weights": dataset_weights,
                                  "teacher_weights": {f"{kind}:{teacher}": weight for (kind, teacher), weight in sorted(teacher_weights.items(), key=str)},
                                  "reasoning": args.reasoning, "model_id": args.model_id}, allow_change=args.allow_draw_change)
+    if not 0 <= args.shard_index < args.shard_count:
+        raise SystemExit("--shard-index must be in [0, --shard-count)")
     harness = make_harness(args.model_id, agent_max_concurrent=args.concurrent, agents_per_gpu=args.agents_per_gpu or 40)
+    if args.engine_kwargs:
+        loaded = harness.loaded_models[ORACLE_MODEL_NAME]
+        from activation.harness.vllm_wrapper import VLLMWrapper
+        base = loaded.model_config.engine_kwargs or VLLMWrapper.recommended_engine_kwargs(args.model_id)
+        loaded.model_config.engine_kwargs = {**base, **json.loads(args.engine_kwargs)}
     study = AgentTrainingStudy(harness, dataset_weights, teacher_weights, reasoning=None if args.reasoning == "off" else args.reasoning,
-                               max_turns=args.max_turns, max_duration=args.max_duration)
+                               max_turns=args.max_turns, max_duration=args.max_duration, env_dockerfile_path=args.env_dockerfile)
     started = time.time()
     try:
         study.setup_reusable_artifacts(per_benchmark, seed=args.seed)
         record = resolve_path(f"ROLLOUTS/{args.caching_id}", create=True) / "draw_tasks.jsonl"
         head = [] if record.exists() else cached_draw_head(resolve_path(f"ROLLOUTS/{args.caching_id}", create=False) / CACHE_FILENAME)
-        configs = study.generate_rollout_campaign_tasks(args.total, seed=args.seed, record=record, head=head)
+        configs = study.generate_rollout_campaign_tasks(args.total, seed=args.seed, record=record, head=head)[args.shard_index::args.shard_count]
+        if args.prepare_only:
+            print(f"prepared {len(configs)} tasks for shard {args.shard_index}/{args.shard_count} under {args.caching_id}", flush=True)
+            return 0
         folder = resolve_path(args.report_folder)
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "campaign.json").write_text(json.dumps({

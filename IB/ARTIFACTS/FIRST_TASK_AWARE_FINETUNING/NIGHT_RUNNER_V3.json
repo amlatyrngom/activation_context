@@ -1,0 +1,13 @@
+{
+  "runner": "bench/run_qa_night_v3.py",
+  "sha256": "2707f322208aa8af6f55784710b4a5d2ed0b61f9ba6046f5949232f597540e48",
+  "parent": "NIGHT_RUNNER_V2.json",
+  "change": "On resume, rebuild panel metadata before restoring saved curves; avoids duplicate widget assertion and retains all saved history. No training or data changes.",
+  "validation": [
+    "Real HtmlReporter setup run twice including cohort plots; prior curves/table retained, row budget rebuilt.",
+    "Existing resume identity/archive/progress regression passed.",
+    "Real short resume queued23424384; original preempted update24 pair/optimizer retained."
+  ],
+  "failed_attempt": 23423834,
+  "failed_attempt_updates": 0
+}

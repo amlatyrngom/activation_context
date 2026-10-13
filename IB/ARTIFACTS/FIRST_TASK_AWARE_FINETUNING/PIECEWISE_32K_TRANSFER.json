@@ -1,0 +1,68 @@
+{
+  "checked_utc": "2026-09-23T01:54:57.778399+00:00",
+  "condition": "Completed passagewise4k\u00d71 pair, same selected100",
+  "views": {
+    "8k": {
+      "AC": 1.018062524390749,
+      "full context": 0.5842254881005962,
+      "no context": 1.8420814359562485
+    },
+    "32k": {
+      "AC": 1.0252913586116121,
+      "full context": 0.5447277908125147,
+      "no context": 1.8441392190289543
+    }
+  },
+  "inputs": {
+    "8k": {
+      "encoder_tokens": {
+        "mean": 8310.35,
+        "min": 4444,
+        "max": 9141
+      },
+      "evidence_tokens": {
+        "mean": 7940.05,
+        "min": 3589,
+        "max": 8192
+      },
+      "compressed_rows": {
+        "mean": 502.89,
+        "min": 235,
+        "max": 521
+      },
+      "passages": {
+        "mean": 7.19,
+        "min": 2,
+        "max": 16
+      },
+      "any_row_cap_applied": false
+    },
+    "32k": {
+      "encoder_tokens": {
+        "mean": 33840.96,
+        "min": 32655,
+        "max": 36008
+      },
+      "evidence_tokens": {
+        "mean": 32660.02,
+        "min": 31736,
+        "max": 32767
+      },
+      "compressed_rows": {
+        "mean": 2055.33,
+        "min": 1995,
+        "max": 2074
+      },
+      "passages": {
+        "mean": 22.43,
+        "min": 10,
+        "max": 64
+      },
+      "any_row_cap_applied": false
+    }
+  },
+  "decode_scope": "Only8k has actual100 decoded answers.32k is NLL-only.",
+  "caveat": "Different evaluation microbatches2/1 and repeated development. Added retrieval context/distractors, not distributed-required-evidence reasoning. No semantic transfer claim.",
+  "ac_mean_delta_32k_minus_8k": 0.007228834220863067,
+  "own_reader_no_context_mean_delta": 0.0020577830727057655
+}

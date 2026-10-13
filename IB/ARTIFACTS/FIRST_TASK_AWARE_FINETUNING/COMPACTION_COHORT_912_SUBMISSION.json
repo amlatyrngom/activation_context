@@ -1,0 +1,25 @@
+{
+  "job": "23637350",
+  "utc": "2026-09-24 08:29:55 UTC",
+  "files": {
+    "evaluate_trajectory_cohort.py": "6702ad11b176f76f81da8f873c23db9d0f8053ced8dae5da26c04e06addf9abc",
+    "compaction_pair_912.json": "dea5645c35ff7bd96c61cc0330626ca3113a4e6d16209b9d4134e8cf6f658a65",
+    "compaction_cohort_912_orcd.sbatch": "c5ba5390d5c6f3dbb6c6018ecf128d354ba13ba52ff5663fe868e2f4fdffc462"
+  },
+  "checkpoint": 912,
+  "supervised_tokens": 2608122,
+  "held_items": 100,
+  "source": "source_v11",
+  "max_new_tokens": 1024,
+  "conditions": [
+    "initial full/no-history/AC",
+    "trained AC/reader without history"
+  ],
+  "scope": "Offline first assistant continuation; full retained target NLL. Same fixed held100, no judge filtering; not live tool success.",
+  "recovery": {
+    "utc": "2026-09-24T09:50:32.488321+00:00",
+    "job_id": 23639470,
+    "launcher": "compaction_cohort_912_orcd_v2.sbatch",
+    "reason": "23637350 failed immediately: private bench directory absent from PYTHONPATH. Added same bench path as working QA evaluator; preserved evaluator/pairs/cohort/output identities. Shared autotune alias added; no quality change."
+  }
+}

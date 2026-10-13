@@ -1,0 +1,456 @@
+{
+  "status": "failed_optimization_unvalidated",
+  "job_id": 23511648,
+  "proof_sha256": "2b82693f607efaef0683c14566ef97461c2c8d09a218667a85b39525a417888d",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "case": "failing",
+  "cases_completed": 1,
+  "quantiles_case_run": false,
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "joint_objective_baseline": 0.12334547378122807,
+  "parameter_count": 630,
+  "tolerances": {
+    "relative_rms": 0.03,
+    "absolute_rms_floor": 2e-06,
+    "joint_loss_abs": 0.001
+  },
+  "variant_summaries": {
+    "baseline": {
+      "joint_objective": 0.12334547378122807,
+      "joint_objective_change": 0.0,
+      "encoder_shapes": [
+        [
+          32,
+          593,
+          2048
+        ],
+        [
+          24,
+          2507,
+          2048
+        ],
+        [
+          20,
+          2751,
+          2048
+        ],
+        [
+          8,
+          3551,
+          2048
+        ]
+      ],
+      "side_mask_none": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "input_lengths_and_row_counts_unchanged": true,
+      "parameter_metadata_unchanged": true,
+      "penalty_ids_unchanged": true,
+      "useful_side_positions": 66523,
+      "padded_side_positions": 162572,
+      "groups": {}
+    },
+    "unchanged_repeat": {
+      "joint_objective": 0.12334547378122807,
+      "joint_objective_change": 0.0,
+      "encoder_shapes": [
+        [
+          32,
+          593,
+          2048
+        ],
+        [
+          24,
+          2507,
+          2048
+        ],
+        [
+          20,
+          2751,
+          2048
+        ],
+        [
+          8,
+          3551,
+          2048
+        ]
+      ],
+      "side_mask_none": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "input_lengths_and_row_counts_unchanged": true,
+      "parameter_metadata_unchanged": true,
+      "penalty_ids_unchanged": true,
+      "useful_side_positions": 66523,
+      "padded_side_positions": 162572,
+      "groups": {
+        "AC_modules": {
+          "populated_tensors": 167,
+          "failed_tensors": 0,
+          "median_per_tensor_relative_L2_error": 0.0,
+          "max_per_tensor_relative_L2_error": 0.0,
+          "median_tensor_difference_RMS": 0.0,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "encoder_LoRA": {
+          "populated_tensors": 192,
+          "failed_tensors": 0,
+          "median_per_tensor_relative_L2_error": 0.0,
+          "max_per_tensor_relative_L2_error": 0.0,
+          "median_tensor_difference_RMS": 0.0,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "reader_LoRA": {
+          "populated_tensors": 256,
+          "failed_tensors": 0,
+          "median_per_tensor_relative_L2_error": 0.0,
+          "max_per_tensor_relative_L2_error": 0.0,
+          "median_tensor_difference_RMS": 0.0,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        }
+      },
+      "failed_gradient_tensors": 0,
+      "failed_output_tensors": 0,
+      "output_blocks": [
+        {
+          "original_reader_microbatch_passages": 32,
+          "start_passage": 0,
+          "tensors": 288,
+          "bitwise_equal_tensors": 288,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        },
+        {
+          "original_reader_microbatch_passages": 24,
+          "start_passage": 32,
+          "tensors": 216,
+          "bitwise_equal_tensors": 216,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        },
+        {
+          "original_reader_microbatch_passages": 20,
+          "start_passage": 56,
+          "tensors": 180,
+          "bitwise_equal_tensors": 180,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        },
+        {
+          "original_reader_microbatch_passages": 8,
+          "start_passage": 76,
+          "tensors": 72,
+          "bitwise_equal_tensors": 72,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        }
+      ],
+      "scalar_examples": {
+        "ac:ac.input_scale": {
+          "relative_l2": 0.0,
+          "rms_error": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "baseline_gradient_absolute_value": null,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        },
+        "ac:ac.summary_pooling.residual_scale": {
+          "relative_l2": 0.0,
+          "rms_error": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "baseline_gradient_absolute_value": null,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        }
+      }
+    },
+    "32768": {
+      "joint_objective": 0.12285811454057693,
+      "joint_objective_change": -0.0004873592406511307,
+      "encoder_shapes": [
+        [
+          32,
+          593,
+          2048
+        ],
+        [
+          21,
+          1215,
+          2048
+        ],
+        [
+          3,
+          2507,
+          2048
+        ],
+        [
+          17,
+          1746,
+          2048
+        ],
+        [
+          3,
+          2751,
+          2048
+        ],
+        [
+          8,
+          3551,
+          2048
+        ]
+      ],
+      "side_mask_none": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "input_lengths_and_row_counts_unchanged": true,
+      "parameter_metadata_unchanged": true,
+      "penalty_ids_unchanged": true,
+      "useful_side_positions": 66523,
+      "padded_side_positions": 118355,
+      "groups": {
+        "AC_modules": {
+          "populated_tensors": 167,
+          "failed_tensors": 79,
+          "median_per_tensor_relative_L2_error": 0.18213850935958156,
+          "max_per_tensor_relative_L2_error": 1.512421823001117,
+          "median_tensor_difference_RMS": 2.393753014403465e-06,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "encoder_LoRA": {
+          "populated_tensors": 192,
+          "failed_tensors": 192,
+          "median_per_tensor_relative_L2_error": 0.40021457883758205,
+          "max_per_tensor_relative_L2_error": 0.7444583920350861,
+          "median_tensor_difference_RMS": 0.000139367648566681,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "reader_LoRA": {
+          "populated_tensors": 256,
+          "failed_tensors": 142,
+          "median_per_tensor_relative_L2_error": 0.0800209413579894,
+          "max_per_tensor_relative_L2_error": 0.415650172763009,
+          "median_tensor_difference_RMS": 3.81473948481326e-06,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        }
+      },
+      "failed_gradient_tensors": 413,
+      "failed_output_tensors": 55,
+      "output_blocks": [
+        {
+          "original_reader_microbatch_passages": 32,
+          "start_passage": 0,
+          "tensors": 288,
+          "bitwise_equal_tensors": 288,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        },
+        {
+          "original_reader_microbatch_passages": 24,
+          "start_passage": 32,
+          "tensors": 216,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 18,
+          "max_relative_L2_error": 0.03721772153158655
+        },
+        {
+          "original_reader_microbatch_passages": 20,
+          "start_passage": 56,
+          "tensors": 180,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 37,
+          "max_relative_L2_error": 0.06603045017641489
+        },
+        {
+          "original_reader_microbatch_passages": 8,
+          "start_passage": 76,
+          "tensors": 72,
+          "bitwise_equal_tensors": 72,
+          "failed_tensors": 0,
+          "max_relative_L2_error": 0.0
+        }
+      ],
+      "scalar_examples": {
+        "ac:ac.input_scale": {
+          "relative_l2": 0.05859996115446324,
+          "rms_error": 0.021399974822998047,
+          "max_abs": 0.021399974822998047,
+          "passed": false,
+          "baseline_gradient_absolute_value": 0.36518752574920654,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        },
+        "ac:ac.summary_pooling.residual_scale": {
+          "relative_l2": 1.512421823001117,
+          "rms_error": 0.0038431286811828613,
+          "max_abs": 0.0038431286811828613,
+          "passed": false,
+          "baseline_gradient_absolute_value": 0.0025410428643226624,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        }
+      }
+    },
+    "16384": {
+      "joint_objective": 0.12392598763108253,
+      "joint_objective_change": 0.0005805138498544693,
+      "encoder_shapes": [
+        [
+          31,
+          555,
+          2048
+        ],
+        [
+          1,
+          593,
+          2048
+        ],
+        [
+          16,
+          806,
+          2048
+        ],
+        [
+          7,
+          2473,
+          2048
+        ],
+        [
+          1,
+          2507,
+          2048
+        ],
+        [
+          14,
+          920,
+          2048
+        ],
+        [
+          6,
+          2751,
+          2048
+        ],
+        [
+          6,
+          2658,
+          2048
+        ],
+        [
+          2,
+          3551,
+          2048
+        ]
+      ],
+      "side_mask_none": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "input_lengths_and_row_counts_unchanged": true,
+      "parameter_metadata_unchanged": true,
+      "penalty_ids_unchanged": true,
+      "useful_side_positions": 66523,
+      "padded_side_positions": 102948,
+      "groups": {
+        "AC_modules": {
+          "populated_tensors": 167,
+          "failed_tensors": 102,
+          "median_per_tensor_relative_L2_error": 0.39810474981377547,
+          "max_per_tensor_relative_L2_error": 6.283384107455439,
+          "median_tensor_difference_RMS": 4.081080061592924e-06,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "encoder_LoRA": {
+          "populated_tensors": 192,
+          "failed_tensors": 192,
+          "median_per_tensor_relative_L2_error": 0.8217580251111869,
+          "max_per_tensor_relative_L2_error": 1.2630912470849995,
+          "median_tensor_difference_RMS": 0.00029297494792207644,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        },
+        "reader_LoRA": {
+          "populated_tensors": 256,
+          "failed_tensors": 180,
+          "median_per_tensor_relative_L2_error": 0.14713072630191695,
+          "max_per_tensor_relative_L2_error": 0.8486026395952961,
+          "median_tensor_difference_RMS": 5.999544655106639e-06,
+          "note": "Unweighted tensor summaries; not concatenated-gradient norms or cosines."
+        }
+      },
+      "failed_gradient_tensors": 474,
+      "failed_output_tensors": 123,
+      "output_blocks": [
+        {
+          "original_reader_microbatch_passages": 32,
+          "start_passage": 0,
+          "tensors": 288,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 21,
+          "max_relative_L2_error": 0.051373759126201415
+        },
+        {
+          "original_reader_microbatch_passages": 24,
+          "start_passage": 32,
+          "tensors": 216,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 21,
+          "max_relative_L2_error": 0.040771252378374596
+        },
+        {
+          "original_reader_microbatch_passages": 20,
+          "start_passage": 56,
+          "tensors": 180,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 50,
+          "max_relative_L2_error": 0.060355266126346514
+        },
+        {
+          "original_reader_microbatch_passages": 8,
+          "start_passage": 76,
+          "tensors": 72,
+          "bitwise_equal_tensors": 0,
+          "failed_tensors": 31,
+          "max_relative_L2_error": 0.06456986256892844
+        }
+      ],
+      "scalar_examples": {
+        "ac:ac.input_scale": {
+          "relative_l2": 1.8754664320700918,
+          "rms_error": 0.6848969459533691,
+          "max_abs": 0.6848969459533691,
+          "passed": false,
+          "baseline_gradient_absolute_value": 0.36518752574920654,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        },
+        "ac:ac.summary_pooling.residual_scale": {
+          "relative_l2": 6.283384107455439,
+          "rms_error": 0.015966348350048065,
+          "max_abs": 0.015966348350048065,
+          "passed": false,
+          "baseline_gradient_absolute_value": 0.0025410428643226624,
+          "sign_or_candidate_gradient": "not recorded; cannot infer"
+        }
+      }
+    }
+  },
+  "aggregate_gradient_limits": "Receipt stores per-tensor difference RMS and relative L2, but not tensor sizes, candidate norms, signed gradients or dot products. Whole-group gradient norms/cosines and update directions cannot be recovered.",
+  "diagnosis": "Shape-dependent encoder forward differences are proved; exact first operator and numerical versus semantic cause remain unresolved."
+}

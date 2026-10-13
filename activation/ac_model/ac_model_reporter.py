@@ -33,6 +33,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
         self.epoch_x = 0.0
         self.epoch_origin: int | None = None
         self.planned_updates: int | None = None
+        self._resume_skip_steps = 0
         self._interventions_reported = 0
         self.initialize_line_plot("gold_nll", "Gold-answer log-loss",
                                   "Negative log-likelihood per target token of the reference completion, item mean. "
@@ -88,6 +89,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
     # ------------------------------------------------------------------------------------------ trainer callbacks
     def initialize_training(self, config: "ActivationContextTrainingConfig", stats: "ActivationContextTrainingStats") -> None:
         self._set_loss_kind(config.loss_kind)
+        self._resume_skip_steps = config.resume_skip_steps
         if self.epoch_origin is None:
             self.epoch_origin = stats.start_epoch - 1
         self.epoch_x = float(stats.start_epoch - 1 - self.epoch_origin)
@@ -111,12 +113,13 @@ class ActivationContextTrainingReporter(HtmlReporter):
             self.planned_updates = progress.global_step - ((progress.epoch - 1) * progress.steps + progress.step) + progress.epochs * progress.steps
         done = (progress.epoch - 1) * progress.steps + progress.step if progress.epoch else 0
         total = progress.epochs * progress.steps
-        remaining = (progress.elapsed_s / done * (total - done)) if done and total > done else None
+        measured_steps = progress.step - (self._resume_skip_steps if progress.epoch == 1 else 0)
+        remaining = (progress.epoch_elapsed_s / measured_steps * (total - done)) if measured_steps > 0 and total > done else None
         self.set_status(phase=phase, epoch=f"{progress.epoch} of {progress.epochs}", update=f"{progress.step} of {progress.steps} in this epoch",
                         global_updates=f"{progress.global_step}" + (f" of {self.planned_updates}" if self.planned_updates else ""),
-                        elapsed=_duration(progress.elapsed_s),
-                        remaining=("about " + _duration(remaining)) if remaining is not None else ("done" if done == total and total else "estimating"))
-        if phase == "training":
+                        train_call_elapsed=_duration(progress.elapsed_s),
+                        update_eta=("about " + _duration(remaining)) if remaining is not None else ("updates finished; finalizing" if done == total and total else "estimating"))
+        if phase not in ("reporting", "validation", "deltas_off"):
             self._clear_status("evaluation_items")
         self.render()
 
@@ -131,8 +134,8 @@ class ActivationContextTrainingReporter(HtmlReporter):
         if stats.penalty:
             if "penalty" not in self.widgets:
                 self.initialize_line_plot("penalty", "No-context penalty",
-                    "KL of the adapted reader to the base on the same items without their rows (unweighted, sampled examples); "
-                    "a rising curve means the reader improves without the rows.", "global update", "KL", ["train"])
+                    "KL(base no-context || current reader no-context), unweighted on sampled examples; "
+                    "rising values mean departure from prior behavior.", "global update", "KL", ["train"])
             self.add_data_point("penalty", {"x": progress.global_step, "train": stats.penalty[-1]})
             self.set_status(no_context_penalty=f"{stats.penalty[-1]:.4f}")
         if self.references:
@@ -161,8 +164,9 @@ class ActivationContextTrainingReporter(HtmlReporter):
                 for layer, value in (entry.get(key) or {}).items():
                     if value is None:
                         continue
-                    self._ensure_series(widget, f"layer {layer}")
-                    self.add_data_point(widget, {"x": entry["update"], f"layer {layer}": value})
+                    series = f"layer {layer}" if isinstance(layer, int) or str(layer).isdigit() else f"{layer} read-out"
+                    self._ensure_series(widget, series)
+                    self.add_data_point(widget, {"x": entry["update"], series: value})
         self.set_status(loss=f"{stats.loss[-1]:.4f}", learning_rates=", ".join(f"{lr:.3g}" for lr in stats.learning_rates[-1]))
         if stats.loss_kind == "kl":
             self.set_status(agreement=f"{stats.agreement[-1]:.3f}")
@@ -224,7 +228,8 @@ class ActivationContextTrainingReporter(HtmlReporter):
         text = "\n\n".join(f"[{r['item_id']}] ({r['kind']}, global update {r['global_step']}, AC version {r['ac_version']})\n"
                            f"reference: {r['reference']}\n" + (f"teacher: {r['teacher']}\n" if r["teacher"] is not None else "") + f"student: {r['student']}" for r in rows)
         label = "Baseline" if progress.epoch == 0 else f"Epoch {progress.epoch_number - (self.epoch_origin or 0)}"
-        key = f"completions_{'baseline' if progress.epoch == 0 else 'epoch'}_{progress.epoch_number:03d}"
+        key = f"completions_update_{progress.global_step:06d}"
+        label += f" · update {progress.global_step}"
         self.set_text(key, f"{label} inspection samples", text)
         self.render()
 
@@ -240,7 +245,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
         self.render(force=True)
 
     def report_training(self, stats: "ActivationContextTrainingStats") -> None:
-        self.set_status(phase="complete", peak_memory=f"{stats.peak_memory_bytes / 2**30:.2f} GB", elapsed=_duration(stats.duration_s), remaining="done")
+        self.set_status(phase=stats.stop_reason, peak_memory=f"{stats.peak_memory_bytes / 2**30:.2f} GB", train_call_elapsed=_duration(stats.duration_s), update_eta="finished" if stats.stop_reason == "complete" else "stopped")
         self._clear_status("evaluation_items")
         self.set_text("training_summary", "Training summary", json.dumps(stats.summarize(), indent=2, default=str))
         self.render(force=True)

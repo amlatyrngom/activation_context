@@ -61,6 +61,10 @@ class DatasetManager:
         caching_id: str | None = None,
         modality: DataModality | None = None,
         *, progress: t.Callable[[dict], None] | None = None,
+        source_mode: t.Literal["chunk", "window", "document", "related_chunks"] = "chunk",
+        max_source_tokens: int | None = None, max_source_chunks: int = 3,
+        prompt_kind: t.Literal["qa", "code", "numeric", "constraints"] = "qa",
+        require_multiple_sources: bool = False, max_questions_per_source: int = 1,
     ) -> list[DatasetQAExample]:
         """
         Synthesize study questions from the dataset's chunks (see DatasetStudyGenerator.generate_examples_qa).
@@ -68,7 +72,9 @@ class DatasetManager:
         """
         study_generator = self._get_or_create_study_generator(dataset_id)
         seed = self.harness.harness_config.dataset_study_seed if base_seed is None else base_seed
-        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress)
+        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress, source_mode=source_mode,
+            max_source_tokens=max_source_tokens, max_source_chunks=max_source_chunks, prompt_kind=prompt_kind,
+            require_multiple_sources=require_multiple_sources, max_questions_per_source=max_questions_per_source)
 
 
     def label_study_examples(

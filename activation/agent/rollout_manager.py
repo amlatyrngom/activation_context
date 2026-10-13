@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, replace
 
 from .agent import Agent
+from .agent_env import TaskUnavailable
 from .agent_config import AgentConfig, AgentRunResult
 from .rollout_caching import RedoPolicy, RolloutCache, config_key
 from .rollout_tuning import Autotuner, ProbeMetrics, RolloutTuningConfig
@@ -270,7 +271,10 @@ class RolloutManager:
     def _run_one(self, config: AgentConfig, seed: int, perform_scoring: bool, reporter) -> AgentRunResult:
         agent = Agent(self.harness, config, reporter=reporter, seed=seed)
         try:
-            agent.agent_env                                                 # eagerly: a program (or parallel tool calls) finds the sandbox ready
+            try:
+                agent.agent_env                                             # eagerly: a program (or parallel tool calls) finds the sandbox ready
+            except TaskUnavailable:
+                pass                                                        # run() meets it again before any turn and records "task_unavailable"
             result = agent.run_program()                                    # the config's agentic program, or the model loop
             if perform_scoring and config.dataset_task is not None:
                 agent.score()

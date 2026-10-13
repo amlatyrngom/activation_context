@@ -1,0 +1,25 @@
+{
+  "utc": "2026-09-23T17:55:04.029404Z",
+  "status": "released",
+  "files": {
+    "bank_27b_unicode_v1.sbatch": "8a2731417f32a6bece32a91c392a7dacb39292b727795692111b3fc1d0283b03",
+    "generate_bank_27b.py": "c8dd4d49a491eb5e2a574e58a1c1f79a0d5d7b95e92f9046e97b01d4e102a71d"
+  },
+  "bank_manifest_sha256": "5bed7effb878c816759179a418f1fe55250289b7454c7927fa612a2730e6f497",
+  "published": 53000,
+  "accepted": 53615,
+  "snapshot": "/orcd/scratch/orcd/009/ngom/activation/hf/hub/models--Qwen--Qwen3.5-27B/snapshots/fc05daec18b0a78c049392ed2e771dde82bdf654",
+  "target_before": {
+    "target_questions": 53000
+  },
+  "scope": "Resume proven original ORCD27B bank; sameworker,3h autorequeue,64microbatch,RTX1; hold until soleproducer verified andtarget100k installed.",
+  "job_id": 23565367,
+  "target_after": 100000,
+  "csail_action": {
+    "job_id": 2182587,
+    "before": "2182587|PENDING|(Priority)",
+    "action": "cancelled_while_held_pending"
+  },
+  "released_utc": "2026-09-23T17:55:47.463435Z",
+  "queue": "23565367|PENDING|(None)"
+}

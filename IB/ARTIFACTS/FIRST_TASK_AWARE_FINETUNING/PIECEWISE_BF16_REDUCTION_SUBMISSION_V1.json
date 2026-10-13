@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-23T02:47:21.853292Z",
+  "status": "released",
+  "hashes": {
+    "probe_piecewise_bf16_reduction_v1.py": "c0d9c1bcac1269bde9470e54c002bd227289206448bc18b80d49abfa3fda98a9",
+    "probe_piecewise_bf16_reduction_v1.sbatch": "0fa9e3c89013d0921a9ddc4a79340e31bd5c95171a3879740e767c21f1335b91",
+    "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa"
+  },
+  "job": 23522375,
+  "review": "Root source review accepted. Frozen-source CPUchecks passed; BF16reduction flag and independent splitK restoration verified. Six read-only encoder forwards, not equivalence or speedproof.",
+  "scope": "Enabled/disabled BF16reduction with baseline/repeat/32768; same shortest/longest affected passages. No reader/backward/update; parent rehash. No active jobs, readout dependencies, source or tolerances changed."
+}

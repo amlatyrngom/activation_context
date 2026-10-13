@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "status": "frozen_for_private_probe_no_gpu_submission",
+  "scope": "Private moment-placement proof and32k fit only; no production adoption",
+  "input_sha256": {
+    "design": "b9869a9618721cf6a052374d53baa477c994248ddf0627a6d3343273397085cd",
+    "pair": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c",
+    "material": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+    "subset": "578a8955664a2b750ea1141433f856a43fa2e2cdb48d38ae4ba1091e2ee650be"
+  },
+  "local_validation_inputs": {
+    "design": "/workspace/IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/bench/PI42K_MERGED32K_FRESH960_DESIGN_V1.json",
+    "pair": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/fresh42k_native8k_preparation/initial/pair.json",
+    "material": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/csail_constant42k_stage/orcd_source/material.json",
+    "subset": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/pi42k_merged32k_preparation/subset.json"
+  },
+  "worker_sha256": "b292c3097fac2cf9e84c8f9d03b5713dcd7bc3fd7590ac34c72b39b6dd3ebf3e",
+  "launcher_sha256": "246de7f6632d98417a698f6938cdc3cf217022ff4038ed5fa6916df7f5aa622f",
+  "helper_sha256": {
+    "run_qa_pi42k_merged32k_v1.py": "016d28622bfc26c0f28bcd1cdc7b7eb7adf830e7ce977aed7eac5a2dd99a7303"
+  },
+  "optimizer_sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac",
+  "optimizer_helper_sha256": "ca283394391b8b63699357277182d6d35b2c45877e5d8fbeae64b043a833072f",
+  "host_relocation": "Original ORCD pair metadata is independently pinned; exact same scientific payload as frozen CSAIL merged960 design. No design mutation.",
+  "proof": "Three separate processes: same-hardware deterministic resident/resident-repeat/offloaded native2k, micro1, checkpoint0; first16 actual shuffled960 questions; two real optimizer steps.",
+  "gate": "Exact hashes of all active raw/clipped gradients, parameters, moments, clocks, groups, per-loss gold logps, and actual logits-call trace. Fail closed on any difference; no tolerances.",
+  "fit": "Only after numerical gate: production-flag merged32k first8, then original logical8 containing max encoder+rows+gold geometry. Same parent5250 for each; worst batch is shape test, not reconstruction of training prefix.",
+  "limits": [
+    "No32k resident numerical equivalence",
+    "Worst proxy is not exhaustive960 memory guarantee",
+    "No decoding: completion_samples0, verified",
+    "D2H/H2D synchronous; step tensors unchanged; AdamW arithmetic unchanged",
+    "GPU equality/fit/timing not yet measured",
+    "Optimizer-state serialization/load_state_dict roundtrip is not fresh-process full paired-checkpoint resume."
+  ],
+  "clock_gradient_guard": "All615 populated state clocks equal5250+completed steps before/after every update and at final; active gradient IDs equal exactly original615 populated state IDs among630 group positions;15 remain inactive.",
+  "review": {
+    "utc": "2026-09-23T16:07:39.962178+00:00",
+    "resolution": "Root confirms no remaining launch blockers after all615 clocks/active-gradient-ID guard fix;37CPUchecks passed.",
+    "scope": "Private probe only, not production adoption."
+  }
+}

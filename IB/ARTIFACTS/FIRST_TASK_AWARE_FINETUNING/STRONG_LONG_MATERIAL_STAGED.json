@@ -1,0 +1,35 @@
+{
+  "utc": "2026-09-22T23:57:55.433135Z",
+  "status": "rsync complete; full material hash checked by frozen GPU launcher before use",
+  "remote": "/home/ngom/orcd/pool/activation/taskaware/strong_long_adaptation_8k_material",
+  "material_bytes": 493206211,
+  "expected_material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+  "summary": {
+    "status": "complete",
+    "source_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+    "material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+    "train_questions": 8000,
+    "held_questions": 400,
+    "learning_questions": 32,
+    "retrieval_questions": 32398,
+    "training_by_family": {
+      "code": 2400,
+      "math_arxiv": 960,
+      "math_textbook": 640,
+      "financial": 400,
+      "web": 1600,
+      "technical_web": 400,
+      "documents": 640,
+      "legal": 480,
+      "office": 480
+    },
+    "training_ids_sha256": "163b25281827fca3ba0ec0f4f43272fb859dbeea51d9006387da5cf3ac4f1cf0",
+    "preserved": {
+      "held": "8c6ed0d0c1ffac32d6f35c774dc96b920cf937dfb2427fe6d53f3573ca425e5d",
+      "held_cohorts": "a7dff81b7d3e42fab2452e22726f47e65c5ecb0bf964729739e5b2375d74a61e",
+      "retrieval": "8760bd298cbeb4c3804c91c5ed48310b2e5c147868aeb641a27c8ce3d5bb2e08",
+      "learning_ids": "ffd31a8ac2a2cdbd047f24577ca4bee7cee4e64d283af81f19308d02fcf01c47"
+    },
+    "reserved_confirmation_read": false
+  }
+}

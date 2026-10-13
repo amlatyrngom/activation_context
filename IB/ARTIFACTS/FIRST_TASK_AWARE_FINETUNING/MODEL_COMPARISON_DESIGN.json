@@ -1,0 +1,36 @@
+{
+  "created_utc": "2026-09-22T02:16:00Z",
+  "selection_sha256": "ac8fb7bfd769aa60d34bee1a9d052b0b891c192d946139d63f67491fbb627e28",
+  "sha256": {
+    "builder": "b75901827e2c2bbffa385e50eea82ab99276ffb9fb742b83464e1b67df4edcb6",
+    "harness_4b": "0ad6de83153f9250db026056c4af8f097fc2a8ef7e985430ee9f8db56a6d2257",
+    "material_9b": "3414307913b114886863f4b8a7061c672831a57b125c218c26736f7a44d440e6",
+    "material_27b": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "confirmation": "b74e22c919ca92e1cfe52509addc848c73f6694df613dc7949f73373a2228ae1"
+  },
+  "fixed_final_policy": "All five original planned 16,000-question \u00d71-epoch pairs, completed2000 internal updates; never selected checkpoints. Expose confirmation only once all five finals exist.",
+  "confirmation": "Two disjoint200-question generator cohorts; no tuning on confirmation. Compare arms within each cohort.",
+  "initialization_provenance": {
+    "2B": "Original P2 pair; model_comparison_train.sbatch explicitly sets QA_P2_ROOT=~/orcd/scratch/activation/KEEP/P2; CHECKPOINT_ARCHIVE.json records preserved archive.",
+    "4B": "Original P4 AC+reader pair; encoder4b_train.sbatch explicitly sets QA_P4_ROOT=~/orcd/scratch/activation/KEEP/P4; CHECKPOINT_ARCHIVE_P4.json records preserved archive. Different pretrained pairs, not isolated encoder size."
+  },
+  "launchers_sha256": {
+    "model_comparison_train.sbatch": "186daa58e44052e000cf0b6b5e73bffa28e114a1b8606429d7e0d392bf040d4a",
+    "encoder4b_train.sbatch": "129761d483ba173fdc7ecdc2e2a74405cdf4ebd7617921e843a59d1987e9cf5e"
+  },
+  "training_source": "train_ws_night_v1; existing immutable source snapshot; no Unicode synthesis parser changes applied to training.",
+  "reporting_only_revision_20260922_0241": {
+    "cause": "Initial cohort baseline tried to insert nested cohort metadata into a flat table; no training update occurred.",
+    "validation": "Original failure reproduced with real reporter; corrected2B/4B publication checks pass. Data, initialization, training config and confirmation policy unchanged.",
+    "previous_failed_job": 23444931,
+    "replacement_job": 23446872
+  },
+  "current_training_runners_sha256": {
+    "run_qa_comparison_v1.py": "af08ef76fc1df6d704cfd32b958e2ef7bde4605bac6ed868772c5dc77ab6b43e",
+    "run_qa_encoder4b_v2.py": "659e93aa3b988757faf22a9eb412221e344d79b675c9a7c29c29969af4e76c2d"
+  },
+  "current_launchers_sha256": {
+    "model_comparison_train_v2.sbatch": "bb49372c2a9e6f4132f83bb078f463c2d686d247c6e456e154138bd1b1da0e63",
+    "encoder4b_train_v2.sbatch": "b55376b1299ead61dcefb7a1429a409a0fe7bc860d3f82bd92a2b5e9fa1415de"
+  }
+}

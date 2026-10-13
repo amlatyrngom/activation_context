@@ -1,0 +1,195 @@
+{
+ "what": "MIXED_RUN_PLAN.md M1: v2 regular-agent teacher export, transfer, S3 upload, CSAIL staging and fidelity check",
+ "export": {
+  "releases": [
+   "teacher_regular_v2_20260927_s0",
+   "teacher_regular_v2_20260927_s1",
+   "teacher_regular_v2_20260927_s2",
+   "teacher_regular_v2_20260927_s3"
+  ],
+  "counts": {
+   "teacher_regular_v2_20260927_s0": {
+    "runs": 2500,
+    "segments": 3096,
+    "held_segments": 126,
+    "output_tokens": 15665076
+   },
+   "teacher_regular_v2_20260927_s1": {
+    "runs": 2404,
+    "segments": 2841,
+    "held_segments": 117,
+    "output_tokens": 12868700
+   },
+   "teacher_regular_v2_20260927_s2": {
+    "runs": 2426,
+    "segments": 3000,
+    "held_segments": 115,
+    "output_tokens": 14686832
+   },
+   "teacher_regular_v2_20260927_s3": {
+    "runs": 2071,
+    "segments": 2376,
+    "held_segments": 96,
+    "output_tokens": 10395997
+   }
+  },
+  "segments_by_root_finish": {
+   "submitted": 9431,
+   "no_tool_call": 96,
+   "max_tool_errors": 32,
+   "max_duration": 1754
+  },
+  "segments_by_role": {
+   "main": 10522,
+   "subagent": 791
+  },
+  "roots": 9391,
+  "segments_with_non_text_content": 0,
+  "bytes": 661656617
+ },
+ "orcd_export_job": 24110915,
+ "tar": {
+  "name": "agent_teacher_regular_v2.tar",
+  "sha256": "955d744a2d76bf1e6e9995f81cec515b16afe825f9c0c5f7a8a72bda3fae5d1e",
+  "bytes": 661688320
+ },
+ "s3": {
+  "bucket": "general-bucket-aln",
+  "prefix": "activation-context-data/datasets/agent_teacher_regular",
+  "uploaded": 29,
+  "files": 29,
+  "utc": "2026-09-27T17:11:09Z",
+  "collection_releases": [
+   "campaign_12h_20260911",
+   "regular_v1_s0_20260926T1534Z",
+   "regular_v1_s1_20260926T1534Z",
+   "teacher_regular_v2_20260927_s0",
+   "teacher_regular_v2_20260927_s1",
+   "teacher_regular_v2_20260927_s2",
+   "teacher_regular_v2_20260927_s3"
+  ],
+  "note": "collection manifest merged: existing releases kept, v2 appended"
+ },
+ "csail": {
+  "collection": "/data/scratch/ngom/activation/recon_100m_v1/data/agent_teacher_regular (mixed_v1/data)",
+  "stage_job": 2363967,
+  "releases": [
+   "campaign_12h_20260911",
+   "teacher_regular_v2_20260927_s0",
+   "teacher_regular_v2_20260927_s1",
+   "teacher_regular_v2_20260927_s2",
+   "teacher_regular_v2_20260927_s3"
+  ],
+  "checksums": "tar and every shard verified"
+ },
+ "duplicate_segment_ids": 0,
+ "fidelity_check": {
+  "tool": "activation/bench/canonical_training/check_exported_segments.py",
+  "rule": "every text of an exported message (prompt, tool output, assistant text, reasoning, string call arguments) appears verbatim (NFC) in the decoded tokens the teacher read or sampled at that point",
+  "v2": {
+   "orcd_job": 24112783,
+   "per_benchmark_per_release": 25,
+   "by_release": {
+    "teacher_regular_v2_20260927_s0": {
+     "segments": 250,
+     "segments_with_miss": 0,
+     "runs_not_in_cache": 0
+    },
+    "teacher_regular_v2_20260927_s1": {
+     "segments": 250,
+     "segments_with_miss": 0,
+     "runs_not_in_cache": 0
+    },
+    "teacher_regular_v2_20260927_s2": {
+     "segments": 250,
+     "segments_with_miss": 0,
+     "runs_not_in_cache": 0
+    },
+    "teacher_regular_v2_20260927_s3": {
+     "segments": 250,
+     "segments_with_miss": 0,
+     "runs_not_in_cache": 0
+    }
+   },
+   "by_benchmark": {
+    "bright": {
+     "segments": 100,
+     "texts": 3656,
+     "chars": 8820028,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "dapo_math": {
+     "segments": 100,
+     "texts": 1598,
+     "chars": 1690831,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "deepmath": {
+     "segments": 100,
+     "texts": 1373,
+     "chars": 1217306,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "lca_bug_localization": {
+     "segments": 100,
+     "texts": 5124,
+     "chars": 5372669,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "lca_bug_localization_java": {
+     "segments": 100,
+     "texts": 6584,
+     "chars": 7292854,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "lca_bug_localization_kt": {
+     "segments": 100,
+     "texts": 5358,
+     "chars": 5744921,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "loft": {
+     "segments": 100,
+     "texts": 2764,
+     "chars": 2962585,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "loong": {
+     "segments": 100,
+     "texts": 2939,
+     "chars": 4093338,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "musique": {
+     "segments": 100,
+     "texts": 4796,
+     "chars": 6885269,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    },
+    "narrativeqa": {
+     "segments": 100,
+     "texts": 3622,
+     "chars": 4352886,
+     "texts_missing": 0,
+     "segments_with_miss": 0
+    }
+   }
+  },
+  "old_campaign": {
+   "release": "campaign_12h_20260911",
+   "segments": 250,
+   "segments_with_miss": 0,
+   "chars": 12636703
+  },
+  "negative_controls": "5 old-campaign segments x 4 mutations (tool output extended, prompt changed, message dropped, assistant text extended): all flagged"
+ }
+}

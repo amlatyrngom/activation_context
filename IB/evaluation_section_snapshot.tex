@@ -1,0 +1,65 @@
+\section{Evaluation}
+\todo{This section is completely aspirational right now. We need to fill it up with results.}
+This section evaluates Activation Contexts under a variety of realistic settings. The two key insights we aim to show are that (1) activation contexts effectively communicate dense information through vectors and (2) activation contexts increase the degree of specialization possible in harness/model co-design.
+
+Throughout, we use a mix of GPU hardware based on availability in our clusters (RTX, H200, GH200, single-gpu or data-parallel). As such, unless clearly otherwise specified, we refrain from comparing raw speeds, and focus on token consumption instead.
+
+
+\subsection{Agent Trajectory Compaction}
+\textbf{Overview}
+We first experiment with resumption from compaction, which is necessary operation in agentic harnesses that handle long tasks. Lossy compaction can have two consequences. Firstly, it can force the agent to recompute useful context, leading costlier resolution token-wise. Second, it can lead to terminal accuracy losses when context cannot be recomputed. We thus use the number of continuation tokens required for accuracy-preserving resumption as an good proxy for compaction quality. To isolate the effect of ACs, we limit ourselves to single-agent trajectories.
+
+\textbf{Datasets and Benchmarks}
+We consider long-horizon tasks from Long Code Arena (LCA) Bug Localization, a bug finding dataset on large codebases. We use only the Java subset. To limit the cost of the benchmark runs, we set the compaction limit to 32k tokens, which is realistic for the small models we use, but would be too small on frontier models. We first execute a large pool of tasks with a Qwen 3.8 27B agent at medium reasoning, excluding the ones below 32k tokens that don't need compaction, and the ones above 50k tokens that would overflow our GPUs or require multiple compactions. 200 traces from the dev or test set are selected for evaluation, and the successful traces from the training set for training. The AC model is also trained on unrelated tasks (e.g., math, search) to help it generalize with more data.
+
+\textbf{Comparisons}
+We compare against the text summarization use in the most harnesses and prefix truncation at various ratios (no-context, full-context, 1/4th, 1/8th, 1/16th and 1/32nd). For fairness, all variants, tuned or untuned, use the same 32k prefix trajectory generated offline (\todo{TBD 27B or untuned 9B shared prefix; likely 27B.}). We use Qwen 3.5 2B augmented with adapter modules as an efficient encoder, and Qwen 3.5 9B as the target model.
+
+
+\textbf{Results}
+\begin{figure}[t]
+  \centering
+  % Empty framed box (swap \fbox for \colorbox{black} for a solid square)
+  \fbox{\parbox[c][0.4\linewidth][c]{0.4\linewidth}{\centering\small Figure placeholder}}
+  \caption{Compaction Resumption Results.}
+  \label{fig:evalCompaction}
+\end{figure}
+The compaction results are shown in \cref{fig:evalCompaction}. Again, consider the pure AC variants. We observe the AC vectors consistently preserve more information that pure text. The agent completes its task at higher quality and higher speed, even matching/exceeding an untuned model with full context, and beats truncation and summarization. The improvement (if any) over full context likely comes from the context rot that models are vulnerable to. Further, a 1/10th compression, it is effectively as good as seeing the whole context. We can also note that ACs, which are encode-only vectors, are an order of magnitude faster to compute than long textual input. Improvements are even better when vectors are combined with truncation. \todo{fully rewrite this section with actual results}.
+
+We also compare the amount of time taken to compute a text compaction versus a vector compaction in \cref{fig:evalCompaction} on a H200/GH200 GPU (\todo{GPU type TBD}). Text compactions require long decodes whereas vector compactions are encoder-only, can use a smaller model, and can thus be produced at least an order of magnitude faster than the text compaction. This makes it an effective complement to suffix truncation which also does not require any model calls (e.g., place the 32k summary vector + a 1k suffix, and resume from there.
+
+We conclude from this section that ACs can improve agentic harnesses through better trajectory representation at higher efficiency.
+
+
+\subsection{Retrieval Q/A}
+\textbf{Overview}
+Retrieval systems must restrict the number of results returned to a model for context limit or efficiency reasons, which necessarily affects the quality of generated answers, especially in multi-hop retrieval where context length and errors compound. In this section, we show how ACs allow returning more results with fewer tokens and achieve greater accuracy.
+
+\textbf{Datasets and Benchmarks}
+We evaluate on 200 examples selected from the testing set of Musique, and train on its training set. We limit the trajectory lengths to 50k tokens without any compactions in-between to isolate the effect of retrieval.
+
+\textbf{Comparisons} The baseline is a ReACT agent equipped with a BM25 retrieval tool. We also compare against a no-context baseline to establish the performance floor. We again use the 2B/9B model pair for our encoder and target model.
+
+\textbf{Results}
+\begin{figure}[t]
+  \centering
+  % Empty framed box (swap \fbox for \colorbox{black} for a solid square)
+  \fbox{\parbox[c][0.4\linewidth][c]{0.4\linewidth}{\centering\small Figure placeholder}}
+  \caption{Retrieval Q/A Results.}
+  \label{fig:evalRetrievalQA}
+\end{figure}
+The retrieval Q/A results are shown in \cref{fig:evalRetrievalQA}. 
+To answer the question of whether ACs communicate dense context effectively, consider the pure AC variants. In the variants where the encoder sees the question, we achieve lossless/improved results regardless of compression ratio. When the encoder does not see the question, it is forced to compress all information without any specific context. We see that noticeable losses occur at 1/20th and 1/40th compression ratios, but we still achieve 10x compression with insignificant losses.
+
+Then, regarding harness model co-design, we task a frontier model with optimizing context given our AC primitives. The frontier model is free to mix text techniques and latent techniques, but has to use a single target model call in the end to isolate the effect of context quality. We see here that even at higher compression ratios, we achieve high-accuracy results. \todo{Maybe briefly catalog the techniques used here}.
+
+
+
+\subsection{Multi-Agent Collaboration}
+\textbf{Overview} A common form of test-time compute is to solve a task independently with many subagents, then synthesize their outputs in some form. As the synthesizer has limited context, it often only sees the final answer text and cannot fully judge the quality of each answer. This section experiments with allowing the synthesizer to see more of the trajectory of each of its subagents through vectors.
+
+\textbf{Datasets and Benchmarks}
+\todo{@AI: The variant we choose depends on the all@3, any@3 and mean@3 for math and search. We want relatively small all@3/mean@3 and a relatively large any@3 to be able to select the best. Maybe @3 or @5; prefer @3 for now. I am leaning towards Q/A by default, but we need to see.}
+Variant 1: We evaluate on hard math problems from IMO 2024 and 2025 and train on the high difficulty problems from DeepMath-103k which are decontaminated from IMO. 
+Variant 2: We evaluate on Musique again....
+

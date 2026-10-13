@@ -1,0 +1,126 @@
+{
+  "status": "measured_operator_attribution_no_equivalence",
+  "job_id": 23521114,
+  "job_elapsed_seconds": 117,
+  "proof_sha256": "46944853e7f360d87afbff165300598cc2bde7a63b58e2e4b17a42a06323a521",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "runtime": {
+    "torch": "2.13.0+cu130",
+    "cuda": "13.0",
+    "qwen_source_sha256": "67cf849081143a998f0e189c551e4b5f532365a055805570747385e400372abb",
+    "attention_implementation": "sdpa",
+    "transformers": "5.15.1",
+    "peft": "0.20.0",
+    "flash-linear-attention": "0.5.2",
+    "projection_source_sha256": "1ef4e7033ebd01c9c6fbf0fc3837695b75b795c54f8a837b7578e8dfba2251a4"
+  },
+  "native_flags": {
+    "tf32_matmul": true,
+    "bf16_reduced_precision_reduction": true,
+    "deterministic_algorithms": true
+  },
+  "same_native_kernel": true,
+  "native_operators": [
+    "aten::_efficient_attention_forward",
+    "aten::_scaled_dot_product_efficient_attention",
+    "aten::scaled_dot_product_attention",
+    "fmha_cutlassF_bf16_aligned_32x128_gmem_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::bfloat16_t, cutlass::arch::Sm80, true, 32, 128, 65536, true, true>::Params)"
+  ],
+  "mask_position_scale_identical": true,
+  "unchanged_repeat_max_abs": 0.0,
+  "projection_dtypes": {
+    "base_weight_dtype": "torch.bfloat16",
+    "active_adapters": [
+      "rag_side"
+    ],
+    "rag_side": {
+      "A_dtype": "torch.float32",
+      "B_dtype": "torch.float32",
+      "scaling": 2.0
+    }
+  },
+  "first_difference": "attn.k_proj.base",
+  "comparisons": {
+    "side_input": {
+      "relative_l2": 0.0,
+      "rms_error": 0.0,
+      "max_abs": 0.0,
+      "passed": true
+    },
+    "layer_input": {
+      "relative_l2": 0.0,
+      "rms_error": 0.0,
+      "max_abs": 0.0,
+      "passed": true
+    },
+    "input_norm": {
+      "relative_l2": 0.0,
+      "rms_error": 0.0,
+      "max_abs": 0.0,
+      "passed": true
+    },
+    "attn.q_proj.base": {
+      "relative_l2": 0.0,
+      "rms_error": 0.0,
+      "max_abs": 0.0,
+      "passed": true
+    },
+    "attn.k_proj.base": {
+      "relative_l2": 0.001812349473376121,
+      "rms_error": 0.0015121389454121833,
+      "max_abs": 0.03125,
+      "passed": true
+    },
+    "attn.v_proj.base": {
+      "relative_l2": 0.001950430297249619,
+      "rms_error": 0.0013260977796827004,
+      "max_abs": 0.03125,
+      "passed": true
+    },
+    "attention.q": {
+      "relative_l2": 0.0,
+      "rms_error": 0.0,
+      "max_abs": 0.0,
+      "passed": true
+    },
+    "attention.k": {
+      "relative_l2": 0.002115987045726926,
+      "rms_error": 0.0030182614909024926,
+      "max_abs": 0.0625,
+      "passed": true
+    },
+    "attention.v": {
+      "relative_l2": 0.001984439094073471,
+      "rms_error": 0.001360299497925507,
+      "max_abs": 0.03125,
+      "passed": true
+    },
+    "attention.native_output": {
+      "relative_l2": 0.0024427907251868626,
+      "rms_error": 0.0012983456203495122,
+      "max_abs": 0.015625,
+      "passed": true
+    },
+    "attention.fp32_reference": {
+      "relative_l2": 0.0014981693943070375,
+      "rms_error": 0.0007962935381337622,
+      "max_abs": 0.018509864807128906,
+      "passed": true
+    },
+    "layer_output": {
+      "relative_l2": 0.003171559711801773,
+      "rms_error": 0.00035504859587349254,
+      "max_abs": 0.015625,
+      "passed": true
+    }
+  },
+  "qkv_LoRA_branch_max_abs": 0.0,
+  "no_parent_mutation": true,
+  "equivalence_validated": false,
+  "followup": "One disabled-BF16-GEMM-reduction forward trial, preserving split-K and TF32, native baseline/repeat/32768 and cross-policy final rows; no automatic adoption."
+}

@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-23T04:26:51.259044Z",
+  "status": "released",
+  "hashes": {
+    "evaluate_continuation_long_rewarm_8k_v1.py": "51014314fdb42341bd0e123696ccc10ebe87084817d26b76fec9175a486aa3cd",
+    "evaluate_continuation_long_rewarm_8k_v1.sbatch": "3736ada8fe917bb6018c4db401282a07d9ab11de6a0da84a0f0e63b93c924b79"
+  },
+  "job": 23527573,
+  "scope": "Same matched8k400/100 as constant42k; rewarm own completed final1250 pair. Original65536/precision; no optimizer updates.",
+  "review": "Root verified exact sibling diff; actual completed receipt/input binding and16 negative checks; syntax passed.",
+  "held_job": "JobId=23527573 JobName=rewarm42k_long8k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-23T00:26:51 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:26:51 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3255489 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_rewarm_8k_v1.sbatch SubmitLine=sbatch --parsable --hold --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/continuation_rewarm_long8k_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_rewarm_8k_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/continuation_rewarm_long8k_23527573.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+}

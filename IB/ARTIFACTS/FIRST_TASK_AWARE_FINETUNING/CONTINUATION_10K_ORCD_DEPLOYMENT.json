@@ -1,0 +1,90 @@
+{
+  "status": "ready_verified_not_submitted",
+  "prepared_utc": "2026-09-22T23:23:45.813006+00:00",
+  "cpu_verification_job": 23511022,
+  "l40s_decision": "Rejected for unchanged frozen training: comparable observed61.69\u201363.87GiB exceeds48GB nominal L40S capacity. No batching/checkpointing/algorithm changes proposed.",
+  "memory_metric": "peak_memory_gb is round(torch.cuda.max_memory_allocated/2**30,2), so these are GiB despite the field name.",
+  "memory_evidence": [
+    {
+      "run": "oracle_27b_32k",
+      "result_sha256": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+      "peak_allocated_gib": 63.87,
+      "stop_reason": "complete",
+      "micro_batch_examples": 2,
+      "gradient_checkpointing_min_tokens": 1700
+    },
+    {
+      "run": "oracle_27b_16k_2ep",
+      "result_sha256": "53b76417c2be9f26fce74a13cbf68aa51a64f8f6bbd73670d67a32179c669c5a",
+      "peak_allocated_gib": 61.69,
+      "stop_reason": "complete",
+      "micro_batch_examples": 2,
+      "gradient_checkpointing_min_tokens": 1700
+    },
+    {
+      "run": "oracle_27b_16k_r16",
+      "result_sha256": "0a5c69746ccdef1cdea249b973d594f48e5a2edcecfe5473b48072416f196e27",
+      "peak_allocated_gib": 62.03,
+      "stop_reason": "complete",
+      "micro_batch_examples": 2,
+      "gradient_checkpointing_min_tokens": 1700
+    },
+    {
+      "run": "data_8k_1ep",
+      "result_sha256": "fa926839a43447c3979ddde1ed34461f5c5bcd9f80cba7bda9dd8df5df5013a2",
+      "peak_allocated_gib": 61.73,
+      "stop_reason": "complete",
+      "micro_batch_examples": 2,
+      "gradient_checkpointing_min_tokens": 1700
+    },
+    {
+      "run": "hill_control",
+      "result_sha256": "f53d60de2d70f367c6d637c4bbdf39ad90ed4d487ecdbc5b0464ddb3600ba10a",
+      "peak_allocated_gib": 60.4,
+      "stop_reason": "complete",
+      "micro_batch_examples": 2,
+      "gradient_checkpointing_min_tokens": 1700
+    }
+  ],
+  "preferred_resources": {
+    "partition": "mit_preemptable",
+    "gres": "gpu:rtx_pro_6000:1",
+    "train_time": "03:00:00",
+    "readout_time": "00:45:00",
+    "cpus": 8,
+    "mem": "64G"
+  },
+  "matched_h200_override": {
+    "partition": "mit_normal_gpu",
+    "gres": "gpu:h200:1"
+  },
+  "material_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+  "original_orcd_pair_sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+  "design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+  "launcher_sha256": {
+    "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+    "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+  },
+  "science_changes": null,
+  "gpu_jobs_submitted": [],
+  "jobs_cancelled": [],
+  "proposed_priority_fence": {
+    "cpu_verification": 23511022,
+    "data_amount_confirmation": 23493337,
+    "piecewise_final32k": 23498370,
+    "merged_final32k_after_recovery": 23510987,
+    "frozen32k_resume": 23510988,
+    "dependency": "afterok:23511022:23493337:23498370:23510987:23510988",
+    "meaning": "Both continuation training jobs wait for the already-required readout chain. The two final100 jobs each follow their own complete training. Job IDs must be rechecked against any later preemption repair."
+  },
+  "optional_probe": "After checking pending status, root may gate optional23510989 on both continuation final100 job IDs as well as existing final8k dependencies; no queue mutations done here.",
+  "resource_limit": "Use matched hardware for both training/readout arms. RTX/preemptable default naturally shares the4GPU limit; normalH200 adds no allowance: TOTAL campaign ORCD GPUs<=4, normalGPU<=2.",
+  "cpu_verification": {
+    "job_id": 23511022,
+    "status": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 20,
+    "receipt": "CONTINUATION_10K_ORCD_VERIFICATION.json",
+    "sha256": "ddc2cca2c49a3b7587876db05ef9aa7e94ad9dd6f5ea9bde5c3eca72da1077fe"
+  }
+}

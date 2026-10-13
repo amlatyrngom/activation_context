@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-23T04:12:56.403103+00:00",
+  "status": "source_staged_only",
+  "candidate_sha256": {
+    "run_qa_gentle42k_long_v1.py": "2a3060762a16dd66b65c92df23609ef87d94af46300f184c8ec72478ecfdb647",
+    "prepare_gentle42k_long_v1.py": "ee38ee2ee28dedb32e68e5d2cd2dd0050c56d8f34fa109d3a61b37d91dab40dd",
+    "train_gentle42k_long_v1.sbatch": "85c58659540304585ce8a8b237be16f007018c14c858ab003e510f55ff67c193",
+    "evaluate_gentle42k_long_v1.py": "521dd03df081447c7d6fa6f3e8afff9699b2e717d7ea611bd911ecd756a926de",
+    "evaluate_gentle42k_long_v1.sbatch": "571d70b7c251edb1b4576c775ac7ce4d4dee7b44e5d32e34f0266c977ae2dd42"
+  },
+  "parent_choice": "OPEN",
+  "actual_material_prepared": false,
+  "actual_optimizer_verified": false,
+  "job_submitted": false
+}

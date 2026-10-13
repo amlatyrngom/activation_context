@@ -1,0 +1,1302 @@
+# Code consolidation for trajectory QA and compaction
+
+**Historical cleanup package:** the [current trajectory handoff](TRAJECTORY_IMPLEMENTATION_HANDOFF.tressoir.md) supersedes this package for the same `/source` baseline.
+
+The cleanup removes the obsolete single-question synthesis path while retaining the reusable model, training and reporting work. The source-sync package below combines that cleanup with the remaining task-aware fixes against the current `/source` tree. It supersedes the earlier implementation patch; apply only this package to that baseline.
+
+## What changed in this cleanup
+
+- Synthesis has one prompt builder and one `questions` array schema. It no longer constructs a legacy response format and removes it by splitting a string. This also fixes loss of study-context text containing `# Response Format`, and removes obsolete `has_valuable_question` instructions from the current prompt.
+- Removed the unused single-question row converter and unused prompt re-exports from `dataset_study.py`.
+- Updated the one remaining product caller, the small-generator throughput benchmark, to the same prompt/schema and usable-pair counting. An empty questions array or null answer does not count as generated QA.
+
+These are three files and **49 fewer lines** than the checkpoint. There is no new utility module or configuration option. New locally generated requests receive a new recipe hash because one prompt instruction is corrected. Existing portable banks remain readable and unchanged; the running 27B producer uses its existing frozen source.
+
+## What remains useful
+
+The other eight packaged files carry previously implemented fixes, not fresh refactors: source selection and evidence provenance, matched RAG full-context distractors, reconstruction ratio sampling, reporting callbacks with state restoration, time-bounded paired recovery, no-context cache identity, chat-end stopping, training-only diagnostics, memory-efficient passage attention and UTC report timestamps. The exact diffs distinguish these from changes already present in `/source`.
+
+Question-blind trajectory encoding, complete-turn compaction, nested/multiple parts, paired checkpoint loading, row tensor sidecars and fixed training targets are preserved. The optional pooling and recursive-key features belong to the separately accepted reconstruction/nesting stream and are already in `/source`; cleanup does not delete them. Golden and proposed trajectory runs keep pooling disabled. Experiment-specific clipping, moment-offload and layout controllers stayed in private bench files and were not promoted to product APIs.
+
+Historical reports, frozen launch sources, checkpoints and synthesis data remain in place. The unrelated existing `agentic_program_probe.py` and all tests are excluded from this source-sync patch. No remote job or active generator source was changed by this cleanup.
+
+## Apply the current package
+
+[Review findings](CONSOLIDATION_REVIEW.md) · [Exact patch](consolidation/changes.patch) · [Before/after hashes and staged files](consolidation/manifest.json) · [Full per-file review](CONSOLIDATION_HANDOFF.tressoir.md)
+
+The package contains **11 files** under `consolidation/activation/...`, compared directly with `/source` at packaging time. Check each destination's SHA-256 against `before_sha256` in the manifest; a null baseline means the file is new. Already-matching `after_sha256` files need no replacement. Inspect divergent files rather than overwriting them.
+
+From the destination repository, using the actual package location:
+
+`consolidation/changes.patch`
+
+```bash
+git apply --check /path/to/consolidation/changes.patch
+git apply /path/to/consolidation/changes.patch
+```
+
+Do not apply `implementation/changes.patch` or `current_code/source.patch` afterward. Their documents remain historical records. This agent has not changed `/source`.
+
+The complete pre-cleanup workspace is preserved on branch `checkpoint/pre-trajectory-cleanup-20260923`, commit `600137587987f13f0055c06494b788638cd0745b`. The current branch remains `main`; changes are left in the working tree for review. The backup includes historical callers of the retired prompt API for reproducing earlier experiments.
+
+## Validation and limits
+
+**21 CPU checks pass:** 15 focused cases cover all four prompt presets in text/trajectory modes, exact schema/instruction retention, complete study context, unchanged labeling and benchmark parsing; six existing integration checks cover source selection, multi-question caches, Unicode, matched references, ratio precedence and training callback/deadline/resume behavior. A first exact-string check caught one unintended blank-line change; that was corrected before the passing rerun.
+
+All 11 packaged Python files parse. The patch applies to an isolated copy of the current source, reproduces every staged byte and passes reverse application. Final direct review: **pass**. The Markdown checker passes; the extension's rendered editor was not available for visual verification.
+
+No fresh GPU run was needed for this prompt/caller cleanup. The earlier real P2 restore, training/reload, attention-gradient and chat-stopping GPU evidence remains applicable to unchanged paths; this is not a new GPU regression claim.
+
+The proposed trajectory study still needs its own item-builder work: all supporting turns must survive window selection, full context must include the same distractors, and total input budgets and whole-trajectory splits must be explicit. Existing generic training plots still expose update diagnostics; a future trajectory report must lead with unique questions × epochs. None of those future-study requirements is claimed implemented by this consolidation.
+
+## File changes against current /source
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/ac_model/ac_model.py">activation/ac_model/ac_model.py</a></span>
+    <span class="card-oneliner">Retain training-only diagnostic collection; model architecture is unchanged by cleanup.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index c3313e2..33a0830 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -548,7 +548,7 @@ class ActivationContextModel:
+                     for layer in self.intervention_layers:
+                         source = modules.passage_attention[str(layer)](rows, keys)
+                         deltas[layer] = modules.delta_heads[str(layer)](source)
+-                        if self.mode == TRAINING:                              # does the delta re-inject the row? cosine with the input row, per layer; and the delta's RMS (0-d tensors, read at the trace point)
++                        if self.mode == TRAINING and torch.is_grad_enabled():   # does the delta re-inject the row? cosine with the input row, per layer; and the delta's RMS (0-d tensors, read at the trace point)
+                             with torch.no_grad():
+                                 cosine = F.cosine_similarity(deltas[layer].detach(), input_embeds.detach(), dim=-1).mean()
+                             self._record_diagnostic("cosine", layer, cosine)
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/ac_model/ac_model_reporter.py">activation/ac_model/ac_model_reporter.py</a></span>
+    <span class="card-oneliner">Retain honest stop/ETA/penalty labels and persistent completion samples.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/ac_model/ac_model_reporter.py b/activation/ac_model/ac_model_reporter.py
+index 6cfb6f7..aada196 100644
+--- a/activation/ac_model/ac_model_reporter.py
++++ b/activation/ac_model/ac_model_reporter.py
+@@ -111,12 +111,12 @@ class ActivationContextTrainingReporter(HtmlReporter):
+             self.planned_updates = progress.global_step - ((progress.epoch - 1) * progress.steps + progress.step) + progress.epochs * progress.steps
+         done = (progress.epoch - 1) * progress.steps + progress.step if progress.epoch else 0
+         total = progress.epochs * progress.steps
+-        remaining = (progress.elapsed_s / done * (total - done)) if done and total > done else None
++        remaining = (progress.epoch_elapsed_s / progress.step * (total - done)) if progress.step and total > done else None
+         self.set_status(phase=phase, epoch=f"{progress.epoch} of {progress.epochs}", update=f"{progress.step} of {progress.steps} in this epoch",
+                         global_updates=f"{progress.global_step}" + (f" of {self.planned_updates}" if self.planned_updates else ""),
+-                        elapsed=_duration(progress.elapsed_s),
+-                        remaining=("about " + _duration(remaining)) if remaining is not None else ("done" if done == total and total else "estimating"))
+-        if phase == "training":
++                        train_call_elapsed=_duration(progress.elapsed_s),
++                        update_eta=("about " + _duration(remaining)) if remaining is not None else ("updates finished; finalizing" if done == total and total else "estimating"))
++        if phase not in ("reporting", "validation", "deltas_off"):
+             self._clear_status("evaluation_items")
+         self.render()
+ 
+@@ -131,8 +131,8 @@ class ActivationContextTrainingReporter(HtmlReporter):
+         if stats.penalty:
+             if "penalty" not in self.widgets:
+                 self.initialize_line_plot("penalty", "No-context penalty",
+-                    "KL of the adapted reader to the base on the same items without their rows (unweighted, sampled examples); "
+-                    "a rising curve means the reader improves without the rows.", "global update", "KL", ["train"])
++                    "KL(base no-context || current reader no-context), unweighted on sampled examples; "
++                    "rising values mean departure from prior behavior.", "global update", "KL", ["train"])
+             self.add_data_point("penalty", {"x": progress.global_step, "train": stats.penalty[-1]})
+             self.set_status(no_context_penalty=f"{stats.penalty[-1]:.4f}")
+         if self.references:
+@@ -225,7 +225,8 @@ class ActivationContextTrainingReporter(HtmlReporter):
+         text = "\n\n".join(f"[{r['item_id']}] ({r['kind']}, global update {r['global_step']}, AC version {r['ac_version']})\n"
+                            f"reference: {r['reference']}\n" + (f"teacher: {r['teacher']}\n" if r["teacher"] is not None else "") + f"student: {r['student']}" for r in rows)
+         label = "Baseline" if progress.epoch == 0 else f"Epoch {progress.epoch_number - (self.epoch_origin or 0)}"
+-        key = f"completions_{'baseline' if progress.epoch == 0 else 'epoch'}_{progress.epoch_number:03d}"
++        key = f"completions_update_{progress.global_step:06d}"
++        label += f" · update {progress.global_step}"
+         self.set_text(key, f"{label} inspection samples", text)
+         self.render()
+ 
+@@ -241,7 +242,7 @@ class ActivationContextTrainingReporter(HtmlReporter):
+         self.render(force=True)
+ 
+     def report_training(self, stats: "ActivationContextTrainingStats") -> None:
+-        self.set_status(phase="complete", peak_memory=f"{stats.peak_memory_bytes / 2**30:.2f} GB", elapsed=_duration(stats.duration_s), remaining="done")
++        self.set_status(phase=stats.stop_reason, peak_memory=f"{stats.peak_memory_bytes / 2**30:.2f} GB", train_call_elapsed=_duration(stats.duration_s), update_eta="finished" if stats.stop_reason == "complete" else "stopped")
+         self._clear_status("evaluation_items")
+         self.set_text("training_summary", "Training summary", json.dumps(stats.summarize(), indent=2, default=str))
+         self.render(force=True)
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/ac_model/ac_model_study.py">activation/ac_model/ac_model_study.py</a></span>
+    <span class="card-oneliner">Retain matched evidence, programmable synthesis forwarding and seeded reconstruction ratios.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/ac_model/ac_model_study.py b/activation/ac_model/ac_model_study.py
+index be3ab47..e72a9a7 100644
+--- a/activation/ac_model/ac_model_study.py
++++ b/activation/ac_model/ac_model_study.py
+@@ -561,23 +561,37 @@ class ActivationContextStudyGenerator:
+         ratios_range: tuple[float, float] = (1.0 / 16.0, 1.0 / 32.0),
+         seed: int = 0,
+         caching_id: str | None = None,
++        *, source_mode: t.Literal["chunk", "window", "document", "related_chunks"] = "chunk",
++        max_source_tokens: int | None = None, max_source_chunks: int = 3,
++        prompt_kind: t.Literal["qa", "code", "numeric", "constraints"] = "qa",
++        require_multiple_sources: bool = False, max_questions_per_source: int = 1,
++        study_context: str | None = None, progress: t.Callable[[dict], None] | None = None,
+     ) -> list[ActivationContextTrainingItem]:
+-        """
+-        Study questions on text chunks; the in-context prefix is the gold passage and the question,
+-        the AC prefix one part holding the gold and bm25 distractor passages (the gold's document
+-        excluded) shuffled up to the token budget. Depth 2 wraps that part once more.
+-        """
++        """Synthesize questions, retain all selected evidence, and match AC/full-context distractors."""
+         rng = random.Random(seed)
+         index = self.harness.dataset_manager.dataset_indexes[dataset_id]
+-        examples = self._study_examples(dataset_id, num_samples, seed, DataModality.TEXT, caching_id)
++        examples = self.harness.dataset_manager.synthesize_study_examples_qa(
++            dataset_id, num_samples, base_seed=seed, caching_id=caching_id, modality=DataModality.TEXT,
++            source_mode=source_mode, max_source_tokens=max_source_tokens, max_source_chunks=max_source_chunks,
++            prompt_kind=prompt_kind, require_multiple_sources=require_multiple_sources, max_questions_per_source=max_questions_per_source,
++            study_context=study_context, progress=progress)
+         ranked = index.bm25_query_many_frozen([example.query for example in examples], top_k=64,
+-                                              excluded_doc_ids=[list(example.positive_doc_ids or []) for example in examples]) if examples else []
++                                              excluded_doc_ids=[list(dict.fromkeys([*(example.positive_doc_ids or []),
++                                                  *(u["doc_id"] for u in (example.study_source or {}).get("units", []))])) for example in examples]) if examples else []
+         items = []
+         for item_index, (example, candidates) in enumerate(zip(examples, ranked)):
+-            gold = index.chunks[example.positive_chunk_ids[0]]
++            if not example.gold_answers or not example.positive_chunk_ids:
++                continue
++            source = example.study_source
++            if source:
++                positives = [DatasetDocumentChunk(f"{example.example_id}:source:{i}", u["doc_id"], dataset_id, u["text"], 0)
++                             for i, u in enumerate(source["units"])]
++            else:
++                positives = [index.chunks[key] for key in example.positive_chunk_ids]
++            gold = positives[0]
+             budget = rng.randint(min(distractors_token_range), max(distractors_token_range))
+-            passages = [gold]
+-            total = self.count_tokens(gold.chunk_text)
++            passages = list(positives)
++            total = sum(self.count_tokens(p.chunk_text) for p in positives)
+             for candidate in candidates:
+                 cost = self.count_tokens(candidate.chunk_text)
+                 if total + cost > budget:
+@@ -595,7 +609,7 @@ class ActivationContextStudyGenerator:
+                 part = ac_part([task_message, {"role": "user", "content": [part]}], self.ac_name, ratio)
+             content = [{"type": "text", "text": f"Task: {question}\n\nPassages:\n"}, part,
+                        {"type": "text", "text": f"\n\n{RAG_QA_INSTRUCTIONS}\nQuestion: {question}"}]
+-            in_context_user = {"role": "user", "content": f"Passage:\n{gold.chunk_text}\n\n{RAG_QA_INSTRUCTIONS}\nQuestion: {question}"}
++            in_context_user = {"role": "user", "content": f"Task: {question}\n\nPassages:\n{passages_text}\n\n{RAG_QA_INSTRUCTIONS}\nQuestion: {question}"}
+             system = [{"role": "system", "content": RAG_QA_SYSTEM_PROMPT}]
+             output = self.dialect.rendering.assistant_message("", [{"id": "answer", "name": "submit_answer", "arguments": {"answer": example.gold_answers[0].strip()}}])
+             items.append(ActivationContextTrainingItem(
+@@ -609,18 +623,20 @@ class ActivationContextStudyGenerator:
+                 dataset_id=dataset_id,
+                 doc_ids=sorted({passage.doc_id for passage in passages}),
+                 info={"depth": depth, "budget": budget, "passages": len(passages), "ratio": ratio,
+-                      "gold_position": passages.index(gold), "example_id": example.example_id, "gold_chunk_text": gold.chunk_text, "answer": example.gold_answers[0]},
++                      "gold_position": passages.index(gold), "example_id": example.example_id, "gold_chunk_text": "\n\n".join(p.chunk_text for p in positives), "answer": example.gold_answers[0],
++                      "passages_text": passages_text, "study_source": source, "matched_full_context": True},
+             ))
+         return items
+ 
+     def generate_reconstruction_samples(
+         self,
+         passages: list[dict],
+-        ratio: float = 1.0 / 16.0,
++        ratio: float | None = None,
+         variant: str = "reconstruct",
+         cue_fraction: float = 0.2,
+         seed: int = 0,
+         system_prompt: str = RECONSTRUCTION_SYSTEM_PROMPT,
++        *, ratios_range: tuple[float, float] = (1.0 / 10.0, 1.0 / 30.0),
+     ) -> list[ActivationContextTrainingItem]:
+         """
+         Dense, oracle-free items: the reader sees a passage only through its compressed rows and reproduces it.
+@@ -641,6 +657,7 @@ class ActivationContextStudyGenerator:
+             raise ValueError("variant must be 'reconstruct' or 'continue'")
+         if not 0 < cue_fraction < 1:
+             raise ValueError("cue_fraction must be in (0, 1)")
++        rng = random.Random(seed)
+         items = []
+         for index, passage in enumerate(passages):
+             if passage.get("variant_only") not in (None, variant):
+@@ -650,7 +667,9 @@ class ActivationContextStudyGenerator:
+             if not text:
+                 continue
+             child = _first_child_span(segments) if segments else None
+-            part_ratio = passage.get("ratio", ratio) if segments else ratio
++            part_ratio = passage.get("ratio", ratio)
++            if part_ratio is None:
++                part_ratio = self._sample_ratio(rng, ratios_range)
+             nested_info = {"children": sum(1 for s in segments if s["kind"] == "child"), "child_ratios": [s["ratio"] for s in segments if s["kind"] == "child"]} if segments else {}
+             if variant == "continue":
+                 cut = _cue_cut(text, cue_fraction) if child is None else child[0] + _cue_cut(text[child[0]:child[1]], cue_fraction)
+@@ -683,12 +702,18 @@ class ActivationContextStudyGenerator:
+         return items
+ 
+     def transform_for_eval_reference(self, items: list[ActivationContextTrainingItem],
+-                                     kind: t.Literal["no_context", "recent_text"]) -> list[ActivationContextTrainingItem]:
++                                     kind: t.Literal["no_context", "recent_text", "full_context"]) -> list[ActivationContextTrainingItem]:
+         """Preserve prefixes/suffixes and targets; QA's text reference is oracle gold, not retrieval."""
+-        if kind not in ("no_context", "recent_text"):
++        if kind not in ("no_context", "recent_text", "full_context"):
+             raise ValueError(kind)
+         output = []
+         for item in items:
++            if kind == "full_context":
++                if item.in_context_messages is None:
++                    raise ValueError(f"{item.item_id}: full context requires an in-context view")
++                output.append(replace(item, item_id=item.item_id + ":full_context", ac_messages=deepcopy(item.in_context_messages),
++                                      ac_start=item.in_context_start, info=dict(item.info, reference_label="full context, same distractors" if item.info.get("matched_full_context") else "in-context reference")))
++                continue
+             messages = deepcopy(item.ac_messages)
+             part_index = 0
+             for message in messages:
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/ac_model/ac_model_training.py">activation/ac_model/ac_model_training.py</a></span>
+    <span class="card-oneliner">Retain callback state restoration, deadline recovery, paired publication, reference identity and chat-end stopping.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index 7eacc2e..4bb7601 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -62,6 +62,10 @@ class ActivationContextTrainingItem:
+     info: dict = field(default_factory=dict)   # generator details (depth, ratio, budgets, gold position, ...)
+ 
+ 
++class _TrainingTimeLimit(Exception):
++    """Internal control flow: save a partial pair and leave the training residency."""
++
++
+ @dataclass
+ class ActivationContextTrainingConfig:
+     """
+@@ -103,11 +107,15 @@ class ActivationContextTrainingConfig:
+     gradient_checkpointing_min_tokens: int | None = None
+     seed: int = 0
+     num_epochs: int = 2
++    shuffle_examples: bool = True
++    max_duration_seconds: float | None = None  # Includes preparation/panels; reserve up to 60s for a paired save.
+     reporting_interval: float = 0.1
+     completion_samples: int = 4
+     completion_max_new_tokens: int = 64
+ 
+     def __post_init__(self) -> None:
++        if self.max_duration_seconds is not None and self.max_duration_seconds <= 0:
++            raise ValueError("max_duration_seconds must be positive")
+         if self.loss_kind not in ("kl", "sft") or self.max_example_tokens < 1 or self.teacher_cache_top_k < 1:
+             raise ValueError("Invalid loss kind, example capacity, or teacher cache size (the stored targets need a positive top-k)")
+         if self.no_context_penalty_weight < 0 or not 0 < self.no_context_penalty_fraction <= 1:
+@@ -225,6 +233,7 @@ def reporting_boundaries(steps: int, interval: float) -> list[int]:
+ 
+ @dataclass
+ class ActivationContextTrainingStats:
++    stop_reason: str = "complete"
+     loss_kind: str = "kl"
+     loss: list[float] = field(default_factory=list)
+     loss_by_kind: dict[str, list[float]] = field(default_factory=dict)
+@@ -289,6 +298,7 @@ class ActivationContextTrainingStats:
+         tokens = sum(self.step_tokens)
+         seconds = sum(self.step_seconds)
+         return {
++            "stop_reason": self.stop_reason,
+             "loss_kind": self.loss_kind, "loss_first": self.loss[0] if self.loss else None,
+             "loss_last": self.loss[-1] if self.loss else None,
+             "loss_by_kind": {kind: sum(values) / len(values) for kind, values in self.loss_by_kind.items() if values},
+@@ -403,6 +413,7 @@ class ActivationContextTrainer:
+         *,
+         validation_data: t.Sequence[ActivationContextTrainingItem] = (),
+         reset_optimizer: bool = False,
++        reporting_callback: t.Callable[[ActivationContextTrainingProgress, ActivationContextEvalSummary | None], None] | None = None,
+     ) -> ActivationContextTrainingStats:
+         """Complete epochs in one residency scope; optimizer/global step persist across calls."""
+         self._training_ac_name = ac_model_name
+@@ -419,6 +430,38 @@ class ActivationContextTrainer:
+         start_epoch = self._next_epoch_number(ac_model)
+         stats = ActivationContextTrainingStats(loss_kind=config.loss_kind, start_epoch=start_epoch, items=len(training_data))
+         started = time.monotonic()
++        deadline = (started + config.max_duration_seconds - min(60.0, config.max_duration_seconds * .1)
++                    if config.max_duration_seconds is not None else None)
++        self._training_deadline = deadline
++        epoch_number, completed_step, record = start_epoch, 0, None
++        def report_callback(progress, summary):
++            self._check_training_deadline()
++            if reporting_callback is None:
++                return
++            modes = [(base, base.training, base.is_gradient_checkpointing) for base in bases]
++            trainability = [(p, p.requires_grad) for base in [*bases, ac_model.modules] for p in base.parameters()]
++            residency = [(loaded, loaded.current_model_device) for loaded in dict.fromkeys([target, ac_model.side])]
++            previous_mode = ac_model.mode
++            try:
++                with ExitStack() as adapters, torch.no_grad():
++                    adapters.enter_context(manager.lora_context(target.model_config.model_name, target_lora))
++                    if ac_model.side is not target:
++                        adapters.enter_context(manager.lora_context(ac_model.side.model_config.model_name, ac_model.config.base_side_model_lora_name))
++                    reporting_callback(progress, summary)
++            finally:
++                for loaded, previous_device in residency:
++                    loaded.model_to_device(previous_device)
++                ac_model.modules.to(device)
++                ac_model.set_mode(previous_mode)
++                for base, training, checkpointed in modes:
++                    base.train(training)
++                    disable_dropout(base)
++                    if checkpointed:
++                        base.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
++                    elif base.is_gradient_checkpointing:
++                        base.gradient_checkpointing_disable()
++                for parameter, enabled in trainability:
++                    parameter.requires_grad_(enabled)
+         if reporter is not None:
+             reporter.set_status(phase="building training examples", examples=str(len(training_data)))
+             reporter.render(force=True)
+@@ -441,6 +484,7 @@ class ActivationContextTrainer:
+         if reporter is not None:
+             reporter.initialize_training(config, stats)
+         try:
++            self._check_training_deadline()
+             placement_started = time.monotonic()
+             if reporter is not None:
+                 reporter.set_status(phase="model placement and kernel preparation")
+@@ -480,14 +524,16 @@ class ActivationContextTrainer:
+                     reporter.set_status(phase="no-context reference")
+                     reporter.render(force=True)
+                 reference_path = resolve_path(f"AC_MODELS/{ac_model.name}/no_context_reference.pt", create=False)
++                reference_identity = {"model": target.model_config.model_id, "revision": getattr(target.model.config, "_commit_hash", None),
++                    "tokenizer": getattr(target.tokenizer, "name_or_path", None), "vocab": len(target.tokenizer), "reference": "base_no_context"}
+                 if reference_path.exists():
+-                    loaded = self._merge_teacher_targets(reference_path, {example.teacher_cache_key for example in penalty_examples})
++                    loaded = self._merge_teacher_targets(reference_path, {example.teacher_cache_key for example in penalty_examples}, reference_identity)
+                     print(f"AC resume: {loaded} no-context references loaded from {reference_path}", flush=True)
+                 stats.no_context_reference = self._store_teacher_targets(ac_model, penalty_examples, device, reporter, reporting_name="no-context reference", lora=None)
+                 if stats.no_context_reference["examples"] or not reference_path.exists():
+                     keys = {example.teacher_cache_key for example in penalty_examples}
+                     reference_path.parent.mkdir(parents=True, exist_ok=True)
+-                    torch.save({"top_k": config.teacher_cache_top_k, "targets": {k: v for k, v in self.teacher_cache.items() if k in keys},
++                    torch.save({"identity": reference_identity, "top_k": config.teacher_cache_top_k, "targets": {k: v for k, v in self.teacher_cache.items() if k in keys},
+                                 "target_logp": {k: v for k, v in self.teacher_target_logp.items() if k in keys}}, reference_path)
+             ac_parameters = ac_model.trainable_parameters()
+             target_parameters = manager.lora_parameters(target_lora)
+@@ -542,6 +588,8 @@ class ActivationContextTrainer:
+                 stats.validation_baseline = self._evaluate(ac_model, list(validation_data), device, reporter, "validation")
+                 if reporter is not None:
+                     reporter.report_eval(baseline, "validation", stats.validation_baseline)
++            report_callback(baseline, stats.reporting)
++            self._check_training_deadline()
+             stats.baseline_samples = self._sample_completions(ac_model, fixed_items, baseline)
+             stats.baseline_seconds = time.monotonic() - phase
+             if reporter is not None and stats.baseline_samples:
+@@ -556,10 +604,13 @@ class ActivationContextTrainer:
+                         self.updates_done.get(ac_model_name, 0), time.monotonic() - epoch_started, time.monotonic() - started)
+                 record = ActivationContextEpochStats(progress(0))
+                 order = list(range(len(examples)))
+-                random.Random(config.seed + epoch_number).shuffle(order)
++                if config.shuffle_examples:
++                    random.Random(config.seed + epoch_number).shuffle(order)
++                completed_step = config.resume_skip_steps if epoch == 1 else 0
+                 for step in range(1, steps + 1):
+                     if epoch == 1 and step <= config.resume_skip_steps:
+                         continue        # trained by the previous attempt (same seeded order); the mid-epoch checkpoint carries the moments and the update count
++                    self._check_training_deadline()
+                     if reporter is not None:
+                         reporter.report_phase(progress(step - 1), "training")
+                     step_started = time.monotonic()
+@@ -624,6 +675,7 @@ class ActivationContextTrainer:
+                     seconds = time.monotonic() - step_started
+                     record.training_seconds += seconds
+                     stats.steps += 1
++                    completed_step = step
+                     stats.loss.append(totals["loss"] / len(mini))
+                     if config.loss_kind == "kl":
+                         stats.kl.append(stats.loss[-1])
+@@ -640,22 +692,25 @@ class ActivationContextTrainer:
+                           f"{config.loss_kind} loss {stats.loss[-1]:.4f}, {seconds:.1f}s", flush=True)
+                     if reporter is not None:
+                         reporter.report_step(progress(step), stats)
++                    self._check_training_deadline()
+                     if config.checkpoint_every_updates and config.checkpoint_every_epoch and step < steps and step % config.checkpoint_every_updates == 0:
+                         self._save_partial(ac_model, epoch_number, step, steps)
+-                    if step in boundaries and reporting_data:
++                    if step in boundaries and (reporting_data or reporting_callback is not None):
+                         phase = time.monotonic()
+                         if reporter is not None:
+                             reporter.report_phase(progress(step), "reporting")
+-                        record.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting")
++                        record.reporting = self._evaluate(ac_model, list(reporting_data), device, reporter, "reporting") if reporting_data else None
+                         stats.reporting = record.reporting
+-                        if reporter is not None:
++                        if reporter is not None and record.reporting is not None:
+                             reporter.report_eval(progress(step), "reporting", record.reporting)
+                         if deltas_off_panel:
+                             record.deltas_off = self._evaluate(ac_model, list(reporting_data), device, reporter, "deltas_off", deltas_off=True)
+                             stats.deltas_off = record.deltas_off
+                             if reporter is not None:
+                                 reporter.report_eval(progress(step), "deltas_off", record.deltas_off)
++                        report_callback(progress(step), record.reporting)
+                         record.reporting_seconds += time.monotonic() - phase
++                self._check_training_deadline()
+                 if validation_data:
+                     phase = time.monotonic()
+                     if reporter is not None:
+@@ -688,7 +743,29 @@ class ActivationContextTrainer:
+                 ac_model.epoch_number = epoch_number
+             stats.teacher_cache_bytes = sum(sum(tensor.numel() * tensor.element_size() for tensor in entry) for entry in self.teacher_cache.values())
+             stats.payload_bytes = self._payload_bytes
++        except _TrainingTimeLimit:
++            self._training_deadline = None
++            stats.stop_reason = "duration limit" if stats.steps else "duration limit; no updates"
++            if reporter is not None:
++                reporter.set_status(phase="saving partial checkpoint")
++                reporter.render(force=True)
++            saved_at = time.monotonic()
++            if stats.steps == 0 and config.resume_skip_steps:
++                # The incoming pair already owns its step and optimizer metadata. Do not relabel its weights as step zero.
++                stats.checkpoint_path = ac_model.config.checkpoint_path
++                stats.target_lora_checkpoint_path = manager.get_lora_config(target_lora).checkpoint_path
++                completed_step = config.resume_skip_steps
++            else:
++                stats.checkpoint_path, stats.target_lora_checkpoint_path = self._save_partial(ac_model, epoch_number, completed_step, steps)
++            stopped = ActivationContextTrainingProgress(len(stats.epochs) + 1, config.num_epochs, epoch_number, completed_step, steps,
++                self.updates_done.get(ac_model_name, 0), time.monotonic() - (epoch_started if record is not None else started), time.monotonic() - started)
++            record = record or ActivationContextEpochStats(stopped)
++            record.progress = stopped
++            record.checkpoint_path, record.target_lora_checkpoint_path = stats.checkpoint_path, stats.target_lora_checkpoint_path
++            record.checkpoint_seconds += time.monotonic() - saved_at
++            stats.epochs.append(record)
+         finally:
++            self._training_deadline = None
+             kernel_scope.close()
+             cleanup_started = time.monotonic()
+             if optimizer is not None:
+@@ -717,6 +794,11 @@ class ActivationContextTrainer:
+             reporter.report_training(stats)
+         return stats
+ 
++    def _check_training_deadline(self) -> None:
++        deadline = getattr(self, "_training_deadline", None)
++        if deadline is not None and time.monotonic() >= deadline:
++            raise _TrainingTimeLimit()
++
+     def _next_epoch_number(self, ac_model: ActivationContextModel) -> int:
+         manager = self.harness.module_manager
+         roots = [ac_model.checkpoint_folder().parent, manager.checkpoint_folder(ac_model.config.target_model_lora_name).parent]
+@@ -746,6 +828,12 @@ class ActivationContextTrainer:
+         if optimizer is not None:               # resume material: moments + the update count (the LR schedule and the reader freeze window read it)
+             torch.save({"optimizer": optimizer.state_dict(), "updates_done": self.updates_done.get(ac_model.name, 0), "epoch_number": epoch_number},
+                        ac_folder / "optimizer.pt")
++        record = ac_folder.parent / "completed_epoch.json"
++        temporary = record.with_suffix(".json.tmp")
++        temporary.write_text(json.dumps({"epoch_number": epoch_number, "ac_checkpoint": ac_relative,
++                                        "target_lora_checkpoint": target_relative}, indent=2) + "\n")
++        temporary.replace(record)       # publish the complete pair before retiring any previous recovery checkpoint
++        if optimizer is not None:
+             for previous in sorted(ac_folder.parent.glob("epoch_*/optimizer.pt")):
+                 if previous.parent != ac_folder:
+                     previous.unlink()           # only the newest epoch keeps its optimizer (about 2x the adapter size)
+@@ -755,14 +843,9 @@ class ActivationContextTrainer:
+         partial_record = ac_folder.parent / "partial_epoch.json"
+         if partial_record.exists() and json.loads(partial_record.read_text())["epoch_number"] <= epoch_number:
+             partial_record.unlink()
+-        record = ac_folder.parent / "completed_epoch.json"
+-        temporary = record.with_suffix(".json.tmp")
+-        temporary.write_text(json.dumps({"epoch_number": epoch_number, "ac_checkpoint": ac_relative,
+-                                        "target_lora_checkpoint": target_relative}, indent=2) + "\n")
+-        temporary.replace(record)       # only this record declares the numbered pair complete
+         return ac_path, target_path
+ 
+-    def _save_partial(self, ac_model: ActivationContextModel, epoch_number: int, step: int, steps: int) -> None:
++    def _save_partial(self, ac_model: ActivationContextModel, epoch_number: int, step: int, steps: int) -> tuple[str, str]:
+         """Mid-epoch checkpoint: adapters as of `step` of `epoch_number` (saved with epoch_number - 1 so a resume restarts this epoch), optimizer.pt,
+         and AC_MODELS/<name>/partial_epoch.json; earlier partials of the same epoch are removed."""
+         manager = self.harness.module_manager
+@@ -770,6 +853,13 @@ class ActivationContextTrainer:
+         leaf = f"epoch_{epoch_number:03d}_step_{step:05d}"
+         ac_relative, target_relative = f"AC_MODELS/{ac_model.name}/{leaf}", f"LORAS/{target_lora}/{leaf}"
+         ac_folder, target_folder = resolve_path(ac_relative, create=False), resolve_path(target_relative, create=False)
++        published = ac_folder.parent / "partial_epoch.json"
++        if published.exists():
++            pair = json.loads(published.read_text())
++            if pair.get("ac_checkpoint") == ac_relative and pair.get("target_lora_checkpoint") == target_relative:
++                if not ac_folder.exists() or not target_folder.exists():
++                    raise RuntimeError("Published partial checkpoint is missing one side")
++                return str(ac_folder), str(target_folder)  # Same completed update; keep the recoverable pair intact.
+         for folder in (ac_folder, target_folder):
+             if folder.exists():
+                 shutil.rmtree(folder)
+@@ -789,10 +879,13 @@ class ActivationContextTrainer:
+                 if previous.name != leaf:
+                     shutil.rmtree(previous)
+         print(f"AC checkpoint: epoch {epoch_number} step {step}/{steps} saved to {ac_folder}", flush=True)
++        return str(ac_folder), str(target_folder)
+ 
+-    def _merge_teacher_targets(self, path: Path, keys: set | None) -> int:
++    def _merge_teacher_targets(self, path: Path, keys: set | None, identity: dict | None = None) -> int:
+         """Add the saved reference entries for `keys` (None: all) that are not stored yet (same top-k required). Returns how many were added."""
+         data = torch.load(path, map_location="cpu", weights_only=False)
++        if identity is not None and data.get("identity") != identity:
++            return 0
+         if data["top_k"] != self.config.teacher_cache_top_k:
+             return 0
+         added = 0
+@@ -821,6 +914,7 @@ class ActivationContextTrainer:
+                 if base.is_gradient_checkpointing:
+                     base.gradient_checkpointing_disable()
+             for item in items:
++                self._check_training_deadline()
+                 example = self.build_example(ac_model, item)
+                 texts = {}
+                 # The stored teacher is the reader at baseline: its completion is sampled once (before any update) and reused.
+@@ -841,6 +935,15 @@ class ActivationContextTrainer:
+                     budget = min(self.config.completion_max_new_tokens, capacity - prefix_length) if capacity else self.config.completion_max_new_tokens
+                     generation = dict(max_new_tokens=budget, do_sample=False, use_cache=True,
+                                       pad_token_id=target.tokenizer.pad_token_id if target.tokenizer.pad_token_id is not None else target.tokenizer.eos_token_id)
++                    # A chat turn can end before the model's end-of-text token.
++                    eot_token = target.model_config.model_description.eot_token
++                    if eot_token is not None:
++                        eos_ids = peft_model.generation_config.eos_token_id
++                        eos_ids = [eos_ids] if isinstance(eos_ids, int) else list(eos_ids or [])
++                        eot_id = target.tokenizer.convert_tokens_to_ids(eot_token)
++                        if eot_id not in eos_ids:
++                            eos_ids.append(eot_id)
++                        generation["eos_token_id"] = eos_ids
+                     with manager.lora_context(target.model_config.model_name, lora):
+                         if payload is not None:
+                             output = generate_with_interventions(peft_model, inputs_embeds=embeds[None], interventions=[payload], **generation)
+@@ -945,6 +1048,7 @@ class ActivationContextTrainer:
+             if self.config.micro_batch_examples > 1 and not is_kl:
+                 order = sorted(range(len(examples)), key=lambda index: len(examples[index].student_ids))
+                 for start in range(0, len(order), self.config.micro_batch_examples):
++                    self._check_training_deadline()
+                     group = order[start:start + self.config.micro_batch_examples]
+                     for index, result in zip(group, self._batch_loss(ac_model, [examples[index] for index in group], device, with_penalty=False, deltas_off=deltas_off)):
+                         rows[index] = row(examples[index], result["objective"], None, result["num"], result["target_logp"], result["hits"])
+@@ -953,6 +1057,7 @@ class ActivationContextTrainer:
+                         reporter.report_evaluation_progress(reporting_name, done, len(examples))
+             else:
+                 for index, example in enumerate(examples):
++                    self._check_training_deadline()
+                     loss, agreement, positions, target_logp = self._example_loss(ac_model, example, device, with_penalty=False, deltas_off=deltas_off)
+                     rows[index] = row(example, loss, agreement, positions, target_logp, self._last_hits)
+                     done += 1
+@@ -1236,6 +1341,7 @@ class ActivationContextTrainer:
+             groups = [order[start:start + self.config.micro_batch_examples] for start in range(0, len(order), self.config.micro_batch_examples)]
+         done = 0
+         for group in groups:
++            self._check_training_deadline()
+             if len(group) == 1:
+                 ids = torch.tensor(group[0].teacher_ids, device=device, dtype=torch.long)
+                 states_by_example = [target.decoder_forward(embedding(ids)[None], None, lora_name=lora, gradient_checkpointing=False)[0][group[0].teacher_positions]]
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/ac_model/ac_model_utils.py">activation/ac_model/ac_model_utils.py</a></span>
+    <span class="card-oneliner">Retain the singleton batch dimension enabling memory-efficient passage attention.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+index 586c797..b4d9502 100644
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -555,7 +555,8 @@ class PassageAttention(nn.Module):
+         normed = self.norm(passage)
+         split = lambda tensor, n: tensor.view(n, self.heads, -1).transpose(0, 1)                   # [heads, n, r / heads]
+         q, k, v = split(self.query(self.norm(rows)), rows.shape[0]), split(self.key(normed), passage.shape[0]), split(self.value(normed), passage.shape[0])
+-        mixed = F.scaled_dot_product_attention(q, k, v).transpose(0, 1).reshape(rows.shape[0], -1)
++        # A batch dimension lets CUDA use memory-efficient attention for these FP32 readouts.
++        mixed = F.scaled_dot_product_attention(q.unsqueeze(0), k.unsqueeze(0), v.unsqueeze(0)).squeeze(0).transpose(0, 1).reshape(rows.shape[0], -1)
+         return rows + self.out(mixed)
+ 
+ 
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/bench/agent_probes/cheap_synthetic_bench.py">activation/bench/agent_probes/cheap_synthetic_bench.py</a></span>
+    <span class="card-oneliner">Use the shared questions-array contract; count only usable single-source QA results.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/bench/agent_probes/cheap_synthetic_bench.py b/activation/bench/agent_probes/cheap_synthetic_bench.py
+index 0fde34c..098172e 100644
+--- a/activation/bench/agent_probes/cheap_synthetic_bench.py
++++ b/activation/bench/agent_probes/cheap_synthetic_bench.py
+@@ -1,6 +1,6 @@
+ """
+ Throughput of small generators for a CHEAP_SYNTHETIC phase: the study prompt on real MS-MARCO
+-chunks, one JSON {question, answer} per chunk, measured per model and engine concurrency. Writes
++chunks, at most one grounded question per chunk, measured per model and engine concurrency. Writes
+ a live report (watch it with `sky watch`) and `cheap_synthetic_results.json` last.
+ 
+     uv run sky exec <node> uv run python -m activation.bench.cheap_synthetic_bench \\
+@@ -21,7 +21,7 @@ import torch
+ from vllm.sampling_params import StructuredOutputsParams
+ 
+ from activation.common.reporting import HtmlReporter
+-from activation.dataset.dataset_study import STUDY_JSON_SCHEMA, make_study_prompt
++from activation.dataset.dataset_study_prompts import make_source_study_prompt
+ from activation.dataset.dataset_utils import safe_truncate_embedding_chunk, shuffle_fill_truncate
+ from activation.dataset.loaders import MsMarcoDataset
+ from activation.harness import FREE_DEVICE, HarnessRuntime, HarnessRuntimeConfig, ModelConfig
+@@ -38,13 +38,13 @@ def load_chunks(harness: HarnessRuntime, num_chunks: int, seed: int) -> list[str
+ 
+ 
+ def conversations_for(snippets: list[str], chunk_input_limit: int) -> list[list[dict]]:
+-    system_prompt, instructions, _ = make_study_prompt(None)
++    system_prompt, instructions, _ = make_source_study_prompt(None)
+     out = []
+     for snippet in snippets:
+         snippet = safe_truncate_embedding_chunk(snippet, chunk_input_limit)
+         out.append([
+             {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+-            {"role": "user", "content": [{"type": "text", "text": f"# Corpus Snippet\n```\n{snippet}\n```\n{instructions}"}]},
++            {"role": "user", "content": [{"type": "text", "text": f"Source 0:\n{snippet}\n\n{instructions}"}]},
+         ])
+     return out
+ 
+@@ -52,7 +52,7 @@ def conversations_for(snippets: list[str], chunk_input_limit: int) -> list[list[
+ def chat_kwargs_for(structured: bool, thinking: bool, seed: int, max_tokens: int) -> dict:
+     sampling = {"max_tokens": max_tokens, "seed": seed, "temperature": 0.7, "top_p": 0.9}
+     if structured:
+-        sampling["structured_outputs"] = StructuredOutputsParams(json=STUDY_JSON_SCHEMA)
++        sampling["structured_outputs"] = StructuredOutputsParams(json=make_source_study_prompt(None)[2])
+     return {"sampling_params": sampling, "chat_template_kwargs": {"enable_thinking": thinking}}
+ 
+ 
+@@ -82,10 +82,10 @@ def run_config(model_id: str, max_num_seqs: int, structured: bool, thinking: boo
+             prompt_tokens += output.prompt_token_count
+             output_tokens += output.output_token_count
+             try:
+-                qa = json.loads(output.text)
+-                if not str(qa["question"]).strip() or not str(qa["answer"]).strip():
++                questions = json.loads(output.text)["questions"]
++                if len(questions) != 1 or not questions[0]["question"].strip() or not questions[0]["answer"].strip() or questions[0]["evidence_indices"] != [0]:
+                     failures += 1
+-            except (json.JSONDecodeError, KeyError, TypeError):
++            except (ValueError, KeyError, TypeError, AttributeError):
+                 failures += 1
+     elapsed = time.time() - start
+     sample = outputs[0].text[:400] if outputs else ""
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/common/reporting.py">activation/common/reporting.py</a></span>
+    <span class="card-oneliner">Retain explicit UTC report timestamps.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/common/reporting.py b/activation/common/reporting.py
+index 2fcd991..e3a0401 100644
+--- a/activation/common/reporting.py
++++ b/activation/common/reporting.py
+@@ -624,7 +624,7 @@ class HtmlReporter:
+             "refresh_seconds": self.refresh_seconds,
+             "poll_seconds": self.poll_seconds,
+             "finished": self.finished,
+-            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
++            "updated_at": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
+             "status": dict(self.status),
+             "widgets": widgets,
+         }
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/dataset/dataset.py">activation/dataset/dataset.py</a></span>
+    <span class="card-oneliner">Retain exact selected source units in QA records.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/dataset/dataset.py b/activation/dataset/dataset.py
+index 7007038..955a5c8 100644
+--- a/activation/dataset/dataset.py
++++ b/activation/dataset/dataset.py
+@@ -125,6 +125,7 @@ class DatasetQAExample:
+     hard_negative_chunk_ids: list[str] | None = None
+     excluded_doc_ids: list[str] | None = None
+     oracle_labeled: bool = False
++    study_source: dict | None = None  # Exact selected source units/order/text for synthesized QA.
+ 
+ 
+ @dataclass
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/dataset/dataset_manager.py">activation/dataset/dataset_manager.py</a></span>
+    <span class="card-oneliner">Retain the bounded synthesis options on the existing manager method.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/dataset/dataset_manager.py b/activation/dataset/dataset_manager.py
+index dcfc48a..418b23c 100644
+--- a/activation/dataset/dataset_manager.py
++++ b/activation/dataset/dataset_manager.py
+@@ -61,6 +61,10 @@ class DatasetManager:
+         caching_id: str | None = None,
+         modality: DataModality | None = None,
+         *, progress: t.Callable[[dict], None] | None = None,
++        source_mode: t.Literal["chunk", "window", "document", "related_chunks"] = "chunk",
++        max_source_tokens: int | None = None, max_source_chunks: int = 3,
++        prompt_kind: t.Literal["qa", "code", "numeric", "constraints"] = "qa",
++        require_multiple_sources: bool = False, max_questions_per_source: int = 1,
+     ) -> list[DatasetQAExample]:
+         """
+         Synthesize study questions from the dataset's chunks (see DatasetStudyGenerator.generate_examples_qa).
+@@ -68,7 +72,9 @@ class DatasetManager:
+         """
+         study_generator = self._get_or_create_study_generator(dataset_id)
+         seed = self.harness.harness_config.dataset_study_seed if base_seed is None else base_seed
+-        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress)
++        return study_generator.generate_examples_qa(num_samples, seed, study_context, caching_id, modality, progress=progress, source_mode=source_mode,
++            max_source_tokens=max_source_tokens, max_source_chunks=max_source_chunks, prompt_kind=prompt_kind,
++            require_multiple_sources=require_multiple_sources, max_questions_per_source=max_questions_per_source)
+ 
+ 
+     def label_study_examples(
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/dataset/dataset_study.py">activation/dataset/dataset_study.py</a></span>
+    <span class="card-oneliner">Retain programmable, cached synthesis; remove the dead old-row converter and prompt re-exports.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/dataset/dataset_study.py b/activation/dataset/dataset_study.py
+index 12e15a7..ba88260 100644
+--- a/activation/dataset/dataset_study.py
++++ b/activation/dataset/dataset_study.py
+@@ -6,6 +6,7 @@ gives a caching id (dataset_caching.py). Nothing is written into the dataset obj
+ the examples back and decide what to keep.
+ """
+ import json
++import hashlib
+ import random
+ import time
+ import typing as t
+@@ -33,114 +34,7 @@ if t.TYPE_CHECKING:
+     from activation.harness import HarnessRuntime
+ 
+ 
+-STUDY_JSON_SCHEMA = {
+-    "type": "object",
+-    "properties": {
+-        "has_valuable_question": {"type": "boolean"},
+-        "question": {"type": ["string", "null"]},
+-        "answer": {"type": ["string", "null"]},
+-    },
+-    "required": ["has_valuable_question", "question", "answer"],
+-    "additionalProperties": False,
+-}
+-
+-LABEL_JSON_SCHEMA = {
+-    "type": "object",
+-    "properties": {
+-        "positives": {"type": "array", "items": {"type": "integer"}},
+-        "negatives": {"type": "array", "items": {"type": "integer"}},
+-    },
+-    "required": ["positives", "negatives"],
+-    "additionalProperties": False,
+-}
+-
+-
+-
+-def make_study_prompt(study_context: str | None, modality: DataModality = DataModality.TEXT) -> tuple[str, str, dict]:
+-    """
+-    Returns system prompt, instructions, json schema. The trajectory variant asks about a fact inside
+-    an agent's turns; both let the model declare a snippet worthless (`has_valuable_question: false`).
+-    """
+-    system_prompt = """
+-# Core Guidelines
+-- You are a study/exam-like questions formulator.
+-- You are given a snippet from the corpus students are expected to study and understand.
+-- From this, your goal is to generate a hard question (unanswerable with common knowledge or simple keyword look ups).
+-    - This is IMPORTANT: the question should be **hard**, or it won't test the student's learning.
+-    - The question should have an accompanying answer.
+-- Your priority is: a hard question along with its expected, correct answer.
+-- By default, keep your question short to medium-short unless the exam recommends longer questions.
+-- When the snippet holds nothing worth asking about (boilerplate, navigation, an empty listing, pure formatting), set has_valuable_question to false and leave question and answer null.
+-"""
+-    if modality == DataModality.TRAJECTORY:
+-        system_prompt += """
+-# Trajectory Snippets
+-- The snippet is part of an agent's conversation: its reasoning, its tool calls and the tool results.
+-- Ask about a specific fact that appears in these turns (a value a tool returned, a decision the agent took, an error it saw, a file or quantity it found), phrased so someone who read the turns can answer it.
+-- Never ask something answerable from the task statement alone, and never ask about the formatting of the transcript.
+-"""
+-
+-    if study_context:
+-        system_prompt += f"""
+-# Exam Context
+-The following emphasizes the kind of questions students are expected to handle.
+-```
+------
+-{study_context}
+------
+-```
+-Frame your questions in light of this.
+-"""
+-    system_prompt += """
+-# Response Format
+-Your answer must be formatted as a json object like:
+-```json
+-{
+-    "has_valuable_question": true|false,
+-    "question": "..."|null,
+-    "answer": "..."|null
+-}
+-```
+-"""
+-    instructions = f"""
+-# Instructions
+-Generate the exam-like question for student's study.
+-"""
+-    return system_prompt, instructions, STUDY_JSON_SCHEMA
+-
+-
+-def make_label_prompt() -> tuple[str, str, dict]:
+-    """
+-    Returns system prompt, instructions and json schema for the snippet labeling task.
+-    """
+-    system_prompt = """
+-# Core Guidelines
+-- You are a relevance judge determining what snippets from a corpus students should pay attention to answer a question.
+-- You are given the study question, its reference answer, and numbered corpus snippets.
+-- Label each snippet index as:
+-    - **positive**: the snippet contains information that clearly helps answer the question.
+-    - **negative**: the snippet contains information that clearly does not help answer the question.
+-    - Leave out anything where you are unsure.
+-- Be careful:
+-    - The snippets are intentionally chosen to be *related* to the question without necessarily helping.
+-    - Don't mark something as positive just because of shared vocabulary.
+-- Every listed index must come from the snippet numbering; never list the same index on both sides.
+-"""
+-    system_prompt += """
+-# Response Format
+-Your answer must be formatted as a json object of snippet indices like:
+-```json
+-{
+-    "positives": [0, 2],
+-    "negatives": [3, 5, 6]
+-}
+-```
+-Each is a list of indexes that should map to one of the given snippet indices.
+-"""
+-    instructions = """
+-Label the snippets as positives / negatives for this question. Leave out ambiguous ones.
+-"""
+-    return system_prompt, instructions, LABEL_JSON_SCHEMA
++from .dataset_study_prompts import make_label_prompt, make_source_study_prompt
+ 
+ 
+ class DatasetStudyGenerator:
+@@ -181,126 +75,142 @@ class DatasetStudyGenerator:
+         chat_kwargs["sampling_params"] = sampling_params_kwargs
+         return chat_kwargs
+ 
+-    def _example_from_row(self, row: dict, kind: str, base_seed: int) -> DatasetQAExample:
+-        chunk = self.dataset_index.chunks[row["chunk_id"]]
+-        return DatasetQAExample(
+-            example_id=f"{self.dataset_id}:study:{kind}:{base_seed}:{row['index']}",
+-            dataset_id=self.dataset_id,
+-            query=row["question"],
+-            gold_answers=[row["answer"]],
+-            origin=SYNTHETIC,
+-            split=DataSplit.TRAIN,
+-            positive_doc_ids=[chunk.doc_id],
+-            positive_chunk_ids=[chunk.chunk_id],
+-        )
+-
++    def _study_source(self, chunk, mode, max_chunks, max_tokens, tokenizer):
++        """Select once and retain exactly the text shown to the generator."""
++        doc = self.loaded_dataset.documents[chunk.doc_id]
++        chunks = sorted(doc.chunks.values(), key=lambda c: c.chunk_start)
++        if mode == "document":
++            if doc.text is None:
++                return None
++            selected = chunks
++            units = [{"doc_id": doc.doc_id, "chunk_ids": [c.chunk_id for c in selected], "text": doc.text}]
++        elif mode == "window":
++            position = next(i for i, c in enumerate(chunks) if c.chunk_id == chunk.chunk_id)
++            start = max(0, position - max_chunks // 2)
++            selected = chunks[start:start + max_chunks]
++            units = []
++            covered = selected[0].chunk_start
++            for candidate in selected:
++                end = candidate.chunk_start + len(candidate.chunk_text)
++                # Keep adjacent chunks independently citable without repeating their overlap.
++                text = (doc.text[covered:end] if doc.text is not None
++                        else candidate.chunk_text[max(0, covered - candidate.chunk_start):])
++                if text:
++                    units.append({"doc_id": doc.doc_id, "chunk_ids": [candidate.chunk_id], "text": text})
++                covered = max(covered, end)
++        elif mode == "related_chunks":
++            selected = [chunk] + self.dataset_index.bm25_query_many_frozen(
++                [chunk.chunk_text], top_k=max_chunks - 1, excluded_doc_ids=[[chunk.doc_id]])[0] if max_chunks > 1 else [chunk]
++            units = [{"doc_id": c.doc_id, "chunk_ids": [c.chunk_id], "text": c.chunk_text} for c in selected]
++        else:
++            text = safe_truncate_embedding_chunk(self.dataset_index.get_chunk_section(chunk), self.chunk_input_limit)
++            units = [{"doc_id": chunk.doc_id, "chunk_ids": [chunk.chunk_id], "text": text}]
++        text = "\n\n".join(f"Source {i}:\n{unit['text']}" for i, unit in enumerate(units))
++        if max_tokens is not None and len(tokenizer.encode(text, add_special_tokens=False)) > max_tokens:
++            return None  # Explicit skip, never silently shorten a whole document.
++        return {"mode": mode, "units": units, "text": text}
+ 
+     def generate_examples_qa(
+-        self,
+-        num_samples: int,
+-        base_seed: int = 0,
+-        study_context: str | None = None,
+-        caching_id: str | None = None,
+-        modality: DataModality | None = None,
++        self, num_samples: int, base_seed: int = 0, study_context: str | None = None,
++        caching_id: str | None = None, modality: DataModality | None = None,
+         *, progress: t.Callable[[dict], None] | None = None,
++        source_mode: t.Literal["chunk", "window", "document", "related_chunks"] = "chunk",
++        max_source_tokens: int | None = None, max_source_chunks: int = 3,
++        prompt_kind: t.Literal["qa", "code", "numeric", "constraints"] = "qa",
++        require_multiple_sources: bool = False, max_questions_per_source: int = 1,
+     ) -> list[DatasetQAExample]:
+-        """
+-        One question per sampled chunk (num_samples chunks of the given modality, or of every modality
+-        when None; the trajectory prompt variant for trajectory chunks), minus the chunks the model
+-        declares junk. Cached rows (caching_id) are served first, the engine generates the tail with
+-        seed `base_seed + batch index`; `study_context` is added to the prompt. Nothing is written into
+-        the dataset: the examples are returned (origin SYNTHETIC, positive chunk = the source chunk).
+-        """
+-        loaded_model = self.harness.loaded_models[self.qa_model_name]
++        """Generate up to N questions per source attempt; retain exact evidence and cache whole requests."""
++        if source_mode not in ("chunk", "window", "document", "related_chunks"):
++            raise ValueError(f"Unknown source_mode: {source_mode}")
++        if max_source_chunks < 1 or max_questions_per_source < 1 or (max_source_tokens is not None and max_source_tokens < 1):
++            raise ValueError("Study source and question budgets must be positive")
++        model = self.harness.loaded_models[self.qa_model_name]
+         stats = self.loaded_dataset.stats
+-        kind = "traj_qa" if modality == DataModality.TRAJECTORY else "qa"
+-        study_samples = self._sample_study_chunks(num_samples, base_seed, modality)
+-        key = None
+-        cached_rows: list[dict] = []
+-        if caching_id is not None:
+-            key = StudyCacheKey(caching_id, self.dataset_id, loaded_model.model_config.model_id, kind, base_seed)
+-            for index, row in enumerate(self.cache.read(key)):
+-                if index >= len(study_samples) or row.get("chunk_id") != study_samples[index].chunk_id:
+-                    break                                                          # the sampler changed under the cache: stop trusting it
+-                cached_rows.append(row)
+-        examples: list[DatasetQAExample] = []
+-        for row in cached_rows:
+-            if row.get("junk"):
+-                stats.study_num_junk_skipped += 1
+-            else:
+-                examples.append(self._example_from_row(row, kind, base_seed))
+-        stats.study_num_cached += len(cached_rows)
+-        pending = list(enumerate(study_samples))[len(cached_rows):]
+-        def report(completed: int, phase: str) -> None:
+-            if progress is not None:
+-                progress({"phase": phase, "completed": completed, "total": len(study_samples),
+-                          "accepted": len(examples), "cached": len(cached_rows),
+-                          "rejected": stats.study_num_junk_skipped, "failed": stats.study_num_parse_failures})
+-        report(len(cached_rows), "loading QA model" if pending else "QA complete")
+-        if not pending:
+-            return examples
+-        # vllm batches a whole conversation list inside one chat() call, so a
+-        # simple single-threaded loop needs no locks.
+-        loaded_model.ensure_engine_loaded() # Keep the cold load out of the batch timings.
+-        system_prompt, instructions, json_schema = make_study_prompt(study_context, modality or DataModality.TEXT)
+-        total_generation_time = 0
+-        reporting_interval = 0
+-        for batch_index, batch_start in enumerate(range(0, len(pending), self.qa_batch_size)):
+-            batch = pending[batch_start:batch_start + self.qa_batch_size]
+-            chat_kwargs = self._make_engine_chat_kwargs(json_schema, base_seed + batch_index)
+-            conversations = []
+-            for _, chunk in batch:
+-                snippet = self.dataset_index.get_chunk_section(chunk)
+-                snippet = safe_truncate_embedding_chunk(snippet, self.chunk_input_limit)
+-                conversations.append([
+-                    {
+-                        "role": "system", "content": [
+-                            {"type": "text", "text": system_prompt},
+-                        ]
+-                    },
+-                    {
+-                        "role": "user", "content": [
+-                            {"type": "text", "text": f"# Corpus Snippet\n```\n{snippet}\n```\n{instructions}"},
+-                        ]
+-                    },
+-                ])
+-            batch_start_time = time.time()
+-            report(len(cached_rows) + batch_start, "generating QA")
+-            outputs = loaded_model.engine_chat_many(conversations, chat_kwargs=chat_kwargs)
+-            elapsed = time.time() - batch_start_time
+-            total_generation_time += elapsed
+-            stats.study_batch_latencies.append(elapsed)
++        system, instructions, schema = make_source_study_prompt(study_context, modality or DataModality.TEXT,
++            prompt_kind, max_questions_per_source, require_multiple_sources)
++        recipe = hashlib.sha256(json.dumps([system, instructions, schema, source_mode, max_source_tokens,
++            max_source_chunks, self.chat_kwargs, self.chunk_input_limit], sort_keys=True, default=str).encode()).hexdigest()[:16]
++        key = StudyCacheKey(caching_id, self.dataset_id, model.model_config.model_id, "qa_" + recipe, base_seed) if caching_id else None
++        cached = self.cache.read_by_id(key, "request_id") if key else {}
++        samples = self._sample_study_chunks(num_samples, base_seed, modality)
++        requests = []
++        skipped = 0
++        for index, chunk in enumerate(samples):
++            source = self._study_source(chunk, source_mode, max_source_chunks, max_source_tokens, model.tokenizer)
++            if source is None or (require_multiple_sources and len(source["units"]) < 2):
++                skipped += 1
++                continue
++            identity = hashlib.sha256(json.dumps(source, sort_keys=True).encode()).hexdigest()[:16]
++            requests.append({"request_id": f"{recipe}:{base_seed}:{index}:{identity}", "source": source})
++        rows = {r["request_id"]: cached[r["request_id"]] for r in requests if r["request_id"] in cached}
++        pending = [r for r in requests if r["request_id"] not in rows]
++        def report(phase):
++            if progress:
++                progress({"phase": phase, "completed": len(rows) + skipped, "total": len(samples),
++                          "accepted": sum(len(r["questions"]) for r in rows.values()), "cached": len(requests) - len(pending),
++                          "skipped_sources": skipped, "failed": stats.study_num_parse_failures})
++        report("loading QA model" if pending else "QA complete")
++        if pending:
++            model.ensure_engine_loaded()
++        for start in range(0, len(pending), self.qa_batch_size):
++            batch = pending[start:start + self.qa_batch_size]
++            conversations = [[{"role": "system", "content": system},
++                              {"role": "user", "content": r["source"]["text"] + "\n\n" + instructions}] for r in batch]
++            report("generating QA")
++            began = time.monotonic()
++            outputs = model.engine_chat_many(conversations, chat_kwargs=self._make_engine_chat_kwargs(schema, base_seed + start))
++            stats.study_batch_latencies.append(time.monotonic() - began)
++            if len(outputs) != len(batch):
++                raise RuntimeError("QA engine returned the wrong batch size")
+             new_rows = []
+-            for (index, chunk), output in zip(batch, outputs):
++            for request, output in zip(batch, outputs):
+                 stats.study_prompt_tokens.append(output.prompt_token_count)
+                 stats.study_output_tokens.append(output.output_token_count)
++                questions = []
+                 try:
+-                    qa_pair = json.loads(output.text)
+-                    valuable = bool(qa_pair["has_valuable_question"])
+-                    question = str(qa_pair.get("question") or "").strip()
+-                    answer = str(qa_pair.get("answer") or "").strip()
+-                except (json.JSONDecodeError, KeyError, TypeError):
+-                    # Structured outputs make this rare (e.g. max_tokens cutoff). Not cached: a later pass retries.
++                    result = json.loads(output.text)
++                    seen = set()
++                    for q in result["questions"][:max_questions_per_source]:
++                        question, answer = q["question"].strip(), q["answer"].strip()
++                        try:
++                            # JSON permits lone surrogate escapes; cached/model text must be valid UTF-8.
++                            question.encode("utf-8")
++                            answer.encode("utf-8")
++                        except UnicodeEncodeError:
++                            stats.study_num_parse_failures += 1
++                            continue
++                        refs = sorted(set(q["evidence_indices"]))
++                        if not question or not answer or question.casefold() in seen:
++                            continue
++                        if not refs or any(type(i) is not int or not 0 <= i < len(request["source"]["units"]) for i in refs):
++                            continue
++                        if require_multiple_sources and len(refs) < 2:
++                            continue
++                        seen.add(question.casefold())
++                        questions.append({"question": question, "answer": answer, "evidence_indices": refs})
++                except (ValueError, KeyError, TypeError, AttributeError):
+                     stats.study_num_parse_failures += 1
+-                    continue
+-                if not valuable or not question or not answer:
+-                    stats.study_num_junk_skipped += 1
+-                    new_rows.append({"index": index, "chunk_id": chunk.chunk_id, "junk": True})
+-                    continue
+-                row = {"index": index, "chunk_id": chunk.chunk_id, "question": question, "answer": answer}
++                # Cache empty/failed attempts too: stable source positions across restart.
++                row = dict(request, questions=questions)
++                rows[request["request_id"]] = row
+                 new_rows.append(row)
+-                examples.append(self._example_from_row(row, kind, base_seed))
+-            if key is not None:
++                stats.study_num_junk_skipped += int(not questions)
++            if key:
+                 self.cache.append(key, new_rows)
+-            report(len(cached_rows) + batch_start + len(batch), "generating QA")
+-            if reporting_interval <= 0:
+-                print(
+-                    f"{self.dataset_id} - Study ({kind}): {batch_start + len(batch)}/{len(pending)} chunks, "
+-                    f"{len(examples)} questions, {stats.study_num_junk_skipped} junk. {total_generation_time:.2f}s."
+-                )
+-                reporting_interval = max(1, len(pending) // 20)
+-            reporting_interval -= len(batch)
+-        report(len(study_samples), "QA complete")
++            report("generating QA")
++        examples = []
++        for request in requests:
++            row = rows[request["request_id"]]
++            for child, qa in enumerate(row["questions"]):
++                supports = [row["source"]["units"][i] for i in qa["evidence_indices"]]
++                examples.append(DatasetQAExample(
++                    example_id=f"{self.dataset_id}:study:{row['request_id']}:{child}", dataset_id=self.dataset_id,
++                    query=qa["question"], gold_answers=[qa["answer"]], origin=SYNTHETIC, split=DataSplit.TRAIN,
++                    positive_doc_ids=list(dict.fromkeys(u["doc_id"] for u in supports)),
++                    positive_chunk_ids=list(dict.fromkeys(c for u in supports for c in u["chunk_ids"])),
++                    study_source=dict(row["source"], request_id=row["request_id"])))
++        stats.study_num_cached += len(requests) - len(pending)
++        report("QA complete")
+         return examples
+ 
+ 
+````
+
+</details>
+
+<details class="card" data-tressoir-markdown open>
+  <summary>
+    <span class="card-title"><a href="consolidation/activation/dataset/dataset_study_prompts.py">activation/dataset/dataset_study_prompts.py</a></span>
+    <span class="card-oneliner">One synthesis prompt and response schema; preserve complete study context and the unchanged labeling prompt.</span>
+  </summary>
+
+````diff-python
+diff --git a/activation/dataset/dataset_study_prompts.py b/activation/dataset/dataset_study_prompts.py
+new file mode 100644
+index 0000000..8f63595
+--- /dev/null
++++ b/activation/dataset/dataset_study_prompts.py
+@@ -0,0 +1,101 @@
++"""Small study prompt presets; generation and caching stay in dataset_study."""
++from .dataset import DataModality
++
++LABEL_JSON_SCHEMA = {
++    "type": "object",
++    "properties": {
++        "positives": {"type": "array", "items": {"type": "integer"}},
++        "negatives": {"type": "array", "items": {"type": "integer"}},
++    },
++    "required": ["positives", "negatives"],
++    "additionalProperties": False,
++}
++
++
++
++def make_source_study_prompt(study_context: str | None, modality: DataModality = DataModality.TEXT,
++                             prompt_kind="qa", max_questions=1, require_multiple_sources=False) -> tuple[str, str, dict]:
++    """One response contract for single- and multiple-source study questions."""
++    presets = {
++        "qa": "Ask a concrete question whose answer depends on the supplied evidence.",
++        "code": "Ask about code behavior, a concrete input/output, an API condition, or a dependency. Do not invent missing implementation.",
++        "numeric": "Ask for a short calculation or quantitative conclusion grounded in the supplied numbers; include units in the answer when applicable.",
++        "constraints": "Ask for a decision that applies explicit rules or constraints in the evidence; make all needed conditions available.",
++    }
++    if prompt_kind not in presets:
++        raise ValueError(f"Unknown prompt_kind: {prompt_kind}")
++    system_prompt = """
++# Core Guidelines
++- You are a study/exam-like questions formulator.
++- You are given a snippet from the corpus students are expected to study and understand.
++- From this, your goal is to generate a hard question (unanswerable with common knowledge or simple keyword look ups).
++    - This is IMPORTANT: the question should be **hard**, or it won't test the student's learning.
++    - The question should have an accompanying answer.
++- Your priority is: a hard question along with its expected, correct answer.
++- By default, keep your question short to medium-short unless the exam recommends longer questions.
++- When the snippet holds nothing worth asking about (boilerplate, navigation, an empty listing, pure formatting), return an empty questions array.
++"""
++    if modality == DataModality.TRAJECTORY:
++        system_prompt += """
++# Trajectory Snippets
++- The snippet is part of an agent's conversation: its reasoning, its tool calls and the tool results.
++- Ask about a specific fact that appears in these turns (a value a tool returned, a decision the agent took, an error it saw, a file or quantity it found), phrased so someone who read the turns can answer it.
++- Never ask something answerable from the task statement alone, and never ask about the formatting of the transcript.
++"""
++
++    if study_context:
++        system_prompt += f"""
++# Exam Context
++The following emphasizes the kind of questions students are expected to handle.
++```
++-----
++{study_context}
++-----
++```
++Frame your questions in light of this.
++"""
++    system_prompt += "\n\n" + presets[prompt_kind] + f"\nReturn 0 to {max_questions} distinct, self-contained questions with concise correct answers. Return none for unusable evidence. Do not mention 'the snippet' or its numbering in questions."
++    if require_multiple_sources:
++        system_prompt += " Every question must require combining at least two numbered source units, and cite those units in evidence_indices. Skip if this cannot be done naturally."
++    else:
++        system_prompt += " Cite the source units supporting each answer in evidence_indices."
++    entry = {"type": "object", "properties": {"question": {"type": "string"}, "answer": {"type": "string"},
++             "evidence_indices": {"type": "array", "items": {"type": "integer"}}},
++             "required": ["question", "answer", "evidence_indices"], "additionalProperties": False}
++    schema = {"type": "object", "properties": {"questions": {"type": "array", "items": entry, "maxItems": max_questions}},
++              "required": ["questions"], "additionalProperties": False}
++    return system_prompt, "Return JSON with a questions array; evidence_indices use the zero-based Source numbers.", schema
++
++
++def make_label_prompt() -> tuple[str, str, dict]:
++    """
++    Returns system prompt, instructions and json schema for the snippet labeling task.
++    """
++    system_prompt = """
++# Core Guidelines
++- You are a relevance judge determining what snippets from a corpus students should pay attention to answer a question.
++- You are given the study question, its reference answer, and numbered corpus snippets.
++- Label each snippet index as:
++    - **positive**: the snippet contains information that clearly helps answer the question.
++    - **negative**: the snippet contains information that clearly does not help answer the question.
++    - Leave out anything where you are unsure.
++- Be careful:
++    - The snippets are intentionally chosen to be *related* to the question without necessarily helping.
++    - Don't mark something as positive just because of shared vocabulary.
++- Every listed index must come from the snippet numbering; never list the same index on both sides.
++"""
++    system_prompt += """
++# Response Format
++Your answer must be formatted as a json object of snippet indices like:
++```json
++{
++    "positives": [0, 2],
++    "negatives": [3, 5, 6]
++}
++```
++Each is a list of indexes that should map to one of the given snippet indices.
++"""
++    instructions = """
++Label the snippets as positives / negatives for this question. Leave out ambiguous ones.
++"""
++    return system_prompt, instructions, LABEL_JSON_SCHEMA
+````
+
+</details>

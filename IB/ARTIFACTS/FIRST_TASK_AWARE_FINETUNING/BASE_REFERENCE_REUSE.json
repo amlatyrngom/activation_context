@@ -1,0 +1,34 @@
+[
+  {
+    "source": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+    "destination": "/home/ngom/orcd/pool/activation/taskaware/encoder4b_oracle27b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+    "sha256": "5131a2e319f59e7b0400388b5fde3bc946f7cd19defac1dbdc52f6a5ea1ed0f1",
+    "bytes": 217341397,
+    "identity": {
+      "model": "Qwen/Qwen3.5-9B",
+      "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer": "Qwen/Qwen3.5-9B",
+      "vocab": 248077,
+      "reference": "base_no_context"
+    },
+    "entries": 16000,
+    "top_k": 32,
+    "utc": "2026-09-22T05:53:55.933358+00:00"
+  },
+  {
+    "source": "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r8/AC_MODELS/rag_poc/no_context_reference.pt",
+    "destination": "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+    "sha256": "52e1fa6457659135e72987d5cad77956e2af92ad720bf70f7556ccb0d3e7c71e",
+    "bytes": 210056277,
+    "identity": {
+      "model": "Qwen/Qwen3.5-9B",
+      "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer": "Qwen/Qwen3.5-9B",
+      "vocab": 248077,
+      "reference": "base_no_context"
+    },
+    "entries": 16000,
+    "top_k": 32,
+    "utc": "2026-09-22T05:54:03.253977+00:00"
+  }
+]

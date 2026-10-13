@@ -1,0 +1,58 @@
+{
+  "status": "prepared; CPU checks passed; not staged or submitted",
+  "check_count": 19,
+  "checks": [
+    "Actual615 Adam5250 preparation receipt binds exact own42k final payloads",
+    "Wrong actual optimizer step rejected",
+    "8k actual same-pair reference and scoring order/batch accepted",
+    "8k partial rejected",
+    "8k microbatch rejected",
+    "8k weights rejected",
+    "8k wrong context rejected",
+    "Precision mismatch rejected",
+    "32k actual same-pair reference and scoring order/batch accepted",
+    "32k partial rejected",
+    "32k microbatch rejected",
+    "32k weights rejected",
+    "32k wrong context rejected",
+    "Precision mismatch rejected",
+    "All100 real-tokenizer merged requests preserve shared prompts/tools/gold, whole evidence and total rows; one request each; different AC layout hash",
+    "Changed shared prompt rejected",
+    "Accidental multiple AC requests rejected",
+    "Changed full evidence rejected",
+    "AC100 rehash/publication precedes resumable full decode; final payload rehash retained"
+  ],
+  "actual_tokenizer_questions": 100,
+  "row_summary": {
+    "max_encoder_tokens": 33177,
+    "max_rows": 2074,
+    "max_view_rows": 4096,
+    "cap_cases": 0
+  },
+  "fingerprints": {
+    "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+    "ac_input_fingerprint": "7884ec421e489268f4d33454734e129c3097f6d334db4b97f14de268e715104c",
+    "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb"
+  },
+  "worker_sha256": "b91e3d275f17e1bc0678ca7626bb7436daf41facda90afd87a9d49baf63d9722",
+  "launcher_sha256": "77324f786070b99fc98e31e74daecbf2fc65b6d1c40c25ebd3d2ea2f896ad013",
+  "fixture_sha256": "36c150f7194d360bf158428439de210af3e331246dbd422da77a8df03df1a331",
+  "limitations": "No GPU/model weights; full frozen retrieval independently rebuilt fail-closed in GPU worker; no training/confirmation access.",
+  "candidate_files": [
+    "bench/evaluate_continuation_merged_v1.py",
+    "bench/evaluate_continuation_merged_v1.sbatch"
+  ],
+  "cpu_receipt_sha256": "3086257d61610b39e2303132a1e73c971f052d497b65149c8a9b47a3303c63f6",
+  "primary": "32k merged fixed100 AC first, then own-reader full-context100",
+  "runtime_estimate": {
+    "ac_minutes": [
+      8,
+      12
+    ],
+    "full_answer_phase": "additional several minutes; not yet measured",
+    "wall_minutes": 40,
+    "app_seconds": 2250
+  },
+  "optional": "8k original400/micro2 NLL then same100 AC answers",
+  "future_adaptation": "Own120-stage/Adam5370 mode is not implemented in this frozen parent worker; separate follow-on pending runner/design."
+}

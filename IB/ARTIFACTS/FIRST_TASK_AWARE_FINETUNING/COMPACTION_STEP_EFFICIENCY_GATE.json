@@ -1,0 +1,12 @@
+{
+  "job": "23642896",
+  "worker_sha256": "5d32d979920e0499d7d33615cf8c58f12e021b1d993512476a615e3d3057ffce",
+  "source": "source_v11",
+  "gpu": "H100",
+  "output": "compaction_step_efficiency_h100_v1",
+  "examples": 16,
+  "scope": "Fixedweight gradients/memory +actual logical8 residentAdam updates +separate profiler attribution",
+  "status": "submitted",
+  "cpu_check": "deferredsync exactloss/agreement/logp/hits/gradients",
+  "limits": "Stresssample,notpopulationrate; noquality/resumeclaim"
+}

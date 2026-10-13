@@ -1,0 +1,18 @@
+{
+  "kind": "pi42k_native960_lr_readout_v1",
+  "helper_sha256": {
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "evaluate_pi42k_native960_lr_v1.py": "62a6887f3871fa55dd3ee6cc03c7f25b37089df7302db7a09882164d88a30648",
+    "evaluate_pi42k_native960_lr_v1.sbatch": "08e5bbf649c7e0a98125c4dbe5cafa6a41db2c43b50a58f3ff89d5624176a61d"
+  },
+  "scope": "Own complete960\u00d71/120-stage/all615Adam5370 final of either matched L40S native2k LR diagnostic. FreshAC/full/noctx NLL and100 actual greedyAC answers; no confirmation or RTX metrics reuse.",
+  "training_design": "Separate immutable frozen per-arm design and complete own-publication guards; no training files changed.",
+  "baseline_snapshot": "Copy training_config, training_autotuning, initial_ac_baseline and initial_reader_references under explicit frozen42k labels; all new views use own42960final reader.",
+  "numeric_replay": "Each final view gold-token logp/answerNLL versus own100 finalpanel; unchanged1e-3 absolute gate. Explicitly reuse actual training logits chunk, not free-memory-derived replacement.",
+  "generation": "Existing validated EOS union plusgreedy160-token cap, thinking disabled, complete returnedtokenIDs/EOS/cap metadata and uneditedresponse.",
+  "runtime": "One arm per15min normalL40S/64GiB allocation,840s application bound. Planning estimate5\u201310min; no measured new-final throughput. Partial results require sameidentity explicitresume."
+}

@@ -1,0 +1,35 @@
+{
+  "cpu_prepare_job": "2203708",
+  "queued_utc": "2026-09-24T10:49:41.987406+00:00",
+  "source": "source_v12 unchanged; separately versioned private grouped worker",
+  "files": {
+    "run_trajectory_tasks_grouped_v13.py": "2e6d995ff50971d143e68357dc4a620636173e02fbacc9b038b37b17b8593215",
+    "grouped32_selection_entries.json": "3256f7ebd3913c0dddef0d248e7460279e85eafb653f56eada5deaa934736860",
+    "grouped32_prepare_csail.sbatch": "4457e7a2bf03c66233483ad07894aa37ef31d2477471fd8949e4661e4fd976aa"
+  },
+  "run": "/data/scratch/ngom/activation/trajectory_compaction/grouped32_gate_v13",
+  "purpose": "Prepare only. GPU actual-worker/restart gate waits for2203529 parity result. Not main training.",
+  "review": "No blocking finding; actual encoder counts and post-sort composition now recorded per training micro-group",
+  "data": "32 questions,20 histories; four4-question groups (one short,three near32k),16longsingletons;4held;logical8/micro4;all targets preserved",
+  "scheduler_adjustment": "64G/4CPU unsupported; reverted to previously successful48G/8CPU tig-cpu request",
+  "preparation_result": {
+    "status": "complete",
+    "runtime": "00:01:37",
+    "node": "groenig-2",
+    "examples_checked": 36,
+    "gpu_test": "Not yet submitted; deciding batched-reader variant after2203823"
+  },
+  "restart_driver": {
+    "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/run_grouped_worker_restart_gate.py",
+    "sha256": "a77462fa4c30bf37b40b5745eab995d91a76119fe029e513a1d889240752dc27",
+    "reviewed_utc": "2026-09-24 11:27 UTC",
+    "reviewer": "compaction_teacher_review",
+    "strengthened": [
+      "Exact per-logical-update question coverage,32 distinct IDs,four per micro-group",
+      "Penalty counts and RNG state against seeded32draws",
+      "Frozen aggregate reference hashes alongside raw control panels"
+    ],
+    "limits": "No full weight/moment tensor equality or uninterrupted GPU equivalence claim",
+    "status": "AST checked; GPU execution pending reader-batch choice"
+  }
+}

@@ -7,10 +7,12 @@ or not the reader has an AC model (a truncated output's full text, the semantic-
 top_k, a subagent's final segment). The agent renders them ahead of the content when it has an AC
 model and records them on the tool step either way (`TrajectoryStep.tool_results`), so a base run can
 be converted to an AC-bearing one for training. Parts that compress a segment carry its system message
-first and its tool definitions; a tool-output or search part nests the parent's segment the same way.
+first and its tool definitions. No part holds another part (09-26): segment parts carry the agent's flattened view,
+a tool-output part the call and its full output, a search part the extra passages then the query as the question.
 """
 from __future__ import annotations
 
+import json
 import re
 import typing as t
 import uuid
@@ -18,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 
-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part
+from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, COMPACTION_SUMMARY_PROMPT, activation_part
 
 if t.TYPE_CHECKING:
     from .agent_config import AgentConfig, AgentRunResult
@@ -29,8 +31,10 @@ if t.TYPE_CHECKING:
 TOOL_OUTPUT_LIMIT_CHARS = 20_000
 AC_OUTPUT_LIMIT_CHARS = 4 * TOOL_OUTPUT_LIMIT_CHARS   # kept as activation context (and written to the env file): 4x what the model sees, head and tail beyond
 TOOL_OUTPUT_DIR = "/tmp/agent_outputs"
+TOOL_CALL_ARGUMENTS_CHARS = 2_000                    # the call as shown in a tool_output part
 SEARCH_EXTRA_MAX = 20                                 # passages beyond top_k that ride as activation context: min(this, 2 * top_k)
 SUBAGENT_INTRO = "A parent agent spawned you. Its conversation so far may precede this note as activation context. Your task follows."
+SUBAGENT_TEXT_INTRO = "A parent agent spawned you; its conversation is not shown to you. Your task follows."   # a child without an AC model
 SUBAGENT_TASK_FORMAT = (
     "A self-contained brief for the subagent, which sees none of your context. Write it as:\n"
     "TASK:\n- what to do, with every fact, path and constraint it needs\n"
@@ -147,11 +151,11 @@ def injected_content(injected: list[dict], render: "t.Callable[[list[dict]], lis
 
 
 def truncate_output(env: "AgentEnv | None", text: str, call_id: str, limit: int = TOOL_OUTPUT_LIMIT_CHARS,
-                    agent: "Agent | None" = None) -> tuple[str, dict | None]:
+                    call: dict | None = None) -> tuple[str, dict | None]:
     """
-    Head + tail of a long output; the full text goes to a file in the env and, with an agent given, into an
-    activation part (kind tool_output: the full text as a tool message, nested with the parent's current
-    segment). Returns (visible text, part or None). The part is produced whether or not the agent has an
+    Head + tail of a long output; the full text goes to a file in the env and, with the tool call given, into an
+    activation part (kind tool_output: the call as a user message, then the full text as a tool message; flat, no
+    parent context). Returns (visible text, part or None). The part is produced whether or not the agent has an
     AC model: the agent renders it when it has one and records it either way.
     """
     if len(text) <= limit:
@@ -164,9 +168,13 @@ def truncate_output(env: "AgentEnv | None", text: str, call_id: str, limit: int 
     half = limit // 2
     note = f"full output written to {path}" if written else "full output kept as activation context"
     truncated = f"{text[:half]}\n... [truncated {len(text) - limit} chars; {note}] ...\n{text[-half:]}"
-    if agent is None:
+    if call is None:
         return truncated, None
-    return truncated, activation_part("tool_output", agent.nested_in_context({"role": "tool", "content": text}))
+    arguments = json.dumps(call.get("arguments") or {}, ensure_ascii=False)
+    if len(arguments) > TOOL_CALL_ARGUMENTS_CHARS:                                  # e.g. a write_file body: the call names it, the output is the part
+        arguments = arguments[:TOOL_CALL_ARGUMENTS_CHARS] + f"... [{len(arguments) - TOOL_CALL_ARGUMENTS_CHARS} chars]"
+    request = f"Tool call: {call.get('name')}({arguments})"
+    return truncated, activation_part("tool_output", [{"role": "user", "content": request}, {"role": "tool", "content": text}])
 
 
 class AgentTool:
@@ -354,8 +362,10 @@ class SemanticSearchTool(AgentTool):
 
         output = blocks(chunks[:k])
         activation = []
-        if chunks[k:]:
-            activation = [activation_part("search", self.agent.nested_in_context({"role": "tool", "content": blocks(chunks[k:])}))]
+        if chunks[k:]:                                        # the trained contextual RAG view: numbered passages, then the query as the question
+            from activation.ac_model.ac_model_utils import qa_encoder_messages
+            passages = "\n\n".join(f"Passage {number}:\n{index.get_chunk_section(chunk)[:self.max_chars]}" for number, chunk in enumerate(chunks[k:], start=1))
+            activation = [activation_part("search", qa_encoder_messages([{"role": "user", "content": passages}], query, None, None))]
         return ToolCallResult(output=output, activation_content=activation)
 
 
@@ -429,16 +439,25 @@ class SubagentTool(AgentTool):
             seed=parent.seed,
         )
         subagent.step_mode = parent.step_mode
-        subagent.augment_context(ToolCallResult(tool="parent", output=SUBAGENT_INTRO,
-                                                activation_content=[parent.to_activation_context("subagent_prompt")]))
+        try:
+            inherited = [parent.to_activation_context("subagent_prompt")]
+        except ValueError as error:                                    # a part over its guard: the brief alone
+            print(f"Agent {parent.agent_id} - subagent prompt part refused: {error}", flush=True)
+            inherited = []
+        subagent.augment_context(ToolCallResult(tool="parent", output=SUBAGENT_INTRO if subagent.ac_model is not None and inherited else SUBAGENT_TEXT_INTRO,
+                                                activation_content=inherited))
         result = subagent.simulated_run() if parent.step_mode else subagent.run()
         with parent.lock:
             parent.run_results.subagent_results.append(result)
             index = len(parent.run_results.subagent_results) - 1
         output = (f"Subagent finished ({result.finish_reason}, {result.num_turns} turns). "
                   f"Answer: {result.answer if result.answer is not None else '(none)'}")
-        return ToolCallResult(output=output, is_error=result.finish_reason == "error", subagent_index=index,
-                              activation_content=[subagent.to_activation_context("subagent_return")])
+        try:
+            returned = [subagent.to_activation_context("subagent_return")]
+        except ValueError as error:                                    # never lose the finished child's answer over its part
+            print(f"Agent {parent.agent_id} - subagent return part refused: {error}", flush=True)
+            returned = []
+        return ToolCallResult(output=output, is_error=result.finish_reason == "error", subagent_index=index, activation_content=returned)
 
 
 class CompactionTool(AgentTool):
@@ -451,11 +470,11 @@ class CompactionTool(AgentTool):
     threshold is reached (Agent.COMPACTION_DEMAND) and refuses every other call until then.
     """
     name = "compact"
-    description = ("Compact the conversation so far: write a summary of what was done, what was learned and what remains, "
-                   "then continue from it. Call it alone, without other tools, when asked to compact.")
+    description = ("Compact the conversation so far. Call it alone, without other tools, when asked to compact.\n\n"
+                   + COMPACTION_SUMMARY_PROMPT)
     parameters = {
         "type": "object",
-        "properties": {"summary": {"type": "string", "description": "A complete summary of the work so far for your future self."}},
+        "properties": {"summary": {"type": "string", "description": "A handoff using the five sections above."}},
         "required": ["summary"],
     }
 

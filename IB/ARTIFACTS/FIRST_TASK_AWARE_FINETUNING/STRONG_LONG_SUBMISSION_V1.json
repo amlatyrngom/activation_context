@@ -1,0 +1,26 @@
+{
+  "submitted_utc": "2026-09-23T00:27:48.400709Z",
+  "status": "released",
+  "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+  "jobs": {
+    "training": 23514939,
+    "initial8k": 23514943,
+    "initial2k": 23514945,
+    "initial32k": 23514946,
+    "final8k": 23514947,
+    "final2k": 23514948,
+    "final32k": 23514951
+  },
+  "resource": "All jobs use mit_preemptable RTX, whose four-GPU user cap bounds this campaign. No normal GPU jobs submitted.",
+  "initial_readout_order": "Initial8k waits after current4k passagewise training finishes; then2k,then32k. Operational slot sharing only. Final readouts wait for own training and matching initial readout.",
+  "released_jobs": [
+    23514939,
+    23514943,
+    23514945,
+    23514946,
+    23514947,
+    23514948,
+    23514951
+  ],
+  "released_utc": "2026-09-23T00:28:15.277354Z"
+}

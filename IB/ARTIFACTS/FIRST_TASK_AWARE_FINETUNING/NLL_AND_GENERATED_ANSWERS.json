@@ -1,0 +1,79 @@
+{
+  "utc": "2026-09-22T09:37:16.304483+00:00",
+  "scope": "Exploratory fixed100 development cohort; same87 source-supported references; agent annotations, one seed. No calibrated threshold or confirmation evidence. Correct versus all other content judgments, independent of tool-call format.",
+  "evidence_sha256": "d15a095ba179aca594443ee6d5377b59d9e8b01547e70ae28b6f37af04b3310a",
+  "conditions": {
+    "p2_full": {
+      "label": "Frozen P2 \u00b7 full context",
+      "correct": 78,
+      "other": 9,
+      "median_correct_nll": 0.548445474137931,
+      "median_other_nll": 0.7182080000000001,
+      "lower_nll_pairwise_correct_probability": 0.5769230769230769,
+      "gold_nll_all100": 0.7280517874071815
+    },
+    "p2_none": {
+      "label": "Frozen P2 \u00b7 no context",
+      "correct": 15,
+      "other": 72,
+      "median_correct_nll": 1.40548,
+      "median_other_nll": 1.6411588157894736,
+      "lower_nll_pairwise_correct_probability": 0.6444444444444445,
+      "gold_nll_all100": 1.8098375734749752
+    },
+    "27b_r16": {
+      "label": "27B supervision \u00b7 2B encoder \u00b7 1/16",
+      "correct": 66,
+      "other": 21,
+      "median_correct_nll": 0.3560425,
+      "median_other_nll": 1.05745,
+      "lower_nll_pairwise_correct_probability": 0.7936507936507936,
+      "gold_nll_all100": 0.6364505526458305
+    },
+    "27b_r8": {
+      "label": "27B supervision \u00b7 2B encoder \u00b7 1/8",
+      "correct": 51,
+      "other": 36,
+      "median_correct_nll": 0.31039,
+      "median_other_nll": 0.8513166666666667,
+      "lower_nll_pairwise_correct_probability": 0.8099128540305011,
+      "gold_nll_all100": 0.6790677748748307
+    },
+    "9b_r16": {
+      "label": "9B supervision \u00b7 2B encoder \u00b7 1/16",
+      "correct": 52,
+      "other": 35,
+      "median_correct_nll": 0.36050378151260504,
+      "median_other_nll": 0.703025,
+      "lower_nll_pairwise_correct_probability": 0.7664835164835165,
+      "gold_nll_all100": 0.6702626881569981
+    },
+    "9b_r8": {
+      "label": "9B supervision \u00b7 2B encoder \u00b7 1/8",
+      "correct": 55,
+      "other": 32,
+      "median_correct_nll": 0.34422608695652174,
+      "median_other_nll": 0.7839812500000001,
+      "lower_nll_pairwise_correct_probability": 0.8113636363636364,
+      "gold_nll_all100": 0.657415138259293
+    },
+    "p4_full": {
+      "label": "Frozen P4 \u00b7 full context",
+      "correct": 80,
+      "other": 7,
+      "median_correct_nll": 0.556526225045372,
+      "median_other_nll": 0.690064,
+      "lower_nll_pairwise_correct_probability": 0.5303571428571429,
+      "gold_nll_all100": 0.7244440619387451
+    },
+    "p4_none": {
+      "label": "Frozen P4 \u00b7 no context",
+      "correct": 18,
+      "other": 69,
+      "median_correct_nll": 1.1836355555555556,
+      "median_other_nll": 1.72227,
+      "lower_nll_pairwise_correct_probability": 0.6706924315619968,
+      "gold_nll_all100": 1.7817017332508651
+    }
+  }
+}

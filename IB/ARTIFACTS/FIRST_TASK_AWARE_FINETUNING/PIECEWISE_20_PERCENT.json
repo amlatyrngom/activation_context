@@ -1,0 +1,49 @@
+{
+  "control": "merged_27b_4k_8k",
+  "candidate": "piecewise_27b_4k_8k",
+  "training_exposure": "4,000 unique questions \u00d7 0.2 epochs",
+  "training_exposure_by_arm": {
+    "merged_27b_4k_8k": "4,000 unique questions \u00d7 0.2 epochs",
+    "piecewise_27b_4k_8k": "4,000 unique questions \u00d7 0.2 epochs"
+  },
+  "panel_sha256": {
+    "merged_27b_4k_8k": "81104917114d7150d63dfced4f5e4a0dbcb6ab1ca040ba8c04b0b9446a3dd469",
+    "piecewise_27b_4k_8k": "52346dc5f9269cc2fa64800050e38541ef1dd01ad8e41228db40ff3bcf198198"
+  },
+  "cohorts": {
+    "9b": {
+      "control_nll": 1.50980497175895,
+      "candidate_nll": 1.2879930651507623,
+      "candidate_minus_control": -0.22181190660818742,
+      "paired_question_bootstrap_95": [
+        -0.2857813410180854,
+        -0.16516815376613297
+      ],
+      "questions_lower_with_candidate": 136,
+      "questions": 200
+    },
+    "27b": {
+      "control_nll": 1.2279192876003429,
+      "candidate_nll": 1.041928899225059,
+      "candidate_minus_control": -0.18599038837528376,
+      "paired_question_bootstrap_95": [
+        -0.2441454369504276,
+        -0.12942055866596258
+      ],
+      "questions_lower_with_candidate": 122,
+      "questions": 200
+    },
+    "all400": {
+      "control_nll": 1.3688621296796464,
+      "candidate_nll": 1.1649609821879108,
+      "candidate_minus_control": -0.20390114749173555,
+      "paired_question_bootstrap_95": [
+        -0.24843387906317926,
+        -0.16273280349583796
+      ],
+      "questions_lower_with_candidate": 258,
+      "questions": 400
+    }
+  },
+  "scope": "Exploratory DEVELOPMENT comparison; one training seed. Question bootstrap omits source clustering and seed variance. Repeated checkpoint looks are not independent tests."
+}

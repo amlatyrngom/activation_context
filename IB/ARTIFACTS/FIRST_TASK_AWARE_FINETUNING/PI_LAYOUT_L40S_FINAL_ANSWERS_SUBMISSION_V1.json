@@ -1,0 +1,10 @@
+{
+  "utc": "2026-09-23T16:30:09.796843Z",
+  "status": "released",
+  "parent_accounting": "23555091|COMPLETED|0:0\n",
+  "scope": "Unchanged same-L40S layout evaluator resume:88/100answers retained;12remaining; priorNLL retained, own immutable control snapshot reused.",
+  "floor_held": true,
+  "job_id": 23557550,
+  "floor_dependency": "afterany:23557550",
+  "floor_released": true
+}

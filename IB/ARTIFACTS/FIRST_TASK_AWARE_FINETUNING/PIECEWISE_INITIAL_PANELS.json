@@ -1,0 +1,26 @@
+{
+  "checked_utc": "2026-09-22T20:22:09.023156+00:00",
+  "panels": {
+    "piecewise_27b_4k_8k": {
+      "update": 0,
+      "percent": 0.0,
+      "held items": 400,
+      "AC answer NLL": 3.1728804654430274,
+      "full answer NLL": 0.7738224639919301,
+      "no-context answer NLL": 1.7922518564882832,
+      "training answer NLL": 2.8339111806767345,
+      "panel seconds": 359.7
+    },
+    "merged_27b_4k_8k": {
+      "update": 0,
+      "percent": 0.0,
+      "held items": 400,
+      "AC answer NLL": 2.107899064166723,
+      "full answer NLL": 0.7738224639919301,
+      "no-context answer NLL": 1.7922518564882832,
+      "training answer NLL": 1.855949029192667,
+      "panel seconds": 335.4
+    }
+  },
+  "interpretation": "Frozen full/no-context controls match exactly. These are untrained QA baselines from P2, not trained layout outcomes."
+}

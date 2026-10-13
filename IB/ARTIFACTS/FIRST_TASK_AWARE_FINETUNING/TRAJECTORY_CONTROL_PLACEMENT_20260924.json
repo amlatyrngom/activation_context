@@ -1,0 +1,14 @@
+{
+  "utc": "2026-09-24 11:37 UTC",
+  "jobs": [
+    23639898,
+    23640218
+  ],
+  "change": "Pending Gres requests changed from gpu:l40s:1 to gpu:h100:1 using scontrol; job records verified",
+  "purpose": "Use alternate H100 pool for the queued ratio8 and compaction-to-QA controls",
+  "unchanged": [
+    "frozen scripts/source/weights/selections",
+    "ratio8 then crossQA dependency",
+    "80G CPU memory,8CPU,30m\u20132h allocation"
+  ]
+}

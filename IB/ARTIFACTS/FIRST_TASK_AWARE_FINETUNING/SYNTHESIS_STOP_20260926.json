@@ -1,0 +1,21 @@
+{
+  "requested_utc": "2026-09-26T12:45:54.543972+00:00",
+  "user_authorized_stop": true,
+  "orcd": {
+    "job": 23864529,
+    "pause_marker": "/home/ngom/orcd/scratch/activation/teacher_mit_runtime_v1/PAUSE",
+    "requeue_disabled": true,
+    "signal": "USR1 to batch shell; native worker drains current <=600s rollout block and exports",
+    "state": "COMPLETED 0:0 after graceful drain/export",
+    "active_jobs": 0
+  },
+  "csail": {
+    "job": 2324096,
+    "state": "already ended with75 at campaign deadline",
+    "pause_marker": "/data/scratch/ngom/activation/teacher_quanta_runtime_v1/PAUSE",
+    "active_jobs": 0
+  },
+  "training_started": false,
+  "verified_utc": "2026-09-26T12:51:32Z",
+  "all_synthesis_stopped": true
+}

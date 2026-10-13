@@ -1,0 +1,49 @@
+{
+  "checked_utc": "2026-09-23T01:17:29.719773Z",
+  "old_states": {
+    "23510985": "PREEMPTED",
+    "23510986": "CANCELLED",
+    "23510987": "CANCELLED"
+  },
+  "marker": {
+    "epoch_number": 1,
+    "step": 400,
+    "steps": 500,
+    "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00400",
+    "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00400"
+  },
+  "payload_sizes": {
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/optimizer.pt": 4676641912,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/ac_modules.pt": 1208881673,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_model.safetensors": 349204488,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_model.safetensors": 931173960
+  },
+  "hashes": {
+    "train_piecewise_v2.sbatch": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+    "run_qa_piecewise_v2.py": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+    "evaluate_piecewise_cohort_v3.sbatch": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+    "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30"
+  },
+  "new_jobs": {
+    "merged_train": {
+      "job": 23517701,
+      "dependency": null
+    },
+    "merged_8k": {
+      "job": 23517702,
+      "dependency": 23517701
+    },
+    "merged_32k": {
+      "job": 23517703,
+      "dependency": 23517702
+    }
+  },
+  "released": [
+    23517701,
+    23517702,
+    23517703
+  ],
+  "scientific_settings": "Unchanged V2; saved 3200 questions, original optimizer/order/500-update schedule. No new training occurred in the interrupted resume.",
+  "placement": "Exclude node5104 for recovery training after two recent early preemptions. Other experiment settings unchanged.",
+  "status": "all replacements released"
+}

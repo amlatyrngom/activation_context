@@ -1,0 +1,1052 @@
+{
+  "data_2k_4ep": {
+    "0": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.654044439715999
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.739562477736947
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 4.359829057359308
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.3756155027686403
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 2.191275687773824
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.451612851051025
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 2.049355693843194
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.6049323620645417
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 2.2471002303351773
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.989415734712836
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.0241060060787086
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 1.0497239097967248
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.8200207302424
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.6675839689142388
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4949388523432645
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.0172875281084657
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.5800787654039281
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.8938719194636306
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.2575543012944803
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.2892994081700797
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.5548505132693395
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.047516888487848
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.598499217347727
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2034777734688498
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.9886680787037037
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.132240931640712
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8250189575158149
+        }
+      }
+    },
+    "500": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 1.1162452547284845
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.176859846833735
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 1.1069927775268211
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.2810208927776532
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.8261887384261017
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.42651046864265496
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.7637868297558922
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.2932821322652166
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.5934982190901361
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.8106768484005477
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.8660083018274958
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9934528776585733
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.7359551412639252
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.5470227443203763
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4435736046045369
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.8006769109247234
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.5181773340837214
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.8000928455846305
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.306939634916006
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.3482938831427167
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.7108762493412386
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0523711864998617
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.6429856027994552
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2039475392887784
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.989730410654161
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.1390201484297533
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.815172083454783
+        }
+      }
+    },
+    "1000": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 1.2289024970325078
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.223489144235727
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9785200441370223
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.4508078018699389
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.8833464913606884
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.3624139998900201
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.8587894322691197
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.376147093751964
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.7505143387288619
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.7914783121708534
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.8376153515610061
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9538368394504045
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.7056759943213505
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.5334104910533235
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4394706540870947
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.7469666354016353
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.5066657454677729
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.7751915859540068
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.3058364184928855
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.3360321275815217
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.631420948851873
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0154503126941283
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.6142632481292338
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.1961904155741867
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.964420574795575
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.1143320553952267
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8008042528142112
+        }
+      }
+    }
+  },
+  "data_4k_2ep": {
+    "0": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.654044439715999
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.739562477736947
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 4.359829057359308
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.3756155027686403
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 2.191275687773824
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.451612851051025
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 2.049355693843194
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.6049323620645417
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 2.2471002303351773
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.989415734712836
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.0241060060787086
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 1.0497239097967248
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.8200207302424
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.6675839689142388
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4949388523432645
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.0172875281084657
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.5800787654039281
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.8938719194636306
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.2575543012944803
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.2892994081700797
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.5548505132693395
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.047516888487848
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.598499217347727
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2034777734688498
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.9886680787037037
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.132240931640712
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8250189575158149
+        }
+      }
+    },
+    "500": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 1.2609303944790489
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.171113148584422
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9584974952004517
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.2569267301222338
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.8741638799597653
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.518153895438889
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.8609128078403079
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.1935435530690088
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.6564345327112717
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.6670117948773914
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.7018420733207623
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9398426359872012
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.6607915636625256
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.4780072409304527
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.408919324164309
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.635013643879269
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.4681912926628871
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.7334791526490776
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.3335096748552435
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.334503776905251
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.637991401656315
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0305467404461504
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.628875582205854
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.219037886826693
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.9733817953342954
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.1850751809702595
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8226964919057096
+        }
+      }
+    },
+    "1000": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.9983478375012992
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.00134590269674
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.8192824920007528
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.2297610561862014
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.7654083012070175
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.3904177293919937
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.5737933035714285
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.1848346513759298
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.6218077098979334
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.7169027511233022
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.7631126272205125
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9293714928477319
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.694210550301181
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.5099716883877715
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4334597606175971
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.7042440303330929
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.4937422932919987
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.762085600518264
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.3142463591645823
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.321717938264339
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.570708196499153
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0239627221170644
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.6101876803910071
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.1995828386609662
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.963062392075517
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.150610202643794
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8022154054271469
+        }
+      }
+    }
+  },
+  "data_8k_1ep": {
+    "0": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.654044439715999
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.739562477736947
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 4.359829057359308
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.3756155027686403
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 2.191275687773824
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.451612851051025
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 2.049355693843194
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.6049323620645417
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 2.2471002303351773
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.989415734712836
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.0241060060787086
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 1.0497239097967248
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.8200207302424
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.6675839689142388
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4949388523432645
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.0172875281084657
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.5800787654039281
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.8938719194636306
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.2575543012944803
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.2892994081700797
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.5548505132693395
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.047516888487848
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.598499217347727
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2034777734688498
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.9886680787037037
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.132240931640712
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8250189575158149
+        }
+      }
+    },
+    "500": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 1.0779655115433706
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.0151404973667686
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.9360156800301148
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.217647563331506
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.767388294514952
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4947634523297195
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.745932025913901
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.1546477055710545
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.6019482566240317
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.6734068525910056
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.6875647311853398
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.8728702380481836
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.6702059561790801
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.46355713612810595
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.3922065564359802
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.641997187950938
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.4589515602064657
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.70081864942587
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.2813393459934406
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.276804894074413
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.5404817123564842
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0242699263406316
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.5883362744000908
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2029315404952394
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.9155687094155844
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.1570968270661677
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.7857487623563688
+        }
+      }
+    },
+    "1000": {
+      "held AC": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.8889183363813521
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 1.0035114614186975
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.8459115560888387
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 1.2794775833167302
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.6712181452976501
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.47347292261163104
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.5852079691257817
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 1.0725274945607173
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.550514474923025
+        }
+      },
+      "held full context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 0.6783019594097663
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 0.687120650928443
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 0.8533959522397891
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 0.6550407699224214
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 0.46486110802505515
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 0.4068721259502965
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 0.674751604587542
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 0.4631392110690687
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 0.7190814984570206
+        }
+      },
+      "held no context": {
+        "code": {
+          "questions": 60,
+          "answer_nll": 2.3211822582426667
+        },
+        "documents": {
+          "questions": 16,
+          "answer_nll": 2.3082219627533633
+        },
+        "financial": {
+          "questions": 10,
+          "answer_nll": 2.5446159698381328
+        },
+        "legal": {
+          "questions": 12,
+          "answer_nll": 2.0178181242881608
+        },
+        "math_arxiv": {
+          "questions": 24,
+          "answer_nll": 1.6185911092110519
+        },
+        "math_textbook": {
+          "questions": 16,
+          "answer_nll": 1.2328347805579172
+        },
+        "office": {
+          "questions": 12,
+          "answer_nll": 1.971498766684704
+        },
+        "technical_web": {
+          "questions": 10,
+          "answer_nll": 2.1870028384701117
+        },
+        "web": {
+          "questions": 40,
+          "answer_nll": 1.8120119717568444
+        }
+      }
+    }
+  }
+}

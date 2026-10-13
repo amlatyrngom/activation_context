@@ -1,0 +1,57 @@
+{
+  "status": "prepared_v2_chunk_policy_fixed_cpu_validated_no_submission",
+  "checks": 39,
+  "files_sha256": {
+    "evaluate_pi42k_merged32k_orcd_h200_v1.sbatch": "39757549a250c9f375c41e407666994640aae12cba1386464b60ed5a9b9ef60c",
+    "PI42K_MERGED32K_ORCD_H200_READOUT_MANIFEST_V1.json": "180694031840e9a11f942bb97f2ae52d7d28ef82f53a913ce01bfa38b0ab52a6",
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "PI42K_MERGED32K_FRESH960_ORCD_H200_DESIGN_V1.json": "e4c9bc3a2ea703b5450f17d0ebfa2c3fc69cbb236f9c2c9b2ee6ba064a328698",
+    "evaluate_pi42k_merged32k_v2.py": "211ab983df6c3db6df2b0a230ff20708a4166f8f5abeec2b04fb3485d3d8b5fc"
+  },
+  "checks_sha256": "00206940b1e3dc71db35da1c1c70b97943e8c7980c1831f2f486cd77b04a33c3",
+  "submission_proposal_argv": [
+    "sbatch",
+    "--parsable",
+    "--hold",
+    "--dependency=afterok:23558386",
+    "--export=ALL,HF_HOME=/home/ngom/orcd/scratch/activation/hf",
+    "--output",
+    "/home/ngom/orcd/pool/activation/taskaware/logs/pi960_h200_final100_%j.log",
+    "/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_pi42k_merged32k_orcd_h200_v1.sbatch",
+    "/home/ngom/orcd/pool/activation/taskaware/bench/PI42K_MERGED32K_FRESH960_ORCD_H200_DESIGN_V1.json"
+  ],
+  "dependency_training_job": 23558386,
+  "science_delta": "VersionedV2 evaluator explicitly binds allthree cells to completed training_result.autotuning.logits_chunk_tokens, checks resolved equality and records it in identity/runtime policy. All existing final/pair/input guards, decoder and1e-3 replay gates unchanged.",
+  "run_root": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1",
+  "source_root": "/home/ngom/orcd/pool/activation/taskaware/train_ws_night_v1",
+  "bench_root": "/home/ngom/orcd/pool/activation/taskaware/bench",
+  "remote_output": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1/reports/pi42k_merged32k_orcd_h200_cohort100",
+  "three_cells": [
+    {
+      "checkpoint": "final",
+      "context": "32k",
+      "seconds": 1850
+    },
+    {
+      "checkpoint": "parent42k",
+      "context": "2k",
+      "seconds": 300
+    },
+    {
+      "checkpoint": "final",
+      "context": "2k",
+      "seconds": 300
+    }
+  ],
+  "reservation": "mit_preemptable,H2001,CPU8,host64GiB,45min,no-requeue",
+  "final_guard": "Only own complete120-stage epoch001 AC/reader pair, all615Adam5370, exact960/100 identities and ownfinalpanel replay; afterok alone cannot accept a duration-limited partial.",
+  "no_remote_calls": true,
+  "no_submission": true,
+  "autotuner_finding": "Current automatic logits chunk depends on live CUDA free memory (free/16 capped2GiB then rounded down to power2); explicit config wins. Training resolves before Adam restore too, so freeing Adam alone does not prove an actual mismatch; none observed. Saved-policy binding removes uncertainty.",
+  "original_files_unchanged": {
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+    "PI42K_MERGED32K_READOUT_MANIFEST_V1.json": "52441eea5c793db394ce867cc6de35f44666e98ab77233e57efe406640d141b6",
+    "PI42K_MERGED32K_FRESH960_ORCD_H200_DESIGN_V1.json": "e4c9bc3a2ea703b5450f17d0ebfa2c3fc69cbb236f9c2c9b2ee6ba064a328698"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "control": "oracle_27b_16k_r16",
+  "candidate": "encoder4b_oracle27b_16k_r16",
+  "training_exposure": "16,000 unique questions \u00d7 1 passes",
+  "panel_sha256": {
+    "oracle_27b_16k_r16": "53d35f9764e6ee5a8c86287c906d86dcefb69ad8fbeda1ca78db135cfd4c04f8",
+    "encoder4b_oracle27b_16k_r16": "5e11f99446ecc7a08f65412a4c544ba041ff380969863c109fc9e935929e8b92"
+  },
+  "cohorts": {
+    "9b": {
+      "control_nll": 0.6429122099595753,
+      "candidate_nll": 0.6048204543115636,
+      "candidate_minus_control": -0.03809175564801163,
+      "paired_question_bootstrap_95": [
+        -0.0852641111390028,
+        0.006993508868955198
+      ],
+      "questions_lower_with_candidate": 107,
+      "questions": 200
+    },
+    "27b": {
+      "control_nll": 0.5636154620988427,
+      "candidate_nll": 0.562180435270678,
+      "candidate_minus_control": -0.0014350268281646949,
+      "paired_question_bootstrap_95": [
+        -0.03208141789834622,
+        0.031127039136467867
+      ],
+      "questions_lower_with_candidate": 108,
+      "questions": 200
+    },
+    "all400": {
+      "control_nll": 0.603263836029209,
+      "candidate_nll": 0.5835004447911207,
+      "candidate_minus_control": -0.01976339123808816,
+      "paired_question_bootstrap_95": [
+        -0.04793344808884702,
+        0.007735163151536967
+      ],
+      "questions_lower_with_candidate": 215,
+      "questions": 400
+    }
+  },
+  "scope": "Exploratory DEVELOPMENT comparison; one training seed. Question bootstrap omits source clustering and seed variance. Repeated checkpoint looks are not independent tests."
+}

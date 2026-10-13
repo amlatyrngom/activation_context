@@ -1,0 +1,2070 @@
+{
+  "status": "completed development answer review",
+  "training": "32,000 unique parent questions +8,000 fresh questions ×1 pass at8k; fresh Adam;40,000 lifetime unique",
+  "views": {
+    "8k": {
+      "status": "All100 new actual answers manually reviewed",
+      "view": "final40k_8k",
+      "label": "40,000 unique questions ×1 pass; 32k parent +8k fresh at8k, fresh Adam; actual8k evidence",
+      "indexing": "Zero-based machine indices; human item number is index+1",
+      "review_method": "Read all actual replies against each question, frozen source annotation and supplied required source; reopened full supplied evidence for boundary assertions/competing announcements. Semantic equivalence, material omissions and unsupported additions determine labels. No outside judge, NLL-based scoring, source relabeling or all-distractor audit.",
+      "reference_split": {
+        "supported": 87,
+        "fixed_concerns": 13,
+        "fixed_concern_indices": [
+          0,
+          6,
+          19,
+          25,
+          27,
+          29,
+          36,
+          67,
+          76,
+          84,
+          85,
+          89,
+          95
+        ]
+      },
+      "counts": {
+        "all100": {
+          "final40k_8k": {
+            "partial": 15,
+            "correct": 69,
+            "incorrect": 14,
+            "ambiguous": 2
+          }
+        },
+        "supported87": {
+          "final40k_8k": {
+            "correct": 65,
+            "partial": 13,
+            "incorrect": 9
+          }
+        },
+        "fixed_concerns13": {
+          "final40k_8k": {
+            "partial": 2,
+            "correct": 4,
+            "incorrect": 5,
+            "ambiguous": 2
+          }
+        }
+      },
+      "per_generator": {
+        "9b": {
+          "all_denominator": 50,
+          "supported_denominator": 42,
+          "all": {
+            "final40k_8k": {
+              "correct": 38,
+              "incorrect": 4,
+              "partial": 7,
+              "ambiguous": 1
+            }
+          },
+          "supported": {
+            "final40k_8k": {
+              "correct": 35,
+              "incorrect": 1,
+              "partial": 6
+            }
+          }
+        },
+        "27b": {
+          "all_denominator": 50,
+          "supported_denominator": 45,
+          "all": {
+            "final40k_8k": {
+              "partial": 8,
+              "correct": 31,
+              "incorrect": 10,
+              "ambiguous": 1
+            }
+          },
+          "supported": {
+            "final40k_8k": {
+              "correct": 30,
+              "partial": 7,
+              "incorrect": 8
+            }
+          }
+        }
+      },
+      "paired": {
+        "initial32k_8k": {
+          "all100": {
+            "denominator": 100,
+            "both_correct": [
+              1,
+              2,
+              3,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              19,
+              26,
+              28,
+              29,
+              30,
+              32,
+              33,
+              34,
+              36,
+              38,
+              39,
+              41,
+              43,
+              44,
+              47,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              66,
+              68,
+              70,
+              71,
+              72,
+              73,
+              75,
+              77,
+              80,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97,
+              99
+            ],
+            "only_new_correct": [
+              4,
+              6,
+              22,
+              31,
+              35,
+              45,
+              46,
+              64,
+              69,
+              74,
+              79,
+              87
+            ],
+            "only_baseline_correct": [
+              18,
+              37,
+              55,
+              56
+            ],
+            "neither_correct": [
+              0,
+              7,
+              8,
+              11,
+              20,
+              21,
+              23,
+              24,
+              25,
+              27,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              67,
+              76,
+              78,
+              81,
+              83,
+              84,
+              85,
+              89,
+              94,
+              95,
+              98
+            ],
+            "net_correct_gain": 8,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 9,
+              "correct -> correct": 57,
+              "incorrect -> correct": 6,
+              "partial -> correct": 5,
+              "incorrect -> incorrect": 13,
+              "correct -> partial": 4,
+              "partial -> incorrect": 1,
+              "ambiguous -> correct": 1,
+              "incorrect -> partial": 2,
+              "ambiguous -> ambiguous": 2
+            }
+          },
+          "supported87": {
+            "denominator": 87,
+            "both_correct": [
+              1,
+              2,
+              3,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              26,
+              28,
+              30,
+              32,
+              33,
+              34,
+              38,
+              39,
+              41,
+              43,
+              44,
+              47,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              66,
+              68,
+              70,
+              71,
+              72,
+              73,
+              75,
+              77,
+              80,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97,
+              99
+            ],
+            "only_new_correct": [
+              4,
+              22,
+              31,
+              35,
+              45,
+              46,
+              64,
+              69,
+              74,
+              79,
+              87
+            ],
+            "only_baseline_correct": [
+              18,
+              37,
+              55,
+              56
+            ],
+            "neither_correct": [
+              7,
+              8,
+              11,
+              20,
+              21,
+              23,
+              24,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              78,
+              81,
+              83,
+              94,
+              98
+            ],
+            "net_correct_gain": 7,
+            "transitions_baseline_to_new": {
+              "correct -> correct": 54,
+              "incorrect -> correct": 6,
+              "partial -> partial": 7,
+              "incorrect -> incorrect": 9,
+              "correct -> partial": 4,
+              "ambiguous -> correct": 1,
+              "partial -> correct": 4,
+              "incorrect -> partial": 2
+            }
+          },
+          "fixed_concerns13": {
+            "denominator": 13,
+            "both_correct": [
+              19,
+              29,
+              36
+            ],
+            "only_new_correct": [
+              6
+            ],
+            "only_baseline_correct": [],
+            "neither_correct": [
+              0,
+              25,
+              27,
+              67,
+              76,
+              84,
+              85,
+              89,
+              95
+            ],
+            "net_correct_gain": 1,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 2,
+              "partial -> correct": 1,
+              "correct -> correct": 3,
+              "incorrect -> incorrect": 4,
+              "partial -> incorrect": 1,
+              "ambiguous -> ambiguous": 2
+            }
+          }
+        },
+        "constant42k_8k": {
+          "all100": {
+            "denominator": 100,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              19,
+              22,
+              26,
+              28,
+              29,
+              30,
+              32,
+              33,
+              34,
+              36,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              46,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              64,
+              65,
+              66,
+              68,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              97,
+              99
+            ],
+            "only_new_correct": [
+              6,
+              31,
+              35,
+              47,
+              69,
+              73,
+              74,
+              80,
+              87,
+              96
+            ],
+            "only_baseline_correct": [
+              7,
+              24,
+              55,
+              56,
+              83
+            ],
+            "neither_correct": [
+              0,
+              8,
+              11,
+              18,
+              20,
+              21,
+              23,
+              25,
+              27,
+              37,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              67,
+              76,
+              78,
+              81,
+              84,
+              85,
+              89,
+              94,
+              95,
+              98
+            ],
+            "net_correct_gain": 5,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 10,
+              "correct -> correct": 59,
+              "partial -> correct": 6,
+              "correct -> partial": 5,
+              "incorrect -> incorrect": 13,
+              "partial -> incorrect": 1,
+              "ambiguous -> correct": 1,
+              "incorrect -> correct": 3,
+              "partial -> ambiguous": 1,
+              "ambiguous -> ambiguous": 1
+            }
+          },
+          "supported87": {
+            "denominator": 87,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              22,
+              26,
+              28,
+              30,
+              32,
+              33,
+              34,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              46,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              64,
+              65,
+              66,
+              68,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              97,
+              99
+            ],
+            "only_new_correct": [
+              31,
+              35,
+              47,
+              69,
+              73,
+              74,
+              80,
+              87,
+              96
+            ],
+            "only_baseline_correct": [
+              7,
+              24,
+              55,
+              56,
+              83
+            ],
+            "neither_correct": [
+              8,
+              11,
+              18,
+              20,
+              21,
+              23,
+              37,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              78,
+              81,
+              94,
+              98
+            ],
+            "net_correct_gain": 4,
+            "transitions_baseline_to_new": {
+              "correct -> correct": 56,
+              "correct -> partial": 5,
+              "partial -> partial": 8,
+              "incorrect -> incorrect": 9,
+              "ambiguous -> correct": 1,
+              "partial -> correct": 5,
+              "incorrect -> correct": 3
+            }
+          },
+          "fixed_concerns13": {
+            "denominator": 13,
+            "both_correct": [
+              19,
+              29,
+              36
+            ],
+            "only_new_correct": [
+              6
+            ],
+            "only_baseline_correct": [],
+            "neither_correct": [
+              0,
+              25,
+              27,
+              67,
+              76,
+              84,
+              85,
+              89,
+              95
+            ],
+            "net_correct_gain": 1,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 2,
+              "partial -> correct": 1,
+              "correct -> correct": 3,
+              "incorrect -> incorrect": 4,
+              "partial -> incorrect": 1,
+              "partial -> ambiguous": 1,
+              "ambiguous -> ambiguous": 1
+            }
+          }
+        }
+      },
+      "generation": {
+        "answers": 100,
+        "ended_at_eos": 100,
+        "reached_cap": 0,
+        "post_wrapper_tail_indices": [],
+        "parsing_counts": {
+          "submit_answer": 100
+        },
+        "generated_tokens": 4353,
+        "max_new_tokens": [
+          160
+        ],
+        "observed_repetition_loops": 0
+      },
+      "generation_provenance": {
+        "inherited_generation_config": {
+          "_from_model_config": true,
+          "eos_token_id": 248044,
+          "transformers_version": "5.15.1",
+          "use_cache": true
+        },
+        "explicit_eos_ids": [
+          248044,
+          248046
+        ],
+        "eot": "<|im_end|>",
+        "eot_id": 248046,
+        "max_new_tokens": 160,
+        "thinking": false,
+        "do_sample": false,
+        "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "tokenizer": "Qwen/Qwen3.5-9B"
+      },
+      "nll": {
+        "AC": {
+          "answer_nll": 0.5968171752457129,
+          "selected100_answer_nll": 0.63475038565147,
+          "selected50_by_generator": {
+            "9b": 0.6815209371795232,
+            "27b": 0.5879798341234167
+          }
+        },
+        "full context": {
+          "answer_nll": 0.5999992004366259,
+          "selected100_answer_nll": 0.593878193979331,
+          "selected50_by_generator": {
+            "9b": 0.6459141854910178,
+            "27b": 0.5418422024676443
+          }
+        },
+        "no context": {
+          "answer_nll": 1.8086204245966653,
+          "selected100_answer_nll": 1.8335384645996529,
+          "selected50_by_generator": {
+            "9b": 1.8800664831364198,
+            "27b": 1.787010446062886
+          }
+        }
+      },
+      "nll_scope": {
+        "scored_questions": 400,
+        "decoded_ac_questions": 100,
+        "same_weight_training_panel_replay": true,
+        "all3_400question_views_exact_replay": true,
+        "no400question_score_in_this_readout": false,
+        "nll_recomputed_by32kdecoder": null
+      },
+      "identity": {
+        "condition": "strong32k_piecewise_8k_8k",
+        "context": "8k",
+        "update": 1000,
+        "paired_checkpoint": {
+          "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/AC_MODELS/rag_poc/epoch_001",
+          "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/LORAS/rag_reader/epoch_001"
+        },
+        "checkpoint_sha256": {
+          "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+          "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+          "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+          "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+          "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+        },
+        "publication_sha256": {
+          "result.json": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c",
+          "run_identity.json": "943b4bf55872a692c22ba2888bdcd2493f1d7b320b91d7dd845f97d55d63d253",
+          "training_config.json": "c92779e45681c920b8cce94e398864636a0605456525c56b886e00d479c31191",
+          "material_ids.json": "36e7f81195063b38eff65bdc2e5fbe0e2782d3b73486f31c783358b67d083153",
+          "source_receipt.json": "9f978aa3de34503dba285f94bb660d1b2e7c2716da9e4da08320b2d9450162bd",
+          "completed_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+        },
+        "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+        "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+        "evaluator_sha256": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+        "helper_sha256": {
+          "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+          "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+          "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+          "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+        },
+        "source_sha256": {
+          "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+          "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+          "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+        },
+        "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+        "passage_parts": true,
+        "encode_batch_max_tokens": 65536,
+        "ratio": 0.0625,
+        "evidence_tokens": 8192,
+        "max_passages": 16,
+        "micro_batch_examples": 2,
+        "selection_policy": "Original immutable development100 (50 per generator); no confirmation access.",
+        "reader": "This completed arm's paired final reader",
+        "nll_scope": "Original400 in original order, then retain selected100",
+        "decoding": "8k only: greedy160 tokens, thinking disabled, inherited EOS union chat EOT, actual token IDs retained",
+        "transfer_scope": "32k adds retrieval context/distractors; this does not test distributed-required-evidence synthesis."
+      },
+      "bindings": {
+        "status": "pass",
+        "same_final_paired_hashes": {
+          "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+          "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+          "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+          "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+          "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+        },
+        "exact8k_400_replays": true,
+        "same100questions_gold_required_sources": true,
+        "same_actual8k_and32k_evidence_as_prior_contexts": true,
+        "decode32k_immutable_nll_binding": true,
+        "decoded_token_metadata_consistent": 200,
+        "prior_source_split": {
+          "supported": 87,
+          "concern": 13
+        }
+      },
+      "input_receipt": {
+        "8k": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__8k/result.json",
+          "sha256": "2f24e3b56c1da01b67f5690a8d1a4660f110e9a8d994d4ec80dc48003ba625f9"
+        },
+        "32k_nll": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__32k/result.json",
+          "sha256": "6a4f7cf1a17a43ed3307ec0fd2e93f3a16329b58470cba6f839c678b58a21fdd"
+        },
+        "32k_decode": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_32k_answers100/result.json",
+          "sha256": "c4016f047b5f2161dbb22834d4fd74517d52e32fb2106a9dffed343dda1e615a"
+        },
+        "train": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/result.json",
+          "sha256": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c"
+        },
+        "panel": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/panel_01000.json",
+          "sha256": "9d3fb590b170599dded572eb0d4964194d784ebb38b1dfb68d2a24cf467640d0"
+        },
+        "prior": {
+          "path": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json",
+          "sha256": "ec17f380b7aaf2c51564aaac047c5c18cff40df49b2e853406ead890c114deee"
+        }
+      },
+      "training_provenance": {
+        "total_unique_questions": 40000,
+        "parent_unique_questions": 32000,
+        "fresh_questions": 8000,
+        "fresh_passes": 1,
+        "fresh_adam": true,
+        "native10k_pool_overlap": "The8k adaptation uses the first8k of the same presentation pool as native10k continuations, bydesign; 40k and42k are not independent samples.",
+        "condition": "strong32k_piecewise_8k_8k",
+        "original_parent": "oracle_27b_32k final epoch001",
+        "stage_updates": 1000,
+        "compression_rows_per_source_token": 0.0625
+      },
+      "actual_inputs": {
+        "context": "8k",
+        "shared_input_fingerprint": "6ffc199f008d329773af7bc09594ca3cbadca619f50b9fe72d7a540b2c643069",
+        "ac_input_fingerprint": "2fff0d9f31ecb0ba02dca7543cd3d4b3741eb6267a2f6fe690e7d312d5212744",
+        "total_rows_fingerprint": "6a1bd4e0650d1ebf0620df8e038f633a163fe0b5e1edd37940636fea127e6f2d",
+        "required_sources_retained_whole": true,
+        "configured_evidence_tokens": 8192,
+        "configured_max_passages": 16,
+        "max_view_rows": 4096,
+        "ranges": {
+          "compressed_rows": {
+            "min": 235,
+            "mean": 502.89,
+            "max": 521
+          },
+          "passages": {
+            "min": 2,
+            "mean": 7.19,
+            "max": 16
+          },
+          "evidence_tokens": {
+            "min": 3589,
+            "mean": 7940.05,
+            "max": 8192
+          }
+        },
+        "capped_items": 0
+      },
+      "caveats": [
+        "Exploratory repeatedly examined development100, not reserved confirmation or a population estimate.",
+        "Original87/13 source/reference labels and700 prior raw-response/review records stay fixed.",
+        "Trained-reader full/no-context scores are NLL-only. Frozen P2 decoded controls stay8k with different weights.",
+        "The40k long adaptation differs from42k native continuations in fresh-question count, training context, optimizer and LR, so this is not an isolated schedule or context ablation.",
+        "Longer evidence principally adds distractors, not distributed-required-evidence supervision.",
+        "Pytest item31 stays in original supported denominator: 8k3.9.0 is intended-source correct;32k7.2.0 is an actual competing announcement in Passage26 and remains ambiguous.",
+        "Inherited partial/incorrect grading boundaries stay unchanged; primary comparisons use strict correctness."
+      ],
+      "responses_sha256": "31413a63386e7e2ca241c0bdfcfcbde25951bec51de96d23bfd0b1179f9b5b37"
+    },
+    "32k": {
+      "status": "All100 new actual answers manually reviewed",
+      "view": "final40k_32k",
+      "label": "40,000 unique questions ×1 pass; 32k parent +8k fresh at8k, fresh Adam; actual32k evidence",
+      "indexing": "Zero-based machine indices; human item number is index+1",
+      "review_method": "Read all actual replies against each question, frozen source annotation and supplied required source; reopened full supplied evidence for boundary assertions/competing announcements. Semantic equivalence, material omissions and unsupported additions determine labels. No outside judge, NLL-based scoring, source relabeling or all-distractor audit.",
+      "reference_split": {
+        "supported": 87,
+        "fixed_concerns": 13,
+        "fixed_concern_indices": [
+          0,
+          6,
+          19,
+          25,
+          27,
+          29,
+          36,
+          67,
+          76,
+          84,
+          85,
+          89,
+          95
+        ]
+      },
+      "counts": {
+        "all100": {
+          "final40k_32k": {
+            "partial": 14,
+            "correct": 64,
+            "incorrect": 19,
+            "ambiguous": 3
+          }
+        },
+        "supported87": {
+          "final40k_32k": {
+            "correct": 60,
+            "partial": 12,
+            "incorrect": 14,
+            "ambiguous": 1
+          }
+        },
+        "fixed_concerns13": {
+          "final40k_32k": {
+            "partial": 2,
+            "correct": 4,
+            "incorrect": 5,
+            "ambiguous": 2
+          }
+        }
+      },
+      "per_generator": {
+        "9b": {
+          "all_denominator": 50,
+          "supported_denominator": 42,
+          "all": {
+            "final40k_32k": {
+              "correct": 34,
+              "incorrect": 7,
+              "ambiguous": 2,
+              "partial": 7
+            }
+          },
+          "supported": {
+            "final40k_32k": {
+              "correct": 31,
+              "incorrect": 4,
+              "ambiguous": 1,
+              "partial": 6
+            }
+          }
+        },
+        "27b": {
+          "all_denominator": 50,
+          "supported_denominator": 45,
+          "all": {
+            "final40k_32k": {
+              "partial": 7,
+              "correct": 30,
+              "incorrect": 12,
+              "ambiguous": 1
+            }
+          },
+          "supported": {
+            "final40k_32k": {
+              "correct": 29,
+              "partial": 6,
+              "incorrect": 10
+            }
+          }
+        }
+      },
+      "paired": {
+        "initial32k_8k": {
+          "all100": {
+            "denominator": 100,
+            "both_correct": [
+              1,
+              2,
+              3,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              19,
+              26,
+              28,
+              29,
+              30,
+              32,
+              33,
+              36,
+              38,
+              39,
+              41,
+              43,
+              44,
+              48,
+              49,
+              52,
+              53,
+              54,
+              55,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              70,
+              71,
+              72,
+              75,
+              77,
+              80,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97
+            ],
+            "only_new_correct": [
+              4,
+              6,
+              21,
+              22,
+              35,
+              45,
+              46,
+              69,
+              79,
+              83,
+              87
+            ],
+            "only_baseline_correct": [
+              18,
+              34,
+              37,
+              47,
+              56,
+              66,
+              73,
+              99
+            ],
+            "neither_correct": [
+              0,
+              7,
+              8,
+              11,
+              20,
+              23,
+              24,
+              25,
+              27,
+              31,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              64,
+              67,
+              74,
+              76,
+              78,
+              81,
+              84,
+              85,
+              89,
+              94,
+              95,
+              98
+            ],
+            "net_correct_gain": 3,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 7,
+              "correct -> correct": 53,
+              "incorrect -> correct": 5,
+              "partial -> correct": 6,
+              "partial -> incorrect": 2,
+              "incorrect -> incorrect": 15,
+              "correct -> partial": 6,
+              "ambiguous -> ambiguous": 3,
+              "correct -> incorrect": 2,
+              "incorrect -> partial": 1
+            }
+          },
+          "supported87": {
+            "denominator": 87,
+            "both_correct": [
+              1,
+              2,
+              3,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              26,
+              28,
+              30,
+              32,
+              33,
+              38,
+              39,
+              41,
+              43,
+              44,
+              48,
+              49,
+              52,
+              53,
+              54,
+              55,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              70,
+              71,
+              72,
+              75,
+              77,
+              80,
+              82,
+              86,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97
+            ],
+            "only_new_correct": [
+              4,
+              21,
+              22,
+              35,
+              45,
+              46,
+              69,
+              79,
+              83,
+              87
+            ],
+            "only_baseline_correct": [
+              18,
+              34,
+              37,
+              47,
+              56,
+              66,
+              73,
+              99
+            ],
+            "neither_correct": [
+              7,
+              8,
+              11,
+              20,
+              23,
+              24,
+              31,
+              40,
+              42,
+              50,
+              51,
+              57,
+              62,
+              64,
+              74,
+              78,
+              81,
+              94,
+              98
+            ],
+            "net_correct_gain": 2,
+            "transitions_baseline_to_new": {
+              "correct -> correct": 50,
+              "incorrect -> correct": 5,
+              "partial -> partial": 5,
+              "partial -> incorrect": 1,
+              "incorrect -> incorrect": 11,
+              "correct -> partial": 6,
+              "partial -> correct": 5,
+              "ambiguous -> ambiguous": 1,
+              "correct -> incorrect": 2,
+              "incorrect -> partial": 1
+            }
+          },
+          "fixed_concerns13": {
+            "denominator": 13,
+            "both_correct": [
+              19,
+              29,
+              36
+            ],
+            "only_new_correct": [
+              6
+            ],
+            "only_baseline_correct": [],
+            "neither_correct": [
+              0,
+              25,
+              27,
+              67,
+              76,
+              84,
+              85,
+              89,
+              95
+            ],
+            "net_correct_gain": 1,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 2,
+              "partial -> correct": 1,
+              "correct -> correct": 3,
+              "incorrect -> incorrect": 4,
+              "partial -> incorrect": 1,
+              "ambiguous -> ambiguous": 2
+            }
+          }
+        },
+        "constant42k_32k": {
+          "all100": {
+            "denominator": 100,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              19,
+              26,
+              28,
+              29,
+              30,
+              32,
+              33,
+              36,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              48,
+              49,
+              52,
+              53,
+              54,
+              55,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              69,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              80,
+              82,
+              87,
+              88,
+              90,
+              92,
+              93,
+              97
+            ],
+            "only_new_correct": [
+              5,
+              6,
+              21,
+              22,
+              35,
+              46,
+              83,
+              86,
+              91,
+              96
+            ],
+            "only_baseline_correct": [
+              7,
+              24,
+              34,
+              56,
+              66,
+              73,
+              99
+            ],
+            "neither_correct": [
+              0,
+              8,
+              11,
+              18,
+              20,
+              23,
+              25,
+              27,
+              31,
+              37,
+              40,
+              42,
+              47,
+              50,
+              51,
+              57,
+              62,
+              64,
+              67,
+              74,
+              76,
+              78,
+              81,
+              84,
+              85,
+              89,
+              94,
+              95,
+              98
+            ],
+            "net_correct_gain": 3,
+            "transitions_baseline_to_new": {
+              "incorrect -> partial": 1,
+              "correct -> correct": 54,
+              "incorrect -> correct": 6,
+              "partial -> correct": 4,
+              "correct -> partial": 6,
+              "partial -> incorrect": 1,
+              "incorrect -> incorrect": 17,
+              "partial -> partial": 7,
+              "ambiguous -> ambiguous": 2,
+              "partial -> ambiguous": 1,
+              "correct -> incorrect": 1
+            }
+          },
+          "supported87": {
+            "denominator": 87,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              26,
+              28,
+              30,
+              32,
+              33,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              48,
+              49,
+              52,
+              53,
+              54,
+              55,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              69,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              80,
+              82,
+              87,
+              88,
+              90,
+              92,
+              93,
+              97
+            ],
+            "only_new_correct": [
+              5,
+              21,
+              22,
+              35,
+              46,
+              83,
+              86,
+              91,
+              96
+            ],
+            "only_baseline_correct": [
+              7,
+              24,
+              34,
+              56,
+              66,
+              73,
+              99
+            ],
+            "neither_correct": [
+              8,
+              11,
+              18,
+              20,
+              23,
+              31,
+              37,
+              40,
+              42,
+              47,
+              50,
+              51,
+              57,
+              62,
+              64,
+              74,
+              78,
+              81,
+              94,
+              98
+            ],
+            "net_correct_gain": 2,
+            "transitions_baseline_to_new": {
+              "correct -> correct": 51,
+              "incorrect -> correct": 6,
+              "correct -> partial": 6,
+              "partial -> incorrect": 1,
+              "incorrect -> incorrect": 12,
+              "partial -> partial": 6,
+              "partial -> correct": 3,
+              "ambiguous -> ambiguous": 1,
+              "correct -> incorrect": 1
+            }
+          },
+          "fixed_concerns13": {
+            "denominator": 13,
+            "both_correct": [
+              19,
+              29,
+              36
+            ],
+            "only_new_correct": [
+              6
+            ],
+            "only_baseline_correct": [],
+            "neither_correct": [
+              0,
+              25,
+              27,
+              67,
+              76,
+              84,
+              85,
+              89,
+              95
+            ],
+            "net_correct_gain": 1,
+            "transitions_baseline_to_new": {
+              "incorrect -> partial": 1,
+              "partial -> correct": 1,
+              "correct -> correct": 3,
+              "incorrect -> incorrect": 5,
+              "partial -> partial": 1,
+              "partial -> ambiguous": 1,
+              "ambiguous -> ambiguous": 1
+            }
+          }
+        },
+        "final40k_8k": {
+          "all100": {
+            "denominator": 100,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              19,
+              22,
+              26,
+              28,
+              29,
+              30,
+              32,
+              33,
+              35,
+              36,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              46,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              69,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              80,
+              82,
+              86,
+              87,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97
+            ],
+            "only_new_correct": [
+              21,
+              55,
+              83
+            ],
+            "only_baseline_correct": [
+              31,
+              34,
+              47,
+              64,
+              66,
+              73,
+              74,
+              99
+            ],
+            "neither_correct": [
+              0,
+              7,
+              8,
+              11,
+              18,
+              20,
+              23,
+              24,
+              25,
+              27,
+              37,
+              40,
+              42,
+              50,
+              51,
+              56,
+              57,
+              62,
+              67,
+              76,
+              78,
+              81,
+              84,
+              85,
+              89,
+              94,
+              95,
+              98
+            ],
+            "net_correct_gain": -5,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 11,
+              "correct -> correct": 61,
+              "partial -> incorrect": 1,
+              "incorrect -> incorrect": 14,
+              "partial -> correct": 3,
+              "correct -> ambiguous": 1,
+              "correct -> partial": 3,
+              "correct -> incorrect": 4,
+              "ambiguous -> ambiguous": 2
+            }
+          },
+          "supported87": {
+            "denominator": 87,
+            "both_correct": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              9,
+              10,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              22,
+              26,
+              28,
+              30,
+              32,
+              33,
+              35,
+              38,
+              39,
+              41,
+              43,
+              44,
+              45,
+              46,
+              48,
+              49,
+              52,
+              53,
+              54,
+              58,
+              59,
+              60,
+              61,
+              63,
+              65,
+              68,
+              69,
+              70,
+              71,
+              72,
+              75,
+              77,
+              79,
+              80,
+              82,
+              86,
+              87,
+              88,
+              90,
+              91,
+              92,
+              93,
+              96,
+              97
+            ],
+            "only_new_correct": [
+              21,
+              55,
+              83
+            ],
+            "only_baseline_correct": [
+              31,
+              34,
+              47,
+              64,
+              66,
+              73,
+              74,
+              99
+            ],
+            "neither_correct": [
+              7,
+              8,
+              11,
+              18,
+              20,
+              23,
+              24,
+              37,
+              40,
+              42,
+              50,
+              51,
+              56,
+              57,
+              62,
+              78,
+              81,
+              94,
+              98
+            ],
+            "net_correct_gain": -5,
+            "transitions_baseline_to_new": {
+              "correct -> correct": 57,
+              "partial -> partial": 9,
+              "partial -> incorrect": 1,
+              "incorrect -> incorrect": 9,
+              "partial -> correct": 3,
+              "correct -> ambiguous": 1,
+              "correct -> partial": 3,
+              "correct -> incorrect": 4
+            }
+          },
+          "fixed_concerns13": {
+            "denominator": 13,
+            "both_correct": [
+              6,
+              19,
+              29,
+              36
+            ],
+            "only_new_correct": [],
+            "only_baseline_correct": [],
+            "neither_correct": [
+              0,
+              25,
+              27,
+              67,
+              76,
+              84,
+              85,
+              89,
+              95
+            ],
+            "net_correct_gain": 0,
+            "transitions_baseline_to_new": {
+              "partial -> partial": 2,
+              "correct -> correct": 4,
+              "incorrect -> incorrect": 5,
+              "ambiguous -> ambiguous": 2
+            }
+          }
+        }
+      },
+      "generation": {
+        "answers": 100,
+        "ended_at_eos": 100,
+        "reached_cap": 0,
+        "post_wrapper_tail_indices": [],
+        "parsing_counts": {
+          "submit_answer": 100
+        },
+        "generated_tokens": 4338,
+        "max_new_tokens": [
+          160
+        ],
+        "observed_repetition_loops": 0
+      },
+      "generation_provenance": {
+        "inherited_generation_config": {
+          "_from_model_config": true,
+          "eos_token_id": 248044,
+          "transformers_version": "5.15.1",
+          "use_cache": true
+        },
+        "explicit_eos_ids": [
+          248044,
+          248046
+        ],
+        "eot": "<|im_end|>",
+        "eot_id": 248046,
+        "max_new_tokens": 160,
+        "thinking": false,
+        "do_sample": false,
+        "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "tokenizer": "Qwen/Qwen3.5-9B"
+      },
+      "nll": {
+        "AC": {
+          "answer_nll": 0.6497265241384987,
+          "selected100_answer_nll": 0.6497265241384987,
+          "selected50_by_generator": {
+            "9b": 0.7034911039175163,
+            "27b": 0.595961944359481
+          }
+        },
+        "full context": {
+          "answer_nll": 0.5662927308324606,
+          "selected100_answer_nll": 0.5662927308324606,
+          "selected50_by_generator": {
+            "9b": 0.6285531986388688,
+            "27b": 0.5040322630260522
+          }
+        },
+        "no context": {
+          "answer_nll": 1.833124177717262,
+          "selected100_answer_nll": 1.833124177717262,
+          "selected50_by_generator": {
+            "9b": 1.8803206764051685,
+            "27b": 1.7859276790293555
+          }
+        }
+      },
+      "nll_scope": {
+        "scored_questions": 100,
+        "decoded_ac_questions": 100,
+        "same_weight_training_panel_replay": false,
+        "all3_400question_views_exact_replay": false,
+        "no400question_score_in_this_readout": true,
+        "nll_recomputed_by32kdecoder": false
+      },
+      "identity": {
+        "condition": "strong32k_piecewise_8k_8k",
+        "context": "32k",
+        "update": 1000,
+        "paired_checkpoint": {
+          "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/AC_MODELS/rag_poc/epoch_001",
+          "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/LORAS/rag_reader/epoch_001"
+        },
+        "checkpoint_sha256": {
+          "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+          "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+          "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+          "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+          "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+        },
+        "publication_sha256": {
+          "result.json": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c",
+          "run_identity.json": "943b4bf55872a692c22ba2888bdcd2493f1d7b320b91d7dd845f97d55d63d253",
+          "training_config.json": "c92779e45681c920b8cce94e398864636a0605456525c56b886e00d479c31191",
+          "material_ids.json": "36e7f81195063b38eff65bdc2e5fbe0e2782d3b73486f31c783358b67d083153",
+          "source_receipt.json": "9f978aa3de34503dba285f94bb660d1b2e7c2716da9e4da08320b2d9450162bd",
+          "completed_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+        },
+        "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+        "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+        "evaluator_sha256": "fe399c1ca687fc10db1e8f83c6a3877329d21fb86664913c595a94fa31017385",
+        "helper_sha256": {
+          "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+          "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+          "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+          "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+        },
+        "source_sha256": {
+          "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+          "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+          "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+        },
+        "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+        "passage_parts": true,
+        "encode_batch_max_tokens": 65536,
+        "ratio": 0.0625,
+        "evidence_tokens": 32768,
+        "max_passages": 64,
+        "micro_batch_examples": 1,
+        "nll_evidence_path": "/orcd/pool/007/ngom/activation/taskaware/reports/strong_long_cohort100/strong32k_piecewise_8k_8k__32k/result.json",
+        "nll_evidence_sha256": "6a4f7cf1a17a43ed3307ec0fd2e93f3a16329b58470cba6f839c678b58a21fdd",
+        "nll_evaluator_sha256": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+        "nll_identity": {
+          "condition": "strong32k_piecewise_8k_8k",
+          "context": "32k",
+          "update": 1000,
+          "paired_checkpoint": {
+            "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/AC_MODELS/rag_poc/epoch_001",
+            "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/strong32k_piecewise_8k_8k/LORAS/rag_reader/epoch_001"
+          },
+          "checkpoint_sha256": {
+            "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+            "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+            "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+            "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+            "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+          },
+          "publication_sha256": {
+            "result.json": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c",
+            "run_identity.json": "943b4bf55872a692c22ba2888bdcd2493f1d7b320b91d7dd845f97d55d63d253",
+            "training_config.json": "c92779e45681c920b8cce94e398864636a0605456525c56b886e00d479c31191",
+            "material_ids.json": "36e7f81195063b38eff65bdc2e5fbe0e2782d3b73486f31c783358b67d083153",
+            "source_receipt.json": "9f978aa3de34503dba285f94bb660d1b2e7c2716da9e4da08320b2d9450162bd",
+            "completed_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+          },
+          "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+          "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+          "evaluator_sha256": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+          "helper_sha256": {
+            "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+            "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+            "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+            "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+          },
+          "source_sha256": {
+            "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+            "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+            "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+          },
+          "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+          "passage_parts": true,
+          "encode_batch_max_tokens": 65536,
+          "ratio": 0.0625,
+          "evidence_tokens": 32768,
+          "max_passages": 64,
+          "micro_batch_examples": 1,
+          "selection_policy": "Original immutable development100 (50 per generator); no confirmation access.",
+          "reader": "This completed arm's paired final reader",
+          "nll_scope": "Selected100 in original order, microbatch1",
+          "decoding": "8k only: greedy160 tokens, thinking disabled, inherited EOS union chat EOT, actual token IDs retained",
+          "transfer_scope": "32k adds retrieval context/distractors; this does not test distributed-required-evidence synthesis."
+        },
+        "decoding": "greedy160, thinking disabled, inherited EOS union chat EOT; actual IDs retained",
+        "scope": "Final paired AC100 at32k DEVELOPMENT evidence. No NLL rerun, optimizer or confirmation access."
+      },
+      "bindings": {
+        "status": "pass",
+        "same_final_paired_hashes": {
+          "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+          "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+          "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+          "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+          "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+        },
+        "exact8k_400_replays": true,
+        "same100questions_gold_required_sources": true,
+        "same_actual8k_and32k_evidence_as_prior_contexts": true,
+        "decode32k_immutable_nll_binding": true,
+        "decoded_token_metadata_consistent": 200,
+        "prior_source_split": {
+          "supported": 87,
+          "concern": 13
+        }
+      },
+      "input_receipt": {
+        "8k": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__8k/result.json",
+          "sha256": "2f24e3b56c1da01b67f5690a8d1a4660f110e9a8d994d4ec80dc48003ba625f9"
+        },
+        "32k_nll": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__32k/result.json",
+          "sha256": "6a4f7cf1a17a43ed3307ec0fd2e93f3a16329b58470cba6f839c678b58a21fdd"
+        },
+        "32k_decode": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_32k_answers100/result.json",
+          "sha256": "c4016f047b5f2161dbb22834d4fd74517d52e32fb2106a9dffed343dda1e615a"
+        },
+        "train": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/result.json",
+          "sha256": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c"
+        },
+        "panel": {
+          "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/panel_01000.json",
+          "sha256": "9d3fb590b170599dded572eb0d4964194d784ebb38b1dfb68d2a24cf467640d0"
+        },
+        "prior": {
+          "path": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json",
+          "sha256": "ec17f380b7aaf2c51564aaac047c5c18cff40df49b2e853406ead890c114deee"
+        }
+      },
+      "training_provenance": {
+        "total_unique_questions": 40000,
+        "parent_unique_questions": 32000,
+        "fresh_questions": 8000,
+        "fresh_passes": 1,
+        "fresh_adam": true,
+        "native10k_pool_overlap": "The8k adaptation uses the first8k of the same presentation pool as native10k continuations, bydesign; 40k and42k are not independent samples.",
+        "condition": "strong32k_piecewise_8k_8k",
+        "original_parent": "oracle_27b_32k final epoch001",
+        "stage_updates": 1000,
+        "compression_rows_per_source_token": 0.0625
+      },
+      "actual_inputs": {
+        "context": "32k",
+        "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+        "ac_input_fingerprint": "a7864a62fe9096fa2a638dda49474b25a3449b7cf4e872406611aff108710143",
+        "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb",
+        "required_sources_retained_whole": true,
+        "configured_evidence_tokens": 32768,
+        "configured_max_passages": 64,
+        "max_view_rows": 4096,
+        "ranges": {
+          "compressed_rows": {
+            "min": 1995,
+            "mean": 2055.33,
+            "max": 2074
+          },
+          "passages": {
+            "min": 10,
+            "mean": 22.43,
+            "max": 64
+          },
+          "evidence_tokens": {
+            "min": 31736,
+            "mean": 32660.02,
+            "max": 32767
+          }
+        },
+        "capped_items": 0
+      },
+      "caveats": [
+        "Exploratory repeatedly examined development100, not reserved confirmation or a population estimate.",
+        "Original87/13 source/reference labels and700 prior raw-response/review records stay fixed.",
+        "Trained-reader full/no-context scores are NLL-only. Frozen P2 decoded controls stay8k with different weights.",
+        "The40k long adaptation differs from42k native continuations in fresh-question count, training context, optimizer and LR, so this is not an isolated schedule or context ablation.",
+        "Longer evidence principally adds distractors, not distributed-required-evidence supervision.",
+        "Pytest item31 stays in original supported denominator: 8k3.9.0 is intended-source correct;32k7.2.0 is an actual competing announcement in Passage26 and remains ambiguous.",
+        "Inherited partial/incorrect grading boundaries stay unchanged; primary comparisons use strict correctness."
+      ],
+      "responses_sha256": "540341c43e52123805798c89963926525bf72cf40b2e28ebe1b8156935e27890"
+    }
+  },
+  "inputs": {
+    "8k": {
+      "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__8k/result.json",
+      "sha256": "2f24e3b56c1da01b67f5690a8d1a4660f110e9a8d994d4ec80dc48003ba625f9"
+    },
+    "32k_nll": {
+      "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/strong32k_piecewise_8k_8k__32k/result.json",
+      "sha256": "6a4f7cf1a17a43ed3307ec0fd2e93f3a16329b58470cba6f839c678b58a21fdd"
+    },
+    "32k_decode": {
+      "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_32k_answers100/result.json",
+      "sha256": "c4016f047b5f2161dbb22834d4fd74517d52e32fb2106a9dffed343dda1e615a"
+    },
+    "train": {
+      "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/result.json",
+      "sha256": "c5784165b9086510e447343030545fbfc0fc5beb29f32f0a489e27bd83adfc6c"
+    },
+    "panel": {
+      "path": "IB/TMP/SYNC/TASK_AWARE_QA/strong32k_piecewise_8k_8k/panel_01000.json",
+      "sha256": "9d3fb590b170599dded572eb0d4964194d784ebb38b1dfb68d2a24cf467640d0"
+    },
+    "prior": {
+      "path": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json",
+      "sha256": "ec17f380b7aaf2c51564aaac047c5c18cff40df49b2e853406ead890c114deee"
+    }
+  },
+  "binding_checks": {
+    "status": "pass",
+    "same_final_paired_hashes": {
+      "ac_modules": "8747c2e5a6cff63c2f6a6a2cad6ed73ea25ae22d5927863c752ce4e44c276fca",
+      "encoder_config": "8b01e02b8d9f2aaca0b0cda1da11dc339413a538cb89f0201ebde1a9a62ba4db",
+      "encoder_weights": "2dac7fde97b9019e43566d49792d0942d0e0f34f6616745f2d3aa1ae60410986",
+      "reader_config": "b445c516ecbdf8bc2ccf294c1113217e15e09d6befbc1750c6ecb222f58606b3",
+      "reader_weights": "8b9cca6c1caadc61ea1e1e2e14afea1cf59f9ecbd26b31aa53b331d1c57627e9"
+    },
+    "exact8k_400_replays": true,
+    "same100questions_gold_required_sources": true,
+    "same_actual8k_and32k_evidence_as_prior_contexts": true,
+    "decode32k_immutable_nll_binding": true,
+    "decoded_token_metadata_consistent": 200,
+    "prior_source_split": {
+      "supported": 87,
+      "concern": 13
+    }
+  },
+  "prior_answer_records_preserved": 700,
+  "new_answer_records": 200,
+  "semantic_verdict": "Final40k improves over its original32k parent at8k (65/87 vs58/87;11gains4losses). It gives60/87 at32k versus65/87 at8k (3gains8losses), and60vs58 for constant-floor42k at32k. Differences are exploratory on a repeatedly examined development cohort.",
+  "reference_split_unchanged": {
+    "supported": 87,
+    "reference_concerns": 13
+  },
+  "root_spotchecks": {
+    "agreed_indices": [
+      34,
+      55,
+      56,
+      73
+    ],
+    "additional_ambiguity_confirmation": {
+      "index": 31,
+      "actual32k_passage": 26,
+      "announcement": "pytest7.2.0"
+    }
+  },
+  "no_independent_confirmation_claim": true
+}

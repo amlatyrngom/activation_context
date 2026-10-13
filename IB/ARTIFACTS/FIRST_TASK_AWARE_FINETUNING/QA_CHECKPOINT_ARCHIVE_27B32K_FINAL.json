@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/",
+  "checkpoint": {
+    "name": "oracle_27b_32k",
+    "display_name": "32,000 questions \u00d7 1 pass: preselected final development candidate, 1/16 compression",
+    "training_questions": 32000,
+    "training_epochs": 1,
+    "global_update": 4000,
+    "is_final_training_checkpoint": true,
+    "completed_epoch": {
+      "epoch_number": 1,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+    },
+    "source_ac_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/AC_MODELS/rag_poc/epoch_001",
+    "source_reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/LORAS/rag_reader/epoch_001",
+    "archive_ac_directory": "ac",
+    "archive_reader_directory": "reader",
+    "selection": "Preselected completed final epoch_001 pair, after all 32,000 unique questions. No switch to the lower-NLL 90% development checkpoint. selected_checkpoint.json is ancillary provenance and must not locate archive weights.",
+    "encoder_base": "Qwen/Qwen3.5-2B",
+    "reader_base": "Qwen/Qwen3.5-9B",
+    "encoder_lora_rank": 128,
+    "reader_lora_rank": 128,
+    "synthesis_teacher_size": "27B",
+    "initialization": "P2 epoch1",
+    "compression": {
+      "configured_rows_per_encoded_source_token": 0.0625,
+      "measured_row_budget": {
+        "passage_parts": false,
+        "nominal_ratio": 0.0625,
+        "splits": {
+          "training": {
+            "questions": 32000,
+            "evidence_source_tokens": 63731530,
+            "encoded_source_tokens": 65844364,
+            "compressed_rows": 4130273,
+            "merged_source_tokens": 65844364,
+            "merged_compressed_rows": 4130273,
+            "rows_per_evidence_token": 0.06480737242617586,
+            "rows_per_encoded_source_token": 0.06272781372753483,
+            "additional_rows_vs_merged": 0
+          },
+          "development": {
+            "questions": 400,
+            "evidence_source_tokens": 786623,
+            "encoded_source_tokens": 811299,
+            "compressed_rows": 50898,
+            "merged_source_tokens": 811299,
+            "merged_compressed_rows": 50898,
+            "rows_per_evidence_token": 0.06470443910234,
+            "rows_per_encoded_source_token": 0.06273642639766597,
+            "additional_rows_vs_merged": 0
+          }
+        }
+      },
+      "note": "Configured ratio is exactly 1/16. Aggregate actual rows differ slightly because each example has integer row rounding; evidence-only and fully framed encoder token denominators are reported separately."
+    },
+    "development": {
+      "questions": 400,
+      "questions_per_generator_cohort": 200,
+      "answer_nll_9b_generated": 0.605943026827936,
+      "answer_nll_27b_generated": 0.5317191918682677,
+      "answer_nll_combined": 0.5688311093481019,
+      "metric": "Mean per-question answer-only gold-token NLL, nats/token; development, not reserved confirmation."
+    },
+    "reserved_confirmation": "Pending and unused for selection at archival; no reserved questions or scores read for this preservation task.",
+    "qualitative_review": "Final 100-answer readout/review pending at archival. Development candidate, not a claimed semantic-quality winner.",
+    "earlier_16k_one_pass_development_nll": 0.603263836029209,
+    "best_observed_development": {
+      "nll": 0.5580611337232597,
+      "unique_questions_seen": 28800,
+      "archived_instead_of_final": false
+    },
+    "material_sha256": "a73de2273d600ab3693540310510e496736c554d1685312132885cc24b5973aa",
+    "material_ids_sha256": "f753cdc3b5964bd97d4565134563453e6dc13690fb34164e8adf2ef1d9131bf2",
+    "compute_payload_hashes_verified": {
+      "ac/ac_modules.pt": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+      "ac/side_lora/adapter_config.json": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+      "ac/side_lora/adapter_model.safetensors": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+      "reader/adapter_config.json": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+      "reader/adapter_model.safetensors": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b"
+    },
+    "compute_staging_job": "23497343",
+    "restore": "Use archive ac/ as the activation-context checkpoint and reader/ as its paired target LoRA. completed_epoch.json retains original run-relative paths; do not use those paths without restoring the original directory layout. Base models are required separately. Optimizer state is excluded, so this is an inference/fresh-optimizer fine-tuning archive, not a bit-exact training resume."
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/checkpoint_metadata.json",
+      "bytes": 4479,
+      "sha256": "5b6f279b86fc06cdb6d6e74d2b49e4c4ec21d48668ee185f7c93ff13da4b01ed",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/compute_staging_receipt.json",
+      "bytes": 2967,
+      "sha256": "a69532fcd0246d38bfbeda752b6fc8db05b0fc1f68e006cf7a40c5bd9bf9a6fa",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/initialization.json",
+      "bytes": 4109,
+      "sha256": "c517372dde5feb8002c80a5dc649c4dd5ba496f0e2a11c4eb3840ef0734452f7",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/material_ids.json",
+      "bytes": 2332835,
+      "sha256": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/panel_04000.json",
+      "bytes": 1778938,
+      "sha256": "755d8bae1744480c79c07002bb540f9c2a40f2ccd1c6391b71e8d4dd8cd61a71",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/preselection_receipt.json",
+      "bytes": 1342,
+      "sha256": "0b17cebe4d7b1cce89acf39b502bd6112267a62fcba945fe3af6e5291aa82edb",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/report_data.json",
+      "bytes": 3331436,
+      "sha256": "46a70564f70b2151f72d76ab219478ff5b84c07b5c530a7524ad20a0bc88dea4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/result.json",
+      "bytes": 2184799,
+      "sha256": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/row_budget.json",
+      "bytes": 861,
+      "sha256": "75e449636bfe261e605a19c631f0d8c7ba57d264a14826e1c3bf47b5ef13442f",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/run_identity.json",
+      "bytes": 475,
+      "sha256": "db1954f46f514587f1ab6cee5a480466b6611414f6ddd7efcb7ee8b319417e0a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/run_recipe.json",
+      "bytes": 877,
+      "sha256": "316581377979f89aa63dd3419a347c6720baa50376c1f6821a6ba90093bed1c4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/selected_checkpoint.json",
+      "bytes": 386,
+      "sha256": "492151e8e71dd910bc0e83424bcbf84964bdbf3c7f4c5885f9b69bf969872da2",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260922/oracle_27b_32k/epoch_001/training_config.json",
+      "bytes": 1014,
+      "sha256": "630c858a80322fb8a87a5b96825b91b9eceb921e4bdbb16ba6706fded83afb26",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2498907068,
+  "contents": "Exact final paired AC modules, encoder LoRA, reader LoRA, completion and frozen training/development metadata. Base weights, optimizer states, other checkpoints and full training corpus excluded.",
+  "validation": "All five local checkpoint payload hashes and byte counts matched the source-and-staging receipt from the CPU compute job. Final 4000-update/epoch1 pair guards passed; independent final-answer readout and review were pending at archival. Every PUT supplied SHA256 and create-only IfNoneMatch; every object then matched S3 HEAD checksum and byte count. The manifest was uploaded and verified last. No new GPU restoration was run for archival."
+}

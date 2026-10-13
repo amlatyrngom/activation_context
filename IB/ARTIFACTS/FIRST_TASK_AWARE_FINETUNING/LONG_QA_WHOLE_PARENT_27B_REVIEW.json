@@ -1,0 +1,730 @@
+{
+  "selection": {
+    "utc": "2026-09-22T00:13:10.248243+00:00",
+    "seed": "whole-parent-27b-matched-review15-20260922",
+    "review_size": 15,
+    "selection_precedes_reading_27b_answers": true,
+    "rule": [
+      "Use the old 15 review parents, retaining their order. For each parent with accepted 27B questions, choose the question with smallest SHA256(seed + question_id).",
+      "First reserve all exact-parent matches. For each old parent without acceptance, choose an unused parent in the same domain and target-token band; then same domain at another band; then any remaining domain/band. Break ties by the same seeded question-ID hash.",
+      "At most one question per parent. If fewer than 15 accepted parents exist, review all available distinct parents and report the shortfall.",
+      "Choose only after the 75-parent worker completes. Do not inspect question/answer content to select."
+    ],
+    "old_review_sha256": "e1ed5e69af28cd34cabf4bfdacf0e5edb7498b928580af3cd887bcfc7e279abd",
+    "parent_targets": [
+      {
+        "old_question_id": "longqa:fb99d4323c1217230d02fe35",
+        "doc_id": "github/deeplearning4j/deeplearning4j/c533a2d61d253f917af48b38c7161fa926ff9d26/deeplearning4j-modelimport/src/main/java/org/deeplearning4j/nn/modelimport/keras/utils/KerasLayerUtils.java",
+        "domain": "code",
+        "target_tokens": 8192
+      },
+      {
+        "old_question_id": "longqa:27598e9d337932056bd72e9c",
+        "doc_id": "github/huggingface/pytorch-image-models/324a4e58b6b0365d16dcf8f93739be8f74cd7d37/timm/models/swin_transformer_v2_cr.py",
+        "domain": "code",
+        "target_tokens": 16384
+      },
+      {
+        "old_question_id": "longqa:a34a41d5cd18e83823a51664",
+        "doc_id": "github/pinpoint-apm/pinpoint/0f94b21205ca84f01d18283b381615f5e88f3f55/thrift/src/main/java/com/navercorp/pinpoint/thrift/dto/TSpan.java",
+        "domain": "code",
+        "target_tokens": 32768
+      },
+      {
+        "old_question_id": "longqa:6aa597b12ca18a7c0b2da320",
+        "doc_id": "github/square/leakcanary/2b9b9e67df0d4588fd36d6bec6b1a33bc49e3f1e/docs/recipes.md",
+        "domain": "documents",
+        "target_tokens": 8192
+      },
+      {
+        "old_question_id": "longqa:81f94324ac3b8311c9728288",
+        "doc_id": "github/paddlepaddle/paddlespeech/ea9ee93739f023916ef7736ad8f4d8d3a34d4f8a/demos/speech_server/README.md",
+        "domain": "documents",
+        "target_tokens": 16384
+      },
+      {
+        "old_question_id": "longqa:ef3ffca2979b863459dbd544",
+        "doc_id": "caselaw/f2d_474/html/0514-01.html",
+        "domain": "legal",
+        "target_tokens": 8192
+      },
+      {
+        "old_question_id": "longqa:d26fa755854364d1a98e1a71",
+        "doc_id": "caselaw/f2d_474/html/0565-01.html",
+        "domain": "legal",
+        "target_tokens": 16384
+      },
+      {
+        "old_question_id": "longqa:a4c533a286d9cc30a2ac5934",
+        "doc_id": "caselaw/sw3d_308/html/0843-01.html",
+        "domain": "legal",
+        "target_tokens": 32768
+      },
+      {
+        "old_question_id": "longqa:02289f3dfd15e2dd40107716",
+        "doc_id": "proof-pile-2/arxiv/2005.14481",
+        "domain": "math",
+        "target_tokens": 8192
+      },
+      {
+        "old_question_id": "longqa:286481d093a1357757a8594c",
+        "doc_id": "proof-pile-2/arxiv/1607.04617",
+        "domain": "math",
+        "target_tokens": 16384
+      },
+      {
+        "old_question_id": "longqa:476705ffc7a942e822a8006f",
+        "doc_id": "proof-pile-2/arxiv/2203.02009",
+        "domain": "math",
+        "target_tokens": 32768
+      },
+      {
+        "old_question_id": "longqa:7d35861ad177fd314686d225",
+        "doc_id": "github/raphw/byte-buddy/0f9f5d84a878b3f04cd52475c48215dbd53e5053/byte-buddy-dep/src/main/java/net/bytebuddy/ByteBuddy.java",
+        "domain": "code",
+        "target_tokens": 16384
+      },
+      {
+        "old_question_id": "longqa:ae81593c84bb290b4a81072b",
+        "doc_id": "proof-pile-2/arxiv/2209.14497",
+        "domain": "math",
+        "target_tokens": 8192
+      },
+      {
+        "old_question_id": "longqa:9c0d9a2acfae9c2c432cfc62",
+        "doc_id": "caselaw/f2d_483/html/1238-01.html",
+        "domain": "legal",
+        "target_tokens": 32768
+      },
+      {
+        "old_question_id": "longqa:f2d3063dcf5b92709227b5d1",
+        "doc_id": "caselaw/f2d_478/html/1281-01.html",
+        "domain": "legal",
+        "target_tokens": 32768
+      }
+    ],
+    "manifest_counts": {
+      "parents": 75,
+      "generated_candidates": 207,
+      "checked_candidates": 194,
+      "check_rejected": 121,
+      "accepted_questions": 73,
+      "parents_with_accepted_questions": 49,
+      "malformed_generator_output": 6,
+      "invalid_evidence_indices": 13
+    },
+    "matches": [
+      {
+        "position": 0,
+        "old_question_id": "longqa:fb99d4323c1217230d02fe35",
+        "old_doc_id": "github/deeplearning4j/deeplearning4j/c533a2d61d253f917af48b38c7161fa926ff9d26/deeplearning4j-modelimport/src/main/java/org/deeplearning4j/nn/modelimport/keras/utils/KerasLayerUtils.java",
+        "question_id": "longqa:aa68394c92843dab139d49c0",
+        "doc_id": "github/zaproxy/zaproxy/d7c1dea21ba409a602b123b5ae91300f525ecd12/zap/src/test/java/org/zaproxy/zap/extension/api/APIUnitTest.java",
+        "domain": "code",
+        "target_tokens": 8192,
+        "selection": "same_domain_length"
+      },
+      {
+        "position": 1,
+        "old_question_id": "longqa:27598e9d337932056bd72e9c",
+        "old_doc_id": "github/huggingface/pytorch-image-models/324a4e58b6b0365d16dcf8f93739be8f74cd7d37/timm/models/swin_transformer_v2_cr.py",
+        "question_id": "longqa:573fb61ad082863c37be5f4e",
+        "doc_id": "github/zaproxy/zaproxy/d7c1dea21ba409a602b123b5ae91300f525ecd12/zap/src/main/java/org/parosproxy/paros/extension/option/OptionsCertificatePanel.java",
+        "domain": "code",
+        "target_tokens": 16384,
+        "selection": "same_domain_length"
+      },
+      {
+        "position": 2,
+        "old_question_id": "longqa:a34a41d5cd18e83823a51664",
+        "old_doc_id": "github/pinpoint-apm/pinpoint/0f94b21205ca84f01d18283b381615f5e88f3f55/thrift/src/main/java/com/navercorp/pinpoint/thrift/dto/TSpan.java",
+        "question_id": "longqa:a1e75c15ab5af27f8411be23",
+        "doc_id": "github/pinpoint-apm/pinpoint/0f94b21205ca84f01d18283b381615f5e88f3f55/thrift/src/main/java/com/navercorp/pinpoint/thrift/dto/TSpan.java",
+        "domain": "code",
+        "target_tokens": 32768,
+        "selection": "same_parent"
+      },
+      {
+        "position": 3,
+        "old_question_id": "longqa:6aa597b12ca18a7c0b2da320",
+        "old_doc_id": "github/square/leakcanary/2b9b9e67df0d4588fd36d6bec6b1a33bc49e3f1e/docs/recipes.md",
+        "question_id": "longqa:2566355a11c8076cf341607f",
+        "doc_id": "github/square/leakcanary/2b9b9e67df0d4588fd36d6bec6b1a33bc49e3f1e/docs/recipes.md",
+        "domain": "documents",
+        "target_tokens": 8192,
+        "selection": "same_parent"
+      },
+      {
+        "position": 4,
+        "old_question_id": "longqa:81f94324ac3b8311c9728288",
+        "old_doc_id": "github/paddlepaddle/paddlespeech/ea9ee93739f023916ef7736ad8f4d8d3a34d4f8a/demos/speech_server/README.md",
+        "question_id": "longqa:d8d983728a13e98105c52b57",
+        "doc_id": "github/paddlepaddle/paddlespeech/ea9ee93739f023916ef7736ad8f4d8d3a34d4f8a/demos/speech_server/README.md",
+        "domain": "documents",
+        "target_tokens": 16384,
+        "selection": "same_parent"
+      },
+      {
+        "position": 5,
+        "old_question_id": "longqa:ef3ffca2979b863459dbd544",
+        "old_doc_id": "caselaw/f2d_474/html/0514-01.html",
+        "question_id": "longqa:963e3eab884a26bf1b06eec7",
+        "doc_id": "caselaw/f2d_474/html/0514-01.html",
+        "domain": "legal",
+        "target_tokens": 8192,
+        "selection": "same_parent"
+      },
+      {
+        "position": 6,
+        "old_question_id": "longqa:d26fa755854364d1a98e1a71",
+        "old_doc_id": "caselaw/f2d_474/html/0565-01.html",
+        "question_id": "longqa:1429648a9387bbf885726024",
+        "doc_id": "caselaw/f2d_474/html/0565-01.html",
+        "domain": "legal",
+        "target_tokens": 16384,
+        "selection": "same_parent"
+      },
+      {
+        "position": 7,
+        "old_question_id": "longqa:a4c533a286d9cc30a2ac5934",
+        "old_doc_id": "caselaw/sw3d_308/html/0843-01.html",
+        "question_id": "longqa:479224fab7b0f90de92e05cf",
+        "doc_id": "caselaw/sw3d_308/html/0843-01.html",
+        "domain": "legal",
+        "target_tokens": 32768,
+        "selection": "same_parent"
+      },
+      {
+        "position": 8,
+        "old_question_id": "longqa:02289f3dfd15e2dd40107716",
+        "old_doc_id": "proof-pile-2/arxiv/2005.14481",
+        "question_id": "longqa:3ea2b8c5f9bfbbe1d8dadf9a",
+        "doc_id": "proof-pile-2/arxiv/2005.14481",
+        "domain": "math",
+        "target_tokens": 8192,
+        "selection": "same_parent"
+      },
+      {
+        "position": 9,
+        "old_question_id": "longqa:286481d093a1357757a8594c",
+        "old_doc_id": "proof-pile-2/arxiv/1607.04617",
+        "question_id": "longqa:cbb0047bf3b706ac8c28ef77",
+        "doc_id": "proof-pile-2/arxiv/1607.04617",
+        "domain": "math",
+        "target_tokens": 16384,
+        "selection": "same_parent"
+      },
+      {
+        "position": 10,
+        "old_question_id": "longqa:476705ffc7a942e822a8006f",
+        "old_doc_id": "proof-pile-2/arxiv/2203.02009",
+        "question_id": "longqa:d844a95c69267bf31c4de305",
+        "doc_id": "proof-pile-2/arxiv/2203.02009",
+        "domain": "math",
+        "target_tokens": 32768,
+        "selection": "same_parent"
+      },
+      {
+        "position": 11,
+        "old_question_id": "longqa:7d35861ad177fd314686d225",
+        "old_doc_id": "github/raphw/byte-buddy/0f9f5d84a878b3f04cd52475c48215dbd53e5053/byte-buddy-dep/src/main/java/net/bytebuddy/ByteBuddy.java",
+        "question_id": "longqa:c677dc1c0bd5c79cff7afd31",
+        "doc_id": "github/libgdx/libgdx/1900f0593506091c63146579c7bacb84e99a357d/gdx/src/com/badlogic/gdx/graphics/g2d/PolygonSpriteBatch.java",
+        "domain": "code",
+        "target_tokens": 16384,
+        "selection": "same_domain_length"
+      },
+      {
+        "position": 12,
+        "old_question_id": "longqa:ae81593c84bb290b4a81072b",
+        "old_doc_id": "proof-pile-2/arxiv/2209.14497",
+        "question_id": "longqa:0cb0a5e8e62e494a4c5cf983",
+        "doc_id": "proof-pile-2/arxiv/2209.14497",
+        "domain": "math",
+        "target_tokens": 8192,
+        "selection": "same_parent"
+      },
+      {
+        "position": 13,
+        "old_question_id": "longqa:9c0d9a2acfae9c2c432cfc62",
+        "old_doc_id": "caselaw/f2d_483/html/1238-01.html",
+        "question_id": "longqa:6cc7ccb84778407dd77b63b7",
+        "doc_id": "caselaw/f2d_483/html/1238-01.html",
+        "domain": "legal",
+        "target_tokens": 32768,
+        "selection": "same_parent"
+      },
+      {
+        "position": 14,
+        "old_question_id": "longqa:f2d3063dcf5b92709227b5d1",
+        "old_doc_id": "caselaw/f2d_478/html/1281-01.html",
+        "question_id": "longqa:8d8b1ab39e357461eebb218f",
+        "doc_id": "caselaw/f2d_478/html/1281-01.html",
+        "domain": "legal",
+        "target_tokens": 32768,
+        "selection": "same_parent"
+      }
+    ],
+    "selected_rows_sha256": "a86c16cb81e699fd866e53413c776627b757ee41d964301786c009cb23b9fd5a"
+  },
+  "review": "Fixed15 bounded manual grounding and evidence-necessity check; no model judge, no population error-rate inference; new questions on mostly matched parents, not same-question model comparison",
+  "aggregate": {
+    "counts": {
+      "parents": 75,
+      "generated_candidates": 207,
+      "checked_candidates": 194,
+      "check_rejected": 121,
+      "accepted_questions": 73,
+      "parents_with_accepted_questions": 49,
+      "malformed_generator_output": 6,
+      "invalid_evidence_indices": 13
+    },
+    "by_domain_length": {
+      "code:8192": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 5
+      },
+      "code:16384": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 2
+      },
+      "code:32768": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 9
+      },
+      "documents:8192": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 3
+      },
+      "documents:16384": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 4
+      },
+      "documents:32768": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 2
+      },
+      "legal:8192": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 5
+      },
+      "legal:16384": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 7
+      },
+      "legal:32768": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 8
+      },
+      "math:8192": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 6
+      },
+      "math:16384": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 7
+      },
+      "math:32768": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 7
+      },
+      "office:8192": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 2
+      },
+      "office:16384": {
+        "parents": 5,
+        "generated_candidates": 15,
+        "accepted_questions": 4
+      },
+      "office:32768": {
+        "parents": 5,
+        "generated_candidates": 12,
+        "accepted_questions": 2
+      }
+    },
+    "dispositions": {
+      "check_rejected": 121,
+      "accepted": 73,
+      "invalid_evidence_indices": 13
+    },
+    "invalid_indices": {
+      "('documents', 'duplicate')": 6,
+      "('office', 'duplicate')": 5,
+      "('code', 'duplicate')": 1,
+      "('documents', 'other')": 1
+    },
+    "rejected_checker_false_flags": {
+      "needs_multiple_sections": 109,
+      "supported": 5,
+      "supported,self_contained": 4,
+      "supported,needs_multiple_sections": 3
+    },
+    "finish_reasons": {
+      "generator_stop": 69,
+      "checker_stop": 194,
+      "generator_length": 6
+    },
+    "generator_empty_candidates_receipts": [
+      {
+        "source_id": "ed48152cb06af64ff7cd3320e7310657e820254f5207f3ee3d67224cd1c45e61",
+        "domain": "office",
+        "target_tokens": 8192,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 3039
+      },
+      {
+        "source_id": "17a4ac75d0b9dc0c0ca4fb006779fc0b56fa9108416fc2dcef681ed3642b8568",
+        "domain": "code",
+        "target_tokens": 16384,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 1325
+      },
+      {
+        "source_id": "0a7895ca6d65b391dd72523853033182f7796bb1f6d7b95b3b819572c13dceea",
+        "domain": "legal",
+        "target_tokens": 8192,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 1911
+      },
+      {
+        "source_id": "24486b90211a833a2143b4eb409e244d1a14a13b42ce83595689d17f601cf4fd",
+        "domain": "office",
+        "target_tokens": 32768,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 5312
+      },
+      {
+        "source_id": "fbe29b96afed324a8adfd32805a5cd23a8c2d31bb55576b68ae08464986e69f3",
+        "domain": "math",
+        "target_tokens": 32768,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 2146
+      },
+      {
+        "source_id": "5cdc3de1086f95fd14dc727d573cebadee83eb752f08d3b98abbae4022a7eb2e",
+        "domain": "math",
+        "target_tokens": 8192,
+        "finish_reason": "length",
+        "output_tokens": 1024,
+        "chars": 3141
+      }
+    ],
+    "accepted_control_character_rows": [
+      {
+        "id": "longqa:3ea2b8c5f9bfbbe1d8dadf9a",
+        "chars": {
+          "0x8": 8
+        }
+      }
+    ],
+    "temporary_label_scan_matches": [],
+    "all15_exact_spans_match": true
+  },
+  "grounding_counts": {
+    "supported": 11,
+    "incomplete_support": 1,
+    "incorrect": 1,
+    "qualification": 2
+  },
+  "multiple_support_counts": {
+    "redundant": 11,
+    "distributed_lookup": 1,
+    "related": 3
+  },
+  "findings": [
+    {
+      "position": 0,
+      "id": "longqa:aa68394c92843dab139d49c0",
+      "domain": "code",
+      "target_tokens": 8192,
+      "source_tokens": 7061,
+      "doc_id": "github/zaproxy/zaproxy/d7c1dea21ba409a602b123b5ae91300f525ecd12/zap/src/test/java/org/zaproxy/zap/extension/api/APIUnitTest.java",
+      "selection": "same_domain_length",
+      "old_question_id": "longqa:fb99d4323c1217230d02fe35",
+      "evidence_indices": [
+        0,
+        1
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit1 alone contains both secure-mode cases: proxying=true expects https://zap/; proxying=false with address127.0.0.1:8080 expects https://127.0.0.1:8080/. Unit0 is unnecessary."
+    },
+    {
+      "position": 1,
+      "id": "longqa:573fb61ad082863c37be5f4e",
+      "domain": "code",
+      "target_tokens": 16384,
+      "source_tokens": 11545,
+      "doc_id": "github/zaproxy/zaproxy/d7c1dea21ba409a602b123b5ae91300f525ecd12/zap/src/main/java/org/parosproxy/paros/extension/option/OptionsCertificatePanel.java",
+      "selection": "same_domain_length",
+      "old_question_id": "longqa:27598e9d337932056bd72e9c",
+      "evidence_indices": [
+        1,
+        7
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit7 alone implements the checkbox handler and disables the tabbed pane plus interactive key-store, PKCS12 and PKCS11 controls. Unit1 only adds initialization context."
+    },
+    {
+      "position": 2,
+      "id": "longqa:a1e75c15ab5af27f8411be23",
+      "domain": "code",
+      "target_tokens": 32768,
+      "source_tokens": 24635,
+      "doc_id": "github/pinpoint-apm/pinpoint/0f94b21205ca84f01d18283b381615f5e88f3f55/thrift/src/main/java/com/navercorp/pinpoint/thrift/dto/TSpan.java",
+      "selection": "same_parent",
+      "old_question_id": "longqa:a34a41d5cd18e83823a51664",
+      "evidence_indices": [
+        1,
+        4
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit4 alone shows isSetElapsed returning EncodingUtils.testBit(__isset_bitfield,__ELAPSED_ISSET_ID). Unit1 defines the constant value, but the answer does not require that value."
+    },
+    {
+      "position": 3,
+      "id": "longqa:2566355a11c8076cf341607f",
+      "domain": "documents",
+      "target_tokens": 8192,
+      "source_tokens": 6875,
+      "doc_id": "github/square/leakcanary/2b9b9e67df0d4588fd36d6bec6b1a33bc49e3f1e/docs/recipes.md",
+      "selection": "same_parent",
+      "old_question_id": "longqa:6aa597b12ca18a7c0b2da320",
+      "evidence_indices": [
+        1,
+        2
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit2 alone contains the complete BugsnagLeakUploader implementation, client.notify calls with metadata, and its installation through LeakCanary.config.copy in Application.onCreate. Unit1 repeats the generic listener recipe."
+    },
+    {
+      "position": 4,
+      "id": "longqa:d8d983728a13e98105c52b57",
+      "domain": "documents",
+      "target_tokens": 16384,
+      "source_tokens": 12355,
+      "doc_id": "github/paddlepaddle/paddlespeech/ea9ee93739f023916ef7736ad8f4d8d3a34d4f8a/demos/speech_server/README.md",
+      "selection": "same_parent",
+      "old_question_id": "longqa:81f94324ac3b8311c9728288",
+      "evidence_indices": [
+        0,
+        1,
+        8
+      ],
+      "grounding": "incomplete_support",
+      "multiple_support": "distributed_lookup",
+      "temporary_labels_found": false,
+      "note": "Units0/1/8 establish defaults for ASR/TTS/CLS/Text, but do not establish Vector defaults. The full parent section7.1 explicitly gives Vector server_ip127.0.0.1 and port8090, so the full-parent answer is correct while the chosen support is incomplete. This is a coherent cross-client lookup, not a demonstrated long-range reasoning dependency."
+    },
+    {
+      "position": 5,
+      "id": "longqa:963e3eab884a26bf1b06eec7",
+      "domain": "legal",
+      "target_tokens": 8192,
+      "source_tokens": 6329,
+      "doc_id": "caselaw/f2d_474/html/0514-01.html",
+      "selection": "same_parent",
+      "old_question_id": "longqa:ef3ffca2979b863459dbd544",
+      "evidence_indices": [
+        2,
+        3,
+        4
+      ],
+      "grounding": "supported",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Unit2 supplies the discretionary timing/business-judgment rationale; unit3 establishes good faith and due diligence on the actual company record; unit4 supplies the presumption and disposition. The question expressly asks about the rationale, so it does not misstate the source warning that the business-judgment rule itself is not directly applied."
+    },
+    {
+      "position": 6,
+      "id": "longqa:1429648a9387bbf885726024",
+      "domain": "legal",
+      "target_tokens": 16384,
+      "source_tokens": 11790,
+      "doc_id": "caselaw/f2d_474/html/0565-01.html",
+      "selection": "same_parent",
+      "old_question_id": "longqa:d26fa755854364d1a98e1a71",
+      "evidence_indices": [
+        0,
+        1,
+        5
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit1 alone quotes the no-return rule and states that the clock starts when a return is actually filed. Unit0 also gives the same rule; unit5 repeats the statute."
+    },
+    {
+      "position": 7,
+      "id": "longqa:479224fab7b0f90de92e05cf",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 23623,
+      "doc_id": "caselaw/sw3d_308/html/0843-01.html",
+      "selection": "same_parent",
+      "old_question_id": "longqa:a4c533a286d9cc30a2ac5934",
+      "evidence_indices": [
+        13,
+        14,
+        15
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit14 alone gives both national uniformity and freedom from intervention, together with Congress's specific competition/regulation choices. Units13/15 repeat or contextualize these reasons."
+    },
+    {
+      "position": 8,
+      "id": "longqa:3ea2b8c5f9bfbbe1d8dadf9a",
+      "domain": "math",
+      "target_tokens": 8192,
+      "source_tokens": 7813,
+      "doc_id": "proof-pile-2/arxiv/2005.14481",
+      "selection": "same_parent",
+      "old_question_id": "longqa:02289f3dfd15e2dd40107716",
+      "evidence_indices": [
+        3,
+        5
+      ],
+      "grounding": "incorrect",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "The raw generator substitutes beta for alpha: beta0(beta) -> beta(beta)^2/beta. Unit3 instead states beta0(alpha)=O(beta(alpha)^2/alpha), with beta(alpha)<<alpha and comparison at the same rho. The answer's variables/equation are incorrect; unit3 alone contains both comparison and equation. Single-backslash beta/to in JSON also parse into backspace/tab. All three checker flags were true; the original reference is preserved unchanged."
+    },
+    {
+      "position": 9,
+      "id": "longqa:cbb0047bf3b706ac8c28ef77",
+      "domain": "math",
+      "target_tokens": 16384,
+      "source_tokens": 15576,
+      "doc_id": "proof-pile-2/arxiv/1607.04617",
+      "selection": "same_parent",
+      "old_question_id": "longqa:286481d093a1357757a8594c",
+      "evidence_indices": [
+        1,
+        7
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit7 alone states weak-coupling gT=2pi/4 permits concurrence near1, while the strong-coupling measurements drive entanglement to0 like a thermal reservoir; its table names gT=2pi*4. Unit1 repeats the study's main conclusions. The statement is scoped to this study's measurement setting."
+    },
+    {
+      "position": 10,
+      "id": "longqa:d844a95c69267bf31c4de305",
+      "domain": "math",
+      "target_tokens": 32768,
+      "source_tokens": 24327,
+      "doc_id": "proof-pile-2/arxiv/2203.02009",
+      "selection": "same_parent",
+      "old_question_id": "longqa:476705ffc7a942e822a8006f",
+      "evidence_indices": [
+        0,
+        1
+      ],
+      "grounding": "qualification",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "The three complexity forms match units0/1, but the answer omits the positive-proportion-of-Elkies-primes assumption and the Hilbert theorem condition q=p^r with r=o(log p). H is the invariant-height bound in the source. Unit0 supplies the general Schoof log^8 baseline; unit1 supplies the Hilbert and small-height results."
+    },
+    {
+      "position": 11,
+      "id": "longqa:c677dc1c0bd5c79cff7afd31",
+      "domain": "code",
+      "target_tokens": 16384,
+      "source_tokens": 11273,
+      "doc_id": "github/libgdx/libgdx/1900f0593506091c63146579c7bacb84e99a357d/gdx/src/com/badlogic/gdx/graphics/g2d/PolygonSpriteBatch.java",
+      "selection": "same_domain_length",
+      "old_question_id": "longqa:7d35861ad177fd314686d225",
+      "evidence_indices": [
+        1,
+        2,
+        7
+      ],
+      "grounding": "supported",
+      "multiple_support": "related",
+      "temporary_labels_found": false,
+      "note": "Units1/2 show draw branches calling switchTexture on texture changes and flush on capacity limits. Unit7 provides the necessary helper definition: switchTexture calls flush before replacing lastTexture. A natural caller/helper dependency; unit2 is an extra repeated caller."
+    },
+    {
+      "position": 12,
+      "id": "longqa:0cb0a5e8e62e494a4c5cf983",
+      "domain": "math",
+      "target_tokens": 8192,
+      "source_tokens": 7894,
+      "doc_id": "proof-pile-2/arxiv/2209.14497",
+      "selection": "same_parent",
+      "old_question_id": "longqa:ae81593c84bb290b4a81072b",
+      "evidence_indices": [
+        3,
+        4
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit4 alone states that the sphere coupling peak scales with D and the fiber peak is controlled by diameter d, while fiber length c does not appreciably move it. Unit3 repeats the diameter explanation. Interpret the answer as the characteristic peak scale; the source still allows fiber length to affect the wider distribution."
+    },
+    {
+      "position": 13,
+      "id": "longqa:6cc7ccb84778407dd77b63b7",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 22343,
+      "doc_id": "caselaw/f2d_483/html/1238-01.html",
+      "selection": "same_parent",
+      "old_question_id": "longqa:9c0d9a2acfae9c2c432cfc62",
+      "evidence_indices": [
+        0,
+        2
+      ],
+      "grounding": "qualification",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "The no-jurisdiction result, separable commodities and cost-allocation reasoning all appear in unit2. The answer's phrase explicitly excludes overstates the statutory wording: the source derives the exclusion from the Act's natural-gas scope and its judicial interpretation, rather than quoting an express liquid-petroleum exclusion. Unit0 is redundant."
+    },
+    {
+      "position": 14,
+      "id": "longqa:8d8b1ab39e357461eebb218f",
+      "domain": "legal",
+      "target_tokens": 32768,
+      "source_tokens": 26708,
+      "doc_id": "caselaw/f2d_478/html/1281-01.html",
+      "selection": "same_parent",
+      "old_question_id": "longqa:f2d3063dcf5b92709227b5d1",
+      "evidence_indices": [
+        11,
+        12
+      ],
+      "grounding": "supported",
+      "multiple_support": "redundant",
+      "temporary_labels_found": false,
+      "note": "Unit12 alone provides all reasons: misrepresentations concerned plant sales, a merger on better terms remained possible, peak-price sales were speculative, and nine years of appreciation included unrelated management effects. Repeated too speculative and speculative is a style defect only."
+    }
+  ]
+}

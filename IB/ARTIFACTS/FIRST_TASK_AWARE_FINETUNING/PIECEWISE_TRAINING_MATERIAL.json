@@ -1,0 +1,31 @@
+{
+  "source_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+  "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+  "train_questions": 4000,
+  "training_epochs": 1,
+  "training_by_family": {
+    "code": 1200,
+    "documents": 320,
+    "financial": 200,
+    "legal": 240,
+    "math_arxiv": 480,
+    "math_textbook": 320,
+    "office": 240,
+    "technical_web": 200,
+    "web": 800
+  },
+  "held_questions": 400,
+  "held_cohorts": {
+    "9b": 200,
+    "27b": 200
+  },
+  "learning_questions": 32,
+  "retrieval_questions": 32398,
+  "selection_sha256": "46590bcffdb9018458f46436885cd97cdcfd442c687f0e3a11a212f5e58b8356",
+  "initialization": "Original P2 paired reconstruction checkpoint; fresh QA optimizer and schedule.",
+  "evidence_tokens": 8192,
+  "max_passages": 16,
+  "compression_ratio": 0.0625,
+  "layout": "Merged control versus one independently query-conditioned part per passage; same total compressed rows.",
+  "limits": "Soft total evidence budget; preserve whole required sources. Passage lengths vary; this is not fixed-size token chunking."
+}

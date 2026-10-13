@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/",
+  "checkpoint": {
+    "name": "continue32k_10k_final_lr",
+    "display_name": "32,000 questions \u00d71 +10,000 fresh questions \u00d71; inherited Adam, constant floor learning rate",
+    "is_final_training_checkpoint": true,
+    "completed_epoch": {
+      "epoch_number": 1,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+    },
+    "total_unique_questions": 42000,
+    "stage_unique_questions": 10000,
+    "stage_epochs": 1,
+    "stage_updates": 1250,
+    "parent_questions": 32000,
+    "source_ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001",
+    "source_reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/LORAS/rag_reader/epoch_001",
+    "archive_ac_directory": "ac",
+    "archive_reader_directory": "reader",
+    "encoder_base": "Qwen/Qwen3.5-2B",
+    "reader_base": "Qwen/Qwen3.5-9B",
+    "encoder_lora_rank": 128,
+    "reader_lora_rank": 128,
+    "compression_ratio": 0.0625,
+    "evidence_tokens": 2048,
+    "max_passages": 4,
+    "synthesis_teacher": "27B",
+    "learning_rates": {
+      "encoder_and_heads": 5e-06,
+      "reader": 2e-06,
+      "schedule": "constant, no warmup"
+    },
+    "optimizer": "Inherited Adam; stage clock0\u21921250, inherited per-parameter clocks start4000 (expected final5250).",
+    "selection": "Completed final pair only; important promising development result, not an intermediate best-panel checkpoint.",
+    "development": {
+      "questions": 400,
+      "answer_nll": 0.5326864100103368,
+      "parent_answer_nll": 0.5688311093481019,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.5794905717715764,
+          "held full context": 0.7343936831953015,
+          "held no context": 1.9902291497093139,
+          "AC \u00b7 32 fixed training questions": 0.5186346885452096
+        },
+        "27b": {
+          "held AC": 0.4858822482490972,
+          "held full context": 0.5649559840924507,
+          "held no context": 1.638458043398401,
+          "AC \u00b7 32 fixed training questions": 0.5186346885452096
+        }
+      },
+      "selected100_answer_nll": 0.5544197651109397,
+      "metric": "Mean per-question answer-only gold-token NLL, nats/token."
+    },
+    "qualitative": {
+      "reviewed": 100,
+      "fixed_supported_denominator": 87,
+      "correct": 71,
+      "parent_correct": 63,
+      "scope": "Descriptive repeated development cohort, all100 retained;13 prior reference concerns excluded uniformly from supported denominator. No independent confirmation or universal-quality claim."
+    },
+    "reserved_confirmation": "Not read or used for this preservation task.",
+    "material_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+    "material_ids_sha256": "605fa673523f97538c98b438fdbcd1b88d84380260aca85c88504ee2555c36a0",
+    "payload_sha256_verified_against_completed_readout": {
+      "ac/ac_modules.pt": {
+        "sha256": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+        "bytes": 1208881673
+      },
+      "ac/side_lora/adapter_config.json": {
+        "sha256": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+        "bytes": 1150
+      },
+      "ac/side_lora/adapter_model.safetensors": {
+        "sha256": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+        "bytes": 349204488
+      },
+      "reader/adapter_config.json": {
+        "sha256": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+        "bytes": 1147
+      },
+      "reader/adapter_model.safetensors": {
+        "sha256": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3",
+        "bytes": 931173960
+      }
+    },
+    "train_job_id": "23511287",
+    "readout_job_id": "23511288",
+    "archive_compute_job": null,
+    "restore": "Restore ac/ and reader/ together with separately available base models. Original completion paths are provenance; they require relocation. Optimizer excluded: inference/fresh-optimizer fine-tuning archive, not exact training resume."
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/checkpoint_metadata.json",
+      "bytes": 3922,
+      "sha256": "68ffa907b396f287bc2a357bc7c5cd896aa9867bbaa414c8ee3e6f36c90dc630",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/continuation_design.json",
+      "bytes": 35786,
+      "sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/inherited_optimizer_check.json",
+      "bytes": 284,
+      "sha256": "ec037e9226734342f9fbf1607a81373a5b264bf3ababd07271a7ae50ccf67929",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/initial_pair.json",
+      "bytes": 6274,
+      "sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/initialization.json",
+      "bytes": 1136,
+      "sha256": "2245f67c2ed30a5fdcb4cfa4f094e43175c47a282405db95c6de4cab0fa42008",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/material_ids.json",
+      "bytes": 748835,
+      "sha256": "065230210b8b0f2ffb6231dcb115b77c60453b4fd15a14d795c26d1f43454668",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/panel_01250.json",
+      "bytes": 1775757,
+      "sha256": "b1dd53830ea76e966ec405239b1fd28cef5c69dd18f1d1f02cef541b93cf46d4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/parent_archive_manifest.json",
+      "bytes": 10941,
+      "sha256": "c52d8cbf140dbf491273ea1739119d14bd81d9746ae998a4b8d8a9d9f2356666",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/parent_baseline_replay.json",
+      "bytes": 574,
+      "sha256": "da6e41370ad396c42e7471ac0ce3ea7054d85d9bcea70acd4eed1d4cc34b88e8",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/parent_input_check.json",
+      "bytes": 194,
+      "sha256": "adefb93b67890c5b148c6d465b5be27b673c7f3dbe5834641dbbe63904981d2d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/preparation_receipt.json",
+      "bytes": 8170,
+      "sha256": "6dcfc7fd31efda389343745fcf7f9b43648778401f83fcf56a9228ada4d74677",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/qualitative_review_receipt.json",
+      "bytes": 1159,
+      "sha256": "515731026fd14ddbf261196e706d2d59e92a60e0c3f6711291e07a8a150e37e4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/qualitative_review_summary.json",
+      "bytes": 28802,
+      "sha256": "768b8a6b73af30ccfecf752c3431f3e96c678676c74231f145c96a1fa3d9a63c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/readout_identity.json",
+      "bytes": 56137,
+      "sha256": "9a8774ff7a0c12953441b54a073b36ba56d0ceb8ee1661fd199a966b9f73e8e5",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/result.json",
+      "bytes": 1476398,
+      "sha256": "a7fa5afce4160cb5e3ff15eb3611fc58655f4d51dd915925368a9dee3c52ab77",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/row_budget.json",
+      "bytes": 861,
+      "sha256": "eb7260c67beefc4f72d5e42acd61789b4079323327cef9e1169546ef041a6ea0",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/run_identity.json",
+      "bytes": 645,
+      "sha256": "b2fd63869b8786c77197eb77141f9c504a9249c636f5c0f7d63b9733501bbc5c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/run_recipe.json",
+      "bytes": 7695,
+      "sha256": "5ddbd6f09449f51e9ed13834748571cc270a6b136311561876c8da6769e6b1b6",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/source_receipt.json",
+      "bytes": 805,
+      "sha256": "eefd6c729a15608254e070ac186507eba32c318e2297bd6c6c237b1ae75ea77a",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/training_config.json",
+      "bytes": 1014,
+      "sha256": "22474d21b581ceb2a53a0e76c8184222dd1c562a2c7bcabb076b8e47ab57e98a",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2493427939,
+  "contents": "Important final paired AC/encoder-LoRA/reader-LoRA and completion/training/initialization/readout provenance. No optimizer, base models, full corpus, native benchmark data, or intermediate checkpoints.",
+  "validation": "Explicit immutable paths transferred using guarded rsync; five payload/config SHA256 hashes and completion records verified locally against completed evaluator. No heavy login hashing, compute/GPU job, or repeat restoration. Every create-only PUT and subsequent HEAD matched SHA256 and size; manifest uploaded and verified last."
+}

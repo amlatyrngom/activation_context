@@ -1,0 +1,276 @@
+{
+  "all_matched_checks_passed": true,
+  "manifest_sha256": "1b562046266cb0bb4b4808b43c82258f0da6f8aaea8a82c13f3208050ab2ded3",
+  "results": {
+    "p2_reconstruction": {
+      "summary": {
+        "passages": 420,
+        "target_tokens": 279584,
+        "token_weighted_nll": 0.10640637532717816,
+        "passage_mean_nll": 0.11736180527756611,
+        "token_accuracy": 0.9647798164361461
+      },
+      "by_source": {
+        "swe": {
+          "passages": 60,
+          "target_tokens": 30794,
+          "token_weighted_nll": 0.07069154243609134,
+          "passage_mean_nll": 0.09841296398080886,
+          "token_accuracy": 0.9762291395409491
+        },
+        "research": {
+          "passages": 60,
+          "target_tokens": 52130,
+          "token_weighted_nll": 0.16789995616199346,
+          "passage_mean_nll": 0.14343034947911898,
+          "token_accuracy": 0.9461730296269227
+        },
+        "teacher": {
+          "passages": 60,
+          "target_tokens": 30756,
+          "token_weighted_nll": 0.140545275275834,
+          "passage_mean_nll": 0.18024666065660616,
+          "token_accuracy": 0.9532448922952915
+        },
+        "code": {
+          "passages": 60,
+          "target_tokens": 37208,
+          "token_weighted_nll": 0.08287298482762347,
+          "passage_mean_nll": 0.08335145322295527,
+          "token_accuracy": 0.9716996307002425
+        },
+        "docs": {
+          "passages": 60,
+          "target_tokens": 42841,
+          "token_weighted_nll": 0.125811762989951,
+          "passage_mean_nll": 0.14441588368887703,
+          "token_accuracy": 0.9588011458364122
+        },
+        "math": {
+          "passages": 60,
+          "target_tokens": 65909,
+          "token_weighted_nll": 0.0572492044406785,
+          "passage_mean_nll": 0.06035481247430046,
+          "token_accuracy": 0.9803365293047104
+        },
+        "web": {
+          "passages": 60,
+          "target_tokens": 19946,
+          "token_weighted_nll": 0.11284126678978877,
+          "passage_mean_nll": 0.11132051344029606,
+          "token_accuracy": 0.9620475321246116
+        }
+      },
+      "seconds": 161.75571344885975,
+      "peak_gib": 25.30336856842041,
+      "EOS": 4,
+      "capped": 0,
+      "result_sha256": "049d226056262c21d38ebe656dbb41d61ef4971c1009e5b9565e8c9b04e6de31"
+    },
+    "qa42k": {
+      "summary": {
+        "passages": 420,
+        "target_tokens": 279584,
+        "token_weighted_nll": 1.081234008477483,
+        "passage_mean_nll": 1.187252858635925,
+        "token_accuracy": 0.7357001864025471
+      },
+      "by_source": {
+        "swe": {
+          "passages": 60,
+          "target_tokens": 30794,
+          "token_weighted_nll": 0.8334455342242693,
+          "passage_mean_nll": 0.9433643554647764,
+          "token_accuracy": 0.7976229172515709
+        },
+        "research": {
+          "passages": 60,
+          "target_tokens": 52130,
+          "token_weighted_nll": 1.4531300959181424,
+          "passage_mean_nll": 1.4075082997481028,
+          "token_accuracy": 0.6752349935336235
+        },
+        "teacher": {
+          "passages": 60,
+          "target_tokens": 30756,
+          "token_weighted_nll": 1.2078988569225286,
+          "passage_mean_nll": 1.3303808530171712,
+          "token_accuracy": 0.7163155187163122
+        },
+        "code": {
+          "passages": 60,
+          "target_tokens": 37208,
+          "token_weighted_nll": 0.9591402383971742,
+          "passage_mean_nll": 0.9567049776514371,
+          "token_accuracy": 0.7606697465605285
+        },
+        "docs": {
+          "passages": 60,
+          "target_tokens": 42841,
+          "token_weighted_nll": 1.310930140370573,
+          "passage_mean_nll": 1.4184005737304688,
+          "token_accuracy": 0.690833548337944
+        },
+        "math": {
+          "passages": 60,
+          "target_tokens": 65909,
+          "token_weighted_nll": 0.6352302435225459,
+          "passage_mean_nll": 0.7430049414436023,
+          "token_accuracy": 0.8075528440693737
+        },
+        "web": {
+          "passages": 60,
+          "target_tokens": 19946,
+          "token_weighted_nll": 1.5046706029940402,
+          "passage_mean_nll": 1.5114060093959172,
+          "token_accuracy": 0.6403790294114008
+        }
+      },
+      "seconds": 122.14011977799237,
+      "peak_gib": 25.30336856842041,
+      "EOS": 4,
+      "capped": 0,
+      "result_sha256": "b326f26569112e8be023f7d096572b8e4710f4681e7999daa22b5809aa037ec9"
+    },
+    "qa50k_cosine": {
+      "summary": {
+        "passages": 420,
+        "target_tokens": 279584,
+        "token_weighted_nll": 1.079777333984032,
+        "passage_mean_nll": 1.1803915653200376,
+        "token_accuracy": 0.7368197063525825
+      },
+      "by_source": {
+        "swe": {
+          "passages": 60,
+          "target_tokens": 30794,
+          "token_weighted_nll": 0.8372887236569356,
+          "passage_mean_nll": 0.9427414988478025,
+          "token_accuracy": 0.7966487012339496
+        },
+        "research": {
+          "passages": 60,
+          "target_tokens": 52130,
+          "token_weighted_nll": 1.448779136661648,
+          "passage_mean_nll": 1.4030357797940571,
+          "token_accuracy": 0.6772108141335008
+        },
+        "teacher": {
+          "passages": 60,
+          "target_tokens": 30756,
+          "token_weighted_nll": 1.2042041122729252,
+          "passage_mean_nll": 1.3264434551199278,
+          "token_accuracy": 0.7181363070211914
+        },
+        "code": {
+          "passages": 60,
+          "target_tokens": 37208,
+          "token_weighted_nll": 0.9658649430740998,
+          "passage_mean_nll": 0.9555884569883346,
+          "token_accuracy": 0.7606428772022047
+        },
+        "docs": {
+          "passages": 60,
+          "target_tokens": 42841,
+          "token_weighted_nll": 1.3109152926519603,
+          "passage_mean_nll": 1.409624304374059,
+          "token_accuracy": 0.6909736011412344
+        },
+        "math": {
+          "passages": 60,
+          "target_tokens": 65909,
+          "token_weighted_nll": 0.6356098422349005,
+          "passage_mean_nll": 0.7427482232451439,
+          "token_accuracy": 0.8073252579292951
+        },
+        "web": {
+          "passages": 60,
+          "target_tokens": 19946,
+          "token_weighted_nll": 1.4816206342523965,
+          "passage_mean_nll": 1.4825592388709385,
+          "token_accuracy": 0.6501052857347779
+        }
+      },
+      "seconds": 120.61537086777389,
+      "peak_gib": 25.30336856842041,
+      "EOS": 4,
+      "capped": 0,
+      "result_sha256": "9a8eaaff8e9860ab9edf9e7f9f6329483b8db879eb5533822d80919f45a59a00"
+    },
+    "qa42k_plus960_32k": {
+      "summary": {
+        "passages": 420,
+        "target_tokens": 279584,
+        "token_weighted_nll": 1.0808220773345207,
+        "passage_mean_nll": 1.1852632588573864,
+        "token_accuracy": 0.7363010757644644
+      },
+      "by_source": {
+        "swe": {
+          "passages": 60,
+          "target_tokens": 30794,
+          "token_weighted_nll": 0.8342608897230908,
+          "passage_mean_nll": 0.9432021384437879,
+          "token_accuracy": 0.797817756971028
+        },
+        "research": {
+          "passages": 60,
+          "target_tokens": 52130,
+          "token_weighted_nll": 1.4526320300883395,
+          "passage_mean_nll": 1.4089935590823492,
+          "token_accuracy": 0.6763859543362666
+        },
+        "teacher": {
+          "passages": 60,
+          "target_tokens": 30756,
+          "token_weighted_nll": 1.2085849107075364,
+          "passage_mean_nll": 1.3279311239719391,
+          "token_accuracy": 0.7174209935077301
+        },
+        "code": {
+          "passages": 60,
+          "target_tokens": 37208,
+          "token_weighted_nll": 0.959529699842998,
+          "passage_mean_nll": 0.9546097879608472,
+          "token_accuracy": 0.7603472348577334
+        },
+        "docs": {
+          "passages": 60,
+          "target_tokens": 42841,
+          "token_weighted_nll": 1.3088118135713456,
+          "passage_mean_nll": 1.4136511822541555,
+          "token_accuracy": 0.6917905727467593
+        },
+        "math": {
+          "passages": 60,
+          "target_tokens": 65909,
+          "token_weighted_nll": 0.6371640193720834,
+          "passage_mean_nll": 0.7466304764151573,
+          "token_accuracy": 0.8074618063121118
+        },
+        "web": {
+          "passages": 60,
+          "target_tokens": 19946,
+          "token_weighted_nll": 1.4953150135050994,
+          "passage_mean_nll": 1.501824543873469,
+          "token_accuracy": 0.6426351172484402
+        }
+      },
+      "seconds": 121.98117066733539,
+      "peak_gib": 25.30336856842041,
+      "EOS": 4,
+      "capped": 0,
+      "result_sha256": "d74124e35ef1775b10025d94002107af8e3b655263781fcfeb9cd68280f5ebc6"
+    }
+  },
+  "completed_utc": "2026-09-23T19:39:26Z",
+  "job": {
+    "job_id": 23572371,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:08:57",
+    "node": "node3506"
+  },
+  "scope": "Complete paired-system reconstruction retention; same original420 held passages,279584 scored assistant tokens,1/16, same L40S allocation/runtime. Encoder versus reader effects not isolated.",
+  "greedy": "Four predetermined short passages perpair; all16EOS/no caps; illustrative rather than aggregate free-generation accuracy."
+}

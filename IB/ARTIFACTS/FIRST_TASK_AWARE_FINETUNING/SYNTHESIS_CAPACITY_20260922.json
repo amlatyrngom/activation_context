@@ -1,0 +1,439 @@
+{
+  "sampled_utc": "2026-09-22T08:22:13.151383+00:00",
+  "slurm_job_id": "23465658",
+  "scope": "Manifest and explicit protection markers only; no source/weight trees scanned, no payload hashes, no deletion or flag changes.",
+  "manifest_file": "/home/ngom/orcd/pool/activation/taskaware/reports/synthesis_bank_v2/manifest.json",
+  "manifest_sha256": "29b8fc324a22414df135afd0381d6206a5bc19a98cc6729736d282a6af99b5f8",
+  "manifest_updated_utc": "2026-09-22 08:22:11 UTC",
+  "manifest_bytes": 12194522,
+  "source_pool_ids": [
+    "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c"
+  ],
+  "active_pool": "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c",
+  "published_questions": 147000,
+  "accepted_questions": 147805,
+  "target_questions": 200000,
+  "remaining_balanced_questions": 53000,
+  "families": {
+    "code": {
+      "share": 0.3,
+      "registered_sources": 77546,
+      "cursor": 48160,
+      "remaining_sources": 29386,
+      "published_questions": 44100,
+      "accepted_questions": 44323,
+      "committed_surplus": 223,
+      "required_accepted_to_target": 15677,
+      "minimum_future_accepted_per_source": 0.533485333151841,
+      "consumed_cursor_rows": 48160,
+      "accepted_from_current_pool": 44323,
+      "observed_accepted_per_source": 0.920328073089701,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1470,
+      "recent_accepted_per_source": 0.91875,
+      "projected_additional_at_cumulative_yield": 27044.760755813953,
+      "projected_additional_at_recent_yield": 26998.387499999997,
+      "source_receipts": 48160,
+      "recent_yield_safety_multiple": 1.7221654334375198,
+      "forecast_total_balanced_at_lifetime_yield": 237892.5358527132,
+      "forecast_sources_needed_to_target": 17035,
+      "forecast_remaining_sources_at_target": 12351
+    },
+    "math_arxiv": {
+      "share": 0.12,
+      "registered_sources": 82047,
+      "cursor": 12224,
+      "remaining_sources": 69823,
+      "published_questions": 17640,
+      "accepted_questions": 17722,
+      "committed_surplus": 82,
+      "required_accepted_to_target": 6278,
+      "minimum_future_accepted_per_source": 0.08991306589519213,
+      "consumed_cursor_rows": 12224,
+      "accepted_from_current_pool": 17722,
+      "observed_accepted_per_source": 1.449770942408377,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 2298,
+      "recent_accepted_per_source": 1.43625,
+      "projected_additional_at_cumulative_yield": 101227.3565117801,
+      "projected_additional_at_recent_yield": 100283.28375,
+      "source_receipts": 12224,
+      "recent_yield_safety_multiple": 15.973762942019752,
+      "forecast_total_balanced_at_lifetime_yield": 991244.6375981675,
+      "forecast_sources_needed_to_target": 4331,
+      "forecast_remaining_sources_at_target": 65492
+    },
+    "math_textbook": {
+      "share": 0.08,
+      "registered_sources": 25645,
+      "cursor": 10048,
+      "remaining_sources": 15597,
+      "published_questions": 11760,
+      "accepted_questions": 11821,
+      "committed_surplus": 61,
+      "required_accepted_to_target": 4179,
+      "minimum_future_accepted_per_source": 0.2679361415656857,
+      "consumed_cursor_rows": 10048,
+      "accepted_from_current_pool": 11821,
+      "observed_accepted_per_source": 1.176453025477707,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1780,
+      "recent_accepted_per_source": 1.1125,
+      "projected_additional_at_cumulative_yield": 18349.137838375795,
+      "projected_additional_at_recent_yield": 17351.662500000002,
+      "source_receipts": 10048,
+      "recent_yield_safety_multiple": 4.152108758076095,
+      "forecast_total_balanced_at_lifetime_yield": 377126.7229796974,
+      "forecast_sources_needed_to_target": 3553,
+      "forecast_remaining_sources_at_target": 12044
+    },
+    "financial": {
+      "share": 0.05,
+      "registered_sources": 22899,
+      "cursor": 5888,
+      "remaining_sources": 17011,
+      "published_questions": 7350,
+      "accepted_questions": 7400,
+      "committed_surplus": 50,
+      "required_accepted_to_target": 2600,
+      "minimum_future_accepted_per_source": 0.15284227852565987,
+      "consumed_cursor_rows": 5888,
+      "accepted_from_current_pool": 7400,
+      "observed_accepted_per_source": 1.2567934782608696,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1932,
+      "recent_accepted_per_source": 1.2075,
+      "projected_additional_at_cumulative_yield": 21379.313858695652,
+      "projected_additional_at_recent_yield": 20540.7825,
+      "source_receipts": 5888,
+      "recent_yield_safety_multiple": 7.900300961538462,
+      "forecast_total_balanced_at_lifetime_yield": 575586.277173913,
+      "forecast_sources_needed_to_target": 2069,
+      "forecast_remaining_sources_at_target": 14942
+    },
+    "web": {
+      "share": 0.2,
+      "registered_sources": 95000,
+      "cursor": 35104,
+      "remaining_sources": 59896,
+      "published_questions": 29400,
+      "accepted_questions": 29563,
+      "committed_surplus": 163,
+      "required_accepted_to_target": 10437,
+      "minimum_future_accepted_per_source": 0.17425203686389742,
+      "consumed_cursor_rows": 35104,
+      "accepted_from_current_pool": 29563,
+      "observed_accepted_per_source": 0.8421547402005469,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1358,
+      "recent_accepted_per_source": 0.84875,
+      "projected_additional_at_cumulative_yield": 50441.70031905196,
+      "projected_additional_at_recent_yield": 50836.73,
+      "source_receipts": 35104,
+      "recent_yield_safety_multiple": 4.870818242790074,
+      "forecast_total_balanced_at_lifetime_yield": 400023.50159525976,
+      "forecast_sources_needed_to_target": 12394,
+      "forecast_remaining_sources_at_target": 47502
+    },
+    "technical_web": {
+      "share": 0.05,
+      "registered_sources": 18223,
+      "cursor": 8672,
+      "remaining_sources": 9551,
+      "published_questions": 7350,
+      "accepted_questions": 7401,
+      "committed_surplus": 51,
+      "required_accepted_to_target": 2599,
+      "minimum_future_accepted_per_source": 0.272118102816459,
+      "consumed_cursor_rows": 8672,
+      "accepted_from_current_pool": 7401,
+      "observed_accepted_per_source": 0.8534363468634686,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1410,
+      "recent_accepted_per_source": 0.88125,
+      "projected_additional_at_cumulative_yield": 8151.170548892988,
+      "projected_additional_at_recent_yield": 8416.81875,
+      "source_receipts": 8672,
+      "recent_yield_safety_multiple": 3.2384835513659103,
+      "forecast_total_balanced_at_lifetime_yield": 311043.41097785975,
+      "forecast_sources_needed_to_target": 3046,
+      "forecast_remaining_sources_at_target": 6505
+    },
+    "documents": {
+      "share": 0.08,
+      "registered_sources": 26317,
+      "cursor": 7456,
+      "remaining_sources": 18861,
+      "published_questions": 11760,
+      "accepted_questions": 11820,
+      "committed_surplus": 60,
+      "required_accepted_to_target": 4180,
+      "minimum_future_accepted_per_source": 0.22162133502995598,
+      "consumed_cursor_rows": 7456,
+      "accepted_from_current_pool": 11820,
+      "observed_accepted_per_source": 1.5853004291845494,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 2499,
+      "recent_accepted_per_source": 1.561875,
+      "projected_additional_at_cumulative_yield": 29900.351394849786,
+      "projected_additional_at_recent_yield": 29458.524374999997,
+      "source_receipts": 7456,
+      "recent_yield_safety_multiple": 7.047493869617224,
+      "forecast_total_balanced_at_lifetime_yield": 521504.3924356223,
+      "forecast_sources_needed_to_target": 2637,
+      "forecast_remaining_sources_at_target": 16224
+    },
+    "legal": {
+      "share": 0.06,
+      "registered_sources": 30433,
+      "cursor": 5184,
+      "remaining_sources": 25249,
+      "published_questions": 8820,
+      "accepted_questions": 8873,
+      "committed_surplus": 53,
+      "required_accepted_to_target": 3127,
+      "minimum_future_accepted_per_source": 0.1238464889698602,
+      "consumed_cursor_rows": 5184,
+      "accepted_from_current_pool": 8873,
+      "observed_accepted_per_source": 1.7116126543209877,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 2678,
+      "recent_accepted_per_source": 1.67375,
+      "projected_additional_at_cumulative_yield": 43216.50790895062,
+      "projected_additional_at_recent_yield": 42260.51375,
+      "source_receipts": 5184,
+      "recent_yield_safety_multiple": 13.514714982411256,
+      "forecast_total_balanced_at_lifetime_yield": 868158.465149177,
+      "forecast_sources_needed_to_target": 1827,
+      "forecast_remaining_sources_at_target": 23422
+    },
+    "office": {
+      "share": 0.06,
+      "registered_sources": 19673,
+      "cursor": 8864,
+      "remaining_sources": 10809,
+      "published_questions": 8820,
+      "accepted_questions": 8882,
+      "committed_surplus": 62,
+      "required_accepted_to_target": 3118,
+      "minimum_future_accepted_per_source": 0.28846331760569893,
+      "consumed_cursor_rows": 8864,
+      "accepted_from_current_pool": 8882,
+      "observed_accepted_per_source": 1.0020306859205776,
+      "recent_microchunks": 50,
+      "recent_cursor_rows": 1600,
+      "recent_accepted": 1588,
+      "recent_accepted_per_source": 0.9925,
+      "projected_additional_at_cumulative_yield": 10830.949684115523,
+      "projected_additional_at_recent_yield": 10727.9325,
+      "source_receipts": 8864,
+      "recent_yield_safety_multiple": 3.440645445798589,
+      "forecast_total_balanced_at_lifetime_yield": 328549.1614019254,
+      "forecast_sources_needed_to_target": 3112,
+      "forecast_remaining_sources_at_target": 7697
+    }
+  },
+  "registered_extensions": {
+    "code__additional_cached_files_20260921_v1.jsonl": {
+      "sha256": "9c9006a5065623c4299d6d9446cda625a83dd19971fc21a0dc54c1f8fe600a48",
+      "source_family": "code",
+      "added_sources": 14339
+    },
+    "documents__official_manuals_20260921_v1.jsonl": {
+      "sha256": "10b51fa0674c0a53757ab216fbb7b289f08f5a356697619dff259b8ff6aabe23",
+      "source_family": "documents",
+      "added_sources": 18000
+    },
+    "financial__sec_filings_20260921_v1.jsonl": {
+      "sha256": "1f7492dc45609dfcfefcce436a8da46c568876d549f7d5471e57c5c1445437cd",
+      "source_family": "financial",
+      "added_sources": 18294
+    },
+    "math_textbook__quantitative_exposition_20260921_v1.jsonl": {
+      "sha256": "591f510aaf4409787d700cec268cbbdeb23ecd06e2241341b3744d6644c697a7",
+      "source_family": "math_textbook",
+      "added_sources": 5931
+    },
+    "math_textbook__web_exposition_20260921_v1.jsonl": {
+      "sha256": "eb58b5b0e4508dc30ab0670ce6c39d230be663148adba981c303ccdd93264bfa",
+      "source_family": "math_textbook",
+      "added_sources": 12001
+    },
+    "office__business_workflows_20260921_v1.jsonl": {
+      "sha256": "22750cbe9f57a70457cea96eeaebf3a2657b7b2cba9fd34fd46db4ca873a9f67",
+      "source_family": "office",
+      "added_sources": 8565
+    },
+    "technical_web__bright_corpora_20260921_v1.jsonl": {
+      "sha256": "97b883adf06d22da13d282b9a6d1e472638013abfcc3f146203c43bfdf341614",
+      "source_family": "technical_web",
+      "added_sources": 12045
+    },
+    "web__msmarco_headroom_20260921_v1.jsonl": {
+      "sha256": "4587781c6ccabc8a2d8e1fa7be2fdc465d020f856bdece539dd3976b7e3879ff",
+      "source_family": "web",
+      "added_sources": 40000
+    }
+  },
+  "recipes": [
+    {
+      "generator": "Qwen/Qwen3.5-9B dynamic FP8, vLLM",
+      "seed": 20260922,
+      "source_sha256": "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c",
+      "source_counts": {
+        "code": 63207,
+        "math_arxiv": 82047,
+        "math_textbook": 7713,
+        "financial": 4605,
+        "web": 55000,
+        "technical_web": 6178,
+        "documents": 8317,
+        "legal": 30433,
+        "office": 11108
+      },
+      "questions_per_source": "1 normally; up to 2 math/financial or 3 documents/legal/office for >=1800 tokens",
+      "max_source_tokens": 6144,
+      "generator_script_sha256": "630a82b3e441f1830ce6349bd4a527249e6ddb8d9431c874c1e6ddfb464f8665"
+    },
+    {
+      "generator": "Qwen/Qwen3.5-9B dynamic FP8, vLLM",
+      "seed": 20260922,
+      "source_sha256": "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c",
+      "source_counts": {
+        "code": 77546,
+        "math_arxiv": 82047,
+        "math_textbook": 25645,
+        "financial": 22899,
+        "web": 95000,
+        "technical_web": 18223,
+        "documents": 26317,
+        "legal": 30433,
+        "office": 19673
+      },
+      "questions_per_source": "1 normally; up to 2 math/financial or 3 documents/legal/office for >=1800 tokens",
+      "max_source_tokens": 6144,
+      "generator_script_sha256": "630a82b3e441f1830ce6349bd4a527249e6ddb8d9431c874c1e6ddfb464f8665"
+    }
+  ],
+  "protection_checks": {
+    "reports": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/reports/PRESERVE"
+      ]
+    },
+    "reports/synthesis_bank_v2": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/reports/synthesis_bank_v2/PRESERVE",
+        "/home/ngom/orcd/pool/activation/taskaware/reports/PRESERVE"
+      ]
+    },
+    "reports/synthesis_bank_27b": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/reports/synthesis_bank_27b/PRESERVE",
+        "/home/ngom/orcd/pool/activation/taskaware/reports/PRESERVE"
+      ]
+    },
+    "model_comparison_material": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/model_comparison_material/PRESERVE"
+      ]
+    },
+    "hill_control/selected/update_00900": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/hill_control/selected/update_00900/PRESERVE"
+      ]
+    },
+    "hill_control/selected/update_00500": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/hill_control/selected/update_00500/PRESERVE"
+      ]
+    },
+    "data_8k_1ep": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/data_8k_1ep/PRESERVE"
+      ]
+    },
+    "long_adapt_32k": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/long_adapt_32k/PRESERVE"
+      ]
+    },
+    "oracle_27b_16k_r16": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r16/PRESERVE"
+      ]
+    },
+    "oracle_27b_16k_r8": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r8/PRESERVE"
+      ]
+    },
+    "oracle_9b_16k_r16": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r16/PRESERVE"
+      ]
+    },
+    "oracle_9b_16k_r8": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r8/PRESERVE"
+      ]
+    },
+    "encoder4b_oracle27b_16k_r16": {
+      "exists": true,
+      "preserved_by": [
+        "/home/ngom/orcd/pool/activation/taskaware/encoder4b_oracle27b_16k_r16/PRESERVE"
+      ]
+    }
+  },
+  "capacity_conclusion": "All nine current pools support the remaining 53,000 balanced questions to the 200,000 target at both lifetime and recent 50-microchunk yields. Code has the smallest margin. These are projections, not guaranteed future acceptance.",
+  "validation": "Committed manifest counts/cursors/receipts agree; source counts and all eight registered extension names/counts/hashes match prior manifests. No source payload reread/hash, overlap audit, generation or GPU allocation.",
+  "maintenance": {
+    "slurm_state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 2,
+    "protection_paths_checked": 13,
+    "all_explicit_paths_protected": true,
+    "deleted_bytes": 0,
+    "markers_changed": 0,
+    "headroom": {
+      "local_filesystem": {
+        "sampled_utc": "2026-09-22T08:22:30.184214+00:00",
+        "total_bytes": 519537790976,
+        "used_bytes": 239113723904,
+        "available_bytes": 280407289856
+      },
+      "orcd_cached_quota": {
+        "updated": "2026-09-22 04:06:56 EDT / 08:06:56 UTC",
+        "home_used_GB": 71.0,
+        "home_limit_GB": 200.0,
+        "scratch_used_GB": 824.6,
+        "scratch_limit_GB": 1024.0,
+        "pool_used_GB": 412.6,
+        "pool_limit_GB": 1024.0
+      },
+      "decision": "No pruning: sufficient quota/filesystem headroom. Keep flags, newest approximately250GB and paired-checkpoint protections unchanged.",
+      "scope": "No remote du/find/weight scan; cached quota read through guarded SSH. CPU metadata job23465658 separately records source capacity. No GPU/EC2/CSAIL jobs, generation, S3 writes, data deletion or flag edits."
+    },
+    "next_capacity_recheck": "180,000 published, code entering its registered extension, or a substantial recent-yield decline toward 0.6 accepted/window."
+  }
+}

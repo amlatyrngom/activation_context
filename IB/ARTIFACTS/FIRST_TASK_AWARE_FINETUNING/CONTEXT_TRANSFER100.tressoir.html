@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A calm, linear Tressoir artifact">
+  <title>2k to 32k evidence · AC context transfer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.css">
+<style>
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:.55rem .7rem;text-align:left;vertical-align:top;white-space:nowrap}
+thead th,tbody td{border-bottom:1px solid var(--nb-border)}
+</style></head>
+<body>
+  <main class="tressoir-document">
+<header class="document-header"><p class="eyebrow">Task-aware AC · development follow-up</p>
+<h1>From 2k to 32k tokens of evidence</h1>
+<p>6 of 6 model/context combinations complete. Snapshot: 2026-09-22 11:01 UTC.</p></header>
+<section class="section"><h2>What this measures</h2>
+<p>Each system trained on the same 16,000 unique 27B-generated questions for one epoch, using roughly 2k evidence tokens. This screen adds retrieved distractors to the same 100 development questions. It measures robustness to longer evidence, not training at 32k or multi-document reasoning.</p>
+<p>The required source stays whole. AC and full context receive the same evidence; each system uses its own final paired reader. Both evidence budgets are recomputed with microbatch one. The 4B system started from a different reconstruction pair, so this is a comparison of available trained systems.</p>
+<p>All values are gold-answer NLL in nats per token, averaged equally over questions. Lower is better. No generated-answer quality claim follows from this screen alone.</p></section>
+<section class="section"><h2>Scores on the same 100 questions</h2>
+<table><thead><tr><th>System</th><th>Evidence</th><th>AC</th><th>Own full context</th><th>Own no context</th><th>State</th></tr></thead><tbody><tr><td>2B encoder · 1/16</td><td>2k</td><td>0.640</td><td>0.632</td><td>1.849</td><td>complete</td></tr><tr><td>2B encoder · 1/16</td><td>32k</td><td>0.697</td><td>0.548</td><td>1.849</td><td>complete</td></tr><tr><td>2B encoder · 1/8</td><td>2k</td><td>0.679</td><td>0.619</td><td>1.849</td><td>complete</td></tr><tr><td>2B encoder · 1/8</td><td>32k</td><td>0.754</td><td>0.542</td><td>1.849</td><td>complete</td></tr><tr><td>4B encoder · 1/16</td><td>2k</td><td>0.617</td><td>0.632</td><td>1.843</td><td>complete</td></tr><tr><td>4B encoder · 1/16</td><td>32k</td><td>0.679</td><td>0.554</td><td>1.843</td><td>complete</td></tr></tbody></table><p class="subtle">Full/no-context controls here use the final paired reader. The separate answer-review report also shows frozen initial-reader controls.</p></section><section class="section"><h2>Effect of added distractors</h2><table><thead><tr><th>System</th><th>AC change</th><th>Full-context change</th><th>No-context replay change</th><th>Questions with lower AC NLL</th></tr></thead><tbody><tr><td>2B encoder · 1/16</td><td>+0.0566</td><td>-0.0835</td><td>+0.0000</td><td>34 / 100</td></tr><tr><td>2B encoder · 1/8</td><td>+0.0752</td><td>-0.0768</td><td>+0.0000</td><td>33 / 100</td></tr><tr><td>4B encoder · 1/16</td><td>+0.0617</td><td>-0.0783</td><td>+0.0000</td><td>51 / 100</td></tr></tbody></table><p>Changes are long minus short: positive means worse NLL. The no-context replay measures numerical consistency for the same reader and questions.</p></section><section class="section"><h2>Actual encoder and row budgets</h2><table><thead><tr><th>System</th><th>Evidence</th><th>Mean encoder tokens</th><th>Mean rows</th><th>Mean passages</th><th>Row cap hit</th><th>Rows / tokens</th></tr></thead><tbody><tr><td>2B encoder · 1/16</td><td>2k</td><td>1,978</td><td>124.1</td><td>2.2</td><td>0 / 100</td><td>0.0628</td></tr><tr><td>2B encoder · 1/16</td><td>32k</td><td>32,878</td><td>2,055.3</td><td>22.4</td><td>0 / 100</td><td>0.0625</td></tr><tr><td>2B encoder · 1/8</td><td>2k</td><td>1,978</td><td>247.7</td><td>2.2</td><td>0 / 100</td><td>0.1252</td></tr><tr><td>2B encoder · 1/8</td><td>32k</td><td>32,878</td><td>4,091.7</td><td>22.4</td><td>86 / 100</td><td>0.1245</td></tr><tr><td>4B encoder · 1/16</td><td>2k</td><td>1,978</td><td>124.1</td><td>2.2</td><td>0 / 100</td><td>0.0628</td></tr><tr><td>4B encoder · 1/16</td><td>32k</td><td>32,878</td><td>2,055.3</td><td>22.4</td><td>0 / 100</td><td>0.0625</td></tr></tbody></table><p>The saved maximum is 4,096 rows. At 1/8, framing around a 32k source can activate this cap; the realized ratio above includes it. Required sources are retained whole, so the short evidence budget can be exceeded.</p></section><section class="section"><h2>Generator cohorts</h2><table><thead><tr><th>System</th><th>Evidence</th><th>AC · 9B / 27B</th><th>Own full · 9B / 27B</th><th>Own none · 9B / 27B</th></tr></thead><tbody><tr><td>2B encoder · 1/16</td><td>2k</td><td>0.674 / 0.607</td><td>0.689 / 0.575</td><td>1.895 / 1.804</td></tr><tr><td>2B encoder · 1/16</td><td>32k</td><td>0.739 / 0.655</td><td>0.619 / 0.478</td><td>1.895 / 1.804</td></tr><tr><td>2B encoder · 1/8</td><td>2k</td><td>0.704 / 0.654</td><td>0.678 / 0.560</td><td>1.901 / 1.797</td></tr><tr><td>2B encoder · 1/8</td><td>32k</td><td>0.787 / 0.721</td><td>0.614 / 0.470</td><td>1.901 / 1.797</td></tr><tr><td>4B encoder · 1/16</td><td>2k</td><td>0.622 / 0.612</td><td>0.691 / 0.573</td><td>1.894 / 1.792</td></tr><tr><td>4B encoder · 1/16</td><td>32k</td><td>0.738 / 0.619</td><td>0.624 / 0.484</td><td>1.894 / 1.792</td></tr></tbody></table><p>Each generator contributes the same 50 questions to every cell. This fixed development sample is not the reserved confirmation set.</p></section><section class="section"><h2>Evidence and limits</h2><p>All completed views contain 100 per-question scores. Shared evidence fingerprints agree across systems at each context length; checkpoint hashes agree across context lengths. The worker checks resolved encoder requests and reader spans against the reported row budgets. Partial views remain pending.</p>
+<p>One seed, a development sample, no training or decodes in this screen. Final-pair checks retain the trained compression ratio. No checkpoint is selected by these scores.</p>
+<p><a href="./CONTEXT_TRANSFER100.evidence.json" data-tressoir-open-file>Exact scores, budgets and provenance</a> · <a href="./CONTEXT_TRANSFER100.md" data-tressoir-open-file>Design and validation</a> · <a href="./MODEL_COMPARISON_COHORT100.tressoir.html" data-tressoir-open-file>Source-grounded answers at short context</a></p>
+<p class="subtle">Static milestone report. No refresh timer or automatic scrolling.</p></section>
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-tsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-rust.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-sql.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/meta.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.js"></script>
+</body>
+</html>

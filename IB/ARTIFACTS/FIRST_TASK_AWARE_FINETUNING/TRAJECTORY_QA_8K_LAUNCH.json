@@ -1,0 +1,36 @@
+{
+  "cpu_job": null,
+  "gpu_job": 23647582,
+  "source": "5ec13f17b09918fa3187ffe71b7449298a0c7111",
+  "status": "running: establishing fixed panels",
+  "training_questions": 8000,
+  "epochs": 1,
+  "original_held_questions": 100,
+  "initialization": "strong42k RAG pair; freshAdam",
+  "partition": "mit_normal_gpu",
+  "gpu": "l40s:1",
+  "capacity": "native proven micro1; all-length checkpointing; CPU Adam between steps",
+  "gpu_seconds": "actual allocation remaining minus900s; exact resume/requeue",
+  "report": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION/orcd/trajectory_qa_8k_v12/report/report.tressoir.html",
+  "cpu_request": "8 CPU,32GiB,15\u201330min; mit_normal or mit_preemptable; reduced from64GiB/1h based on larger main preparation using13.8GiB/12min",
+  "shared_cpu_step": {
+    "allocation": 23628641,
+    "cpus": 4,
+    "memory_gib": 24,
+    "minutes": 20,
+    "gpu_access": "none",
+    "on_success": "Submit8kGPU V12 native worker",
+    "on_failure": "Inspect exact failure; no silent row drops"
+  },
+  "previous_jobs": {
+    "cpu": 23645858,
+    "gpu": 23645859,
+    "status": "cancelled while pending; replaced frozen source after reporting-span fix"
+  },
+  "preparation_seconds": 55.33654,
+  "held_questions": 100,
+  "prepared_cache_bytes": 634082786,
+  "partition_change_reason": "Trajectory synthesis moved to RTX preemptible capacity; both normal slots became free, leaving one normal slot for summary synthesis.",
+  "started_utc": "2026-09-24T14:14:25Z",
+  "node": "node3405"
+}

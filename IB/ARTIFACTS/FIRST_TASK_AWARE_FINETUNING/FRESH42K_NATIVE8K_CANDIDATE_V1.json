@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "utc": "2026-09-23T04:39:06.180970+00:00",
+  "status": "candidate_ready_for_root_review_and_allocated_cpu_preparation",
+  "parent": "continue32k_10k_final_lr",
+  "parent_decision": {
+    "path": "/workspace/IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/FRESH8K_NATIVE_PARENT_DECISION_V1.json",
+    "sha256": "3591fc301312c0f4d6cb7c62c1a0756467ae96b61c98c2d7ae2a61c25fa298db"
+  },
+  "files_sha256": {
+    "run_qa_fresh42k_native8k_v1.py": "7fdc1fed7da33395cff4e50e728642e43077757c334f3c37b03606bd542bda4f",
+    "prepare_fresh42k_native8k_v1.py": "d30161755e53188886e4a72c925647f1aa4f61f8ecd98a5ddf26da7940a2f408",
+    "train_fresh42k_native8k_v1.sbatch": "214517d58b856dd656d007328e7fcd0dc4b7a5c4b5adc38246aaddaea0c8740d",
+    "evaluate_fresh42k_native8k_v1.py": "37054b5c5822e61d32278ab8ccdefdb7d85048913491ca63281fa04844eeccf5",
+    "evaluate_fresh42k_native8k_v1.sbatch": "4b4718184f8a99095300a40673e2a431f3296e2c04f163866fea81b3bef31e0a"
+  },
+  "cpu_validation": {
+    "path": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/fresh42k_native8k_v1_cpu.json",
+    "sha256": "02ee57cf47695d0c1e70847b28619908e109e1250cea4063275521062068c484",
+    "fixture": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/check_fresh42k_native8k_v1.py",
+    "fixture_sha256": "2b5afd06a6fb53a61ebf25b50a61c276c2c7926b38898a317fbb5ec050473ec3",
+    "check_count": 32,
+    "checks": [
+      "exact frozen trainer imported",
+      "new mix has exact quotas",
+      "committed surplus supplies published arxiv deficit",
+      "prior IDs and normalized NFC/casefold question excluded",
+      "late reserved request closure excludes earlier sibling",
+      "unchanged corruption filter rejects controls",
+      "new balanced32 learning questions belong to fresh train",
+      "selection independent of parent and deterministic",
+      "bank and manifest remain byte-identical",
+      "missing prior continuation record fails",
+      "changed committed microchunk rejected",
+      "native parent400 inputs and100 metadata bind",
+      "native full400 score schema replays exactly",
+      "changed native row capacity rejected",
+      "changed compressed input rejected",
+      "native baseline numerical mismatch fails",
+      "harness unchanged",
+      "material_items unchanged",
+      "answer_positions unchanged",
+      "allocate_passage_rows unchanged",
+      "resume_checkpoint unchanged",
+      "archive_attempt unchanged",
+      "validate_initial_references unchanged",
+      "only total updates/duration differ from native constant-floor config",
+      "actual final guard accepts Adam6250/stage1000",
+      "unadvanced inherited Adam rejected",
+      "half-stage final rejected",
+      "own complete1000 pair with Adam6250 and50k unique accepted",
+      "incomplete native result rejected",
+      "wrong cumulative count rejected",
+      "selected pair substitution rejected",
+      "fresh reporting flag and cumulative planned count explicit"
+    ],
+    "pinned_trainer_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "python_syntax": "passed all3 workers",
+    "shell_syntax": "passed both launchers"
+  },
+  "candidate": {
+    "new_unique_questions": 8000,
+    "epochs": 1,
+    "prior_unique_questions": 42000,
+    "final_unique_questions": 50000,
+    "stage_updates": 1000,
+    "adam_start": 5250,
+    "adam_final": 6250,
+    "learning_rates": [
+      5e-06,
+      2e-06
+    ],
+    "lr_schedule": "constant",
+    "evidence_budget": 2048,
+    "max_passages": 4,
+    "passage_parts": false,
+    "ratio": 0.0625,
+    "encode_batch_max_tokens": 65536,
+    "gradient_checkpointing_min_tokens": 1700,
+    "microbatch": 2,
+    "logical_batch": 8,
+    "training_wall_minutes": 120,
+    "trainer_seconds": 6600,
+    "readout_wall_minutes": 20,
+    "source_tree": "train_ws_night_v1",
+    "training_run_name": "continue42k_8k_final_lr_floor",
+    "questions_previously_seen": false
+  },
+  "data_availability_receipt": {
+    "path": "/workspace/IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/FRESH8K_BANK_AVAILABILITY_V1.json",
+    "sha256": "8f3be51f7fdd30ae07f7df0e21566f6a12a1386475bbd4e3b96ab655592a0d14"
+  },
+  "handoff": {
+    "path": "/workspace/IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/FRESH42K_NATIVE8K_CANDIDATE_V1.md",
+    "sha256": "80c3938a536183fef833058c1eb494c8d12fc5ddb46b4fa45b2099c3a1e7ed8a"
+  },
+  "actual_material_prepared": false,
+  "real_optimizer_transformed": false,
+  "staged": false,
+  "submitted": false,
+  "confirmation_scores_read": false,
+  "remaining": [
+    "Allocated CPU selection with exact committed file hashes and preserved originalheld400/retrieval",
+    "Independent actual Adam5250 copy and tensor-byte verification",
+    "Root inspection/freeze of generated design before training",
+    "Runtime initial400/token-score replay before updates",
+    "Own final1000/Adam6250 publication plus400 replay/100 actual answers"
+  ],
+  "limits": [
+    "Fresh question text and IDs; raw source documents and unrelated training-request siblings may recur",
+    "No GPU execution or real optimizer/material preparation by this task",
+    "Gentle long-context candidate parent remains separate/open"
+  ]
+}

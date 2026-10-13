@@ -1,0 +1,536 @@
+{
+  "selection": {
+    "bank": "IB/TMP/SYNC/TASK_AWARE_QA/synthesis_bank_27b",
+    "manifest_sha256": "5e44bf7075b0ab121c629b7430338ccbed598c21c07897e1b87e45c7bdc01671",
+    "snapshot_updated_utc": "2026-09-21 21:18:53 UTC",
+    "frame_first_microchunks": 10,
+    "frame_accepted_questions": 246,
+    "seed": "20260921-oracle27b-initial-manual-check-v1",
+    "selection_rule": "Use first ten committed microchunks (all nine families, 246 accepted); sort accepted question IDs by sha256(seed + colon + id) within each family; select four code and two of each other family, with distinct source_request_id per family. Selection frozen before reading questions or evidence.",
+    "quotas": {
+      "code": 4,
+      "documents": 2,
+      "financial": 2,
+      "legal": 2,
+      "math_arxiv": 2,
+      "math_textbook": 2,
+      "office": 2,
+      "technical_web": 2,
+      "web": 2
+    },
+    "selected": [
+      {
+        "ordinal": 1,
+        "id": "4204100004643f32fbee568f3928b5075ceed730ff2401fa01949c65b3cc94a0",
+        "source_family": "code",
+        "source_request_id": "5a6eccb50686c6c9:20260922:26:e2634c0996f54565",
+        "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+        "line": 16,
+        "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7"
+      },
+      {
+        "ordinal": 2,
+        "id": "12927f4df001eca50d1db44e13dc5f62f489b7766622bd8bc7bda88a1aa6bc2a",
+        "source_family": "code",
+        "source_request_id": "5a6eccb50686c6c9:20260922:11:54f5e07a5702bfe8",
+        "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+        "line": 7,
+        "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7"
+      },
+      {
+        "ordinal": 3,
+        "id": "f3435e38d95f191d2c0dc007f767e94f3d95e9ccaa7e2e2d7343e7c85b9ba623",
+        "source_family": "code",
+        "source_request_id": "5a6eccb50686c6c9:20260922:28:cbccf1fc13bc18f2",
+        "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+        "line": 18,
+        "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7"
+      },
+      {
+        "ordinal": 4,
+        "id": "c577c5fa95943f5bfa7459be941db7a3f4600376ae6a24ce67da6d3ded4e6aad",
+        "source_family": "code",
+        "source_request_id": "5a6eccb50686c6c9:20260922:13:f101566d7649bae4",
+        "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+        "line": 8,
+        "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7"
+      },
+      {
+        "ordinal": 5,
+        "id": "1cf2899cfafd6f42e23ec1acf39e0639e58f2f833dd2a68650063a41badc6fd6",
+        "source_family": "documents",
+        "source_request_id": "65d3e5d9221e9e17:20260922:0:e5a94202c66ad7f1",
+        "file": "microchunks/chunk_000006_documents_fe87cfbee42d4c95bbdbb3317fc8d7aa.jsonl",
+        "line": 1,
+        "file_sha256": "fe6f5f95c0282f1f674853d4b0a1b06d671f708c74fdf9ca5ed182b37cc7355e"
+      },
+      {
+        "ordinal": 6,
+        "id": "a9c82a4175dd5c0fec7d026e69d2dea17427ee04e498dbe6dfcfb335f53fc2c6",
+        "source_family": "documents",
+        "source_request_id": "00ebc8a279cb0604:20260922:2:5642f7bb1ee7a49d",
+        "file": "microchunks/chunk_000006_documents_fe87cfbee42d4c95bbdbb3317fc8d7aa.jsonl",
+        "line": 20,
+        "file_sha256": "fe6f5f95c0282f1f674853d4b0a1b06d671f708c74fdf9ca5ed182b37cc7355e"
+      },
+      {
+        "ordinal": 7,
+        "id": "4ce05abe1b3175e5ed35de39b07f7481afab8aae5e0860b52e6b66d446f1876c",
+        "source_family": "financial",
+        "source_request_id": "9f3f706fc3777749:20260922:13:961a7b69c0abf1ce",
+        "file": "microchunks/chunk_000003_financial_9d4339cb19a64de5b7fbdded95fa9b04.jsonl",
+        "line": 16,
+        "file_sha256": "d1b91325693606f7be3e9b03c02d4fc88b4306ee802f44ac8c502395d0be06f4"
+      },
+      {
+        "ordinal": 8,
+        "id": "890b026dc1e638da34d5e760904660aeaaaab37ec98a4a7a27743f2863955aca",
+        "source_family": "financial",
+        "source_request_id": "9f3f706fc3777749:20260922:1:42e4e0bfac687147",
+        "file": "microchunks/chunk_000003_financial_9d4339cb19a64de5b7fbdded95fa9b04.jsonl",
+        "line": 3,
+        "file_sha256": "d1b91325693606f7be3e9b03c02d4fc88b4306ee802f44ac8c502395d0be06f4"
+      },
+      {
+        "ordinal": 9,
+        "id": "96d22fb3ec15562479ab72f90aa0b46f35f7e29cf8eaa339de0031d3bdbaca92",
+        "source_family": "legal",
+        "source_request_id": "914282b0b67f0a9b:20260922:8:22459556f5f5f989",
+        "file": "microchunks/chunk_000007_legal_becc39fcff24466fab7139b78e81aaed.jsonl",
+        "line": 5,
+        "file_sha256": "35e7dde8e98c24bfa4039a05eb7344fe52f3a8ee2660b6f7addef7723a9df446"
+      },
+      {
+        "ordinal": 10,
+        "id": "fddf0f7d4ecdceb7f0229de54ea673c8a1c7286cc3c6b00e7d7d1563e8123771",
+        "source_family": "legal",
+        "source_request_id": "ae86c56d1f43eec7:20260922:14:a40264393aa89f18",
+        "file": "microchunks/chunk_000007_legal_becc39fcff24466fab7139b78e81aaed.jsonl",
+        "line": 54,
+        "file_sha256": "35e7dde8e98c24bfa4039a05eb7344fe52f3a8ee2660b6f7addef7723a9df446"
+      },
+      {
+        "ordinal": 11,
+        "id": "ee5bf06b11acf1a5c8ca7cb97eee6b4e261b36c05810a02a58229f30d1713c70",
+        "source_family": "math_arxiv",
+        "source_request_id": "9f3f706fc3777749:20260922:27:e136ffaecd121add",
+        "file": "microchunks/chunk_000001_math_arxiv_c90c7af282094491a9ffa8c35f6b42e0.jsonl",
+        "line": 35,
+        "file_sha256": "a2195fa75c7c0c0d2062bab95e1c45e40486d4227af6f14ce11c4582977a16ca"
+      },
+      {
+        "ordinal": 12,
+        "id": "fb62521293af82fce4825c439c2dc7af5ff8a323cbabc759dc47b1cf54bb5d74",
+        "source_family": "math_arxiv",
+        "source_request_id": "9f3f706fc3777749:20260922:20:9b2429d426372ff2",
+        "file": "microchunks/chunk_000001_math_arxiv_c90c7af282094491a9ffa8c35f6b42e0.jsonl",
+        "line": 28,
+        "file_sha256": "a2195fa75c7c0c0d2062bab95e1c45e40486d4227af6f14ce11c4582977a16ca"
+      },
+      {
+        "ordinal": 13,
+        "id": "83bfa59ab9c73d397f573936bc9b30984f107ab8a6b5f2cf8d378d0713dd46ef",
+        "source_family": "math_textbook",
+        "source_request_id": "9f3f706fc3777749:20260922:3:603de3c3837804bd",
+        "file": "microchunks/chunk_000002_math_textbook_9086b55d49bf4d92ae58adcbe45d4ba1.jsonl",
+        "line": 11,
+        "file_sha256": "1e6f269efbef7f39fcc02d4264aae8fec91f6a3b9dd267dee992dd8bb3ede1a7"
+      },
+      {
+        "ordinal": 14,
+        "id": "90ae4933a673500b4ec29103d42a746f86a3082e84deb361a8cad94e5b9fe812",
+        "source_family": "math_textbook",
+        "source_request_id": "4080532c225b1156:20260922:11:e011652df621872f",
+        "file": "microchunks/chunk_000002_math_textbook_9086b55d49bf4d92ae58adcbe45d4ba1.jsonl",
+        "line": 6,
+        "file_sha256": "1e6f269efbef7f39fcc02d4264aae8fec91f6a3b9dd267dee992dd8bb3ede1a7"
+      },
+      {
+        "ordinal": 15,
+        "id": "9eee3d85aad34ecf4ed9d6c7f304baabda08175d1578168c8e2a3caa8f273bb0",
+        "source_family": "office",
+        "source_request_id": "914282b0b67f0a9b:20260922:21:9daaf2c5844b3732",
+        "file": "microchunks/chunk_000008_office_ff67e50f321d4f21adfe780c67dd5557.jsonl",
+        "line": 10,
+        "file_sha256": "56e2d4bc74bc992f2ae1b4708f8374cd8ea5546843b1199a7026d507fa869e8c"
+      },
+      {
+        "ordinal": 16,
+        "id": "78c604263ec98e661e595b203f011e3b4b9ec5b544ce2bcb7499701a28540ee0",
+        "source_family": "office",
+        "source_request_id": "ae86c56d1f43eec7:20260922:0:a41bfd6947574566",
+        "file": "microchunks/chunk_000008_office_ff67e50f321d4f21adfe780c67dd5557.jsonl",
+        "line": 16,
+        "file_sha256": "56e2d4bc74bc992f2ae1b4708f8374cd8ea5546843b1199a7026d507fa869e8c"
+      },
+      {
+        "ordinal": 17,
+        "id": "0e84baa71217cdbf0039d4590d4ba0b343fbc5d559a36d45d3a89092f808ee89",
+        "source_family": "technical_web",
+        "source_request_id": "65d3e5d9221e9e17:20260922:23:e4b911408893ed19",
+        "file": "microchunks/chunk_000005_technical_web_24d0ff0dbc1f4184a1aa0a8aa6575442.jsonl",
+        "line": 7,
+        "file_sha256": "65e44cee38eeb5c61d1c08b8a3e02946cc2edcb1da51ab5c2131d694ecfd10d1"
+      },
+      {
+        "ordinal": 18,
+        "id": "9f44c605aa6da7c24a877bb9b82b03644e1f677010899c33da0c5977dc26d2e6",
+        "source_family": "technical_web",
+        "source_request_id": "65d3e5d9221e9e17:20260922:14:ca63841c096c70a3",
+        "file": "microchunks/chunk_000005_technical_web_24d0ff0dbc1f4184a1aa0a8aa6575442.jsonl",
+        "line": 5,
+        "file_sha256": "65e44cee38eeb5c61d1c08b8a3e02946cc2edcb1da51ab5c2131d694ecfd10d1"
+      },
+      {
+        "ordinal": 19,
+        "id": "3a34a1143a56b51999cfaa98d02ffb22ec78a72198851039759099170ddae7b8",
+        "source_family": "web",
+        "source_request_id": "65d3e5d9221e9e17:20260922:20:7393617b27998df3",
+        "file": "microchunks/chunk_000004_web_dc982b13ee8b4edcbb061e93158b0889.jsonl",
+        "line": 8,
+        "file_sha256": "0304c141661170562d87e5a787b3adeb58e4acc40b572789fe8b823f06dabf0d"
+      },
+      {
+        "ordinal": 20,
+        "id": "7e325519091a26aabd311a3ef340918d13f84b1c6f7ef47dca48c8371e4fb0b7",
+        "source_family": "web",
+        "source_request_id": "65d3e5d9221e9e17:20260922:17:2ef5497745743b9d",
+        "file": "microchunks/chunk_000004_web_dc982b13ee8b4edcbb061e93158b0889.jsonl",
+        "line": 7,
+        "file_sha256": "0304c141661170562d87e5a787b3adeb58e4acc40b572789fe8b823f06dabf0d"
+      }
+    ]
+  },
+  "method": "Manual read of each selected question, answer and complete supplied source unit. No model/tool judge, GPU generation, production edits or external fact audit. Arithmetic/equations checked directly.",
+  "summary": {
+    "supported": 15,
+    "qualification_ambiguity": 2,
+    "definite_incorrect": 1,
+    "definite_unsupported_relation": 1,
+    "supported_with_source_caveat": 1
+  },
+  "temporary_number_label_leaks_observed": 0,
+  "findings": [
+    {
+      "ordinal": 1,
+      "id": "4204100004643f32fbee568f3928b5075ceed730ff2401fa01949c65b3cc94a0",
+      "source_family": "code",
+      "source_request_id": "5a6eccb50686c6c9:20260922:26:e2634c0996f54565",
+      "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+      "line": 16,
+      "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7",
+      "verdict": "supported",
+      "question": "In KeycloakUriBuilder.replaceQueryParam, if the query string contains a parameter 'foo=bar' and the method is called with name='foo' and values=null, what happens to the 'foo' parameter in the resulting query string?",
+      "answer": "The 'foo' parameter is removed from the query string because the method skips it during reconstruction and does not re-add it since values is null.",
+      "evidence_and_reason": "The matching paramName triggers continue; after reconstruction, values == null returns without queryParam re-addition.",
+      "source_document_ids": [
+        "keycloak__keycloak/e25b2b05aee074a0ec2bf51118d4249e17e230b8/core/src/main/java/org/keycloak/util/KeycloakUriBuilder.java"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "id": "12927f4df001eca50d1db44e13dc5f62f489b7766622bd8bc7bda88a1aa6bc2a",
+      "source_family": "code",
+      "source_request_id": "5a6eccb50686c6c9:20260922:11:54f5e07a5702bfe8",
+      "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+      "line": 7,
+      "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7",
+      "verdict": "supported",
+      "question": "In the RemovalTest class, when the parameterized test runs with StackSize.DOUBLE, which specific Opcodes constant is verified to be invoked on the MethodVisitor?",
+      "answer": "Opcodes.POP2",
+      "evidence_and_reason": "Parameterized data maps StackSize.DOUBLE to Opcodes.POP2; the non-ZERO branch verifies visitInsn(opcode). The question asks what the test verifies, not an unseen implementation result.",
+      "source_document_ids": [
+        "raphw__byte-buddy/0f9f5d84a878b3f04cd52475c48215dbd53e5053/byte-buddy-dep/src/test/java/net/bytebuddy/implementation/bytecode/RemovalTest.java"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "id": "f3435e38d95f191d2c0dc007f767e94f3d95e9ccaa7e2e2d7343e7c85b9ba623",
+      "source_family": "code",
+      "source_request_id": "5a6eccb50686c6c9:20260922:28:cbccf1fc13bc18f2",
+      "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+      "line": 18,
+      "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7",
+      "verdict": "supported",
+      "question": "In the LocalSourcesWatcher module caching logic, under what specific condition does calling update_watched_modules() trigger the _register_necessary_watchers method after it has previously been called?",
+      "answer": "It triggers when a new module is imported into sys.modules, invalidating the previous cache of watched modules.",
+      "evidence_and_reason": "test_module_caching adds DUMMY_MODULE_2 to sys.modules, calls update_watched_modules, then asserts register.assert_called_once(); unchanged module lists assert_not_called.",
+      "source_document_ids": [
+        "streamlit__streamlit/76bba47f71eeeca22c52d4e599387bb416da15ca/lib/tests/streamlit/watcher/local_sources_watcher_test.py"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "id": "c577c5fa95943f5bfa7459be941db7a3f4600376ae6a24ce67da6d3ded4e6aad",
+      "source_family": "code",
+      "source_request_id": "5a6eccb50686c6c9:20260922:13:f101566d7649bae4",
+      "file": "microchunks/chunk_000000_code_053096fff59040b5a95fab26d8442848.jsonl",
+      "line": 8,
+      "file_sha256": "b8f7d1b4794a300fb337f840acd2fdba997b92efde709363dbfe3ce2cefe60c7",
+      "verdict": "supported",
+      "question": "In the migration script for 'Azure Blob Storage', which specific field is marked as a secret and what are the two required properties defined in its new schema?",
+      "answer": "The secret field is 'connection_string'. The two required properties are 'container' and 'connection_string'.",
+      "evidence_and_reason": "Within the Azure Blob Storage entry, secret_fields is [connection_string] and required is [container, connection_string], rather than values from the adjacent S3 entry.",
+      "source_document_ids": [
+        "prefecthq__prefect/973ff38aa5a92ea59cd7a1052a7a44d1a199f013/src/prefect/server/database/migrations/versions/postgresql/2022_07_06_152528_4cdc2ba709a4_migrates_block_schemas_with_new_secrets_.py"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "id": "1cf2899cfafd6f42e23ec1acf39e0639e58f2f833dd2a68650063a41badc6fd6",
+      "source_family": "documents",
+      "source_request_id": "65d3e5d9221e9e17:20260922:0:e5a94202c66ad7f1",
+      "file": "microchunks/chunk_000006_documents_fe87cfbee42d4c95bbdbb3317fc8d7aa.jsonl",
+      "line": 1,
+      "file_sha256": "fe6f5f95c0282f1f674853d4b0a1b06d671f708c74fdf9ca5ed182b37cc7355e",
+      "verdict": "qualification_ambiguity",
+      "question": "In a Sphinx theme template, what specific condition must be met to display a 'Show on GitHub' link using the injected Read the Docs context, and which exact variable path provides the repository name?",
+      "answer": "The VCS type must equal 'github'; the repository name is accessed via readthedocs.v1.vcs.repo.",
+      "evidence_and_reason": "The example explicitly tests readthedocs.v1.vcs.type == github and uses readthedocs.v1.vcs.repo. However, the source warns that this is a design document for features not yet implemented; the question omits that qualifier. The example answer itself is supported.",
+      "source_document_ids": [
+        "github/readthedocs/readthedocs.org/docs/design/theme-context.rst"
+      ]
+    },
+    {
+      "ordinal": 6,
+      "id": "a9c82a4175dd5c0fec7d026e69d2dea17427ee04e498dbe6dfcfb335f53fc2c6",
+      "source_family": "documents",
+      "source_request_id": "00ebc8a279cb0604:20260922:2:5642f7bb1ee7a49d",
+      "file": "microchunks/chunk_000006_documents_fe87cfbee42d4c95bbdbb3317fc8d7aa.jsonl",
+      "line": 20,
+      "file_sha256": "fe6f5f95c0282f1f674853d4b0a1b06d671f708c74fdf9ca5ed182b37cc7355e",
+      "verdict": "qualification_ambiguity",
+      "question": "According to the rejection notice in PEP 416, why was the proposed frozendict type considered unsuitable for implementing a security sandbox in the Python standard library?",
+      "answer": "Because adding a security sandbox written in Python is frowned upon due to the inherent difficulty of ever proving the sandbox is actually secure.",
+      "evidence_and_reason": "The rejection notice excludes a Python security sandbox from the stdlib/PEP scope because proving security is difficult. The question calls frozendict unsuitable, although the proposal later describes it as helping security proxies. The answer matches the policy objection, but the premise overstates the rejection as a technical unsuitability finding.",
+      "source_document_ids": [
+        "github/python/peps/peps/pep-0416.rst"
+      ]
+    },
+    {
+      "ordinal": 7,
+      "id": "4ce05abe1b3175e5ed35de39b07f7481afab8aae5e0860b52e6b66d446f1876c",
+      "source_family": "financial",
+      "source_request_id": "9f3f706fc3777749:20260922:13:961a7b69c0abf1ce",
+      "file": "microchunks/chunk_000003_financial_9d4339cb19a64de5b7fbdded95fa9b04.jsonl",
+      "line": 16,
+      "file_sha256": "d1b91325693606f7be3e9b03c02d4fc88b4306ee802f44ac8c502395d0be06f4",
+      "verdict": "supported",
+      "question": "Determine the net proceeds per share from the At The Market offerings completed between January 1, 2024, and March 31, 2024, given the total shares issued and total net proceeds.",
+      "answer": "$11.03 per share",
+      "evidence_and_reason": "The Greenwich filing states 27,117 shares and $299,116 net proceeds; 299116/27117 is approximately 11.03057, so $11.03/share is correctly rounded. It uses net, not $332,351 gross proceeds. Naming Greenwich in the question would improve specificity.",
+      "source_document_ids": [
+        "loong/2024-Greenwich LifeSciences, Inc.-j.txt"
+      ]
+    },
+    {
+      "ordinal": 8,
+      "id": "890b026dc1e638da34d5e760904660aeaaaab37ec98a4a7a27743f2863955aca",
+      "source_family": "financial",
+      "source_request_id": "9f3f706fc3777749:20260922:1:42e4e0bfac687147",
+      "file": "microchunks/chunk_000003_financial_9d4339cb19a64de5b7fbdded95fa9b04.jsonl",
+      "line": 3,
+      "file_sha256": "d1b91325693606f7be3e9b03c02d4fc88b4306ee802f44ac8c502395d0be06f4",
+      "verdict": "supported",
+      "question": "Determine the total cash proceeds the Company received from the issuance of Series D Preferred Stock notes in 2020, given that $2,500,000 was later used to repurchase one note and the remaining $1,520,000 was converted.",
+      "answer": "$4,020,000",
+      "evidence_and_reason": "The filing explicitly states $4,020,000 financing in May 2020. $2,500,000 repurchased plus $1,520,000 converted also equals $4,020,000. Naming DynaResource would improve specificity.",
+      "source_document_ids": [
+        "loong/2024-DYNARESOURCE INC-j.txt"
+      ]
+    },
+    {
+      "ordinal": 9,
+      "id": "96d22fb3ec15562479ab72f90aa0b46f35f7e29cf8eaa339de0031d3bdbaca92",
+      "source_family": "legal",
+      "source_request_id": "914282b0b67f0a9b:20260922:8:22459556f5f5f989",
+      "file": "microchunks/chunk_000007_legal_becc39fcff24466fab7139b78e81aaed.jsonl",
+      "line": 5,
+      "file_sha256": "35e7dde8e98c24bfa4039a05eb7344fe52f3a8ee2660b6f7addef7723a9df446",
+      "verdict": "supported",
+      "question": "Why did the appellate court conclude that the trial court abused its discretion regarding the 18 wholly out-of-state appellees, specifically concerning the reasoning used to deny 3M's motion to dismiss?",
+      "answer": "The trial court erroneously relied on the plaintiffs having 'similar claims' rather than providing a detailed factual accounting of each individual's specific connections to the forum.",
+      "evidence_and_reason": "Paragraph 20 says the trial court relied on similar claims instead of a detailed factual accounting of individual forum connections. Paragraphs 19–21 distinguish outright dismissal of 18 appellees and remand for Kern; the answer describes the challenged reasoning rather than changing the disposition.",
+      "source_document_ids": [
+        "caselaw/so2d_926/html/0860-01.html"
+      ]
+    },
+    {
+      "ordinal": 10,
+      "id": "fddf0f7d4ecdceb7f0229de54ea673c8a1c7286cc3c6b00e7d7d1563e8123771",
+      "source_family": "legal",
+      "source_request_id": "ae86c56d1f43eec7:20260922:14:a40264393aa89f18",
+      "file": "microchunks/chunk_000007_legal_becc39fcff24466fab7139b78e81aaed.jsonl",
+      "line": 54,
+      "file_sha256": "35e7dde8e98c24bfa4039a05eb7344fe52f3a8ee2660b6f7addef7723a9df446",
+      "verdict": "supported",
+      "question": "In Haney v. Monsky, what specific legal standard did the Supreme Court of Kentucky apply to determine that Erin Haney's conduct during the 'Night Hike' activity entitled her to qualified official immunity?",
+      "answer": "The Court applied the standard that immunity protects good faith judgment calls made in a legally uncertain environment, determining Haney's duties were discretionary rather than ministerial.",
+      "evidence_and_reason": "The opening holding says Haney duties were discretionary and qualified immunity applied; section III gives the good-faith judgment calls in a legally uncertain environment standard. Both answer elements are present.",
+      "source_document_ids": [
+        "caselaw/sw3d_311/html/0235-01.html"
+      ]
+    },
+    {
+      "ordinal": 11,
+      "id": "ee5bf06b11acf1a5c8ca7cb97eee6b4e261b36c05810a02a58229f30d1713c70",
+      "source_family": "math_arxiv",
+      "source_request_id": "9f3f706fc3777749:20260922:27:e136ffaecd121add",
+      "file": "microchunks/chunk_000001_math_arxiv_c90c7af282094491a9ffa8c35f6b42e0.jsonl",
+      "line": 35,
+      "file_sha256": "a2195fa75c7c0c0d2062bab95e1c45e40486d4227af6f14ce11c4582977a16ca",
+      "verdict": "supported",
+      "question": "According to the definition of a valid complex, if $w_1 \\sqsubseteq w_0$ and the glueing map $g_{w_0}$ maps a boundary point $p_0$ to a point $p_1$ in the interior of the cell for $w_1$, what equality must hold between the cell maps $c_{w_0}$ and $c_{w_1}$?",
+      "answer": "The equality $c_{w_0}(p_0) = c_{w_1}(p_1)$ must hold.",
+      "evidence_and_reason": "Valid-complex compatibility condition (iii) explicitly requires c_w0(p0)=c_w1(p1) when the gluing map identifies the points. The question restricts p1 to the interior, a permitted special case.",
+      "source_document_ids": [
+        "proof-pile-2/arxiv/2112.14539"
+      ]
+    },
+    {
+      "ordinal": 12,
+      "id": "fb62521293af82fce4825c439c2dc7af5ff8a323cbabc759dc47b1cf54bb5d74",
+      "source_family": "math_arxiv",
+      "source_request_id": "9f3f706fc3777749:20260922:20:9b2429d426372ff2",
+      "file": "microchunks/chunk_000001_math_arxiv_c90c7af282094491a9ffa8c35f6b42e0.jsonl",
+      "line": 28,
+      "file_sha256": "a2195fa75c7c0c0d2062bab95e1c45e40486d4227af6f14ce11c4582977a16ca",
+      "verdict": "definite_incorrect",
+      "question": "Given the pivotal limit distribution in Theorem 2 for the canonical case α=2, determine the power of the term n(v̂(x0) - û(x0)) required in the denominator of the confidence interval for the derivative f̂n'(x0) to achieve a non-degenerate limit distribution.",
+      "answer": "The required power is 3/2. The scaling factor is the square root of n(v̂ - û)^3, which corresponds to (n(v̂ - û))^(3/2).",
+      "evidence_and_reason": "The derivative-CI denominator is sqrt(n*(v_hat-u_hat)^3)=n^(1/2)*(v_hat-u_hat)^(3/2). The gold equates it with (n*(v_hat-u_hat))^(3/2)=n^(3/2)*(v_hat-u_hat)^(3/2), larger by factor n. The question incorrectly presupposes one power of the whole product n*width.",
+      "source_document_ids": [
+        "proof-pile-2/arxiv/2006.10264"
+      ]
+    },
+    {
+      "ordinal": 13,
+      "id": "83bfa59ab9c73d397f573936bc9b30984f107ab8a6b5f2cf8d378d0713dd46ef",
+      "source_family": "math_textbook",
+      "source_request_id": "9f3f706fc3777749:20260922:3:603de3c3837804bd",
+      "file": "microchunks/chunk_000002_math_textbook_9086b55d49bf4d92ae58adcbe45d4ba1.jsonl",
+      "line": 11,
+      "file_sha256": "1e6f269efbef7f39fcc02d4264aae8fec91f6a3b9dd267dee992dd8bb3ede1a7",
+      "verdict": "supported",
+      "question": "If a user on Windows copies a spreadsheet range to the clipboard and pastes it into an R script editor, what specific delimiter character separates the columns in the resulting text?",
+      "answer": "Tab character.",
+      "evidence_and_reason": "The Windows/Linux clipboard paragraph states that pasting spreadsheet data into a text editor, including an R script editor, produces tab-delimited text.",
+      "source_document_ids": [
+        "https://stats.libretexts.org/Bookshelves/Introductory_Statistics/Book%3A_Visual_Statistics_Use_R_(Shipunov)/02%3A_How_to_process_the_data/2.07%3A_R_and_Data"
+      ]
+    },
+    {
+      "ordinal": 14,
+      "id": "90ae4933a673500b4ec29103d42a746f86a3082e84deb361a8cad94e5b9fe812",
+      "source_family": "math_textbook",
+      "source_request_id": "4080532c225b1156:20260922:11:e011652df621872f",
+      "file": "microchunks/chunk_000002_math_textbook_9086b55d49bf4d92ae58adcbe45d4ba1.jsonl",
+      "line": 6,
+      "file_sha256": "1e6f269efbef7f39fcc02d4264aae8fec91f6a3b9dd267dee992dd8bb3ede1a7",
+      "verdict": "supported",
+      "question": "In the Davies family domain, if set O is defined as 'people over 25' and set R as 'people wearing wedding rings', what is the relationship between their extensions and intensions, and are the sets equal?",
+      "answer": "O and R have different intensions but identical extensions (Mom and Dad), making the sets equal.",
+      "evidence_and_reason": "The text assigns O and R different intensions but the same extension {Mom,Dad} within the Davies-family domain, and explicitly defines equality by extension.",
+      "source_document_ids": [
+        "https://math.libretexts.org/Bookshelves/Combinatorics_and_Discrete_Mathematics/A_Cool_Brisk_Walk_Through_Discrete_Mathematics_(Davies)/02%3A_Sets/2.2%3A_Defining_sets"
+      ]
+    },
+    {
+      "ordinal": 15,
+      "id": "9eee3d85aad34ecf4ed9d6c7f304baabda08175d1578168c8e2a3caa8f273bb0",
+      "source_family": "office",
+      "source_request_id": "914282b0b67f0a9b:20260922:21:9daaf2c5844b3732",
+      "file": "microchunks/chunk_000008_office_ff67e50f321d4f21adfe780c67dd5557.jsonl",
+      "line": 10,
+      "file_sha256": "56e2d4bc74bc992f2ae1b4708f8374cd8ea5546843b1199a7026d507fa869e8c",
+      "verdict": "definite_unsupported_relation",
+      "question": "In a culture where employees are uncomfortable discussing supervisors due to a hierarchical approach, what specific setting does the text recommend for managers to have open dialogues about building trust?",
+      "answer": "A private, one-on-one setting.",
+      "evidence_and_reason": "The source separately says some cultures favor private one-on-one conversations and other cultures are uncomfortable discussing supervisors because of hierarchy. It never assigns the private-setting recommendation to that latter group. The question/answer joins adjacent but differently scoped statements. This is a grounding failure, not proof the advice would be false in practice.",
+      "source_document_ids": [
+        "https://biz.libretexts.org/Courses/Lumen_Learning/Human_Resources_Management_(Lumen)/16%3A_Global_Human_Resources/18.13%3A_Trust_across_Cultures"
+      ]
+    },
+    {
+      "ordinal": 16,
+      "id": "78c604263ec98e661e595b203f011e3b4b9ec5b544ce2bcb7499701a28540ee0",
+      "source_family": "office",
+      "source_request_id": "ae86c56d1f43eec7:20260922:0:a41bfd6947574566",
+      "file": "microchunks/chunk_000008_office_ff67e50f321d4f21adfe780c67dd5557.jsonl",
+      "line": 16,
+      "file_sha256": "56e2d4bc74bc992f2ae1b4708f8374cd8ea5546843b1199a7026d507fa869e8c",
+      "verdict": "supported",
+      "question": "Based on the pizza example, calculate the difference in total cost per unit between selling 200 pizzas and 800 pizzas, and explain which batch leverages fixed costs more effectively.",
+      "answer": "The difference is $1.80 ($5.40 minus $3.60); the 800-pizza batch leverages fixed costs more effectively because the fixed cost per unit is lower.",
+      "evidence_and_reason": "The table gives $5.40 per pizza at 200 units and $3.60 at 800 units, a $1.80 difference. Fixed cost per unit falls from $2.40 to $0.60; the text explicitly calls the 800-unit batch more effectively leveraged.",
+      "source_document_ids": [
+        "https://biz.libretexts.org/Bookshelves/Accounting/Principles_of_Managerial_Accounting_(Jonick)/05%3A_Cost_Volume_Profit_Analysis/5.01%3A_Introduction_to_Cost_Volume_Profit_Analysis"
+      ]
+    },
+    {
+      "ordinal": 17,
+      "id": "0e84baa71217cdbf0039d4590d4ba0b343fbc5d559a36d45d3a89092f808ee89",
+      "source_family": "technical_web",
+      "source_request_id": "65d3e5d9221e9e17:20260922:23:e4b911408893ed19",
+      "file": "microchunks/chunk_000005_technical_web_24d0ff0dbc1f4184a1aa0a8aa6575442.jsonl",
+      "line": 7,
+      "file_sha256": "65e44cee38eeb5c61d1c08b8a3e02946cc2edcb1da51ab5c2131d694ecfd10d1",
+      "verdict": "supported",
+      "question": "In SciPy 1.12.0, what specific implementation change was made to `scipy.io.mmread`, and which external library is recommended to override its default threading behavior?",
+      "answer": "The function received a C++ implementation; `threadpoolctl` is used to override the default thread count.",
+      "evidence_and_reason": "The SciPy 1.12.0 page states Changed in version 1.12.0: C++ implementation, then gives threadpoolctl.threadpool_limits to override the default CPU-count threading.",
+      "source_document_ids": [
+        "bright/stackoverflow/scipy_io/scipy_io_8"
+      ]
+    },
+    {
+      "ordinal": 18,
+      "id": "9f44c605aa6da7c24a877bb9b82b03644e1f677010899c33da0c5977dc26d2e6",
+      "source_family": "technical_web",
+      "source_request_id": "65d3e5d9221e9e17:20260922:14:ca63841c096c70a3",
+      "file": "microchunks/chunk_000005_technical_web_24d0ff0dbc1f4184a1aa0a8aa6575442.jsonl",
+      "line": 5,
+      "file_sha256": "65e44cee38eeb5c61d1c08b8a3e02946cc2edcb1da51ab5c2131d694ecfd10d1",
+      "verdict": "supported_with_source_caveat",
+      "question": "Unlike Python, which requires external libraries for statistical work, what specific mathematical domains are described as being at the core of Julia's native design?",
+      "answer": "Statistics and linear algebra are at the heart of Julia's native design.",
+      "evidence_and_reason": "The article explicitly says statistics and linear algebra are at Julia's heart and also makes the Python/external-library claim in the question. The latter is an unnecessary broad comparison inherited from this source, not an unsupported addition by the generator. Safer framing attributes the description to the article or omits the Python preamble; no external source audit performed.",
+      "source_document_ids": [
+        "bright/economics/julia_python/juliavspython"
+      ]
+    },
+    {
+      "ordinal": 19,
+      "id": "3a34a1143a56b51999cfaa98d02ffb22ec78a72198851039759099170ddae7b8",
+      "source_family": "web",
+      "source_request_id": "65d3e5d9221e9e17:20260922:20:7393617b27998df3",
+      "file": "microchunks/chunk_000004_web_dc982b13ee8b4edcbb061e93158b0889.jsonl",
+      "line": 8,
+      "file_sha256": "0304c141661170562d87e5a787b3adeb58e4acc40b572789fe8b823f06dabf0d",
+      "verdict": "supported",
+      "question": "In plants exhibiting only primary growth, which tissue system persists throughout the plant's life, and what specific meristems give rise to the tissues associated with this growth pattern?",
+      "answer": "The epidermis persists throughout the life of such plants, while the tissues originate from the apical meristems.",
+      "evidence_and_reason": "The passage says epidermis persists throughout the life of plants with only primary growth, and defines primary-growth tissues as originating from apical meristems.",
+      "source_document_ids": [
+        "msmarco:raw:3739:6"
+      ]
+    },
+    {
+      "ordinal": 20,
+      "id": "7e325519091a26aabd311a3ef340918d13f84b1c6f7ef47dca48c8371e4fb0b7",
+      "source_family": "web",
+      "source_request_id": "65d3e5d9221e9e17:20260922:17:2ef5497745743b9d",
+      "file": "microchunks/chunk_000004_web_dc982b13ee8b4edcbb061e93158b0889.jsonl",
+      "line": 7,
+      "file_sha256": "0304c141661170562d87e5a787b3adeb58e4acc40b572789fe8b823f06dabf0d",
+      "verdict": "supported",
+      "question": "Which specific neurotransmitter do SSRIs like fluoxetine aim to balance in the brain when treating obsessive-compulsive disorder?",
+      "answer": "Serotonin.",
+      "evidence_and_reason": "The passage identifies SSRIs as selective serotonin reuptake inhibitors and names serotonin in its neurotransmitter explanation. The answer is the requested source-grounded identification, not an independently reviewed medical claim.",
+      "source_document_ids": [
+        "msmarco:raw:1365:2"
+      ]
+    }
+  ],
+  "limits": "Fixed small mixed sample, not representative error-rate estimation or a 27B-versus-9B comparison. Correctly grounded source claims may themselves be imperfect."
+}

@@ -475,17 +475,75 @@ def optimizer_state_to(optimizer: torch.optim.Optimizer, device) -> None:
                 state[key] = value.to(target)
 
 
-def set_learning_rates(optimizer: torch.optim.Optimizer, updates_done: int, warmup_updates: int, *, total_updates: int | None = None,
-                       schedule: str = "constant", final_fraction: float = 0.1) -> float:
+def reset_optimizer_state(optimizer: torch.optim.Optimizer) -> None:
+    """Forget the moments and the step counters: torch creates a parameter's state on its next step, as a new optimizer over the same
+    groups would. In place: the object stays the one its holders know (the trainer's persistent dict, a moment placement's step hooks)."""
+    optimizer.state.clear()
+
+
+def set_learning_rates(optimizer: torch.optim.Optimizer, updates_done: int, warmup_updates: int, **schedule_kwargs) -> float:
+    """Every group's lr = base_lr x lr_factor(updates_done, warmup_updates, **schedule_kwargs). Returns the factor."""
+    factor = lr_factor(updates_done, warmup_updates, **schedule_kwargs)
+    for group in optimizer.param_groups:
+        group["lr"] = group["base_lr"] * factor
+    return factor
+
+
+def cycle_span(updates_done: int, cycle_updates: int, total_updates: int | None = None) -> tuple[int, int]:
+    """schedule="cyclical": (start, length) of the cycle that holds the update about to be applied (`updates_done` are done). Cycles start
+    at the multiples of cycle_updates, so no boundary moves when the plan changes; the last one runs to total_updates (it takes the
+    remainder, and any update past the plan). Without total_updates every cycle has cycle_updates."""
+    count = max(1, total_updates // cycle_updates) if total_updates else None
+    index = updates_done // cycle_updates
+    if count is None or index < count - 1:
+        return index * cycle_updates, cycle_updates
+    start = (count - 1) * cycle_updates
+    return start, total_updates - start
+
+
+def lr_factor(updates_done: int, warmup_updates: int, *, total_updates: int | None = None, schedule: str = "constant",
+              final_fraction: float = 0.1, anchor_update: int | None = None, anchor_factor: float | None = None,
+              cooldown_updates: int | None = None, cooldown_shape: str = "linear", cycle_updates: int | None = None) -> float:
     """Linear warm-up: every group's lr = base_lr x min(1, (updates_done + 1) / warmup_updates); the configured rate once past it.
-    schedule="cosine": after the warm-up the factor follows a half cosine from 1 to final_fraction over total_updates. Returns the factor."""
+    schedule="cosine": after the warm-up the factor follows a half cosine from 1 to final_fraction over total_updates. With an
+    anchor (a phase continuing an earlier schedule), from anchor_update on it follows a half cosine from anchor_factor down to
+    final_fraction at total_updates instead, so the rate carries on from where the earlier schedule left it.
+    schedule="cooldown" (warm-up, stable, decay): the factor stays 1 until total_updates - cooldown_updates, then decays to
+    final_fraction at total_updates — linearly (cooldown_shape="linear") or along a half cosine ("cosine") — and holds there.
+    schedule="cyclical" (with cycle_updates; see cycle_span): every cycle is that warm-up, stable, decay on its own updates, except
+    that its warm-up rises from final_fraction, not from 0: the mirror image of the linear decay that ended the cycle before.
+    Returns the factor."""
+    if schedule == "cyclical" and cycle_updates:
+        start, length = cycle_span(updates_done, cycle_updates, total_updates)
+        position, decay_start = updates_done - start, max(warmup_updates, length - (cooldown_updates or 0))
+        if position < warmup_updates:
+            return 1.0 - (1.0 - final_fraction) * (warmup_updates - 1 - position) / warmup_updates
+        if position < decay_start:
+            return 1.0
+        progress = min(1.0, (position - decay_start) / max(1, length - decay_start))
+        if cooldown_shape == "cosine":
+            return final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+        if cooldown_shape == "linear":
+            return 1.0 - (1.0 - final_fraction) * progress
+        raise ValueError(f"unknown cooldown_shape {cooldown_shape!r}: 'linear' or 'cosine'")
     factor = min(1.0, (updates_done + 1) / warmup_updates) if warmup_updates > 0 else 1.0
-    if schedule == "cosine" and total_updates:
+    if schedule == "cosine" and total_updates and anchor_update is not None and updates_done >= anchor_update:
+        progress = min(1.0, (updates_done - anchor_update) / max(1, total_updates - anchor_update))
+        factor *= final_fraction + (anchor_factor - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+    elif schedule == "cosine" and total_updates:
         span = max(1, total_updates - warmup_updates)
         progress = min(1.0, max(0.0, (updates_done - warmup_updates) / span))
         factor *= final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
-    for group in optimizer.param_groups:
-        group["lr"] = group["base_lr"] * factor
+    elif schedule == "cooldown" and total_updates and cooldown_updates:
+        start = max(warmup_updates, total_updates - cooldown_updates)
+        if updates_done >= start:
+            progress = min(1.0, (updates_done - start) / max(1, total_updates - start))
+            if cooldown_shape == "cosine":
+                factor *= final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+            elif cooldown_shape == "linear":
+                factor *= 1.0 - (1.0 - final_fraction) * progress
+            else:
+                raise ValueError(f"unknown cooldown_shape {cooldown_shape!r}: 'linear' or 'cosine'")
     return factor
 
 

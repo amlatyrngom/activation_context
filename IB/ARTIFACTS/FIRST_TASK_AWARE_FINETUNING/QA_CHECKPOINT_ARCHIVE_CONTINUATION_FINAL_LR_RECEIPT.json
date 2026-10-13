@@ -1,0 +1,39 @@
+{
+  "complete": true,
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/",
+  "manifest_object": {
+    "key": "activation-context-data/checkpoints/taskaware-20260923/continue32k_10k_final_lr/epoch_001/manifest.json",
+    "bytes": 12532,
+    "sha256": "922d272455a42fb29df6d3c9cbba3396ab8c8aa93b8b4992dafb9296d03a1fa2",
+    "server_checksum_verified": true
+  },
+  "payload_objects": 26,
+  "payload_bytes": 2493427939,
+  "manifest_artifact": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/QA_CHECKPOINT_ARCHIVE_CONTINUATION_FINAL_LR.json",
+  "all_objects_including_manifest": 27,
+  "total_bytes_including_manifest": 2493440471,
+  "local_staging": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/qa_checkpoint_archive/continue32k_10k_final_lr/epoch_001",
+  "archive_job_ids": [],
+  "training_job_id": "23511287",
+  "readout_job_id": "23511288",
+  "method": "Guarded direct rsync of five explicit immutable payload/config paths plus completion marker. Hashing and uploads local; no compute allocation, heavy login hashing, or GPU restoration.",
+  "preservation": {
+    "new_remote_final_pair_flags": [
+      "continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001/PRESERVE",
+      "continue32k_10k_final_lr/LORAS/rag_reader/epoch_001/PRESERVE"
+    ],
+    "existing_parent_flags_retained": [
+      "oracle_27b_32k/AC_MODELS/rag_poc/epoch_001/PRESERVE",
+      "oracle_27b_32k/LORAS/rag_reader/epoch_001/PRESERVE",
+      "continuation_32k_initial/PRESERVE"
+    ],
+    "local_staging_flags": [
+      "PRESERVE",
+      "ac/PRESERVE",
+      "reader/PRESERVE"
+    ],
+    "optimizer": "Existing ORCD/local optimizer files not modified, transferred, deleted, or uploaded."
+  },
+  "uploader_sha256": "7daf5bfe8633217ac0e8b54e67240e4b88eff71ce9a58f74195640f87c5d9875",
+  "wrapper_sha256": "5add5d845cacdbcce57d4052548e654355fae05d437b189ffbd603f672ee1309"
+}

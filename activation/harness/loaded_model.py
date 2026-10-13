@@ -30,6 +30,7 @@ from .vllm_wrapper import VLLMWrapper
 
 if t.TYPE_CHECKING:
     from .hf_utils import Interventions
+    from .kv_transfer import LayerInputCapture
     from .runtime import HarnessRuntime
 
 @dataclass
@@ -490,10 +491,14 @@ class LoadedModel:
         lora_name: str|None = None,
         gradient_checkpointing: bool | None = None,
         interventions: "list[Interventions | None] | None" = None,
+        capture: "LayerInputCapture | None" = None,
         **kwargs,
     ) -> torch.Tensor:
         """
         Last hidden state [B, S, d_model] of the causal decoder without the language-model head.
+        `capture`: a kv_transfer.LayerInputCapture; after the pass it holds every layer's keys and values at its positions.
+        Payloads that carry `kv_values` (key/value transfer) are bound as attention entries instead of residual deltas:
+        the mask and the position ids are then built here (kv_transfer.bind_kv_prefix; `attention_mask` may be [B, S]).
         Extra keywords reach every decoder layer (e.g. `cu_seq_lens_q` for packed rows).
         `interventions`: one payload (or None) per physical row of `inputs_embeds`, positions already in that
         row's coordinates; the deltas are added to the named layers' inputs by the persistent hooks.
@@ -506,21 +511,37 @@ class LoadedModel:
         model = self.model
         decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
         from .hf_utils import INTERVENTIONS_KWARG, checkpoint_adapter_scope, install_intervention_hooks
+        from .kv_transfer import KV_PREFIX_KWARG, bind_kv_overwrite, bind_kv_prefix, has_kv, is_overwrite
         if interventions is not None:
             if len(interventions) != inputs_embeds.shape[0]:
                 raise ValueError(f"{len(interventions)} intervention payloads for {inputs_embeds.shape[0]} physical rows")
-            install_intervention_hooks(model)
-            kwargs = {**kwargs, INTERVENTIONS_KWARG: list(interventions)}
+            if is_overwrite(interventions):                 # key/value transfer, overwrite mode: the rows' own keys and values are replaced
+                kwargs = {**kwargs, KV_PREFIX_KWARG: bind_kv_overwrite(model, inputs_embeds, attention_mask, interventions)}
+            elif has_kv(interventions):                     # key/value transfer: attention entries, no residual hooks
+                if position_ids is not None:
+                    raise ValueError("key/value transfer numbers the positions itself")
+                attention_mask, position_ids, prefix, _ = bind_kv_prefix(model, inputs_embeds, attention_mask, interventions)
+                kwargs = {**kwargs, KV_PREFIX_KWARG: prefix}
+            else:
+                install_intervention_hooks(model)
+                kwargs = {**kwargs, INTERVENTIONS_KWARG: list(interventions)}
         adapter_context = lambda: self.harness.module_manager.lora_context(self.model_config.model_name, lora_name)
-        with adapter_context(), checkpoint_adapter_scope(model, adapter_context, gradient_checkpointing):
-            outputs = decoder(
-                inputs_embeds=inputs_embeds,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                use_cache=False,
-                return_dict=True,
-                **kwargs,
-            )
+        handles = capture.install(model) if capture is not None else []
+        try:
+            with adapter_context(), checkpoint_adapter_scope(model, adapter_context, gradient_checkpointing):
+                outputs = decoder(
+                    inputs_embeds=inputs_embeds,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    use_cache=False,
+                    return_dict=True,
+                    **kwargs,
+                )
+                if capture is not None:
+                    capture.finish(model)
+        finally:
+            for handle in handles:
+                handle.remove()
         return outputs.last_hidden_state
 
     def simple_vector_embed_many(self, texts: list[str]) -> torch.Tensor:

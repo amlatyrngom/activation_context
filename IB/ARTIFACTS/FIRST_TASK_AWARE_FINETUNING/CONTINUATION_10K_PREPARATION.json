@@ -1,0 +1,182 @@
+{
+  "status": "complete",
+  "job_id": "23498249",
+  "material": "/home/ngom/orcd/pool/activation/taskaware/continuation_10k_material/material_27b_10000.json",
+  "material_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+  "pair": "/home/ngom/orcd/pool/activation/taskaware/continuation_32k_initial/pair.json",
+  "pair_sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+  "parent_panel_sha256": "755d8bae1744480c79c07002bb540f9c2a40f2ccd1c6391b71e8d4dd8cd61a71",
+  "parent_shared_input_fingerprint": "200626d81e8720151c112f5a86d175275895928ecf0d44d19cae2ce2b6df4dcc",
+  "parent_ac_input_fingerprint": "0f0076aaba1b7d20edefaf9abab445e23f18a5bd9d90811faedf97949f9e8302",
+  "source_mix": {
+    "code": 3000,
+    "documents": 800,
+    "financial": 500,
+    "legal": 600,
+    "math_arxiv": 1200,
+    "math_textbook": 800,
+    "office": 600,
+    "technical_web": 500,
+    "web": 2000
+  },
+  "eligible_by_family": {
+    "code": 6120,
+    "math_arxiv": 2100,
+    "math_textbook": 1572,
+    "financial": 1003,
+    "web": 4080,
+    "technical_web": 1020,
+    "documents": 1579,
+    "legal": 1174,
+    "office": 1215
+  },
+  "ordered_training_ids_sha256": "aeff12fac1093bd28caa543f7d6255ec7f3146733cb09cbfba9726ee0f4782cd",
+  "held_sha256": "8c6ed0d0c1ffac32d6f35c774dc96b920cf937dfb2427fe6d53f3573ca425e5d",
+  "held_cohorts_sha256": "a7dff81b7d3e42fab2452e22726f47e65c5ecb0bf964729739e5b2375d74a61e",
+  "retrieval_sha256": "8760bd298cbeb4c3804c91c5ed48310b2e5c147868aeb641a27c8ce3d5bb2e08",
+  "learning_ids": [
+    "c2742f5d5226b3373278ea8593ddda4437db034586b272d18f7c7cc9b9972b17",
+    "e6c9baded5b9ad460fb459f7e22509c3b737214922f29c308d0583537475868c",
+    "00586a7ebb212738e8a3e471c2ca79be9b95db59b2aa6fd2cf0a02dfa2f15bca",
+    "784db8a346aaf2800829e25d6eaab9faaa7c3d7bd15c8a4b9399c5fa5b6efd88",
+    "44883e2dadc5ac5d28e51a41ec2d1152d30b757425e952c006d9412645a2e459",
+    "47963179995604326305534ecefa547419cdfb6b3dc459b6978d7b7a31154062",
+    "be77e9e643740bcfc50ebe63359ccbec681b0d8a41205d1af93e7561008074fb",
+    "cdc453b5aff55626c5bd3d9aaeed37869795854f2d77ea1636c7b3d416d7134a",
+    "c8b4db059c32f5fdba429e266ae2f4e7047cf1bc4b52830097d4cad5742fad84",
+    "ead688dc06995a1ba8b67af66a550633978fb534bf0f620685dbfd3dcac25728",
+    "57c9252226e2efbbd1c584c83586bb5697215fda58f002b9af2ce404c6667eb3",
+    "ba7e6bcb75d4e6c0efbc15046f22ab7b019b2b5a591529730eb935bbc5082d96",
+    "5f4e5c8bbda4254c4b088fb12424ea9287d03965ec96a7962efeab658db4833d",
+    "3fe9f6dc92543e200cbd709fdc62de54419c9f75f7fd8dfcfdd025e20f76d259",
+    "44b5f5678bec4ed12362a02e72d67c1db7d5b505d7ca3fbe3a77657aac7b9e00",
+    "637886da4ab79c8d51e6e380fa39f64691fcaabc68e74862f5eae6a257dfa909",
+    "6ad1ff7f0f6eb80a8b779e7e1400742610ae49b10670bd819074b6a9600cdeff",
+    "b24eb8af49d28ccbed9ecd130302278f4107b16c3218c7b119fc277ec04bffaa",
+    "167aa33421e5af061c6c18463782f5dc35ce8c4bbce7cd5fe916084a73e9a95e",
+    "71a3d6e2e2b2c7c6832bfb36de0469a8435b653935e96e88037e5f213389e2b8",
+    "6816d344f996d55e1f1f6840e9209dc4606e47da738dd5bfc5504e074ca1291b",
+    "b4535c2103ccc05947c89a80b46c6b4acb465fb952687b17bf75a1faa9b7561d",
+    "e3267169e8e24a10ef74719dfcae01d6be7ee5222c5dbbc05898507507204ff0",
+    "6f9e856238380cb2836e9d578d7269a4e8c31531950af26a9ac2e5f8342408d6",
+    "c107c892b0489ca2cdda00f46eedc465d7c9cddaf7b04709535293df54790557",
+    "837698f1c1004a3109f11f246f30bdf7d96efd0b5d0b346c28712e4e582a5d78",
+    "924ac7100b636525084317bae613021c4974d64843a246803a5cc11c245979e1",
+    "fbf1a7db0f3e645fc9bf2c7e7b6003d14fcc4d7d2503994e54d40d577ed06b9c",
+    "83b4632e66cfdc5f0b89ee3373bd3058a0751a72d271e1fbd958fc7f17d97e27",
+    "c9dfc9d2556aeaac09e492c170ce59bec31e82c8bb550b55c4b5236cc8323ad1",
+    "f4b7996932bd37079ca33a38d1d9960dab838a254541b5ec7bde67ed24978ae5",
+    "8f1f6956776c50f6f1fb20fb08194a58f4e6bb464b6f4864b13ca8c908244245"
+  ],
+  "optimizer": {
+    "parent_files": {
+      "ac/PRESERVE": {
+        "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+        "bytes": 101
+      },
+      "ac/ac_modules.pt": {
+        "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+        "bytes": 1208881673
+      },
+      "ac/optimizer.pt": {
+        "sha256": "475e99170d7dd8c1bb09e7cafca7891e18f04815252a9f4fa1e444325f709a9c",
+        "bytes": 4676641912
+      },
+      "ac/side_lora/README.md": {
+        "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+        "bytes": 5184
+      },
+      "ac/side_lora/adapter_config.json": {
+        "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+        "bytes": 1150
+      },
+      "ac/side_lora/adapter_model.safetensors": {
+        "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+        "bytes": 349204488
+      },
+      "reader/PRESERVE": {
+        "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+        "bytes": 101
+      },
+      "reader/README.md": {
+        "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+        "bytes": 5184
+      },
+      "reader/adapter_config.json": {
+        "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+        "bytes": 1147
+      },
+      "reader/adapter_model.safetensors": {
+        "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+        "bytes": 931173960
+      }
+    },
+    "derived_files": {
+      "ac/PRESERVE": {
+        "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+        "bytes": 101
+      },
+      "ac/ac_modules.pt": {
+        "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+        "bytes": 1208881673
+      },
+      "ac/optimizer.pt": {
+        "sha256": "1eeb5c60f7cb2aa3b213c7cf970bfd5ec10b1295412ad9891f6dd915086dc661",
+        "bytes": 4676633951
+      },
+      "ac/side_lora/README.md": {
+        "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+        "bytes": 5184
+      },
+      "ac/side_lora/adapter_config.json": {
+        "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+        "bytes": 1150
+      },
+      "ac/side_lora/adapter_model.safetensors": {
+        "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+        "bytes": 349204488
+      },
+      "reader/PRESERVE": {
+        "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+        "bytes": 101
+      },
+      "reader/README.md": {
+        "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+        "bytes": 5184
+      },
+      "reader/adapter_config.json": {
+        "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+        "bytes": 1147
+      },
+      "reader/adapter_model.safetensors": {
+        "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+        "bytes": 931173960
+      }
+    },
+    "parent_training_questions": 32000,
+    "parent_updates_done": 4000,
+    "parent_epoch_number": 1,
+    "stage_updates_done": 0,
+    "stage_epoch_number": 0,
+    "adam_state_preserved_byte_exact": true,
+    "param_groups_preserved_exact": true,
+    "adam_parameter_step_histogram": {
+      "4000.0": 615
+    },
+    "optimizer_parameter_states": 615,
+    "parameter_groups": [
+      374,
+      256
+    ],
+    "weight_bytes_unchanged": true,
+    "independent_files_not_hardlinks": true,
+    "ac_modules_saved_epoch_number": 1,
+    "runner_requirement": "Set loaded ac.epoch_number=0 for this stage; resume_optimizer=True and exact group-layout validation. Preserve Adam state and per-parameter steps. Stage schedule overrides group LRs at runtime."
+  },
+  "helpers": {
+    "prepare_continuation_10k.py": "fe189d997f1d18af76e9f5dd61f6cab11e80cd3dedaea88d4093160efa8b35d7",
+    "prepare_model_comparison.py": "7754bcfa6ffc58abec4e36d7f4581dddb55b3f1e0ec27844f5680507e4f71e53",
+    "prepare_data_budget.py": "3247440cf58081856a7889b4f9f5c14a98baafa695ea03a5589ad8625b491bd7",
+    "select_bank.py": "a75f17e6c0129c87720c573eeffb5d667bb9fed6f096dca9c1b5158528386336"
+  }
+}

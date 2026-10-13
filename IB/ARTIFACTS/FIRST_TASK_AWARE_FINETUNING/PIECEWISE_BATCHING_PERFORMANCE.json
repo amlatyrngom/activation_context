@@ -1,0 +1,308 @@
+{
+  "scope": "Local frozen V2 source/config and existing GPU receipts only; no GPU jobs or active-source edits.",
+  "written_utc": "2026-09-22T22:34:19.901190+00:00",
+  "design_sha256": "86fcaad5db4b24d8b5f4972567a78e7e2f3d4e821b18b3d5ca4e55ae4ed98e08",
+  "source_sha256": {
+    "ac_model.py": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "ac_model_training.py": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "ac_model_utils.py": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "matched_progress": {
+    "piecewise_27b_4k_8k": {
+      "questions_seen": 1600,
+      "pass_fraction": 0.4,
+      "held_answer_nll": 1.1313838071482138,
+      "trainer_elapsed_seconds_at_panel_entry": 7670.042527938262,
+      "epoch_elapsed_seconds_at_panel_entry": 6826.356682529207,
+      "all4000_training_input_totals": {
+        "split": "training",
+        "questions": 4000,
+        "passage tokens": 31447613,
+        "encoder input tokens": 32992635,
+        "compressed rows": 1992645,
+        "rows / passage token": 0.06336,
+        "rows / encoder token": 0.0604,
+        "extra rows vs merged": 0
+      },
+      "panel_sha256": "5a2f5bf5d852dd146e5ded5926604e62f3d922557d2488b743e60f11f4f9e0f5"
+    },
+    "merged_27b_4k_8k": {
+      "questions_seen": 1600,
+      "pass_fraction": 0.4,
+      "held_answer_nll": 1.3207464137648495,
+      "trainer_elapsed_seconds_at_panel_entry": 5867.3370863390155,
+      "epoch_elapsed_seconds_at_panel_entry": 5092.351608966943,
+      "all4000_training_input_totals": {
+        "split": "training",
+        "questions": 4000,
+        "passage tokens": 31447613,
+        "encoder input tokens": 31852249,
+        "compressed rows": 1992645,
+        "rows / passage token": 0.06336,
+        "rows / encoder token": 0.06256,
+        "extra rows vs merged": 0
+      },
+      "panel_sha256": "99927f21975f7ed7032f6b4948a42a4c63b0a5e6fe7a7ab73cd3874d64d79c73"
+    }
+  },
+  "two_training_case_geometry": {
+    "pieces_failing": {
+      "time_seconds": 23.11104644741863,
+      "peak_gib": 49.812814712524414,
+      "observed": [
+        {
+          "parts": 32,
+          "useful_decoder_tokens": 12362,
+          "padded_decoder_tokens": 18976,
+          "padding_fraction": 0.3485455311973018,
+          "length_min": 126,
+          "length_max": 593
+        },
+        {
+          "parts": 24,
+          "useful_decoder_tokens": 18216,
+          "padded_decoder_tokens": 60168,
+          "padding_fraction": 0.6972477064220184,
+          "length_min": 113,
+          "length_max": 2507
+        },
+        {
+          "parts": 20,
+          "useful_decoder_tokens": 18290,
+          "padded_decoder_tokens": 55020,
+          "padding_fraction": 0.6675754271174119,
+          "length_min": 173,
+          "length_max": 2751
+        },
+        {
+          "parts": 8,
+          "useful_decoder_tokens": 17655,
+          "padded_decoder_tokens": 28408,
+          "padding_fraction": 0.3785201351731906,
+          "length_min": 272,
+          "length_max": 3551
+        }
+      ],
+      "budgets": {
+        "65536": {
+          "forwards": 4,
+          "padded_decoder_tokens": 162572,
+          "max_decoder_padded_batch": 60168,
+          "padding_fraction": 0.5908089953989617
+        },
+        "32768": {
+          "forwards": 6,
+          "padded_decoder_tokens": 118355,
+          "max_decoder_padded_batch": 29682,
+          "padding_fraction": 0.43793671581259774
+        },
+        "16384": {
+          "forwards": 9,
+          "padded_decoder_tokens": 102948,
+          "max_decoder_padded_batch": 17311,
+          "padding_fraction": 0.3538194039709368
+        }
+      },
+      "useful_tokens": 66523,
+      "input_tokens": 62812,
+      "summary_rows": 3711,
+      "part_count": 84,
+      "reader_padded_tokens": 7486
+    },
+    "pieces_quantiles": {
+      "time_seconds": 24.127016390906647,
+      "peak_gib": 52.283939361572266,
+      "observed": [
+        {
+          "parts": 22,
+          "useful_decoder_tokens": 16513,
+          "padded_decoder_tokens": 52470,
+          "padding_fraction": 0.6852868305698494,
+          "length_min": 156,
+          "length_max": 2385
+        },
+        {
+          "parts": 10,
+          "useful_decoder_tokens": 17085,
+          "padded_decoder_tokens": 65590,
+          "padding_fraction": 0.7395182192407379,
+          "length_min": 107,
+          "length_max": 6559
+        },
+        {
+          "parts": 9,
+          "useful_decoder_tokens": 17728,
+          "padded_decoder_tokens": 22023,
+          "padding_fraction": 0.19502338464332747,
+          "length_min": 435,
+          "length_max": 2447
+        },
+        {
+          "parts": 10,
+          "useful_decoder_tokens": 18032,
+          "padded_decoder_tokens": 28880,
+          "padding_fraction": 0.37562326869806095,
+          "length_min": 251,
+          "length_max": 2888
+        }
+      ],
+      "budgets": {
+        "65536": {
+          "forwards": 4,
+          "padded_decoder_tokens": 168963,
+          "max_decoder_padded_batch": 65590,
+          "padding_fraction": 0.5895077620544142
+        },
+        "32768": {
+          "forwards": 6,
+          "padded_decoder_tokens": 116871,
+          "max_decoder_padded_batch": 29520,
+          "padding_fraction": 0.40654225599164895
+        },
+        "16384": {
+          "forwards": 8,
+          "padded_decoder_tokens": 102950,
+          "max_decoder_padded_batch": 16712,
+          "padding_fraction": 0.32629431762991745
+        }
+      },
+      "useful_tokens": 69358,
+      "input_tokens": 65387,
+      "summary_rows": 3971,
+      "part_count": 51,
+      "reader_padded_tokens": 7812
+    },
+    "merged_failing": {
+      "time_seconds": 14.119214886100963,
+      "peak_gib": 37.38048839569092,
+      "observed": [
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 11072,
+          "padded_decoder_tokens": 11924,
+          "padding_fraction": 0.07145253270714524,
+          "length_min": 5110,
+          "length_max": 5962
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 17205,
+          "padded_decoder_tokens": 17326,
+          "padding_fraction": 0.006983723883181359,
+          "length_min": 8542,
+          "length_max": 8663
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 17441,
+          "padded_decoder_tokens": 17668,
+          "padding_fraction": 0.012848086936834924,
+          "length_min": 8607,
+          "length_max": 8834
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 17313,
+          "padded_decoder_tokens": 17368,
+          "padding_fraction": 0.003166743436204489,
+          "length_min": 8629,
+          "length_max": 8684
+        }
+      ],
+      "budgets": {
+        "65536": {
+          "forwards": 4,
+          "padded_decoder_tokens": 64286,
+          "max_decoder_padded_batch": 17668,
+          "padding_fraction": 0.019522135457175738
+        },
+        "32768": {
+          "forwards": 4,
+          "padded_decoder_tokens": 64286,
+          "max_decoder_padded_batch": 17668,
+          "padding_fraction": 0.019522135457175738
+        },
+        "16384": {
+          "forwards": 5,
+          "padded_decoder_tokens": 64059,
+          "max_decoder_padded_batch": 17368,
+          "padding_fraction": 0.01604770602101191
+        }
+      },
+      "useful_tokens": 63031,
+      "input_tokens": 59320,
+      "summary_rows": 3711,
+      "part_count": 8,
+      "reader_padded_tokens": 7486
+    },
+    "merged_quantiles": {
+      "time_seconds": 14.995984449749812,
+      "peak_gib": 37.54957103729248,
+      "observed": [
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 15893,
+          "padded_decoder_tokens": 16988,
+          "padding_fraction": 0.06445726395102425,
+          "length_min": 7399,
+          "length_max": 8494
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 16735,
+          "padded_decoder_tokens": 17184,
+          "padding_fraction": 0.026128957169459954,
+          "length_min": 8143,
+          "length_max": 8592
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 17339,
+          "padded_decoder_tokens": 17354,
+          "padding_fraction": 0.0008643540394145388,
+          "length_min": 8662,
+          "length_max": 8677
+        },
+        {
+          "parts": 2,
+          "useful_decoder_tokens": 17484,
+          "padded_decoder_tokens": 17608,
+          "padding_fraction": 0.007042253521126751,
+          "length_min": 8680,
+          "length_max": 8804
+        }
+      ],
+      "budgets": {
+        "65536": {
+          "forwards": 4,
+          "padded_decoder_tokens": 69134,
+          "max_decoder_padded_batch": 17608,
+          "padding_fraction": 0.02434402754071807
+        },
+        "32768": {
+          "forwards": 4,
+          "padded_decoder_tokens": 69134,
+          "max_decoder_padded_batch": 17608,
+          "padding_fraction": 0.02434402754071807
+        },
+        "16384": {
+          "forwards": 5,
+          "padded_decoder_tokens": 69010,
+          "max_decoder_padded_batch": 17354,
+          "padding_fraction": 0.0225909288508912
+        }
+      },
+      "useful_tokens": 67451,
+      "input_tokens": 63480,
+      "summary_rows": 3971,
+      "part_count": 8,
+      "reader_padded_tokens": 7812
+    }
+  },
+  "counterfactual_method": "Replay exact current ascending-content-length greedy packing independently within each original reader microbatch. Keep all content lengths and allocated rows; sum B*max(content+rows). No GPU performance prediction.",
+  "limits": [
+    "Two selected training cases only, not population padding distribution.",
+    "No phase profiler was enabled; cannot apportion elapsed time among decoder, mixer, readouts or backward.",
+    "Batching changes can change numerical kernels; require original strict equivalence gates before adoption."
+  ]
+}

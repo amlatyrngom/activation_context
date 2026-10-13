@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "status": "frozen",
+  "run_name": "strong32k_piecewise_8k_8k",
+  "parent": "oracle_27b_32k preselectedfinal epoch001",
+  "material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+  "material_ids_sha256": "ebeba63325b12bcd56ab23f600fba7434845d71c1bf9f3a45e6542e8863f0ce1",
+  "initial_pair_sha256": "e9be3f58cf7fb5d4679529844ec158a865d65c7ef8bda8ea4d62075d50b09a6a",
+  "initial_payload_sha256": {
+    "ac_modules": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+    "encoder_config": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+    "encoder_weights": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+    "reader_config": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+    "reader_weights": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b"
+  },
+  "parent_publication_sha256": {
+    "result.json": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+    "run_identity.json": "db1954f46f514587f1ab6cee5a480466b6611414f6ddd7efcb7ee8b319417e0a",
+    "training_config.json": "630c858a80322fb8a87a5b96825b91b9eceb921e4bdbb16ba6706fded83afb26",
+    "material_ids.json": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980"
+  },
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "encode_batch_max_tokens": 65536,
+  "batching_decision": "Retain original65536. GPU23511648 unchanged-repeat proof was exact;32768/16384 failed output/gradient gates on first real8k case despite <0.001 joint-loss change. No timing phase or optimized-budget adoption. Reporting overhead reduction is retained independently.",
+  "training_config": {
+    "loss_kind": "sft",
+    "learning_rate_ac": 2e-05,
+    "learning_rate_target_lora": 8e-06,
+    "weight_decay": 0.0,
+    "adam_betas": [
+      0.9,
+      0.95
+    ],
+    "adam_eps": 1e-08,
+    "max_grad_norm": 1.0,
+    "lr_schedule": "cosine",
+    "lr_final_fraction": 0.25,
+    "warmup_updates": 50,
+    "schedule_total_updates": 1000,
+    "resume_optimizer": false,
+    "resume_skip_steps": 0,
+    "checkpoint_every_updates": 50,
+    "checkpoint_every_epoch": true,
+    "no_context_penalty_weight": 1.0,
+    "no_context_penalty_fraction": 0.25,
+    "teacher_cache_top_k": 32,
+    "deltas_off_panel": false,
+    "updates_per_epoch": 4,
+    "examples_per_update": 8,
+    "micro_batch_examples": 2,
+    "max_example_tokens": 72000,
+    "logits_chunk_tokens": null,
+    "fp32_head_matmul": false,
+    "gradient_checkpointing": true,
+    "gradient_checkpointing_min_tokens": 0,
+    "seed": 20260921,
+    "num_epochs": 1,
+    "shuffle_examples": true,
+    "max_duration_seconds": 30600,
+    "reporting_interval": 0.1,
+    "completion_samples": 0,
+    "completion_max_new_tokens": 160
+  },
+  "questions": 8000,
+  "epochs": 1,
+  "evidence_tokens": 8192,
+  "max_passages": 16,
+  "ratio": 0.0625,
+  "passage_parts": true,
+  "optimizer": "Fresh Adam with initial QA-trained paired weights. Parent Adam is neither loaded nor rewritten. Own preemptions resume paired Adam/order/schedule.",
+  "final_selection": "Owncompleted1000update epoch001 pair only; no best-development/midpoint copies.",
+  "reporting": {
+    "held_AC": "Original400 every10%",
+    "learning": "Frozen32 from fresh8k every10%",
+    "initial_reader_controls": "Full/no-context400 measured once on initial32k paired reader; identity-bound cache reused on resume.",
+    "current_reader_controls": "Actual full/no-context400 only0/50/100%; missing intermediate points never filled with stale current values.",
+    "decoded": "12 scheduleddevelopment answers0/50/100%; originalfixed100 final qualitative readout separate."
+  },
+  "readout": {
+    "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+    "initial_and_final": "Samefixed100 at2k/8k/32k; identical evidence/gold within eachbudget.8k replayoriginal400 then retain100;2k/32k selected100 batch1.",
+    "layout": "Both initial/final use piecewise layout; compare adaptation, not an isolated initialization or layout ablation.",
+    "semantic_scope": "8k decoded100AC plus matched full/no-context NLL;2k/32k NLL first. Added-context robustness, not distributed-required-evidence synthesis.",
+    "confirmation": "No reserved confirmation read."
+  },
+  "helper_sha256": {
+    "run_qa_strong_long_v1.py": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+    "train_strong_long_v1.sbatch": "2ab442715af62037ca22d9309161fc1b2fbda0489442b5f20c90dffc13e575bb",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_strong_long_cohort_v1.sbatch": "474fa3776a5822d3232ffab5876c6e45370eecc7936df69d88f3becff853c4a3",
+    "prepare_strong_long_adaptation_v1.py": "b953bb6b39044533000609650bf0100bd68543e1576258fbb3d81d29c1080885",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+  },
+  "limits": [
+    "Strongerinit+freshdata+longercontext/layout adaptation are intentionally combined; not an isolated initialization causal comparison.",
+    "Fresh8k is a balanced subset of the existingfresh10k continuation material and shares those training questions.",
+    "No automatic GPU retry or newGPU launched by this preparer. Root owns queue; active cap4ORCD+2CSAIL, noEC2."
+  ],
+  "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+  "allocation": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "cpus": 8,
+    "host_memory_gib": 64,
+    "wall_hours": 9,
+    "training_ceiling_hours": 8.5,
+    "basis": "Existing original-budget8k-evidence run averages22.62s/8questions (6.28h per8kquestions), plus reduced panels/preparation/margin. Prior8kfit39.78GiBhost; bounded current strong-parent proof fitsGPU, not an exhaustive new-pool guarantee."
+  },
+  "frozen_utc": "2026-09-23T00:25:30.680735+00:00"
+}

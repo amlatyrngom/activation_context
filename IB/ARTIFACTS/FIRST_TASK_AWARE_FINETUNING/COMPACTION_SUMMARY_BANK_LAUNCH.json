@@ -1,0 +1,111 @@
+{
+  "job": 23653839,
+  "status": "running; first16/16 summaries accepted, no format rejection",
+  "source": "f2912512eaffe364561bd6f5873e574b68539174",
+  "producer_sha256": "c7aa518449b53c5060178c1b713b523f6dfffa210557e38dd8857466484fab26",
+  "partition": "mit_normal_gpu",
+  "gpu": "l40s:1",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "requested_summaries": 20000,
+  "eligible_cuts": 18508,
+  "held_first": 100,
+  "microbatch": 16,
+  "max_output_tokens": 1536,
+  "resume": "Atomic committed batches; actual allocation end minus600s; code75 requeues unless PAUSE",
+  "source_view": "Original pre-cut history, original frame and tools. No future, question, or summary in encoder input.",
+  "report": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION/orcd/compaction_summary_bank_v2/report.tressoir.html",
+  "previous_job": 23646252,
+  "retained_pilot_targets": 33,
+  "reviewed_repairs": "Originals archived; indices4,5,6 returned to pending; other accepted rows retain original prompt provenance",
+  "quality_probes": [
+    {
+      "job": 23650152,
+      "source": "6e4b98c309f55f967135f174aa95443bea56fac0",
+      "original_held_indices": [
+        4,
+        5,
+        6,
+        9
+      ],
+      "thinking_budget": 512,
+      "target_summaries": 4,
+      "producer_sha256": "2d12c902646bc4828e592f6be66c2cf25776c2bb7d3391ee7b2e702112125875",
+      "output": "summary_thinking512_probe_v1",
+      "status": "completed: cap/extraction passed; fidelity still failed on reviewed cases"
+    },
+    {
+      "job": 23650939,
+      "source": "9809a4d5aaa83d4b47e125013cc0993fb90b690c",
+      "original_held_indices": [
+        4,
+        5,
+        6,
+        9
+      ],
+      "thinking_budget": 2048,
+      "target_summaries": 4,
+      "producer_sha256": "fd818cc269aa4529566bdb92172073a478759d319b3add05bcae19e96af8571d",
+      "output": "summary_thinking2048_probe_v1",
+      "status": "completed: research evidence conflict recovered; meta-instructions still leak into handoff constraints"
+    }
+  ],
+  "quality_probe": {
+    "job": 23651996,
+    "prefetch_job": 23651443,
+    "source": "f2912512eaffe364561bd6f5873e574b68539174",
+    "model": "Qwen/Qwen3.8-27B-FP8",
+    "model_revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+    "reasoning_effort": "medium",
+    "forced_reasoning_cap": false,
+    "total_output_ceiling": 8192,
+    "original_held_indices": [
+      4,
+      5,
+      6,
+      9
+    ],
+    "output": "summary38_medium_probe_v2",
+    "status": "PASS: four-case quick fidelity check; preserves contradictory evidence and original constraint scope",
+    "producer_sha256": "c7aa518449b53c5060178c1b713b523f6dfffa210557e38dd8857466484fab26",
+    "superseded_pending_job": 23651687,
+    "reasoning_tokens": [
+      326,
+      4766,
+      368,
+      731
+    ],
+    "summary_tokens": [
+      761,
+      1496,
+      852,
+      1106
+    ],
+    "batch_seconds_including_engine_start": 524.235,
+    "engine_start_seconds": 157.82,
+    "scope": "Small fidelity sample, not population accuracy or steady-state throughput"
+  },
+  "previous_pilot": {
+    "job": 23646984,
+    "status": "paused before any training consumer: regenerated samples still had factual/scope errors",
+    "source": "39fdbcec2da5a9b22e72ac3cbf4cc16f99ceb435",
+    "producer_sha256": "8dd4a40cc8414e9915f4ee704309b0c2a1b079d0f758398c79aedcdc2b18f220",
+    "report": "/workspace/IB/TMP/SYNC/TRAJECTORY_COMPACTION/orcd/compaction_summary_bank/report.tressoir.html"
+  },
+  "reasoning_effort": "medium",
+  "updated_utc": "2026-09-24 15:04:00 UTC",
+  "rtx_handoff": {
+    "job": 23654969,
+    "status": "queued; L40S continues until RTX probe succeeds",
+    "script": "compaction_summary_rtx_handoff_v6.sbatch",
+    "script_sha256": "c68c748f4ddcb200aff2d5a94a66df4a5608fb4753e85a89852cefcb8eb182b7",
+    "same_bank": true
+  },
+  "first_batch_review": "Rechecked four earlier pathological cases in first16 bulk rows: contradiction preserved and harmful meta-bans absent. Minor factuality-style meta-instruction still appears in one other row; no blanket data reset.",
+  "first_batch": {
+    "accepted": 16,
+    "rejected": 0,
+    "seconds_including_engine_start": 635.465,
+    "reasoning_tokens": 13087,
+    "summary_tokens": 15820
+  }
+}

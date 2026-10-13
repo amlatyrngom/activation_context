@@ -1,0 +1,29 @@
+{
+  "utc": "2026-09-23T04:34:16.717960+00:00",
+  "experiment": "Fresh8000 native2k continuation toward50000 unique questions",
+  "parent": "continue32k_10k_final_lr",
+  "parent_stage_updates": 1250,
+  "actual_parent_adam_step": 5250,
+  "reason": "Native source-reviewed answers favor constantfloor despite rewarm lower full400 NLL. Reuse the unchanged chosen final pair and inheritedAdam at constant5e-6/2e-6.",
+  "evidence": {
+    "constant_supported_correct": 71,
+    "rewarm_supported_correct": 62,
+    "supported_questions": 87,
+    "rewarm_only_gains": 2,
+    "constant_only_gains": 11,
+    "constant_held400_nll": 0.5326864100103368,
+    "rewarm_held400_nll": 0.5248436237374497,
+    "constant_selected100_nll": 0.5544197651109397,
+    "rewarm_selected100_nll": 0.5608834369027015,
+    "root_source_checks": [
+      55,
+      81,
+      88,
+      96,
+      1
+    ]
+  },
+  "limits": "One fixed development sample, not independent confirmation or a general LR claim. Reference labels and prior judgments unchanged. Long-context parent selection remains separate and open.",
+  "status": "parent_chosen_candidate_implementation_review_pending",
+  "gpu_submitted": false
+}

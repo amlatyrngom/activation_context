@@ -1,53 +1,25 @@
-# Harness/Model Co-Design
-## Updated Teacher Campaign
-Note that we in probing/dev mode now. Avoid any long-running experiments.
+______ Frozen Canonical Section ____
+This section contains canonical decisions. We'll assume all subsequent work should be able to build on top off this.
+This means that when selecting checkpoints to work with, we should pick things that will transfer well to checkpoints trained under this setting.
 
-### Public Trajectory KL
-At pre-planning, go through our code, and identify the changes to make in:
-- The dataset loaders that load trajectories.
-- The ac model study file.
-To make these (1) trajectories and (2) the AC KL items as close to what our agents/agentic programs would naturally use.
-Don't overcomplicate; just make it as reasonably close as possible so the training isn't fighting the online rollouts.
+# AC Reconstruction Training
+- Data: 50M reconstruction tokens from deduplicated tool outputs, code, documents, math and web text; hold out whole documents/trajectories.
+- Models: Qwen3.5-2B encoder → 2B/4B/9B/27B readers; frozen bases, rank-128 LoRAs.
+- Compression: cover 1/10–1/30, measured as rows/source tokens. No input/content pooling.
+- Architecture: input rows + deep residuals at every full-attention layer; dedicated passage-attention readouts and zero-initialized heads.
+- Training: gold-token SFT; encoder/heads LR 5e-5, reader LR 2e-5; AdamW, 8 examples/update, 50-update warmup, cosine decay to 10%, gradient clip 1.0. Preserve reader behavior with a no-context KL penalty: λ=1 on 25% of examples.
+- Quality gate: held-out gold NLL <0.2 nats/token. Track training NLL, token accuracy, greedy reconstructions and no-context drift.
+- Rationale: reconstruction must preserve every token; QA and trajectory compaction can select relevant information. Being the hardest task remains a hypothesis.
 
-Then, fix the following problem if it exists:
-- I believe the current KL is litterally just one step, which I think is an anti-pattern, unless I am wrong. Let's now do this.
-- The meaning of `max_post_compaction_tokens` changes.
-- It means do KL over the whole assistant spans up to that point. Is this doable and what's actually recommended.
+Unspecified in the records: exact ratio grid; whether 50M tokens is per model/ratio or across the sweep.
+___________________________
 
-### KL over Our Own Trajectories
-The idea here is to take a trajectory that did not have AC turned on, then to format it to make an SFT when the student has AC turned on.
-- In line with the idea of KL over whole assistent spans, this should support having activation inputs in many parts of the message.
+New thread of work. I want to downgrade all the experiments we are currently running to the lowest priority, so that we can push for the paper. From now, if I ask you micro-optimize something, give gentle warning that I should be focusing on the paper, not on pushing numbers by 1-2%. We need relentless focus towards completing an MVP for the paper as quickly as possible. We will be, as much as possible, using 2xH200/GH200.
 
-It's possible the way to unify the two is to remove the notion of prefix/suffix, and just require that the two lengths/patterns be the same (by pattern I mean the precise alternation of system/user/assistent/tool/etc; the assistant spans must be the same, and are used for KL). Give this to me in a decision item if it's a possibility.
+Take a look at IB/evaluation_section_snapshot.tex for my current snapshot. Commit and push your code right now to a branch. (my github credentials should be in .env).
 
-Also encode the three default selections (so we don't have to bother even configuration). Anything with a score of 1, 1+unscored, or all. Defaults to all. I am not even sure there is any other option for KL.
-
-### Co-Training over Our Own Trajectories (On-Policy)
-This might be the main complexity here.
-- During training, whatever is selected, whether the trajectories come from a teacher or from ours, whether they have logprobs or not, can we make the gradients flow to the activation model and its lora.
-- Confirm this: if I am using the same model for agents and for AC models, the model itself is loaded only once; it's just that the loras differ.
-- The requirement is that the agent lora being trained, is the main model lora in the target AC.
-- So I want select_agent_runs to return tuple[str, str, str|None] -> None.
-    - Alternatively, make this an object like TrainingTarget or something like that.
-- This means the user/tool span is not strictly masked anymore right? At the latent pieces.
-    - And this must work for trajectories that did not hace AC turned on.
-
-Let's begin with a decision-heavy intent phase, then interface, then reviewed details (a subagent has to confirm the details when we get here; notify me of interface changes.)
-
-
-
-```py
-    intervention_frequency: int = 4 # 0=current behavior. 1 means half-point. 2 means 1/3, 2/3, etc.
-    add_last_layer_intervention: bool = True
-    prefer_attention_interventions: bool = True
-```
-
-
-
-Ok fork vllm as a submodule in IB/REPOS/vllm
-See if you can reuse my git creds to push the fork to my github. Also commit the local code.
-Then, make plan for how we'll implement this MVP solidly. The human-facing projection should show focus on the non-vllm interface changes, whereas the agent-facing projection should probably focus on vllm so reviewers know what you are about to do.
-Hopefully, the local interface-level changes are:
-1. Add interventions to the places that call/decode/train models whether hf or vllm.
-2. Add interventions to the steps/serialization/caches/etc.
-3. Make the changes to the AC/training/agent/etc.
+Open up a new IB Artifacts folder, and make a .tressoir.md plan for the compaction work that I'll review. The first version should be intent heavy. The key beats should be:
+- Train/Test dataset selection. Task limits, etc.
+- Trajectory Syntheses. 27B? 9B?
+- Training targets (should be clear from the aspirational writing).
+- Plots. This is important to avoid deviating from the paper. The terminal goal is to produce plots that go in the paper. Result Plots in the main text. Maybe appendix plots in the target

@@ -1,0 +1,28 @@
+{
+  "checked_utc": "2026-09-21 19:00:02 UTC",
+  "questions": 10000,
+  "by_family": {
+    "code": 3000,
+    "documents": 800,
+    "financial": 500,
+    "legal": 600,
+    "math_arxiv": 1200,
+    "math_textbook": 800,
+    "office": 600,
+    "technical_web": 500,
+    "web": 2000
+  },
+  "batch_files": [
+    "batches/batch_00001_dce264b9b8e64f83bd01572165a490b0.jsonl",
+    "batches/batch_00002_67187a5e14b34e30a88e1a61a9908cfe.jsonl",
+    "batches/batch_00003_1e593f20a7db4b5e9a2bc8a475845969.jsonl",
+    "batches/batch_00004_67882f532e6b48b4b73b82db9d879553.jsonl",
+    "batches/batch_00005_6b8fe746f0684341acec6b9891c4a5d7.jsonl",
+    "batches/batch_00006_730a3f9e7d42492dab93bc3eca8dab37.jsonl",
+    "batches/batch_00007_e3ae92ed762843e9b5845313c9766a0e.jsonl",
+    "batches/batch_00008_b9623de01da743fca1e1e060b3ade6a1.jsonl",
+    "batches/batch_00009_340c681529f14147a74f512b5d61cddd.jsonl",
+    "batches/batch_00010_2385b7c2623e453c9fd5d55d41276111.jsonl"
+  ],
+  "result": "published hashes and exact 10k mix pass"
+}

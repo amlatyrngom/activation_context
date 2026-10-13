@@ -1,0 +1,59 @@
+{
+  "status": "prepared_CPU_pass_inference_unrun",
+  "created_utc": "2026-09-23T02:01:33.608116+00:00",
+  "files_sha256": {
+    "decode_strong_long_32k_v1.py": "fe399c1ca687fc10db1e8f83c6a3877329d21fb86664913c595a94fa31017385",
+    "decode_strong_long_32k_v1.sbatch": "0028584ce034d8ed6acec0dfc5872287c160604d055807d628da0bec06d364e3"
+  },
+  "frozen_dependencies": {
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "STRONG_LONG_ADAPTATION_DESIGN_V1.json": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506"
+  },
+  "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+  "validation": {
+    "receipt": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_32K_DECODE_CPU_CHECK.json",
+    "sha256": "ed6dd383d83b88a23da1b8c4e1c06f242237b1fe8c889e18379fdd5bcac8f658",
+    "checks": 15,
+    "syntax": "Python compile and bash -n passed",
+    "GPU": "not run"
+  },
+  "required_predecessor": {
+    "job_at_preparation": 23514951,
+    "result": "reports/strong_long_cohort100/strong32k_piecewise_8k_8k__32k/result.json",
+    "status": "complete",
+    "pair": "Own completed1000-update/8000-question paired final only"
+  },
+  "input_binding": [
+    "exact predecessor file hash",
+    "full scientific identity and paired payload/publication hashes",
+    "fixed selected100 order",
+    "shared prompt/tools/gold fingerprint",
+    "AC message fingerprint",
+    "resolved rows and placeholder spans",
+    "exact saved source/evidence/targets",
+    "base-model revision/config",
+    "generation config"
+  ],
+  "output": "reports/strong_long_32k_answers100/result.json",
+  "nll_recomputed": false,
+  "decoded_view": "AC",
+  "questions": 100,
+  "context_budget": 32768,
+  "max_passages": 64,
+  "max_new_tokens": 160,
+  "decoding": "greedy; thinking off; inherited EOS union existing chat EOT; actual IDs/caps retained",
+  "resume": "Atomic per-answer writes; same identity/evidence/pair required; skip complete verified rows",
+  "resources": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "cpus": 8,
+    "host_memory_GiB": 64,
+    "wall_minutes": 30,
+    "internal_seconds": 1500
+  },
+  "training_updates": 0,
+  "reserved_confirmation": "not read",
+  "remote_staging": "not performed",
+  "GPU_submission": "not performed"
+}

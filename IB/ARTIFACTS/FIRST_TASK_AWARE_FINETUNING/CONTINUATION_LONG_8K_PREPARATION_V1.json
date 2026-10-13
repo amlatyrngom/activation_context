@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "scope": "Actual completed native2k and initial32k8k receipts; no training material, GPU, model weights or confirmation data read.",
+  "valid_completed_readouts": true,
+  "valid_exact400_and100_input_binding": true,
+  "negative_checks": [
+    "partial_native",
+    "wrong_stage",
+    "different_condition",
+    "missing_response",
+    "wrong_context",
+    "merged_layout",
+    "changed_packing",
+    "incomplete400",
+    "wrong_source",
+    "foreign_weights",
+    "partial_pair",
+    "changed_ac_inputs",
+    "wrong_actual_rows",
+    "changed_gold",
+    "changed_full_evidence",
+    "changed_answer_positions"
+  ],
+  "inherited_final_guard": "Reuses frozen continuation.final_pair; GPU runtime must still verify actual final publication/payloads.",
+  "native2k_readout_sha256": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6",
+  "initial32k8k_readout_sha256": "59e5d55aae0fe39e992db57fcceb77a78dea5cea17e65da5c69cf9ab5d296af4",
+  "worker_sha256": "c84649afa4743f3dda7126620116d78e1aaaca4c48521ee24d21597749b4be7b",
+  "launcher_sha256": "e2c336473dd0aed18f01ca29963f71f4dbe908712d11613d4b2846404588abf4",
+  "syntax_checks": [
+    "py_compile",
+    "bash -n"
+  ],
+  "gpu_status": "not staged or submitted"
+}

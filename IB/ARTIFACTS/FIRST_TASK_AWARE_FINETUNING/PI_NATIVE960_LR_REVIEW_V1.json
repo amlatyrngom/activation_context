@@ -1,0 +1,66 @@
+{
+  "utc": "2026-09-23T17:44:23.554088+00:00",
+  "status": "root_reviewed_matched_two_arm_evidence",
+  "source_labels_fixed": {
+    "supported": 87,
+    "reference_concerns": 13
+  },
+  "runtime_inputs_rows_models_equal": true,
+  "same_response_count": 60,
+  "same_response_rating_inconsistencies": 0,
+  "supported_counts": {
+    "floor": {
+      "correct": 70,
+      "incorrect": 11,
+      "partial": 6
+    },
+    "2x": {
+      "correct": 71,
+      "incorrect": 9,
+      "partial": 7
+    }
+  },
+  "paired_correctness": {
+    "floor_only": [
+      22,
+      83,
+      88,
+      96
+    ],
+    "2x_only": [
+      5,
+      47,
+      55,
+      74,
+      98
+    ]
+  },
+  "root_adjudications": [
+    {
+      "index": 0,
+      "both": "partial",
+      "reason": "Identical answer gives one truthy sufficient case, not the general condition; fixed reference concern retained.",
+      "changed": "2x incorrect to partial"
+    },
+    {
+      "index": 84,
+      "both": "partial",
+      "reason": "Identical answer gives the observed value2 with an unsupported/contradictory explanation of hide; fixed reference concern retained.",
+      "changed": "floor incorrect to partial"
+    }
+  ],
+  "spot_checks": [
+    18,
+    72,
+    80,
+    96
+  ],
+  "interpretation": "Terminal rate wins heldNLL; reviewed correct counts differ byone. No answerquality winner or convergence claim. HistoricalRTX parent omitted fromprimarymatched comparison.",
+  "file_sha256": {
+    "floor/result.json": "95439963fd922a292324657b1ab3f48999df76b593e45fdf38efae199dc2077d",
+    "2x/result.json": "79bd226c2993b718aaf59b36de73807e9f28efa103338e1684583b5923d0fcec",
+    "floor/responses_floor.json": "9be2eb54bd981a62b66450901d221430f5ab05517a47ca3826ebde760186f3ce",
+    "2x/responses_native960_2x_l40s.json": "4f9e71c6c7ef865484333fb8cdeb43214d10cdad02b75181ea27ff910393c31b",
+    "source_notes.json": "393e4dba9b6728763f79ab2584463fea0c2818e2cf28c6cdd5778935151846a1"
+  }
+}

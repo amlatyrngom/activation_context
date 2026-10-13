@@ -1,0 +1,70 @@
+{
+  "status": "Both large runs active;32k restarted before training after tokenizer normalization assertion repair",
+  "main": "oracle_27b_32k",
+  "companion": "oracle_27b_16k_2ep",
+  "data": {
+    "main_questions": 32000,
+    "main_epochs": 1,
+    "companion_questions": 16000,
+    "companion_epochs": 2,
+    "companion_material_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "main_material_sha256": "a73de2273d600ab3693540310510e496736c554d1685312132885cc24b5973aa",
+    "relationship": "Original 16k is an unchanged subset of new 32k; same source-family proportions."
+  },
+  "fixed": {
+    "initialization": "Original P2 pair, fresh QA optimizer",
+    "encoder": "2B",
+    "reader": "9B",
+    "question_presentations": 32000,
+    "examples_per_update": 8,
+    "optimizer_updates": 4000,
+    "warmup_updates": 50,
+    "schedule": "Cosine to 10% over the whole run",
+    "seed": 20260921,
+    "learning_rate_ac": "Pending final matched development LR result",
+    "learning_rate_reader": 2e-05,
+    "compression_ratio": "Same selected ratio for both",
+    "reporting_interval": 0.1,
+    "development_questions": 400,
+    "learning_questions": 32,
+    "retrieval_sources": 32398,
+    "evidence_tokens": 2048,
+    "max_passages": 4
+  },
+  "evaluation": "Fixed final pairs only on fresh confirmation reserved with the 32k material; do not use original five-arm confirmation for tuning. Source-grounded answers on the fixed development100 accompany NLL.",
+  "interpretation": "Equal question presentations, not guaranteed equal token/computation budgets. One seed and one chosen learning-rate schedule. No convergence guarantee.",
+  "priority": "Main 32k first; companion next; optional clipping only if capacity remains after these. Maximum four autonomous MIT GPUs including synthesis, no EC2.",
+  "files": {
+    "model_comparison_16k_2ep.sbatch": "4a90278a083c27b9200d7a3e193f0ca7ac1787a461efd54438e792f1cbfd5094",
+    "prepare_16k_2ep_reference.sbatch": "55538691eac29f69db2cbfeb2543032410574fccbea52d5414c066c1082e0ace",
+    "evaluate_data_amount_cohort.py": "4ffc93ee6dd0843f87a4e4d07c78db519082f279760dc1ab172b8927a2bc597c",
+    "evaluate_data_amount_confirmation.py": "faaab124b5ac3ff9a29edce0939d17dc62fddbfea47594dbe04f4fd05dc53c45",
+    "freeze_data_amount_design.py": "5f55a9b4c336de3b79ba264dc3aedfd82598a52bb0d7855519e662628589f4a0",
+    "data_amount_cohort.sbatch": "d915bccb56e0ee5aa579459fcf24043c93c06f40f734858369faf8965761a194",
+    "data_amount_confirmation.sbatch": "dc255ce7c1e8f3f0026b2b42087b83e570ec81dc5374f446f6e84fbf989265fa",
+    "freeze_data_amount_design.sbatch": "1658a3b87b3607db7ff3298f5f123d3a440b2d33a2ae6ec21ea9f08b697e1068",
+    "model_comparison_32k.sbatch": "281a697ab9b69dd7799c1a928e4bf836dc524404869dc3d5a92e40d72e841deb"
+  },
+  "reference_cpu_job": 23472386,
+  "evaluator_status": "Prepared and staged; frozen evaluation design will be created after the final development LR choice.",
+  "validation": {
+    "CPU": "13 focused synthetic guard/wrapper checks passed; no models or confirmation texts loaded.",
+    "review": "Focused evaluator review found no material issues; strict helper-name pins added as requested.",
+    "source": "Original pinned workers unchanged; two new private entrypoints reuse scoring and decoding.",
+    "launcher": "Shell syntax and all three Python CLI imports passed.",
+    "launcher_resume": "Only optional --resume accepted; syntax and8 parser cases passed. Existing paired optimizer/order/schedule validation reused. First-launch config unchanged."
+  },
+  "reference_status": "CPU23472386 COMPLETED0:0 in3s; ready",
+  "remote_hashes": "New entrypoint/freezer hashes match staged local files at11:29UTC.",
+  "selected_recipe": {
+    "AC_peak_LR": 5e-05,
+    "reader_peak_LR": 2e-05,
+    "ratio": 0.0625
+  },
+  "training_jobs": {
+    "oracle_27b_32k": 23479433,
+    "oracle_27b_16k_2ep": 23478982
+  },
+  "frozen_evaluation_design": "DATA_AMOUNT_32K_EVALUATION_V2.json",
+  "failed_main_attempt": 23478943
+}

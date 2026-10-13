@@ -1,0 +1,15 @@
+{
+  "time_utc": "2026-09-23T19:53:07.137325+00:00",
+  "reason": "User closed pure RAG QA campaign to focus trajectory QA and compaction",
+  "before": "23546190|gentle42k_long100|PENDING\n23546188|gentle42k_finalize500|PENDING\n23549848|pi_lr_cosine_100|PENDING\n23549845|pi_lr_constant_100|PENDING\n23561844|pi960_h200_final100|PENDING\n23565367|qa27b_orcd_100k|PENDING\n",
+  "cancelled": [
+    "23546190",
+    "23546188",
+    "23549848",
+    "23549845",
+    "23561844",
+    "23565367"
+  ],
+  "after": "",
+  "scope": "Only six known RAG campaign jobs; no weights, data, reports or source deleted."
+}

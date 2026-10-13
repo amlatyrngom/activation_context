@@ -1,0 +1,56 @@
+{
+  "checked_utc": "2026-09-22T17:18:36.203319+00:00",
+  "scope": "Actual completed original/separate-group clipping runs. Preclip group norms, not Adam parameter-update magnitudes; activation RMS/cosine excluded.",
+  "arms": {
+    "oracle_27b_16k_r8": {
+      "result_sha256": "7a799b05f01da6e33e65548115765ae7b2e83a1625e9800ceaaaa55e68fe9f68",
+      "questions": 16000,
+      "epochs": 1,
+      "AC_preclip": {
+        "median": 11.530506134033203,
+        "p95": 170.6134796142578,
+        "max": 6601.8603515625
+      },
+      "reader_preclip": {
+        "median": 1.2677261233329773,
+        "p95": 1.972523808479309,
+        "max": 16.696287155151367
+      },
+      "joint_preclip": {
+        "median": 11.624654624717332,
+        "p95": 170.61842318219652,
+        "max": 6601.8606304895875
+      },
+      "joint_over100": 174,
+      "joint_over10": 1102,
+      "development_nll": 0.6462716465019518,
+      "learning_nll": 0.521832452859984,
+      "duration_s": 11825.6
+    },
+    "oracle_27b_16k_r8_group_clip": {
+      "result_sha256": "8dd46eeebfe43ca4b3bb66d550cd79a07fd6a1e3d874f3727675e8f3cc533059",
+      "questions": 16000,
+      "epochs": 1,
+      "AC_preclip": {
+        "median": 8.607796669006348,
+        "p95": 67.59542846679688,
+        "max": 539.70458984375
+      },
+      "reader_preclip": {
+        "median": 1.3029518723487854,
+        "p95": 2.0572237968444824,
+        "max": 16.640954971313477
+      },
+      "joint_preclip": {
+        "median": 8.705883303946624,
+        "p95": 67.60661764042618,
+        "max": 539.7059508596169
+      },
+      "joint_over100": 60,
+      "joint_over10": 860,
+      "development_nll": 0.629357464606946,
+      "learning_nll": 0.4296595955367059,
+      "duration_s": 11132.3
+    }
+  }
+}

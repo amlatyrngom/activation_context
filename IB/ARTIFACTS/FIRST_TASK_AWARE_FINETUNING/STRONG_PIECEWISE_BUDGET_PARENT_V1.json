@@ -1,0 +1,31 @@
+{
+  "status": "frozen",
+  "arm": "oracle_27b_32k",
+  "selection": "Preselected final32000-question epoch001 pair; unchanged weights and actual final Adam4000.",
+  "publication_sha256": {
+    "result.json": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+    "run_identity.json": "db1954f46f514587f1ab6cee5a480466b6611414f6ddd7efcb7ee8b319417e0a",
+    "training_config.json": "630c858a80322fb8a87a5b96825b91b9eceb921e4bdbb16ba6706fded83afb26",
+    "material_ids.json": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980"
+  },
+  "payload_sha256": {
+    "ac_modules": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+    "encoder_config": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+    "encoder_weights": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+    "reader_config": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+    "reader_weights": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b"
+  },
+  "optimizer_sha256": "475e99170d7dd8c1bb09e7cafca7891e18f04815252a9f4fa1e444325f709a9c",
+  "parent_questions": 32000,
+  "parent_updates": 4000,
+  "timing_updates": [
+    4001,
+    4002,
+    4003,
+    4004
+  ],
+  "case_material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+  "original_probe_sha256": "819d0beed15dae7d487343e2c1578491d2e95fc0c4a4a8145e7bb66ba0be3938",
+  "scope": "Independent budget proof on strong parent; fixed2old8k cases only; no save, no parent mutation, no confirmation.",
+  "limits": "Timing inherits mature Adam for controlled restart. Upcoming larger adaptation is proposed fresh Adam; shapes and model math match but first optimizer-allocation timing differs."
+}

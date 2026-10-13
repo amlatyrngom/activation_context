@@ -1,0 +1,17 @@
+{
+  "job": 23509310,
+  "submitted_utc": "2026-09-22T22:56:15.764295Z",
+  "status": "released; gated on both final8k readouts",
+  "dependency": "afterok:23498368:23498373",
+  "hashes": {
+    "probe_piecewise_budget_v1.py": "819d0beed15dae7d487343e2c1578491d2e95fc0c4a4a8145e7bb66ba0be3938",
+    "probe_piecewise_budget_v1.sbatch": "d8fa44c5011a285a953740f6736b6e1f5b43c588f13a65e84e04be55922ce776",
+    "PIECEWISE_CHECKPOINT_MEMORY_FIT.json": "721f78cdf844d530cf23eb05bfe466971019785828601e7fdf0b14fa6aaded4f",
+    "probe_piecewise_checkpoint_v1.py": "12df00c8fcac924cf7a11525006c626d8ef572b6fdefa809468124512fba2139",
+    "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30"
+  },
+  "output": "reports/piecewise_budget_probe_v1",
+  "workspace": "piecewise_budget_probe_v1",
+  "resources": "1RTX PRO6000,45min,8CPU,96GiBhost",
+  "scheduler": "JobId=23509310 JobName=qa_piecewise_budget UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46282 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23498368(unfulfilled),afterok:23498373(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T18:56:15 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T18:56:15 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1476560 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=96G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=96G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch SubmitLine=sbatch --parsable --hold --dependency=afterok:23498368:23498373 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_budget_probe_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_budget_probe_23509310.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+}

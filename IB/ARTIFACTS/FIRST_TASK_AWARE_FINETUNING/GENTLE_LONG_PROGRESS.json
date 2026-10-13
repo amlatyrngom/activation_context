@@ -1,0 +1,137 @@
+{
+  "run": "gentle42k_final_lr_familiar4k_8k",
+  "scope": "Same development400, fixed originallearning32;4k familiar questions at8k independent passages. Final100 answers pending.",
+  "checked_utc": "2026-09-23T06:45:59+00:00",
+  "panels": [
+    {
+      "update": 0,
+      "questions seen": 0,
+      "percent": 0.0,
+      "held items": 400,
+      "AC answer NLL": 0.6218535951792563,
+      "current full NLL": 0.6083641510656368,
+      "current no-context NLL": 1.8143435965538575,
+      "initial full NLL": 0.6083641510656368,
+      "initial no-context NLL": 1.8143435965538575,
+      "training answer NLL": 0.6013117891060248,
+      "additional evaluation seconds": 346.1,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.6950250412342406,
+          "held full context": 0.6853565388253129,
+          "held no context": 1.9902291497093139,
+          "initial reader full context": 0.6853565388253129,
+          "initial reader no context": 1.9902291497093139,
+          "training AC": 0.6013117891060248
+        },
+        "27b": {
+          "held AC": 0.5486821491242719,
+          "held full context": 0.5313717633059608,
+          "held no context": 1.638458043398401,
+          "initial reader full context": 0.5313717633059608,
+          "initial reader no context": 1.638458043398401,
+          "training AC": 0.6013117891060248
+        }
+      }
+    },
+    {
+      "update": 50,
+      "questions seen": 400,
+      "percent": 10.0,
+      "held items": 400,
+      "AC answer NLL": 0.60629518227536,
+      "current full NLL": null,
+      "current no-context NLL": null,
+      "initial full NLL": 0.6083641510656368,
+      "initial no-context NLL": 1.8143435965538575,
+      "training answer NLL": 0.5514268294778947,
+      "additional evaluation seconds": 24.6,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.6645737756499247,
+          "initial reader full context": 0.6853565388253129,
+          "initial reader no context": 1.9902291497093139,
+          "training AC": 0.5514268294778947
+        },
+        "27b": {
+          "held AC": 0.5480165889007951,
+          "initial reader full context": 0.5313717633059608,
+          "initial reader no context": 1.638458043398401,
+          "training AC": 0.5514268294778947
+        }
+      }
+    },
+    {
+      "update": 100,
+      "questions seen": 800,
+      "percent": 20.0,
+      "held items": 400,
+      "AC answer NLL": 0.6006408260777167,
+      "current full NLL": null,
+      "current no-context NLL": null,
+      "initial full NLL": 0.6083641510656368,
+      "initial no-context NLL": 1.8143435965538575,
+      "training answer NLL": 0.5278413403401092,
+      "additional evaluation seconds": 24.9,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.6623659532837044,
+          "initial reader full context": 0.6853565388253129,
+          "initial reader no context": 1.9902291497093139,
+          "training AC": 0.5278413403401092
+        },
+        "27b": {
+          "held AC": 0.5389156988717291,
+          "initial reader full context": 0.5313717633059608,
+          "initial reader no context": 1.638458043398401,
+          "training AC": 0.5278413403401092
+        }
+      }
+    },
+    {
+      "update": 150,
+      "questions seen": 1200,
+      "percent": 30.0,
+      "held items": 400,
+      "AC answer NLL": 0.6075993271164025,
+      "current full NLL": null,
+      "current no-context NLL": null,
+      "initial full NLL": 0.6083641510656368,
+      "initial no-context NLL": 1.8143435965538575,
+      "training answer NLL": 0.536467970447599,
+      "additional evaluation seconds": 25.0,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.6700969809700905,
+          "initial reader full context": 0.6853565388253129,
+          "initial reader no context": 1.9902291497093139,
+          "training AC": 0.536467970447599
+        },
+        "27b": {
+          "held AC": 0.5451016732627145,
+          "initial reader full context": 0.5313717633059608,
+          "initial reader no context": 1.638458043398401,
+          "training AC": 0.536467970447599
+        }
+      }
+    }
+  ],
+  "live_status": {
+    "phase": "training",
+    "training seen": "4,000 familiar questions \u00d7 0.31 epochs",
+    "attempt elapsed minutes": "101.6",
+    "whole run wall minutes": "101.5",
+    "familiar question pool": "4000",
+    "development questions": "400",
+    "train call elapsed": "1h 36m",
+    "training remaining": "about 2h 54m",
+    "no context penalty": "0.0039",
+    "latest batch loss": "0.3107",
+    "learning rates": "5e-06, 2e-06",
+    "last complete quality panel": "4,000 familiar questions \u00d7 0.3 epochs"
+  },
+  "source_sha256": {
+    "panels.json": "dc82b04c76bfe3005a0fbec662da02df452f94cb632e87a3301ecfb1fe18ab1c"
+  },
+  "note": "Interim repeated development measurements. Final selected checkpoint and100 answer review pending; no saturation/overfit or semantic-quality conclusion."
+}

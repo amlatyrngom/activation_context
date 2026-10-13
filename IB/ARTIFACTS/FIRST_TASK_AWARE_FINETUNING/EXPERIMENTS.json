@@ -1,0 +1,3184 @@
+{
+  "updated_utc": "2026-09-22T10:04:14.825715+00:00",
+  "product_manifest": "implementation/manifest.json",
+  "runner_sha256": "fe473fd7f8de02c6a421ef4fbd6ad9b475eb0c935485d20a43eb170198bba5f8",
+  "material_sha256": "7525c46543d6beebe6a46e2bac3afbeba450f60d579372da321fac990ec14009",
+  "training_questions": 4000,
+  "epochs": 2,
+  "updates": 1000,
+  "development_questions": 100,
+  "unused_confirmation_questions": 200,
+  "arms": {
+    "hill_control": {
+      "job": 23403857,
+      "cluster": "ORCD",
+      "encoder_lr": 5e-05,
+      "reader_lr": 2e-05,
+      "latest_panel": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 100,
+        "AC answer NLL": 0.608691659519573,
+        "full answer NLL": 0.4233286291305797,
+        "no-context answer NLL": 1.870502440619633,
+        "training answer NLL": 0.3144896600935102,
+        "panel seconds": 26.2
+      },
+      "status": "complete: 1000 updates",
+      "result": {
+        "stop_reason": "complete",
+        "loss_kind": "sft",
+        "loss_first": 1.2023704499006271,
+        "loss_last": 0.09443113463930786,
+        "steps": 1000,
+        "peak_memory_gb": 60.4
+      },
+      "detailed_result": "../../TMP/SYNC/TASK_AWARE_QA/hill_control/result.json"
+    },
+    "hill_reader_low": {
+      "job": 23403858,
+      "cluster": "ORCD",
+      "encoder_lr": 5e-05,
+      "reader_lr": 5e-06,
+      "latest_panel": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 100,
+        "AC answer NLL": 0.6358946042934087,
+        "full answer NLL": 0.4451090218452133,
+        "no-context answer NLL": 1.92080685905449,
+        "training answer NLL": 0.41505702147099194,
+        "panel seconds": 26.0
+      },
+      "status": "complete: 1000 updates",
+      "result": {
+        "stop_reason": "complete",
+        "loss_kind": "sft",
+        "loss_first": 1.2023704499006271,
+        "loss_last": 0.11195027956273407,
+        "steps": 1000,
+        "peak_memory_gb": 60.4
+      },
+      "detailed_result": "../../TMP/SYNC/TASK_AWARE_QA/hill_reader_low/result.json"
+    },
+    "hill_encoder_low": {
+      "job": 23405883,
+      "cluster": "ORCD",
+      "encoder_lr": 2e-05,
+      "reader_lr": 2e-05,
+      "cancelled_pending_csail_job": 2104500,
+      "preempted_before_training_job": 23405695,
+      "latest_panel": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 100,
+        "AC answer NLL": 0.8301207066800316,
+        "full answer NLL": 0.4322727433769409,
+        "no-context answer NLL": 1.8875441651886116,
+        "training answer NLL": 0.34080105737992106,
+        "panel seconds": 26.8
+      },
+      "status": "complete: 1000 updates"
+    }
+  },
+  "bank": {
+    "job": 23445953,
+    "target": 200000,
+    "legacy_job_cancelled": 23401910,
+    "legacy_questions": 8526,
+    "sha256": {
+      "generate_bank.py": "630a82b3e441f1830ce6349bd4a527249e6ddb8d9431c874c1e6ddfb464f8665",
+      "select_bank.py": "a75f17e6c0129c87720c573eeffb5d667bb9fed6f096dca9c1b5158528386336",
+      "bank.sbatch": "c26f642edf2eae8e26c6b4108bda5839643f7ef0e9ec5dd4f35e9f30ed8df532"
+    },
+    "scheduler_probe": {
+      "job": 23403726,
+      "result": "self-requeue passed;restart1"
+    },
+    "source_extensions": "Eight immutable extensions shipped;129175 additional raw windows; ordinary web now95000",
+    "first_release": "1000 portable questions; file hash and exact accepted quotas verified; seeded100-question selector passed",
+    "gpu_restart": "Pass: real USR1 stop, Slurm Restarts1, differentGPU node, prior published/microchunk records unchanged, accepted count grows afterrestart,8extensions loaded",
+    "unicode_fix_next_segment": {
+      "source_snapshot": "train_ws_9b_synthesis_unicode_v1",
+      "source_files": 136,
+      "changed": [
+        "activation/dataset/dataset_study.py"
+      ],
+      "sbatch": "bench/bank9b_unicode_v1.sbatch",
+      "action": "Replace current23404276 at next natural requeue around02:31UTC, after fresh status check. Keep bank/cache/cursor."
+    },
+    "unicode_rollover": {
+      "old_job": 23404276,
+      "replacement_job": 23445953,
+      "dependency": "afterany:23404276",
+      "requested_utc": "2026-09-22T02:28:17Z",
+      "stop": "Batch-shell TERM; wrapper forwards USR1, finishes current source block, suppresses old automatic requeue.",
+      "before_published": 90000,
+      "before_accepted": 90576,
+      "target": 200000,
+      "source": "train_ws_9b_synthesis_unicode_v1",
+      "wrapper": "bench/bank9b_unicode_v1.sbatch",
+      "wrapper_sha256": "355c1873911373b72665e1c955aa011919ebb0aa461554b324a170dc6b5d8c53",
+      "status": "RUNNING; generation resumed and91k portable questions committed02:43",
+      "after_old_accepted": 90765,
+      "after_old_published": 90000,
+      "verified_published": 91000,
+      "verified_accepted": 91381
+    },
+    "milestone_100k": {
+      "observed_utc": "2026-09-22T03:33:50Z",
+      "manifest_updated_utc": "2026-09-22 03:33:50 UTC",
+      "published_questions": 100000,
+      "accepted_questions": 100685,
+      "published_by_family": {
+        "code": 30000,
+        "math_arxiv": 12000,
+        "math_textbook": 8000,
+        "financial": 5000,
+        "web": 20000,
+        "technical_web": 5000,
+        "documents": 8000,
+        "legal": 6000,
+        "office": 6000
+      },
+      "target": 200000,
+      "status": "Continuing automatically; portable releases and source provenance retained with PRESERVE."
+    },
+    "current_job": null,
+    "published_questions": 164000,
+    "target_questions": 200000,
+    "latest_capacity_check": "CPU23465658 at147k: allnine pools sufficient for200k; next180k/codeextension. SYNTHESIS_CAPACITY_20260922.md",
+    "autorequeue_check_0932": "23459872 Restarts1; published count advanced afterrestart.",
+    "status": "Pausedbyuser;publisheddataretained"
+  },
+  "observations": {
+    "update100": {
+      "control_development_nll": 1.2755323127,
+      "reader_low_development_nll": 1.1514919193,
+      "control_learning_nll": 1.1570303617,
+      "reader_low_learning_nll": 1.0108963558,
+      "interpretation": "First panel favors lower reader LR; no winner selected."
+    },
+    "update200": {
+      "control_development_nll": 1.3674089274,
+      "reader_low_development_nll": 1.3295281986,
+      "interpretation": "Both regressed from100; lower encoder LR remains important; best weights retained."
+    },
+    "update300": {
+      "control_development_nll": 1.2297119544,
+      "reader_low_development_nll": 0.9939114279,
+      "control_learning_nll": 0.9960530585,
+      "reader_low_learning_nll": 0.9654571771,
+      "control_full_context_nll": 0.4476340494,
+      "reader_low_full_context_nll": 0.4295171989
+    },
+    "update400": {
+      "hill_control": {
+        "update": 400,
+        "percent": 40.0,
+        "held items": 100,
+        "AC answer NLL": 0.9315000880216644,
+        "full answer NLL": 0.41671467666106543,
+        "no-context answer NLL": 1.8957513165851148,
+        "training answer NLL": 0.7007326543100002,
+        "panel seconds": 26.1
+      },
+      "hill_reader_low": {
+        "update": 400,
+        "percent": 40.0,
+        "held items": 100,
+        "AC answer NLL": 0.9059092586185592,
+        "full answer NLL": 0.45710985865686793,
+        "no-context answer NLL": 1.9322584218076415,
+        "training answer NLL": 0.7635717233721465,
+        "panel seconds": 26.0
+      }
+    },
+    "update500": {
+      "hill_control": {
+        "update": 500,
+        "percent": 50.0,
+        "held items": 100,
+        "AC answer NLL": 0.7519124892321429,
+        "full answer NLL": 0.3887289429053662,
+        "no-context answer NLL": 1.9034837940808425,
+        "training answer NLL": 0.6197534053080768,
+        "panel seconds": 26.3
+      },
+      "hill_reader_low": {
+        "update": 500,
+        "percent": 50.0,
+        "held items": 100,
+        "AC answer NLL": 0.816752805000161,
+        "full answer NLL": 0.43853955951851253,
+        "no-context answer NLL": 1.9195546595817903,
+        "training answer NLL": 0.6496406028054253,
+        "panel seconds": 26.0
+      }
+    },
+    "update600": {
+      "hill_control": {
+        "update": 600,
+        "percent": 60.0,
+        "held items": 100,
+        "AC answer NLL": 0.7717640933345778,
+        "full answer NLL": 0.41845899998083974,
+        "no-context answer NLL": 1.8816790701224368,
+        "training answer NLL": 0.4644205182403248,
+        "panel seconds": 26.2
+      },
+      "hill_reader_low": {
+        "update": 600,
+        "percent": 60.0,
+        "held items": 100,
+        "AC answer NLL": 0.786631445174795,
+        "full answer NLL": 0.443046204476147,
+        "no-context answer NLL": 1.9324516400881788,
+        "training answer NLL": 0.5840418540850112,
+        "panel seconds": 26.0
+      }
+    }
+  },
+  "next_candidate": {
+    "passage_parts": "Do not promote: 32k NLL improved .8758→.8019, but original88-item semantic review favors merged51 over separate47. Keep merged baseline."
+  },
+  "input_lengths": {
+    "file": "INPUT_LENGTHS.json",
+    "scope": "Exact encoder tokenizer and frozen active-run builder over 4000 train / 100 development; includes question and chat framing",
+    "training_median": 1953,
+    "training_p95": 2956,
+    "training_max": 6118,
+    "development_median": 1761,
+    "development_p95": 2061,
+    "development_max": 2096,
+    "limitation": "Development inputs are shorter than training; this panel alone does not establish long-document generalization."
+  },
+  "campaign": {
+    "deadline_utc": "2026-09-22T12:00:00Z",
+    "insight_boundaries_utc": [
+      "2026-09-21T20:00:00Z",
+      "2026-09-21T23:00:00Z",
+      "2026-09-22T09:00:00Z"
+    ],
+    "ec2": "no experiment nodes planned"
+  },
+  "prepared_runner_sha256": "cd82072aa18636f9013ef46170e4cd280465a9c22259850e723a36f6d9f24f2f",
+  "data_budget": {
+    "status": "Allthree runs completed1000updates; reserved200confirmation queued",
+    "summary": "DATA_BUDGET_MATERIAL.json",
+    "sizes_epochs": [
+      [
+        2000,
+        4
+      ],
+      [
+        4000,
+        2
+      ],
+      [
+        8000,
+        1
+      ]
+    ],
+    "development_questions": 200,
+    "confirmation_questions": 200,
+    "retrieval_questions": 8200,
+    "common_learning_questions": 32,
+    "remote_material": "~/orcd/pool/activation/taskaware/data_budget_material",
+    "preempted_attempt": {
+      "job": 23409735,
+      "updates": 0,
+      "report": "data_8k_1ep_preempted_before_training"
+    },
+    "final_panels": {
+      "data_2k_4ep": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 200,
+        "AC answer NLL": 1.0079566382916598,
+        "full answer NLL": 0.7188416372495923,
+        "no-context answer NLL": 2.0042810728004095,
+        "training answer NLL": 0.13069302013272244,
+        "panel seconds": 56.7
+      },
+      "data_4k_2ep": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 200,
+        "AC answer NLL": 0.8354750986962091,
+        "full answer NLL": 0.6794733032192678,
+        "no-context answer NLL": 2.0049309994444515,
+        "training answer NLL": 0.4372074432276182,
+        "panel seconds": 56.0
+      },
+      "data_8k_1ep": {
+        "update": 1000,
+        "percent": 100.0,
+        "held items": 200,
+        "AC answer NLL": 0.7832864097361835,
+        "full answer NLL": 0.6362239432636805,
+        "no-context answer NLL": 2.0122124982681817,
+        "training answer NLL": 0.4687870041312341,
+        "panel seconds": 55.8
+      }
+    },
+    "interpretation": "Freshquestions favored on commondevelopment atmatched8000presentations/~16Mencoder tokens. Confirm once on reserved200 before canonicalshape."
+  },
+  "readout_probe": {
+    "job": 23407738,
+    "cluster": "ORCD",
+    "dependency": "afterany23403857; uses its released GPU slot",
+    "script_sha256": "855c7382711eda93298472be48eb726a413d688bef94e79efd98a805bda1609a",
+    "status": "Initial P2 probe failed before measurement. Corrected trained QA readout job23409120 passed outputs and all gradients at8k/32k."
+  },
+  "next_fixed_learning_rates": {
+    "encoder": 5e-05,
+    "reader": 2e-05,
+    "reason": "Canonical rates lead reader-low at final1000 and encoder-low at matched500; next data study holds these constant."
+  },
+  "data_budget_jobs": {
+    "data_2k_4ep": 23410723,
+    "data_4k_2ep": 23410775,
+    "data_8k_1ep": 23412975
+  },
+  "long_context_jobs": {
+    "trained_readout_pass": 23409120,
+    "training_and_eval_pass_auxiliary_failure": 23409513,
+    "queued_auxiliary_checks": 23410837,
+    "long_qa_generation": 23410722,
+    "auxiliary_checks_passed": 23410837,
+    "whole_parent_pilot": 23413645,
+    "whole_parent_worker_sha256": "0738c0744212e1911af5a000f472e635e7e24577794f628b0fd14cae4b318695"
+  },
+  "nll_report": {
+    "html": "NLL_EXAMPLES.tressoir.html",
+    "samples": 12,
+    "checkpoint_update": 500,
+    "no_context_exact_recheck_job": 23409796,
+    "max_stored_nll_delta": 0.0
+  },
+  "oracle_27b": {
+    "prefetch_job": 23411608,
+    "prefetch_status": "complete",
+    "model": "Qwen/Qwen3.5-27B",
+    "revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+    "generation_job": 23441557,
+    "initial_target": 32000,
+    "target_can_extend": true,
+    "reasoning": false,
+    "training": "16k × 1 each: legacy9B versus revised27B supervision, sameP2 learner and common separate9B/27B cohorts",
+    "worker_sha256": "c8dd4d49a491eb5e2a574e58a1c1f79a0d5d7b95e92f9046e97b01d4e102a71d",
+    "presence_penalty": 0.0,
+    "status": "RUNNING23441557; cursor progressed past failed8640 to8832;15k published retained",
+    "batch64_restart": {
+      "job": 23424940,
+      "starts_after": 23412107,
+      "status": "Running; original worker stopped after committing, resumed same manifest/cursors.",
+      "microbatch": 64,
+      "max_num_seqs": 64,
+      "worker_unchanged": true,
+      "sbatch_sha256": "6c8a3325bb26acfd8fbdcfa76dab00fe4bc6c8d409f075119630dc666ce2922a",
+      "prior_rate": "Balanced releases ~16minutes per1000 after startup at batch32; compare subsequent64 releases after model load.",
+      "published_before_restart": 3000
+    },
+    "unicode_recovery": {
+      "failed_job": 23424940,
+      "failed_utc": "2026-09-22T01:20:03Z",
+      "cause": "Lone surrogate U+DCFF from generated JSON was not UTF-8 encodable at StudyCache.append.",
+      "new_job": 23441557,
+      "source_snapshot": "train_ws_synthesis_unicode_v1",
+      "dataset_study_sha256": "5eca5b199cbe2390b06fc4eb7be0f9b7ad627c62cd2881e7fdd1a50367c853b9",
+      "source_manifest_sha256": "1052a62e37045c0900083e72b102eb683d9a56858167ce40821b6765a45a3747",
+      "worker_unchanged": true,
+      "published_questions_retained": 15000,
+      "cache_or_cursor_reset": false,
+      "cpu_tests": "4 passed; bounded independent review passed",
+      "report": "SYNTHESIS_UNICODE_RECOVERY.md",
+      "runtime_confirmation": {
+        "utc": "2026-09-22T01:35:36Z",
+        "code_cursor": 8832,
+        "failed_cursor": 8640,
+        "published_questions": 15000
+      }
+    },
+    "afternoon_extension": {
+      "job": 23469329,
+      "target_questions": 200000,
+      "start_published": 32000
+    }
+  },
+  "selected_checkpoint_archive": "QA_CHECKPOINT_ARCHIVE.json",
+  "qualitative_100": {
+    "status": "Completed: all100 sources and400answers reviewed; browser checks passed",
+    "frozen_baselines": "P2 reader at train start, full and no context",
+    "ac_checkpoints": [
+      500,
+      900
+    ],
+    "cohort_items": 100,
+    "job": 23412146,
+    "report": "QUALITATIVE_COHORT100.tressoir.html",
+    "evidence": "QUALITATIVE_COHORT100.evidence.json",
+    "supported_reference_items": 88,
+    "supported_answer_counts": {
+      "frozen_full": 85,
+      "frozen_noctx": 11,
+      "AC500": 53,
+      "AC900": 59
+    }
+  },
+  "insight_1600_edt": "INSIGHTS_1600_EDT.md",
+  "night_runner_v2": "NIGHT_RUNNER_V2.json",
+  "long_adaptation": {
+    "jobs": {
+      "2k": 23414747,
+      "32k": 23414771,
+      "2k_resume": 23424384
+    },
+    "material": "LONG_ADAPTATION.md",
+    "training_questions": 640,
+    "epochs": 1,
+    "updates": 80,
+    "initialization": "control900",
+    "final_cross_evaluation": "Both final pairs on both2k and32k held inputs, plus matched full/no context.",
+    "status": "Both640-question×1pass adaptations complete; required long-cross cells pending",
+    "final_cross_evaluation_job": 23435208,
+    "failed_resume": {
+      "job": 23423834,
+      "updates": 0,
+      "reason": "Duplicate report widget initialization; private v3 fix."
+    },
+    "short_final_scores": {
+      "AC": 0.6609629829317089,
+      "full context": 0.43098711209377066,
+      "no context": 1.8704162396331219,
+      "learning": 0.33601565817722817
+    },
+    "long_resume_job": 23438900,
+    "long_status": "COMPLETED23438900; paired epoch marker verified",
+    "preempted_resume_job": 23431235,
+    "latest_preemption": {
+      "job": 23431235,
+      "time_utc": "2026-09-21T23:54:46Z",
+      "node": "node5202",
+      "saved_passes": 0.3,
+      "lost_updates": 5,
+      "next": "Bounded private recovery optimization; stable normal-GPU option under consideration."
+    },
+    "last_failed_job": 23435173,
+    "next": "Finish exact continuation then six-cell cross evaluation on ORCD; CSAIL migration retained as fallback.",
+    "csail_continuation": {
+      "job": 2110090,
+      "run": "long_adapt_32k_csail",
+      "status": "2110090 canceled while still pending at00:51UTC; exact staged state retained",
+      "saved_passes": 0.3,
+      "runner_sha256": "df292c95326d7818c009af662117dfac1afc79342af26570331fddb140482294",
+      "manifest_sha256": "ee911de9fe39bac6e0250caa6d0846ba7ec8406397b984e77708c8c3ca1c9fd2",
+      "receipt_sha256": "a9335fe135a4300e5bb14a8438a22a825e6aae98a8712398d16162169916ed1c",
+      "handoff": "CSAIL_LONG32K_MIGRATION.md",
+      "validation": "Exactfrozenbytes/optimizer24/80 checked;16payloadSHApreflightonGPUallocation; separatewriter/reportalias, noORCDcontinuationlive."
+    },
+    "rtx_v4": {
+      "job": 23438900,
+      "baseline_receipt": "bench/long32k_resume24_baseline_receipt.json",
+      "sbatch_sha256": "ece908cb381a106d0612083d2f00e02d5dbe47f2e576b6215e071ea941ec6015",
+      "resume_from_saved_updates": 24
+    },
+    "latest_complete_panel": {
+      "unique_questions": 640,
+      "passes": 1,
+      "status": "Final quality panel and paired-save publication complete",
+      "scores": {
+        "held AC": 0.8260542476491578,
+        "held full context": 0.3864317100393134,
+        "held no context": 1.8692039941172192,
+        "training AC": 0.45118069684365797
+      }
+    },
+    "long_final_scores": {
+      "held AC": 0.8260542476491578,
+      "held full context": 0.3864317100393134,
+      "held no context": 1.8692039941172192,
+      "training AC": 0.45118069684365797
+    }
+  },
+  "passage_screen": {
+    "job": 23419877,
+    "starts_after": 23423834,
+    "status": "completed",
+    "checkpoint": "frozen control900 pair",
+    "questions": 100,
+    "evidence": "Same2k budget/4passages/4100retrieval as long_adapt_2k",
+    "variants": [
+      "merged_16",
+      "parts_16",
+      "merged_10",
+      "merged_30"
+    ],
+    "optimizer_updates": 0,
+    "rows_total": {
+      "merged_16": 10314,
+      "parts_16": 10314,
+      "merged_10": 16480,
+      "merged_30": 5525
+    },
+    "cpu_checks": "Common full-evidence/gold hash; exact per-question row equality for parts; answer-mask/suffixed-ID metric API fixtures passed",
+    "scope": "Zero-training transfer screen; unfavorable result does not rule out adaptation",
+    "script_sha256": "9ec04c86f5fea3b992771b60d527015baddf481f8e1417062480583d37000afa",
+    "sbatch_sha256": "94704f8ac2ae67e349cec919e22cc78b8e5ea640761529292e4957513318b1e7",
+    "bench_sha256": "25663ab1991a8bc8da3e809674e17d6615267e7409c02f0a04149f5a14f7c4c4",
+    "report": "../../TMP/SYNC/TASK_AWARE_QA/passage_screen_900/",
+    "results": {
+      "merged_16": 0.5889839253,
+      "parts_16": 0.6036401164,
+      "merged_10": 0.5878232236,
+      "merged_30": 0.6177723768
+    }
+  },
+  "long_cross_eval": {
+    "job": 23435208,
+    "dependency": "afterok:23435173; shortalreadycomplete",
+    "status": "23435208canceleddueL40Sfailure; replacementdepends onCSAILmigration/finalpairmirror",
+    "cells": "control900,final2k,final32k ×2k/32k evidence",
+    "questions": 100,
+    "microbatch": 1,
+    "optimizer_updates": 0,
+    "script_sha256": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "sbatch_sha256": "2376f48b7eaaa14657d567ed1c8c46accb908b113d7a8760d4785cecc7a5f5ce",
+    "bench_sha256": "25663ab1991a8bc8da3e809674e17d6615267e7409c02f0a04149f5a14f7c4c4",
+    "checks": "13 focused CPU contracts and syntax passed; root checked actual checkpoint path/marker layout",
+    "report": "../../TMP/SYNC/TASK_AWARE_QA/long_cross_eval/",
+    "hardware": "L40S; per-cell1200s unchanged",
+    "short_cells_job": {
+      "job": 23443269,
+      "cells": [
+        "control900__2k",
+        "long_adapt_2k__2k"
+      ],
+      "gpu": "L40S",
+      "slurm_minutes": 40,
+      "status": "COMPLETED",
+      "purpose": "Complete already-ready short-context retention cells while balanced27B material fills; no training.",
+      "elapsed": "00:06:48",
+      "initial_ac_nll": 0.5904701984488981,
+      "short_final_ac_nll": 0.6592972568948321,
+      "paired_delta_nll": 0.06882705844593394
+    },
+    "remaining_job": 23452012,
+    "remaining_dependency": "afterok:23447677"
+  },
+  "checker_ab_27b_v1": {
+    "job": 23421224,
+    "starts_after": 23412146,
+    "status": "completed; existing boolean A retained",
+    "cases": 23,
+    "expected_supported": 15,
+    "expected_unsupported": 5,
+    "unscored": 3,
+    "conditions": [
+      "current boolean only",
+      "brief check before verdict"
+    ],
+    "thinking": false,
+    "source_review": "ORACLE_27B_INITIAL_CHECK.md",
+    "worker_sha256": "9b4d1aaf3eea80b236fa2e485f1e56e381210649b26cc03c4a519a3a4262eab9",
+    "cases_sha256": "fc7b7dcfea8bff0aa12a56c102f1064938316e37883fddaecb95e0c043e5bcf4",
+    "sbatch_sha256": "9826d5f1a07c84b22e1e485eed6b7ee69f7a02ecdabd0a8f60703229f1efb3f4",
+    "report": "../../TMP/SYNC/TASK_AWARE_QA/checker_ab_27b_v1/",
+    "results": {
+      "A_correct": 19,
+      "B_correct": 15,
+      "scorable": 20,
+      "A_false_accepts": 1,
+      "B_false_accepts": 3,
+      "B_invalid": 2,
+      "interpretation": "Small enriched diagnostic set, not population accuracy. Extra explanation worsened decisions beyond two truncations."
+    }
+  },
+  "synthesis_27b_first_release": {
+    "published_utc": "2026-09-21 21:35:40 UTC",
+    "file": "batches/batch_00001_54bbe353789e4e77b1fdccf39b841d34.jsonl",
+    "sha256": "0391243af7d965e80d3201862d4192c574d3ec4733732b0bce895fce64dda690",
+    "questions": 1000,
+    "counts": {
+      "code": 300,
+      "documents": 80,
+      "financial": 50,
+      "legal": 60,
+      "math_arxiv": 120,
+      "math_textbook": 80,
+      "office": 60,
+      "technical_web": 50,
+      "web": 200
+    },
+    "status": "hash,exactmix,model/no-thinking provenance verified locally"
+  },
+  "data_confirmation": {
+    "job": 23424466,
+    "starts_after": 23424384,
+    "status": "Complete; all three fixed final pairs scored on reserved200; cohort now used",
+    "cohort_questions": 200,
+    "checkpoint_selection": "Allthree fixedfinal1000updatepairs;no switchingafterconfirmation",
+    "script_sha256": "ccbac415be18a8a7006941530a11088ec49cdf32ee983649095cf8ba9531c257",
+    "sbatch_sha256": "c9ae847ae21a198afece80c290bec5f1387be3366f0ea764f2a6a9c86c32f6df",
+    "checks": "6focusedCPUcontracts;realremoteall3finalpair/marker/config validation passed21:51",
+    "report": "../../TMP/SYNC/TASK_AWARE_QA/data_budget_confirmation/",
+    "bench_sha256": "b75901827e2c2bbffa385e50eea82ab99276ffb9fb742b83464e1b67df4edcb6",
+    "confirmation_used": true,
+    "scores": {
+      "data_2k_4ep": {
+        "AC": 1.0775866107581649,
+        "full context": 0.651874334533416,
+        "no context": 1.9499202333238919
+      },
+      "data_4k_2ep": {
+        "AC": 0.8950076586859408,
+        "full context": 0.6243284499880134,
+        "no context": 1.952091725001863
+      },
+      "data_8k_1ep": {
+        "AC": 0.8443536685359571,
+        "full context": 0.5936019679873024,
+        "no context": 1.972830546718478
+      }
+    },
+    "conclusion": "Fresh data leads again. 8k×1 versus4k×2 is modest; paired question bootstrap includes zero. Both clearly outperform2k×4.",
+    "paired_question_bootstrap": {
+      "replicates": 5000,
+      "seed": 20260921,
+      "8k_minus_4k": [
+        -0.10651151161602507,
+        0.01977114768976126
+      ],
+      "8k_minus_2k": [
+        -0.3022637221115886,
+        -0.1655488035634969
+      ],
+      "scope": "95% descriptive interval from resampling the200 paired questions; does not include training-seed or source-cluster variation"
+    }
+  },
+  "night_runner_v3": "NIGHT_RUNNER_V3.json",
+  "data_budget_qualitative_100": {
+    "job": 23429436,
+    "starts_after": 23424466,
+    "status": "Complete:all100sources/500responses reviewed; HTML/evidence published; browser checks passed",
+    "questions": 100,
+    "population": "Deterministic family-balanced subset of shared200 development",
+    "selection_sha256": "f922bf31999a982d638228e9129bab89e340edbdf1c672c7d27a4220fbe8bfb7",
+    "views": [
+      "frozen P2 full context",
+      "frozen P2 no context",
+      "2000 questions ×4passes",
+      "4000 questions ×2passes",
+      "8000 questions ×1pass"
+    ],
+    "evaluator_sha256": "434e0b6d63ebcdca1a4fc01f3ed6279de9a6d980a5d41e2a2571fd88b0308727",
+    "sbatch_sha256": "df3573699e3d25eb1f6391bee60d574c435749e08495779bb419133eea680448",
+    "report": "DATA_BUDGET_COHORT100.tressoir.html",
+    "previous_job": 23426184,
+    "eta": "23:40–23:55UTC absent furtherpreemption",
+    "supported_reference_denominator": 95,
+    "supported_answers": {
+      "frozenfull": 87,
+      "frozennoctx": 24,
+      "2k×4": 49,
+      "4k×2": 52,
+      "8k×1": 57
+    },
+    "nll_replay_max_abs_difference": 0,
+    "interpretation": "More unique questions improves decoded support, but AC remains far below frozenfull semantic quality despite lower NLL. Five reference/context concerns excluded uniformly from semantic counts;all100retained inNLL/examples."
+  },
+  "checker_prefill_27b_v1": {
+    "job": 23429488,
+    "dependency": "afterany:23429436",
+    "status": "Complete;retainproduction2048prefillbudget",
+    "note": "Uncached checker throughput only:2048vs8192 prefill-token budget,128fixedcases,two measuredpasses,freshengines;production unchanged",
+    "report": "CHECKER_PREFILL_27B_V1.md",
+    "requests_per_arm": 256,
+    "speedup": 1.0380561372511812,
+    "changed_distinct_decisions": 16,
+    "distinct_cases": 128,
+    "cached_prompt_tokens": 0,
+    "within_arm_matching_replays": "128/128each",
+    "semantic_accuracy_measured": false
+  },
+  "selected_data_8k_archive": {
+    "status": "S3 verified complete",
+    "manifest": "QA_CHECKPOINT_ARCHIVE_8K.json",
+    "payload_bytes": 2491943724,
+    "payload_objects": 15,
+    "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/"
+  },
+  "insight_1900_edt": "INSIGHTS_1900_EDT.md",
+  "long_whole_parent_pilot": {
+    "job": 23413645,
+    "status": "Complete; quick semantic review in progress",
+    "parents": 75,
+    "generated_candidates": 221,
+    "accepted_questions": 69,
+    "parents_with_accepted": 38,
+    "invalid_evidence_indices": 20,
+    "checker_rejected": 132,
+    "temporary_label_rejections": 0,
+    "runtime_seconds": 473
+  },
+  "long_whole_parent_27b_replay": {
+    "job": 23431684,
+    "dependency": "afterany:23429488",
+    "status": "Complete23431684,14m54s; fixed15qualityreviewunderway",
+    "parents": 75,
+    "matched": "Same source bytes,generator/checker prompts,effective sampling; pinned27B replaces9B",
+    "limit_minutes": 45,
+    "cpu_checks": "Actualpinned27B tokenizer maximum33252/40960; fakeorchestration/publication/resume passed",
+    "report": "LONG_QA_WHOLE_PARENT_PILOT.md",
+    "accepted": 73,
+    "candidates": 207,
+    "quality_review": {
+      "report": "LONG_QA_WHOLE_PARENT_27B_REVIEW.md",
+      "sample": 15,
+      "same_parent_matches": 12,
+      "same_cell_fallbacks": 3,
+      "supported": 11,
+      "incorrect": 1,
+      "missing_support": 1,
+      "qualifications": 2,
+      "single_unit_answerable": 11,
+      "fully_supported_combinational": 2,
+      "decision": "Do not scaleunchangedrecipe asreliablemulti-sectionQA; prioritizecurrenttraining."
+    }
+  },
+  "passage_screen_32k": {
+    "cpu_job": 23433036,
+    "status": "complete; average NLL improves but paired interval crosses zero and12 decoded answers show regressions",
+    "purpose": "Test whether separately encoding query-conditioned passages helps32k inputs more than the2k screen;fixedold4k×1.8passpair,100held,1/16equalrows",
+    "evidence_tokens": 32768,
+    "max_passages": 64,
+    "microbatch": 1,
+    "variants": [
+      "merged_16",
+      "parts_16"
+    ],
+    "worker_sha256": "36ecb1b09295177fc7a4254ab5927b13db837fb30228342b81bae27cf0948ea4",
+    "remote_worker": "bench/screen_passage_variants_context.py",
+    "gpu_limit_minutes": 40,
+    "priority": "Optional;do not delay16kfresh-data comparison",
+    "cpu_result": {
+      "held_questions": 100,
+      "rows_each_layout": 205886,
+      "evidence_tokens_each": 3269518,
+      "merged_encoder_tokens": 3293498,
+      "separate_encoder_tokens": 3389454,
+      "max_individual_separate_input": 4865,
+      "same_evidence_and_gold": true
+    },
+    "job": 23436678,
+    "dependency": "afterany:23436039",
+    "results": {
+      "n": 100,
+      "merged_nll": 0.8757756693876348,
+      "parts_nll": 0.8019031672759132,
+      "paired_difference": -0.07387250211172167,
+      "paired_question_bootstrap95": [
+        -0.17776835168141336,
+        0.02122253484336985
+      ],
+      "bootstrap_note": "Question-level only, one fixed checkpoint/cohort; does not include source clustering or training seed variation.",
+      "median_difference": 0.002272960372960167,
+      "improved": 48,
+      "domains": {
+        "taskaware_code": {
+          "n": 30,
+          "merged": 1.1703762701498197,
+          "parts": 1.1247178093027572,
+          "delta": -0.04565846084706246
+        },
+        "taskaware_documents": {
+          "n": 20,
+          "merged": 0.7683883802360509,
+          "parts": 0.7420443503702828,
+          "delta": -0.026344029865768157
+        },
+        "taskaware_numeric": {
+          "n": 25,
+          "merged": 0.9533589551163812,
+          "parts": 0.6943327805629154,
+          "delta": -0.2590261745534659
+        },
+        "taskaware_web": {
+          "n": 20,
+          "merged": 0.5982113226161304,
+          "parts": 0.6154046272410438,
+          "delta": 0.017193304624913374
+        },
+        "taskaware_wiki": {
+          "n": 5,
+          "merged": 0.2600621798631476,
+          "parts": 0.38829667644183774,
+          "delta": 0.12823449657869013
+        }
+      },
+      "AC_score_seconds": {
+        "merged": 154.7225755448453,
+        "parts": 246.69022532901727
+      },
+      "AC_peak_allocated_gib": {
+        "merged": 28.307376384735107,
+        "parts": 31.92357063293457
+      }
+    },
+    "report": "PASSAGE_LAYOUT_32K.md"
+  },
+  "next_large_comparison": {
+    "authorized": "User requested large1/8 compression runs; aim for both synthesis sources.",
+    "arms": [
+      {
+        "name": "oracle_9b_16k_r16",
+        "supervision": "9b",
+        "unique_questions": 16000,
+        "epochs": 1,
+        "ratio": 0.0625,
+        "material": "model_comparison_material/material_9b_16000.json",
+        "status": "COMPLETE16,000questions×1epoch",
+        "job": 23447678,
+        "dependency": "afterok:23452023",
+        "gpu": "ORCD RTX PRO6000",
+        "latest_complete_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.6580006924795143,
+          "full answer NLL": 0.5318649973193397,
+          "no-context answer NLL": 1.8003318359728633,
+          "training answer NLL": 0.45745137049333096,
+          "panel seconds": 109.1,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.6384034165925335,
+              "held full context": 0.5802443529770108,
+              "held no context": 1.9685790888402528,
+              "training AC": 0.45745137049333096
+            },
+            "27b": {
+              "held AC": 0.6775979683664949,
+              "held full context": 0.4834856416616685,
+              "held no context": 1.6320845831054733,
+              "training AC": 0.45745137049333096
+            }
+          }
+        },
+        "final_result_file": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_9b_16k_r16/result.json"
+      },
+      {
+        "name": "oracle_9b_16k_r8",
+        "supervision": "9b",
+        "unique_questions": 16000,
+        "epochs": 1,
+        "ratio": 0.125,
+        "material": "model_comparison_material/material_9b_16000.json",
+        "status": "COMPLETE16,000questions×1epoch",
+        "job": 23447677,
+        "dependency": "afterany:23454544",
+        "gpu": "ORCD RTX PRO6000",
+        "latest_complete_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.6121758089870863,
+          "full answer NLL": 0.5377101879292321,
+          "no-context answer NLL": 1.8059671719476913,
+          "training answer NLL": 0.43489317000173733,
+          "panel seconds": 107.8,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.5802272410246281,
+              "held full context": 0.5906757051485394,
+              "held no context": 1.9721663621861905,
+              "training AC": 0.43489317000173733
+            },
+            "27b": {
+              "held AC": 0.6441243769495447,
+              "held full context": 0.4847446707099248,
+              "held no context": 1.6397679817091921,
+              "training AC": 0.43489317000173733
+            }
+          }
+        },
+        "final_result_file": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_9b_16k_r8/result.json"
+      },
+      {
+        "name": "oracle_27b_16k_r16",
+        "supervision": "27b",
+        "unique_questions": 16000,
+        "epochs": 1,
+        "ratio": 0.0625,
+        "material": "model_comparison_material/material_27b_16000.json",
+        "status": "COMPLETE16,000questions×1epoch",
+        "job": 23447593,
+        "gpu": "ORCD RTX PRO 6000",
+        "failed_pretraining_job": 23444931,
+        "preempted_startup_job": 23446872,
+        "initial_panel": {
+          "update": 0,
+          "percent": 0.0,
+          "held items": 400,
+          "AC answer NLL": 2.2530745156748404,
+          "full answer NLL": 0.7662113585727731,
+          "no-context answer NLL": 1.7922518564882832,
+          "training answer NLL": 1.935764598512917,
+          "panel seconds": 109.3,
+          "cohorts": {
+            "9b": {
+              "held AC": 2.503210117789832,
+              "held full context": 0.8487810879381535,
+              "held no context": 1.957150191697781,
+              "training AC": 1.935764598512917
+            },
+            "27b": {
+              "held AC": 2.002938913559849,
+              "held full context": 0.6836416292073926,
+              "held no context": 1.627353521278786,
+              "training AC": 1.935764598512917
+            }
+          }
+        },
+        "latest_complete_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.603263836029209,
+          "full answer NLL": 0.6436801356868012,
+          "no-context answer NLL": 1.8134317390199919,
+          "training answer NLL": 0.42436562932548455,
+          "panel seconds": 109.6,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.6429122099595753,
+              "held full context": 0.7284269805773342,
+              "held no context": 1.9830182036969892,
+              "training AC": 0.42436562932548455
+            },
+            "27b": {
+              "held AC": 0.5636154620988426,
+              "held full context": 0.5589332907962681,
+              "held no context": 1.6438452743429945,
+              "training AC": 0.42436562932548455
+            }
+          }
+        },
+        "final_result_file": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_27b_16k_r16/result.json"
+      },
+      {
+        "name": "oracle_27b_16k_r8",
+        "supervision": "27b",
+        "unique_questions": 16000,
+        "epochs": 1,
+        "ratio": 0.125,
+        "material": "model_comparison_material/material_27b_16000.json",
+        "status": "COMPLETE16,000questions×1epoch",
+        "job": 23446877,
+        "dependency": "afterok:23438900",
+        "gpu": "ORCD RTX PRO 6000",
+        "superseded_pending_job": 23445369,
+        "initial_panel": {
+          "update": 0,
+          "percent": 0.0,
+          "held items": 400,
+          "AC answer NLL": 2.236563509292844,
+          "full answer NLL": 0.7662113585727731,
+          "no-context answer NLL": 1.7922518564882832,
+          "training answer NLL": 1.8851808414789835,
+          "panel seconds": 109.7,
+          "cohorts": {
+            "9b": {
+              "held AC": 2.4700122898473613,
+              "held full context": 0.8487810879381535,
+              "held no context": 1.957150191697781,
+              "training AC": 1.8851808414789835
+            },
+            "27b": {
+              "held AC": 2.0031147287383266,
+              "held full context": 0.6836416292073926,
+              "held no context": 1.627353521278786,
+              "training AC": 1.8851808414789835
+            }
+          }
+        },
+        "latest_complete_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.6462716465019518,
+          "full answer NLL": 0.627301589594676,
+          "no-context answer NLL": 1.8139865508776438,
+          "training answer NLL": 0.521832452859984,
+          "panel seconds": 110.8,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.6671643821919705,
+              "held full context": 0.7139064590416233,
+              "held no context": 1.9869468544702946,
+              "training AC": 0.521832452859984
+            },
+            "27b": {
+              "held AC": 0.6253789108119333,
+              "held full context": 0.5406967201477287,
+              "held no context": 1.6410262472849935,
+              "training AC": 0.521832452859984
+            }
+          }
+        },
+        "final_result_file": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_27b_16k_r8/result.json"
+      }
+    ],
+    "priority": "1/8 pairs before optional8k×2; keep long cross-evaluation.",
+    "pairing": "Same exact material/order/P2/optimizer/schedule/held evidence within supervision source; shared separate9B and27B cohorts.",
+    "resource_cap": 4,
+    "campaign_deadline_utc": "2026-09-22T12:00:00Z",
+    "prepare_worker_sha256": "d7d9fcc3edb65784fc39c3a5e8fe7a2d96c1286fcda9a2b51e17ca40a25bb739",
+    "validation": "Real-bank selection: all32 fixed learning questions lie in the exact runner-ordered half pool for both banks; existing ratio option applies to every AC part.",
+    "csail_fallback": {
+      "status": "Prepared old runner; copy corrected run_qa_comparison_v1.py and adapt wrapper before use",
+      "runner_sha256": "2707f322208aa8af6f55784710b4a5d2ed0b61f9ba6046f5949232f597540e48",
+      "trainer_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "source": "ExactORCDtrain_ws_night_v1 copiedtosame-namedCSAILfolder",
+      "checkpoint": "ArchivedlocalP2inferencepair2.456GB copiedtoCSAILtaskaware/checkpoints/P2_archived;existingKEEPuntouched",
+      "sbatch": "bench/model_comparison_csail.sbatch",
+      "material": "Frozen, still needs copying if used"
+    },
+    "format_guard": {
+      "rule": "Before every split, reject ASCIIcontrols other than newline/tab in question/answer. Rawbank/source/evaluationhistoryunchanged.",
+      "observed_9b": {
+        "rows": 342,
+        "of": 67000
+      },
+      "observed_27b": {
+        "rows": 78,
+        "of": 12000
+      },
+      "validation": "Actualportable-bankscan and focusednewline/tab/controlfixture; no heuristicanswerrepair."
+    },
+    "launch_priority": "Prefer27Bsupervision1/16 and1/8 pair first asGPUsfree; then9Bcounterparts;4B27B/r16cancontinueafter08EDTonORCD. Optional8k×2lowerpriority.",
+    "preparation_jobs": [
+      {
+        "job": 23444034,
+        "status": "failed before selection",
+        "cause": "Two imported private helpers missing from remote bench; deployed and import checked."
+      },
+      {
+        "job": 23444156,
+        "status": "failed before selection",
+        "cause": "NFS ESTALE reading atomically replaced live bank manifest; bounded reopen retry added and checked."
+      },
+      {
+        "job": 23444463,
+        "status": "COMPLETED",
+        "elapsed": "00:01:20"
+      }
+    ],
+    "confirmation_evaluator": {
+      "file": "bench/evaluate_model_confirmation.py",
+      "sha256": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+      "status": "Deployed and reviewed; confirmation not used; all five final pairs required",
+      "validation": "Focused independent review: no blocking findings. CPU checks pass for cohort partition/order, shared evidence vs row fingerprints, completed final/ratio/paired marker guards.",
+      "policy": "All five fixed final16k×1 pairs before exposing confirmation; separate200+200 cohorts. Use same evidence/targets, each ratio and own final reader. No selection/tuning on confirmation. Decoded qualitative comparisons remain development."
+    },
+    "frozen_selection_sha256": "ac8fb7bfd769aa60d34bee1a9d052b0b891c192d946139d63f67491fbb627e28",
+    "material_sha256": {
+      "9b": "3414307913b114886863f4b8a7061c672831a57b125c218c26736f7a44d440e6",
+      "27b": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3"
+    },
+    "confirmation_sha256": "b74e22c919ca92e1cfe52509addc848c73f6694df613dc7949f73373a2228ae1",
+    "frozen_development_per_cohort": 200,
+    "frozen_confirmation_per_cohort": 200,
+    "frozen_retrieval_questions": 32398,
+    "material_status": "Frozen and downloaded; common held/retrieval equality verified",
+    "design": "MODEL_COMPARISON_DESIGN.json",
+    "reporting_fix": {
+      "cause": "Cohort metadata was passed to a strict table lacking that column; first baseline raised before optimizer training.",
+      "failed_job": 23444931,
+      "archive": "taskaware/failed_attempts/oracle_27b_16k_r16_pretraining_reporting_failure_23444931",
+      "validation": "Real snapshot HtmlReporter and extracted actual panel publication: original failure reproduced; 2B/4B corrected paths pass with and without cohorts, curves/table/JSON preserved. Python compilation passed.",
+      "effect": "Only filter nested cohorts from flat table row; retain in panel JSON and cohort curves. Data/config/weights unchanged; completed reference cache retained.",
+      "runner": "bench/run_qa_comparison_v1.py",
+      "sha256": "af08ef76fc1df6d704cfd32b958e2ef7bde4605bac6ed868772c5dc77ab6b43e",
+      "launcher": "bench/model_comparison_train_v2.sbatch",
+      "gpu_validation": "Corrected27B/r8 baseline completed and wrote both cohort curves/table/raw panel at03:03; no table assertion."
+    },
+    "qualitative_100": {
+      "status": "Queued in slot-reusing dependent chains; GPU evaluation not started",
+      "selection": "MODEL_COMPARISON_COHORT100_SELECTION.json",
+      "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+      "evaluator": "bench/evaluate_model_comparison_cohort.py",
+      "evaluator_sha256": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+      "launcher": "bench/model_comparison_cohort.sbatch",
+      "scope": "Fixed50+50 development by hashedID/family quota, no loss selection. FrozenP2/P4 full/noctx and requested final AC. Original400 batch partners retained; confirmation untouched.",
+      "validation": "Actual400-input tokenizer comparison across original/fixed builders and P2/P4: full/noctx/targets equal,811299encodertokens,50898r16rows/101590r8rows. Requested-final-only guards and compilation passed.",
+      "report": "MODEL_COMPARISON_COHORT100.md",
+      "jobs": [
+        {
+          "condition": "frozen_p2",
+          "job": 23452022,
+          "dependency": "afterok:23447593"
+        },
+        {
+          "condition": "oracle_27b_16k_r8",
+          "job": 23452023,
+          "dependency": "afterok:23452024:23446877"
+        },
+        {
+          "condition": "oracle_27b_16k_r16",
+          "job": 23452024,
+          "dependency": "afterok:23452022"
+        },
+        {
+          "condition": "oracle_9b_16k_r8",
+          "job": 23452025,
+          "dependency": "afterok:23447678:23447677"
+        },
+        {
+          "condition": "oracle_9b_16k_r16",
+          "job": 23452026,
+          "dependency": "afterok:23452025"
+        },
+        {
+          "condition": "frozen_p4",
+          "job": 23452027,
+          "dependency": "afterok:23452026"
+        },
+        {
+          "condition": "encoder4b_oracle27b_16k_r16",
+          "job": 23452035,
+          "dependency": "afterok:23446884"
+        }
+      ],
+      "reference_review": {
+        "status": "complete before model responses/losses",
+        "rows": 100,
+        "supported": 87,
+        "ambiguous": 8,
+        "incorrect": 4,
+        "insufficient": 1,
+        "notes": "TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_cohort_review/source_notes.json",
+        "scope": "Required sources only; full evidence/distractors and model answers pending. All100 remain in NLL and reports; same87-reference semantic sensitivity for every arm."
+      }
+    },
+    "initial_reference_check": {
+      "status": "passed",
+      "scope": "Both27B-supervised ratio arms:400 full-context and400 no-context per-item IDs/target-logp vectors exactly equal before QA updates.",
+      "initial_AC": {
+        "r16": 2.2530745156748404,
+        "r8": 2.236563509292844
+      },
+      "interpretation": "Extra rows alone change little at initialization; await trained comparison."
+    },
+    "first_matched_ratio_panel": {
+      "bank": "27b",
+      "unique_training_pool": 16000,
+      "passes": 0.1,
+      "training_questions_presented": 1600,
+      "scope": "Exploratory DEVELOPMENT comparison at matched exposure; one seed. Question bootstrap omits source clustering and training-seed variance; repeated checkpoint looks are not independent tests.",
+      "cohorts": {
+        "9b": {
+          "held AC": {
+            "r16": 1.2815573557329691,
+            "r8": 1.3183734826126554,
+            "r8_minus_r16": 0.03681612687968658,
+            "paired_question_bootstrap_95": [
+              -0.008600043257269565,
+              0.08028814260686618
+            ],
+            "questions_lower_at_r8": 86,
+            "questions": 200
+          },
+          "held full context": {
+            "r16": 0.7690962526972811,
+            "r8": 0.717615739857061,
+            "r8_minus_r16": -0.051480512840220136,
+            "paired_question_bootstrap_95": [
+              -0.06315346322874257,
+              -0.041264913919290845
+            ],
+            "questions_lower_at_r8": 165,
+            "questions": 200
+          },
+          "held no context": {
+            "r16": 1.9745927437154023,
+            "r8": 1.9504469830063562,
+            "r8_minus_r16": -0.024145760709046372,
+            "paired_question_bootstrap_95": [
+              -0.03707592831227159,
+              -0.010988822088192378
+            ],
+            "questions_lower_at_r8": 145,
+            "questions": 200
+          }
+        },
+        "27b": {
+          "held AC": {
+            "r16": 1.0840404019385768,
+            "r8": 1.099238702789421,
+            "r8_minus_r16": 0.015198300850844193,
+            "paired_question_bootstrap_95": [
+              -0.02881468723035788,
+              0.0584200641854553
+            ],
+            "questions_lower_at_r8": 89,
+            "questions": 200
+          },
+          "held full context": {
+            "r16": 0.5865048408909875,
+            "r8": 0.5436323349737753,
+            "r8_minus_r16": -0.042872505917212346,
+            "paired_question_bootstrap_95": [
+              -0.05216594570878503,
+              -0.03365323404830458
+            ],
+            "questions_lower_at_r8": 152,
+            "questions": 200
+          },
+          "held no context": {
+            "r16": 1.6378352827860017,
+            "r8": 1.60733312076792,
+            "r8_minus_r16": -0.03050216201808128,
+            "paired_question_bootstrap_95": [
+              -0.044065694035332933,
+              -0.01718701275401136
+            ],
+            "questions_lower_at_r8": 150,
+            "questions": 200
+          }
+        }
+      }
+    },
+    "latest_matched_ratio_panel": {
+      "bank": "27b",
+      "unique_training_pool": 16000,
+      "passes": 0.8,
+      "training_questions_presented": 12800,
+      "scope": "Exploratory DEVELOPMENT comparison at matched exposure; one seed. Question bootstrap omits source clustering and training-seed variance; repeated checkpoint looks are not independent tests. Full context uses each arm's current reader; gap comparisons do not isolate encoder capacity.",
+      "cohorts": {
+        "9b": {
+          "held AC": {
+            "r16": 0.6877863398999436,
+            "r8": 0.7332494393588459,
+            "r8_minus_r16": 0.04546309945890228,
+            "paired_question_bootstrap_95": [
+              0.0009255603808121375,
+              0.09435361644653889
+            ],
+            "questions_lower_at_r8": 74,
+            "questions": 200
+          },
+          "held full context": {
+            "r16": 0.707681941374,
+            "r8": 0.6916373710244065,
+            "r8_minus_r16": -0.016044570349593633,
+            "paired_question_bootstrap_95": [
+              -0.023384952866722403,
+              -0.009409911521538512
+            ],
+            "questions_lower_at_r8": 117,
+            "questions": 200
+          },
+          "held no context": {
+            "r16": 1.971738843202782,
+            "r8": 1.9738374684093503,
+            "r8_minus_r16": 0.0020986252065682176,
+            "paired_question_bootstrap_95": [
+              -0.006134877875680532,
+              0.009714804157426343
+            ],
+            "questions_lower_at_r8": 101,
+            "questions": 200
+          },
+          "AC_minus_own_full_context": {
+            "r16": -0.01989560147405651,
+            "r8": 0.0416120683344394,
+            "r8_minus_r16": 0.06150766980849591,
+            "paired_question_bootstrap_95": [
+              0.01702247345248911,
+              0.11049219222911337
+            ]
+          },
+          "families": {
+            "code": {
+              "questions": 60,
+              "r16": {
+                "held AC": 0.7034022463418425,
+                "held full context": 0.8260731331191008,
+                "held no context": 2.0547930098140266
+              },
+              "r8": {
+                "held AC": 0.7613829051662869,
+                "held full context": 0.7879472960102664,
+                "held no context": 2.060318329670994
+              }
+            },
+            "documents": {
+              "questions": 16,
+              "r16": {
+                "held AC": 0.5746768989563921,
+                "held full context": 0.565278108291846,
+                "held no context": 2.269558734705416
+              },
+              "r8": {
+                "held AC": 0.6329465329177305,
+                "held full context": 0.5587642396811828,
+                "held no context": 2.2683507684605297
+              }
+            },
+            "financial": {
+              "questions": 10,
+              "r16": {
+                "held AC": 1.1370994549377478,
+                "held full context": 0.5258803815789473,
+                "held no context": 2.6508475277306167
+              },
+              "r8": {
+                "held AC": 1.2587097991652518,
+                "held full context": 0.5230931120543294,
+                "held no context": 2.636272898061687
+              }
+            },
+            "legal": {
+              "questions": 12,
+              "r16": {
+                "held AC": 0.9369924871655216,
+                "held full context": 0.6577979397350109,
+                "held no context": 2.0197478679582943
+              },
+              "r8": {
+                "held AC": 0.8956675642841181,
+                "held full context": 0.6565060479901362,
+                "held no context": 2.028503735007821
+              }
+            },
+            "math_arxiv": {
+              "questions": 24,
+              "r16": {
+                "held AC": 0.5392083081077521,
+                "held full context": 0.5821273152553625,
+                "held no context": 1.7080888478386858
+              },
+              "r8": {
+                "held AC": 0.684279932590479,
+                "held full context": 0.5620468572087182,
+                "held no context": 1.7120271628657333
+              }
+            },
+            "math_textbook": {
+              "questions": 16,
+              "r16": {
+                "held AC": 0.5002174425448376,
+                "held full context": 0.6220875877729091,
+                "held no context": 1.2476902813829793
+              },
+              "r8": {
+                "held AC": 0.44936921717432865,
+                "held full context": 0.6189524399757057,
+                "held no context": 1.2429273781956112
+              }
+            },
+            "office": {
+              "questions": 12,
+              "r16": {
+                "held AC": 0.7880563469279257,
+                "held full context": 0.8498223137221396,
+                "held no context": 2.0636113793228614
+              },
+              "r8": {
+                "held AC": 0.7591108384206952,
+                "held full context": 0.8298030837287067,
+                "held no context": 2.0498249445695342
+              }
+            },
+            "technical_web": {
+              "questions": 10,
+              "r16": {
+                "held AC": 0.7788809028091473,
+                "held full context": 0.4052997669082125,
+                "held no context": 2.206814840935755
+              },
+              "r8": {
+                "held AC": 0.718348859525378,
+                "held full context": 0.4174274774507497,
+                "held no context": 2.1875998701831985
+              }
+            },
+            "web": {
+              "questions": 40,
+              "r16": {
+                "held AC": 0.6338358688570531,
+                "held full context": 0.7899962264532944,
+                "held no context": 1.905328419803362
+              },
+              "r8": {
+                "held AC": 0.6899803939695864,
+                "held full context": 0.7869282380267236,
+                "held no context": 1.917515495223937
+              }
+            }
+          }
+        },
+        "27b": {
+          "held AC": {
+            "r16": 0.5857555123670487,
+            "r8": 0.623637136928772,
+            "r8_minus_r16": 0.03788162456172324,
+            "paired_question_bootstrap_95": [
+              -0.001291968518290526,
+              0.0767706026688779
+            ],
+            "questions_lower_at_r8": 86,
+            "questions": 200
+          },
+          "held full context": {
+            "r16": 0.537103374742129,
+            "r8": 0.5178024648749527,
+            "r8_minus_r16": -0.019300909867176263,
+            "paired_question_bootstrap_95": [
+              -0.025548670674059464,
+              -0.013560781996293942
+            ],
+            "questions_lower_at_r8": 138,
+            "questions": 200
+          },
+          "held no context": {
+            "r16": 1.632526806302108,
+            "r8": 1.624627369674733,
+            "r8_minus_r16": -0.007899436627374721,
+            "paired_question_bootstrap_95": [
+              -0.01603232518123468,
+              -4.216042762726292e-05
+            ],
+            "questions_lower_at_r8": 110,
+            "questions": 200
+          },
+          "AC_minus_own_full_context": {
+            "r16": 0.04865213762491976,
+            "r8": 0.10583467205381927,
+            "r8_minus_r16": 0.057182534428899506,
+            "paired_question_bootstrap_95": [
+              0.017883999599040194,
+              0.09676566126627006
+            ]
+          },
+          "families": {
+            "code": {
+              "questions": 60,
+              "r16": {
+                "held AC": 0.523368033349121,
+                "held full context": 0.46714027748270026,
+                "held no context": 1.4560093128722864
+              },
+              "r8": {
+                "held AC": 0.5455364664596608,
+                "held full context": 0.4399729839050806,
+                "held no context": 1.4396568430502428
+              }
+            },
+            "documents": {
+              "questions": 16,
+              "r16": {
+                "held AC": 0.5163180306737232,
+                "held full context": 0.4894474970665623,
+                "held no context": 1.972377700218057
+              },
+              "r8": {
+                "held AC": 0.6899209527538677,
+                "held full context": 0.46888929833618176,
+                "held no context": 1.9583931914786779
+              }
+            },
+            "financial": {
+              "questions": 10,
+              "r16": {
+                "held AC": 1.058487181606595,
+                "held full context": 0.5075027068575442,
+                "held no context": 2.346304516981329
+              },
+              "r8": {
+                "held AC": 1.1993016535731003,
+                "held full context": 0.49167966175170336,
+                "held no context": 2.3528324617725076
+              }
+            },
+            "legal": {
+              "questions": 12,
+              "r16": {
+                "held AC": 0.8636029234515421,
+                "held full context": 0.6204295358262634,
+                "held no context": 1.7839562347312699
+              },
+              "r8": {
+                "held AC": 0.9652125391633645,
+                "held full context": 0.6206501735132167,
+                "held no context": 1.7790490949035798
+              }
+            },
+            "math_arxiv": {
+              "questions": 24,
+              "r16": {
+                "held AC": 0.750894226665891,
+                "held full context": 0.585206340102268,
+                "held no context": 1.8117346380031634
+              },
+              "r8": {
+                "held AC": 0.7625816375531924,
+                "held full context": 0.5450321080036825,
+                "held no context": 1.8107299666276713
+              }
+            },
+            "math_textbook": {
+              "questions": 16,
+              "r16": {
+                "held AC": 0.6414317077527651,
+                "held full context": 0.6739030134741644,
+                "held no context": 1.3745087061468608
+              },
+              "r8": {
+                "held AC": 0.5786954455506265,
+                "held full context": 0.6648301776900236,
+                "held no context": 1.3656382669407932
+              }
+            },
+            "office": {
+              "questions": 12,
+              "r16": {
+                "held AC": 0.6401519463135495,
+                "held full context": 0.6001485834207347,
+                "held no context": 1.52944105782648
+              },
+              "r8": {
+                "held AC": 0.623089245013954,
+                "held full context": 0.5866539605543145,
+                "held no context": 1.5121212349260833
+              }
+            },
+            "technical_web": {
+              "questions": 10,
+              "r16": {
+                "held AC": 0.6297871120812991,
+                "held full context": 0.32509632542233163,
+                "held no context": 1.9043268571598282
+              },
+              "r8": {
+                "held AC": 0.5947232320596112,
+                "held full context": 0.30318294008401786,
+                "held no context": 1.8794951473801027
+              }
+            },
+            "web": {
+              "questions": 40,
+              "r16": {
+                "held AC": 0.35689404608993136,
+                "held full context": 0.5940192553648748,
+                "held no context": 1.4961476855516305
+              },
+              "r8": {
+                "held AC": 0.40988868643928206,
+                "held full context": 0.5876389026252614,
+                "held no context": 1.5021680192168596
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "convergence_planning": {
+    "expected_first_plateau_unique_questions": [
+      32000,
+      64000
+    ],
+    "status": "Planning estimate, not measured convergence; retain ability to extend100k.",
+    "next": 16000,
+    "evidence": "8k×1developmentNLL.879at50%,.802at80%,.783final; LRdecay confounds late flattening.",
+    "rule": "Prefer fresh supervision while held improvements persist; compare decoded answers and learning gap, channelcapacity1/8 vs1/16."
+  },
+  "encoder_4b": {
+    "status": "Large run active; originalP4 pair",
+    "candidate": "P4:4Bencoder→9Breader,~48Mreconstructiontokens; historicalheldNLL.323vsP2.106",
+    "preferred_comparison": "Same16k27Bquestions×1epoch,1/16ratio,2kevidence,matchingP2control",
+    "interpretation": "Different pretrainedpairs;not isolatedcapacityclaim",
+    "post_deadline_authorization": "Thisexperiment may run pastSep22 08EDT onORCD",
+    "resource_cap": 4,
+    "smoke_job": 23436039,
+    "smoke_dependency": "afterany:23431684",
+    "runner": "bench/run_qa_encoder4b_v1.py",
+    "runner_sha256": "0ad6de83153f9250db026056c4af8f097fc2a8ef7e985430ee9f8db56a6d2257",
+    "large_sbatch": "bench/encoder4b_train_v2.sbatch",
+    "large_limit": "7hSlurm/6htrain; globalcampaign deadlineunsetforthisuserauthorizedexperimentonly",
+    "large_status": "RUNNING23446884 onnode5103",
+    "inventory": "4B_ENCODER_INVENTORY.json",
+    "report": "4B_ENCODER_FEASIBILITY.md",
+    "smoke_result": {
+      "stop_reason": "complete",
+      "duration_s": 40.0,
+      "peak_memory_gb": 63.26,
+      "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/encoder4b_restore_smoke/AC_MODELS/rag_poc/epoch_001",
+      "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/encoder4b_restore_smoke/LORAS/rag_reader/epoch_001"
+    },
+    "archive": {
+      "manifest": "CHECKPOINT_ARCHIVE_P4.json",
+      "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/reconstruction-20260922/P4/",
+      "payload_bytes": 3383849998,
+      "payload_objects": 11,
+      "verified": true
+    },
+    "memory_check": {
+      "job": 23442317,
+      "status": "COMPLETED",
+      "source_tokens": [
+        6114,
+        5801,
+        5760,
+        5651,
+        5648,
+        5563,
+        5394,
+        5387
+      ],
+      "training_questions": 8,
+      "epochs": 2,
+      "effective_updates": 2,
+      "microbatch": 2,
+      "purpose": "Largest available real27B source windows and second backward after Adam state allocation. Discard smoke weights; preserve originalP4 start.",
+      "slurm_minutes": 15,
+      "trainer_seconds": 600,
+      "material_sha256": "a69f7de3e80169350d9621e3074a9df6dd061c0334f2d646e0801d76c72f7c7f",
+      "failed_configuration_job": 23442065,
+      "failed_configuration": "2-update probe incorrectly requested 10% whole-run panels; rejected before model load. Now reports each update.",
+      "slurm_elapsed": "00:05:26",
+      "completed_updates": 2,
+      "peak_memory_gb": 61.06,
+      "actual_encoder_tokens_total": 45793,
+      "dropped_examples": 0,
+      "result": "../../TMP/SYNC/TASK_AWARE_QA/encoder4b_memory_check_v2/result.json"
+    },
+    "large_job": 23446884,
+    "large_dependency": "afterok:23446877",
+    "large_runner": "bench/run_qa_encoder4b_v2.py",
+    "large_runner_sha256": "659e93aa3b988757faf22a9eb412221e344d79b675c9a7c29c29969af4e76c2d",
+    "superseded_pending_job": 23445387,
+    "dependency_reason": "Successful parent required so preemption cannot start4B before restoring the unfinished ratio comparison.",
+    "latest_complete_panel": {
+      "update": 1400,
+      "percent": 70.0,
+      "held items": 400,
+      "AC answer NLL": 0.6250806253858999,
+      "full answer NLL": 0.6148232937101521,
+      "no-context answer NLL": 1.78354945289921,
+      "training answer NLL": 0.4706335172315969,
+      "panel seconds": 111.5,
+      "cohorts": {
+        "9b": {
+          "held AC": 0.6570748234906248,
+          "held full context": 0.7025741873356224,
+          "held no context": 1.9590155527682795,
+          "training AC": 0.4706335172315969
+        },
+        "27b": {
+          "held AC": 0.5930864272811749,
+          "held full context": 0.5270724000846819,
+          "held no context": 1.6080833530301408,
+          "training AC": 0.4706335172315969
+        }
+      }
+    }
+  },
+  "night_runner_v4": {
+    "sha256": "1fed491bf5e626a74391a7cce0f2c5875e58df1ee3f5dd767ae8d7738b6314e3",
+    "receipt_sha256": "061f7be0fb66d7d620d95712e05333a76822e31de9e10f8bd0caa6920deda7e3",
+    "scope": "Private exactpublishedpair baseline reuse only; explicitprovenance; fallbacknormalbaseline onmismatch. Optimizer/order/schedule/panelmeasurementsunchanged.",
+    "validation": "Actual132held+learning32k CPUinputs/scores matched, one-usewrapper andcallbackchecks passed; rootreviewed trainerstate restoration. GPUcontinuationpending."
+  },
+  "monitor_0030": {
+    "utc": "2026-09-22T00:26:30Z",
+    "next_utc": "2026-09-22T00:56:30Z",
+    "local_free_gb": 271,
+    "orcd_pool_used_gb_cached": 240,
+    "orcd_scratch_used_gb_cached": 824.6,
+    "pruning": "notneeded; activepartialpublicationretiresearlierrecoverysave;selectedpairsflagged",
+    "transport": "BothguardedSSHmasterslive; allowlistedCSAILreports;45stimeoutnowreturnsfailedtransferwithoutterminatinghelper"
+  },
+  "monitor_0052": {
+    "utc": "2026-09-22T00:53:52.375759+00:00",
+    "next_utc": "2026-09-22T01:22:00Z",
+    "local_free_gb": 271,
+    "orcd_pool_used_gb_cached": 240,
+    "orcd_scratch_used_gb_cached": 824.6,
+    "pruning": "not needed; no eligible pressure",
+    "jobs": [
+      23404276,
+      23424940,
+      23438900
+    ]
+  },
+  "passage_layout32k_cohort100": {
+    "job": 23439119,
+    "status": "complete",
+    "questions": 100,
+    "conditions": [
+      "merged32k",
+      "separate32k",
+      "frozen full32k",
+      "frozen no context"
+    ],
+    "checkpoint": "same old4k×1.8 paired weights",
+    "purpose": "Larger decoded review before promoting average-NLL gain; occupies fourth slot while27Bmaterial fills.",
+    "gpu_limit_minutes": 55,
+    "worker_sha256": "2eaefa5eb90319092795ce111efaf043987c1de5938956153f879788d424680f",
+    "sbatch_sha256": "40b93ae42402c9cd457696a479c80d6bc1c74f3729b8b2126c1149e9380a03b0",
+    "validation": "All400responses reviewed; exactinputrebuild; standalonebrowserchecks passed; original source annotations retained and post-hoc sensitivity disclosed.",
+    "report": "PASSAGE_LAYOUT32K_COHORT100.tressoir.html",
+    "elapsed": "00:38:17",
+    "decode_counts": {
+      "merged AC": 100,
+      "separate AC": 100,
+      "frozen full context": 100,
+      "frozen no context": 100
+    },
+    "evidence": "PASSAGE_LAYOUT32K_COHORT100.evidence.json",
+    "semantic_original_88": {
+      "full": 85,
+      "no_context": 12,
+      "merged": 51,
+      "separate": 47
+    },
+    "semantic_adjusted_85": {
+      "full": 83,
+      "no_context": 12,
+      "merged": 51,
+      "separate": 46
+    },
+    "recommendation": "Keep merged baseline"
+  },
+  "monitor_0122": {
+    "utc": "2026-09-22T01:22:11Z",
+    "next_utc": "2026-09-22T01:52:00Z",
+    "local_free_gb": 267,
+    "orcd_pool_used_gb_cached": 252.4,
+    "orcd_scratch_used_gb_cached": 824.6,
+    "pruning": "not needed",
+    "transport": "both healthy",
+    "found": "27B producer failed on JSON-decoded lone surrogate; retained15k published bank and valid cached prefix."
+  },
+  "monitor_0151": {
+    "jobs": {
+      "9B synthesis": 23404276,
+      "32k exact continuation on RTX": 23438900,
+      "27B synthesis afterUnicodefix": 23441557
+    },
+    "bank_9b": 83000,
+    "bank_27b": 16000,
+    "long_training_pass": 0.7,
+    "long_complete_quality_pass": 0.6,
+    "long_held_nll": 1.0162383205208811,
+    "memory_4b_check": "23442317 completed;61.06GiB",
+    "storage": "01:51 local218GB used/267GB free; cached ORCD pool252.5GB/scratch824.6GB. No pruning needed; originalP4 preserved/S3verified.",
+    "next_monitor_utc": "2026-09-22T02:21:27Z"
+  },
+  "monitor_0220": {
+    "active_jobs": [
+      23404276,
+      23441557,
+      23438900,
+      23444931
+    ],
+    "dependent_jobs": {
+      "23445369": "afterok:23438900",
+      "23445387": "afterany:23445369"
+    },
+    "maximum_concurrent_gpus": 4,
+    "csail_jobs": [],
+    "9b_published": 88000,
+    "27b_published": 18000,
+    "long_complete_quality_pass": 0.8,
+    "long_ac_nll": 0.8274449699473009,
+    "storage": "Local219GBused/266GBfree; cachedORCDpool273.7GB/scratch824.6GB; no pruningneeded",
+    "next_monitor_utc": "2026-09-22T02:50:50Z",
+    "earlier_action": "9BUnicode-source rollover around02:31UTC at committed source-block boundary"
+  },
+  "passage_position_32k": {
+    "report": "PASSAGE_POSITION_32K.md",
+    "status": "Complete CPU-only exploratory analysis",
+    "finding": "Middle-position supported-answer dip in both layouts; full context remains strong. Separate encoding does not repair it. Different questions per bin; not causal/capacity evidence.",
+    "next": "Optional fixed12-question cyclic-order diagnostic proposed only; no job scheduled."
+  },
+  "monitor_0249": {
+    "jobs": "9Bbank23445953,27Bbank23441557,27B/r8 23446877 running.27B/r16 startup preempted14s, replaced23447593 excluding node5101.4B queued23446884.9B arms now queued23447677/23447678.",
+    "banks_published": {
+      "9b": 92000,
+      "27b": 21000
+    },
+    "storage": "Local219GBused/266free; cachedORCDpool276.5GB/scratch824.6GB; no pruning needed.",
+    "long": "Final80/80 published; AC.8260542, initial.8757757.",
+    "next_monitor_utc": "2026-09-22T03:20:00Z"
+  },
+  "overview_reporting_fix": {
+    "utc": "2026-09-22T03:01:00Z",
+    "scope": "Private local sync_reports.py only; shared reporter source/default behavior unchanged.",
+    "change": "Overview constructor disables periodic HTML fallback (page_rewrite_seconds=math.inf); JSON advances routinely, HTML on initialization/widget changes.",
+    "validation": "Actual constructor test with simulated elapsed hour passes; live files over72.9seconds: JSONmtimeadvanced, HTMLmtimeunchanged, same widgets. Child projection tests pass. ActualVSCode morph not exercised.",
+    "sync_session": 39864
+  },
+  "monitor_0319": {
+    "active": {
+      "bank9b": 23445953,
+      "bank27b": 23441557,
+      "27b_r16": 23447593,
+      "27b_r8": 23446877
+    },
+    "queued": {
+      "9b_r16": 23447678,
+      "9b_r8": 23447677,
+      "4b_27b_r16": 23446884
+    },
+    "published_paired_recovery": {
+      "27b_r8": "16000 unique questions×0.1pass",
+      "27b_r16": "16000 unique questions×0.05pass"
+    },
+    "banks": {
+      "synthesis_bank_v2": {
+        "updated_utc": "2026-09-22 03:21:58 UTC",
+        "total_questions": 98000,
+        "accepted_questions": 98446,
+        "target_questions": 200000
+      },
+      "synthesis_bank_27b": {
+        "updated_utc": "2026-09-22 03:21:21 UTC",
+        "total_questions": 23000,
+        "accepted_questions": 23799,
+        "target_questions": 32000
+      }
+    },
+    "storage": "Local219GBused/265free; cachedORCDpool281.3GB/scratch824.6GB; no prune needed.",
+    "next_monitor_utc": "2026-09-22T03:50:00Z"
+  },
+  "monitor_0349": {
+    "active": {
+      "bank9b": 23445953,
+      "bank27b": 23441557,
+      "27b_r16": 23447593,
+      "27b_r8": 23446877
+    },
+    "queued": {
+      "9b_r16": 23447678,
+      "9b_r8": 23447677,
+      "4b_27b_r16": 23446884
+    },
+    "banks": {
+      "synthesis_bank_v2": {
+        "updated_utc": "2026-09-22 03:48:41 UTC",
+        "total_questions": 103000,
+        "accepted_questions": 103321,
+        "target_questions": 200000
+      },
+      "synthesis_bank_27b": {
+        "updated_utc": "2026-09-22 03:48:22 UTC",
+        "total_questions": 25000,
+        "accepted_questions": 25759,
+        "target_questions": 32000
+      }
+    },
+    "published_pair_questions": {
+      "r16": 3600,
+      "r8": 4000
+    },
+    "errors": "No training errors in either stderr; only model-loading progress.",
+    "storage": "Local219GBused/265free; cachedORCDpool295.0GB/scratch824.6GB; no prune needed.",
+    "next_monitor_utc": "2026-09-22T04:20:00Z"
+  },
+  "evaluation_queue": {
+    "submitted_utc": "2026-09-22T03:59:39Z",
+    "status": "All 2B training and fixed100 readouts complete. Frozen P4 readout complete. 4B training and long-cross evaluation running; confirmation and context screens pending.",
+    "qualitative_jobs": [
+      {
+        "condition": "frozen_p2",
+        "job": 23452022,
+        "dependency": "afterok:23447593",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "oracle_27b_16k_r8",
+        "job": 23452023,
+        "dependency": "afterok:23452024:23446877",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "oracle_27b_16k_r16",
+        "job": 23452024,
+        "dependency": "afterok:23452022",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "oracle_9b_16k_r8",
+        "job": 23452025,
+        "dependency": "afterok:23452027:23447677",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "oracle_9b_16k_r16",
+        "job": 23452026,
+        "dependency": "afterok:23447678",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "frozen_p4",
+        "job": 23452027,
+        "dependency": "afterok:23452026",
+        "status": "COMPLETED0:0"
+      },
+      {
+        "condition": "encoder4b_oracle27b_16k_r16",
+        "job": 23452035,
+        "dependency": "afterok:23446884",
+        "status": "PENDING"
+      }
+    ],
+    "long_cross_job": 23452012,
+    "long_cross_dependency": "afterok:23447677",
+    "long_cross_cells": [
+      "control900__32k",
+      "long_adapt_2k__32k",
+      "long_adapt_32k__2k",
+      "long_adapt_32k__32k"
+    ],
+    "resource_invariant": "Each chain reuses one training slot; four active GPUs maximum including synthesis. Any restart requires repairing downstream dependencies.",
+    "confirmation": {
+      "job": 23466479,
+      "dependency": "afterok:23452025:23452035",
+      "time_limit": "01:00:00",
+      "status": "PENDING; confirmation not yet read/scored",
+      "design": "Originalfive fixed16,000×1 finals, reserved400 (200+200). Allfivefinalguard beforeanyconfirmationexposure. OneGPU,sequentialarms, unchangedworker/selection.",
+      "resource": "Existing4Bslotchain; ordinary08EDTrestriction superseded by user20UTCtarget.",
+      "access_note": "An agent broad JSON search incidentally printed a prefix of reserved question text during32k material research. No scores accessed, no selection or training/protocol changed; no further question-text inspection. Originalfive fixedfinals remain locked."
+    },
+    "deadline": "Campaign extended to aboutSep22 20UTC/16EDT; insight checkpoints13/16/18UTC.",
+    "submitted_scripts": "Remote taskaware/logs/submitted_<job>.sbatch",
+    "chat_stopping_probe": {
+      "job": 23454544,
+      "dependency": "afterok:23441557",
+      "next_job": 23447677,
+      "next_dependency": "afterany:23454544",
+      "status": "COMPLETED0:0,2m49s",
+      "gpu": "RTX PRO6000,15minute bound",
+      "source": "train_ws_night_v1 unchanged",
+      "checkpoint": "oracle_27b_16k_r16/selected/update_01000",
+      "scope": "Two one-item HF decodes, exact same400-built prompt and paired weights; raw IDs/config/embeddings captured. No NLL/training.",
+      "source_sha256": {
+        "probe_chat_stopping.py": "df119806842b964f9c8062b25e80a354903574ca812fd14e28a640cc8667a97f",
+        "probe_chat_stopping.sbatch": "89c95ada872c77b734d5251966f517e70be8fde8cf9a9a2b0045b58e8341a9ac"
+      },
+      "checks": "Rootreview plus actualtinyCPUcapture passed, compile/bashsyntax passed.",
+      "submitted_utc": "2026-09-22T04:49:00Z",
+      "completed_utc": "2026-09-22T05:30:25Z",
+      "proof": "EVALUATION_CHAT_STOPPING_GPU.json"
+    },
+    "qualitative_decoder": {
+      "utc": "2026-09-22T05:33:00Z",
+      "worker": "bench/evaluate_model_comparison_cohort.py",
+      "sha256": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+      "scope": "All seven still-pending fixed100 conditions. Frozen product source/selection/NLL unchanged; explicit generation wrapper plus actual IDs.",
+      "historical_samples": "Retained unchanged; active training and previously-started long-cross protocol keep original decoder."
+    },
+    "reordered_utc": "2026-09-22T05:42:00Z",
+    "order": "27B/r16 training→frozenP2→27B/r16 readout→27B/r8 readout (also waits its final)→9B/r16 training→9B/r8 readout (also waits its final)→9B/r16 readout→frozenP4.4Bfinalreadout and longcross chains unchanged.",
+    "training_dependency_change": {
+      "job": 23447678,
+      "dependency": "afterok:23452023"
+    },
+    "review": "Focusedgraphreviewpass: acyclic, including all intermediate updates; finalguards intact; one slot retained. Allfivejobs confirmedpending andheld, exactdependencies inspected, then released.",
+    "base_reference_reuse": {
+      "job": 23458491,
+      "partition": "mit_normal CPU only",
+      "dependencies": {
+        "23446884": "afterok:23446877,afterany:23458491",
+        "23447678": "afterok:23452023,afterany:23458491"
+      },
+      "scope": "Same original frozen9Bbase references, no reader adapter; headers and requested keys verified by trainer. Copy validates then atomically publishes without replacing. Both destinations held pending while gates installed and verified, then released. Failed copy falls back to ordinary computation.",
+      "utc": "2026-09-22T05:54:07.601389+00:00",
+      "status": "COMPLETED0:0,24seconds; both16000entry caches validated/published",
+      "receipt": "BASE_REFERENCE_REUSE.json"
+    },
+    "checked_utc": "2026-09-22T10:04:14.825715+00:00",
+    "completed_readout_validation": "Every completed view reproduces original400 NLL exactly;800responses source-reviewed.4Bfinalpending.",
+    "context_transfer": {
+      "2b_job": 23461879,
+      "dependency": null,
+      "4b_job": 23466483,
+      "4b_gate": "afterok:23466479",
+      "scope": "Fixeddevelopment100;27B-supervised2Br16/r8,and4Bfinal;2k/32k,ownfull/noctx,NLLonly",
+      "limit": "45minRTX;2Bstartguardrequiresallocationfitbefore12UTC;4Bpost12authorized",
+      "validation": "CONTEXT_TRANSFER100_CHECKS.json;6realexamples×6cells;shortmatchesexistingreport,sharedinputs/masks/spans/capsverified;focusedreviewpassed",
+      "status": "2B4cells complete;4B2cells remain after originalconfirmation"
+    },
+    "long_cross_time_limit": "01:45:00, scheduler override2026-09-22T07:20UTC; fourcells×20minbound +25mincoldsetupmargin; submitted script stillrecords original3h",
+    "readout_order_0810": {
+      "utc": "2026-09-22T08:09:26.547435+00:00",
+      "order": "9B/r16 training→9B/r16 fixed100→frozenP4 fixed100→9B/r8 fixed100 (also after its own training).4Bfinalreadout andlongcross/contextscreen chains unchanged.",
+      "purpose": "Use expected20–30minute gap between two9Bfinals for earlier response evidence; sameoneGPUslot.",
+      "safety": "AllthreeconfirmedPENDING,held,reconfirmedJobHeldUser; broke old26→25dependency first,then installed25→27+9Br8; verified acyclic fullchain before release. Allreleasedpending. Existing finalguards/code/selection/protocol unchanged."
+    },
+    "long_cross_status": "COMPLETED0:0,34m22s;all6cells nowcomplete",
+    "context_transfer_advanced": {
+      "utc": "2026-09-22T09:34:55.899053+00:00",
+      "job": 23461879,
+      "previous_dependency": "afterok:23452012",
+      "dependency": null,
+      "reason": "Fourth slot freed after9B/r8 readout completed. Advance existing2B contextscreen; same code/inputs45min bound and12UTC guard.",
+      "safety": "Verified only3activeGPUs. Held/reconfirmed pending. Completedreadout dependency rejected bySlurm, oldedge initially unchanged; reheld andcleareddependency, verified held/null thenreleased. Maximum4 includingbank;4Breadout/confirmationreplace4Btrain slot."
+    },
+    "afternoon_jobs": {
+      "r8_half_ac_lr": 23469328,
+      "r16_half_ac_lr": 23469352,
+      "r16_reference_cpu": 23469351,
+      "bank27b": 23469329,
+      "bank9b_stopped": 23459872
+    }
+  },
+  "diagnostic_scope_fix": {
+    "status": "Workspace handoff fixed and reviewed; experimental snapshots unchanged",
+    "product_file": "activation/ac_model/ac_model.py",
+    "before_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "after_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3",
+    "change": "Training-mode encoder delta/cosine collection additionally requires gradients enabled, matching reader residual sampling scope.",
+    "check": "Real tiny model: training2 samples; old no-grad panel adds3 onlytoencoder; fixed bothremain2. Bitwiseidentical loss, allparametergradients andpaneltargetlogp.",
+    "review": "Pass, hillclimb_opportunities",
+    "handoff_files": 10,
+    "report": "STABILITY_1_8.md",
+    "trace_alignment": "Trace x is count before the next update; align with combined-gradient x+1."
+  },
+  "data_reuse_8k_2ep": {
+    "material_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "unique_questions": 8000,
+    "epochs": 2,
+    "total_presentations": 16000,
+    "family_counts": {
+      "code": 2400,
+      "documents": 640,
+      "legal": 480,
+      "financial": 400,
+      "office": 480,
+      "technical_web": 400,
+      "math_arxiv": 960,
+      "web": 1600,
+      "math_textbook": 640
+    },
+    "learning_questions": 32,
+    "shared_learning_contained": true,
+    "selection": "Exact existing runner domain interleave, then first8000; same frozen16k27B material and32398retrieval. No question/gold edits.",
+    "subset_ids_sha256": "7b2f192a94532a7919de3568234268ec3a8f69a8b57096cff61873cb255dcf02",
+    "name": "oracle_27b_8k_2ep_r16",
+    "job": 23453389,
+    "dependency": "afterany:23445953",
+    "gpu": "ORCD RTX PRO6000",
+    "bank_pause_job": 23445953,
+    "bank_resume_job": 23453392,
+    "bank_resume_dependency": "afterany:23453389; cancellation satisfies it",
+    "status": "DEFERRED before GPU allocation; pending23453389 canceled04:33UTC, no training launched",
+    "source": "train_ws_night_v1; unchanged comparison runner",
+    "scope": "Auxiliary development data-reuse control, excluded from unchanged five-arm reserved confirmation",
+    "validation": "Exact runner-selected half has intended family shares and all32fixed learning IDs; whole-run epoch/shuffle/schedule path previously exercised in2k×4/4k×2 comparisons.",
+    "deadline_utc": "2026-09-22T12:00:00Z",
+    "storage": "Cached pool305.5GB/scratch824.6GB; sufficient headroom. Existing short training peaks~62GiB requireRTX, notL40S.",
+    "resource_decision": "Dry scheduler estimates for a shorter3.5h job were after the useful campaign window on ORCD RTX/normalH200 and CSAIL H200. Restore9B generation rather than reserve an idle slot for this optional control."
+  },
+  "monitor_0420": {
+    "banks": {
+      "synthesis_bank_v2": {
+        "updated_utc": "2026-09-22 04:20:17 UTC",
+        "total_questions": 108000,
+        "accepted_questions": 109150,
+        "target_questions": 200000,
+        "stopped_reason": "segment complete; requeue requested"
+      },
+      "synthesis_bank_27b": {
+        "updated_utc": "2026-09-22 04:15:28 UTC",
+        "total_questions": 27000,
+        "accepted_questions": 27793,
+        "target_questions": 32000,
+        "stopped_reason": null
+      }
+    },
+    "active_main_jobs": [
+      23441557,
+      23447593,
+      23446877
+    ],
+    "new_control": 23453389,
+    "bank_resume": 23453392,
+    "paired_recovery_questions": {
+      "r16": 6800,
+      "r8": 6400
+    },
+    "storage": "Cached pool305.5GB/scratch824.6GB; sufficient headroom. Existing short training peaks~62GiB requireRTX, notL40S.",
+    "next_monitor_utc": "2026-09-22T04:50:00Z"
+  },
+  "chat_stopping_investigation": {
+    "status": "Confirmed real9B; product fixed and readout worker deployed",
+    "remote_generation_config": "Absent in actual c202236 cache, checked04:41UTC",
+    "report": "EVALUATION_CHAT_STOPPING.md",
+    "active_training_changed": false,
+    "nll_changed": false,
+    "gpu_probe": {
+      "job": 23454544,
+      "dependency": "afterok:23441557",
+      "next_job": 23447677,
+      "next_dependency": "afterany:23454544",
+      "status": "COMPLETED0:0,2m49s",
+      "gpu": "RTX PRO6000,15minute bound",
+      "source": "train_ws_night_v1 unchanged",
+      "checkpoint": "oracle_27b_16k_r16/selected/update_01000",
+      "scope": "Two one-item HF decodes, exact same400-built prompt and paired weights; raw IDs/config/embeddings captured. No NLL/training.",
+      "source_sha256": {
+        "probe_chat_stopping.py": "df119806842b964f9c8062b25e80a354903574ca812fd14e28a640cc8667a97f",
+        "probe_chat_stopping.sbatch": "89c95ada872c77b734d5251966f517e70be8fde8cf9a9a2b0045b58e8341a9ac"
+      },
+      "checks": "Rootreview plus actualtinyCPUcapture passed, compile/bashsyntax passed.",
+      "submitted_utc": "2026-09-22T04:49:00Z"
+    },
+    "local_fix": "CPUchecks/review and real9B argument A/B pass. Producttrainerf65dabee…, deployedworker167aa745…. NLL/training source unchanged; prospective100readouts explicitEOSandrawIDs.",
+    "gpu_proof": "EVALUATION_CHAT_STOPPING_GPU.json",
+    "deployment": {
+      "utc": "2026-09-22T05:33:00Z",
+      "worker": "bench/evaluate_model_comparison_cohort.py",
+      "sha256": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+      "scope": "All seven still-pending fixed100 conditions. Frozen product source/selection/NLL unchanged; explicit generation wrapper plus actual IDs.",
+      "historical_samples": "Retained unchanged; active training and previously-started long-cross protocol keep original decoder."
+    }
+  },
+  "monitor_0450": {
+    "banks": {
+      "synthesis_bank_v2": {
+        "updated_utc": "2026-09-22 04:50:33 UTC",
+        "total_questions": 110000,
+        "accepted_questions": 110680,
+        "target_questions": 200000,
+        "stopped_reason": null
+      },
+      "synthesis_bank_27b": {
+        "updated_utc": "2026-09-22 04:50:38 UTC",
+        "total_questions": 29000,
+        "accepted_questions": 29689,
+        "target_questions": 32000,
+        "stopped_reason": null
+      }
+    },
+    "active_jobs": [
+      23453392,
+      23441557,
+      23447593,
+      23446877
+    ],
+    "csail_jobs": [],
+    "paired_recovery_questions": {
+      "r16": 9600,
+      "r8": 9600
+    },
+    "reports": "TransportOK,current04:49; all completed losses finite.",
+    "storage": "Local220GBused/265GBfree;cachedORCDpool313.7GB/scratch824.6GB; no prune needed.",
+    "next_monitor_utc": "2026-09-22T05:20:00Z"
+  },
+  "monitor_0520": {
+    "banks": {
+      "synthesis_bank_v2": {
+        "updated_utc": "2026-09-22 05:21:14 UTC",
+        "total_questions": 116000,
+        "accepted_questions": 116420,
+        "target_questions": 200000,
+        "stopped_reason": null
+      },
+      "synthesis_bank_27b": {
+        "updated_utc": "2026-09-22 05:21:06 UTC",
+        "total_questions": 31000,
+        "accepted_questions": 31816,
+        "target_questions": 32000,
+        "stopped_reason": null
+      }
+    },
+    "active_jobs": [
+      23453392,
+      23441557,
+      23447593,
+      23446877
+    ],
+    "csail_jobs": [],
+    "paired_recovery_questions": {
+      "r16": 12800,
+      "r8": 12000
+    },
+    "reports": "TransportOK,current05:20; all completed losses finite.",
+    "storage": "Local219.6GiBused/264.3free;cachedORCDpool325.3GB/scratch824.6GB; no prune needed.",
+    "next_monitor_utc": "2026-09-22T05:50:00Z"
+  },
+  "monitor_0550": {
+    "utc": "2026-09-22T05:54:49.834382+00:00",
+    "27b_r16": "Complete16,000×1,0drops; finalanswerNLL9B.6429122/27B.5636155; ownfull.7284270/.5589333; learning.4243656. Finalpairedsave and Slurmexit0.",
+    "27b_r8": "94%;90%pairedanalysis published",
+    "9b_r8": "Frozenreferences complete; initial400baselines in progress",
+    "fixed100": "FrozenP2 RUNNING23452022",
+    "bank_9b_published": 122000,
+    "storage": "Local264.1GiBfree; cachedORCDpool330GB/scratch824.6GB; no prune",
+    "next_full_monitor": "06:20UTC"
+  },
+  "ratio_27b_fixed_finals": {
+    "bank": "27b",
+    "unique_training_pool": 16000,
+    "passes": 1.0,
+    "training_questions_presented": 16000,
+    "scope": "Exploratory DEVELOPMENT comparison at matched exposure; one seed. Question bootstrap omits source clustering and training-seed variance; repeated checkpoint looks are not independent tests. Full context uses each arm's current reader; gap comparisons do not isolate encoder capacity.",
+    "cohorts": {
+      "9b": {
+        "held AC": {
+          "r16": 0.6429122099595753,
+          "r8": 0.6671643821919705,
+          "r8_minus_r16": 0.024252172232395123,
+          "paired_question_bootstrap_95": [
+            -0.017038801949613575,
+            0.0668313099717493
+          ],
+          "questions_lower_at_r8": 86,
+          "questions": 200
+        },
+        "held full context": {
+          "r16": 0.7284269805773342,
+          "r8": 0.7139064590416233,
+          "r8_minus_r16": -0.014520521535710974,
+          "paired_question_bootstrap_95": [
+            -0.022366950045155858,
+            -0.007509921636912609
+          ],
+          "questions_lower_at_r8": 113,
+          "questions": 200
+        },
+        "held no context": {
+          "r16": 1.9830182036969892,
+          "r8": 1.9869468544702946,
+          "r8_minus_r16": 0.003928650773305097,
+          "paired_question_bootstrap_95": [
+            -0.003271017176099904,
+            0.010530845671107231
+          ],
+          "questions_lower_at_r8": 92,
+          "questions": 200
+        },
+        "AC_minus_own_full_context": {
+          "r16": -0.08551477061775897,
+          "r8": -0.04674207684965286,
+          "r8_minus_r16": 0.0387726937681061,
+          "paired_question_bootstrap_95": [
+            -0.004115171203476562,
+            0.0832314076163203
+          ]
+        },
+        "families": {
+          "code": {
+            "questions": 60,
+            "r16": {
+              "held AC": 0.669229156305714,
+              "held full context": 0.8480563134604755,
+              "held no context": 2.0659546065868444
+            },
+            "r8": {
+              "held AC": 0.7247989608133864,
+              "held full context": 0.8137280714490825,
+              "held no context": 2.070305880582146
+            }
+          },
+          "documents": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.6231506320358735,
+              "held full context": 0.5816295207805525,
+              "held no context": 2.2708660700531857
+            },
+            "r8": {
+              "held AC": 0.605452448746563,
+              "held full context": 0.5751259435603878,
+              "held no context": 2.276720315392787
+            }
+          },
+          "financial": {
+            "questions": 10,
+            "r16": {
+              "held AC": 0.8877746568336162,
+              "held full context": 0.5409345541878892,
+              "held no context": 2.6142266258488966
+            },
+            "r8": {
+              "held AC": 0.8192063508064515,
+              "held full context": 0.5531630061544991,
+              "held no context": 2.638667847481607
+            }
+          },
+          "legal": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.8376695517289535,
+              "held full context": 0.6675499756278579,
+              "held no context": 2.027379594965764
+            },
+            "r8": {
+              "held AC": 0.8850759188104016,
+              "held full context": 0.672191340935662,
+              "held no context": 2.033441850059255
+            }
+          },
+          "math_arxiv": {
+            "questions": 24,
+            "r16": {
+              "held AC": 0.5604201231502984,
+              "held full context": 0.6136551875858552,
+              "held no context": 1.7355677272429582
+            },
+            "r8": {
+              "held AC": 0.6361480109370974,
+              "held full context": 0.5924317089543324,
+              "held no context": 1.7274756059008551
+            }
+          },
+          "math_textbook": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.5135979957429109,
+              "held full context": 0.643375182883875,
+              "held no context": 1.2559069758350203
+            },
+            "r8": {
+              "held AC": 0.4652819507989071,
+              "held full context": 0.6422205540691193,
+              "held no context": 1.2607915289688303
+            }
+          },
+          "office": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.6282300525936053,
+              "held full context": 0.8595254223348032,
+              "held no context": 2.074663995410764
+            },
+            "r8": {
+              "held AC": 0.7200765806059266,
+              "held full context": 0.8441848490153637,
+              "held no context": 2.069338301145019
+            }
+          },
+          "technical_web": {
+            "questions": 10,
+            "r16": {
+              "held AC": 0.5991792543141039,
+              "held full context": 0.41524458229578387,
+              "held no context": 2.224262688715572
+            },
+            "r8": {
+              "held AC": 0.6205108961509505,
+              "held full context": 0.4288054071005082,
+              "held no context": 2.2079039540709897
+            }
+          },
+          "web": {
+            "questions": 40,
+            "r16": {
+              "held AC": 0.608257431253915,
+              "held full context": 0.8146880351689572,
+              "held no context": 1.9238738481495474
+            },
+            "r8": {
+              "held AC": 0.5971658417950768,
+              "held full context": 0.8061376033110305,
+              "held no context": 1.9353083544436616
+            }
+          }
+        }
+      },
+      "27b": {
+        "held AC": {
+          "r16": 0.5636154620988427,
+          "r8": 0.6253789108119333,
+          "r8_minus_r16": 0.061763448713090675,
+          "paired_question_bootstrap_95": [
+            0.026357053023643676,
+            0.09870400644731919
+          ],
+          "questions_lower_at_r8": 80,
+          "questions": 200
+        },
+        "held full context": {
+          "r16": 0.5589332907962681,
+          "r8": 0.5406967201477287,
+          "r8_minus_r16": -0.01823657064853934,
+          "paired_question_bootstrap_95": [
+            -0.025056270869215174,
+            -0.012038371096293693
+          ],
+          "questions_lower_at_r8": 124,
+          "questions": 200
+        },
+        "held no context": {
+          "r16": 1.6438452743429943,
+          "r8": 1.6410262472849935,
+          "r8_minus_r16": -0.0028190270580010714,
+          "paired_question_bootstrap_95": [
+            -0.010953879535448737,
+            0.005121267690617389
+          ],
+          "questions_lower_at_r8": 104,
+          "questions": 200
+        },
+        "AC_minus_own_full_context": {
+          "r16": 0.004682171302574521,
+          "r8": 0.08468219066420453,
+          "r8_minus_r16": 0.08000001936163002,
+          "paired_question_bootstrap_95": [
+            0.04479635918074828,
+            0.1173506271687452
+          ]
+        },
+        "families": {
+          "code": {
+            "questions": 60,
+            "r16": {
+              "held AC": 0.4709288436518882,
+              "held full context": 0.4794720627387536,
+              "held no context": 1.458234092369355
+            },
+            "r8": {
+              "held AC": 0.5589824916323599,
+              "held full context": 0.45799314444978395,
+              "held no context": 1.4555955001363254
+            }
+          },
+          "documents": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.5493877186818419,
+              "held full context": 0.5083634662992609,
+              "held no context": 1.9884136925911948
+            },
+            "r8": {
+              "held AC": 0.6422554843488257,
+              "held full context": 0.49435855476262835,
+              "held no context": 1.9765838256154862
+            }
+          },
+          "financial": {
+            "questions": 10,
+            "r16": {
+              "held AC": 1.1346051161647681,
+              "held full context": 0.5392127286498154,
+              "held no context": 2.3170967085738807
+            },
+            "r8": {
+              "held AC": 1.1473685018983721,
+              "held full context": 0.5415145655718521,
+              "held no context": 2.355675274561814
+            }
+          },
+          "legal": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.8770717537904851,
+              "held full context": 0.6254967540393034,
+              "held no context": 1.7877839056618052
+            },
+            "r8": {
+              "held AC": 0.9957414273833042,
+              "held full context": 0.6326653578581618,
+              "held no context": 1.7834178893216714
+            }
+          },
+          "math_arxiv": {
+            "questions": 24,
+            "r16": {
+              "held AC": 0.6805277549496275,
+              "held full context": 0.6257350357579207,
+              "held no context": 1.8358649771131546
+            },
+            "r8": {
+              "held AC": 0.8055373176172546,
+              "held full context": 0.5816620984334749,
+              "held no context": 1.8340607532346471
+            }
+          },
+          "math_textbook": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.5732038444651577,
+              "held full context": 0.6944862354243821,
+              "held no context": 1.3775111451776858
+            },
+            "r8": {
+              "held AC": 0.5760070635618378,
+              "held full context": 0.6836794781866551,
+              "held no context": 1.379750321472339
+            }
+          },
+          "office": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.6267248765274449,
+              "held full context": 0.6083654042034434,
+              "held no context": 1.526109792572842
+            },
+            "r8": {
+              "held AC": 0.6532384745188756,
+              "held full context": 0.5983212856719092,
+              "held no context": 1.5144150206793403
+            }
+          },
+          "technical_web": {
+            "questions": 10,
+            "r16": {
+              "held AC": 0.6170472520314628,
+              "held full context": 0.3334758708253779,
+              "held no context": 1.910334452415352
+            },
+            "r8": {
+              "held AC": 0.6209342358792826,
+              "held full context": 0.32201363481277523,
+              "held no context": 1.93279782711043
+            }
+          },
+          "web": {
+            "questions": 40,
+            "r16": {
+              "held AC": 0.3652786856433678,
+              "held full context": 0.6305466603873778,
+              "held no context": 1.532960412067793
+            },
+            "r8": {
+              "held AC": 0.38102375186144083,
+              "held full context": 0.6111033686689913,
+              "held no context": 1.5172997270261963
+            }
+          }
+        }
+      }
+    }
+  },
+  "base_reference_reuse": [
+    {
+      "source": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+      "destination": "/home/ngom/orcd/pool/activation/taskaware/encoder4b_oracle27b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+      "sha256": "5131a2e319f59e7b0400388b5fde3bc946f7cd19defac1dbdc52f6a5ea1ed0f1",
+      "bytes": 217341397,
+      "identity": {
+        "model": "Qwen/Qwen3.5-9B",
+        "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "tokenizer": "Qwen/Qwen3.5-9B",
+        "vocab": 248077,
+        "reference": "base_no_context"
+      },
+      "entries": 16000,
+      "top_k": 32,
+      "utc": "2026-09-22T05:53:55.933358+00:00"
+    },
+    {
+      "source": "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r8/AC_MODELS/rag_poc/no_context_reference.pt",
+      "destination": "/home/ngom/orcd/pool/activation/taskaware/oracle_9b_16k_r16/AC_MODELS/rag_poc/no_context_reference.pt",
+      "sha256": "52e1fa6457659135e72987d5cad77956e2af92ad720bf70f7556ccb0d3e7c71e",
+      "bytes": 210056277,
+      "identity": {
+        "model": "Qwen/Qwen3.5-9B",
+        "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "tokenizer": "Qwen/Qwen3.5-9B",
+        "vocab": 248077,
+        "reference": "base_no_context"
+      },
+      "entries": 16000,
+      "top_k": 32,
+      "utc": "2026-09-22T05:54:03.253977+00:00"
+    }
+  ],
+  "r8_lower_lr": {
+    "name": "oracle_27b_16k_r8_half_ac_lr",
+    "status": "RUNNING full16k×1 under userextendedwindow",
+    "job": 23469328,
+    "dependency": null,
+    "reference_copy_job": 23459756,
+    "bank_pause_job": 23453392,
+    "bank_resume_job": 23459872,
+    "created_utc": "2026-09-22T06:20:57.455081+00:00",
+    "training_questions": 16000,
+    "epochs": 1,
+    "encoder_lr": 2.5e-05,
+    "reader_lr": 2e-05,
+    "ratio": 0.125,
+    "control": "oracle_27b_16k_r8",
+    "source": "train_ws_night_v1; exactexistingcomparisonrunner",
+    "material_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "unchanged": "InitialP2 pair,16k27Bquestions/order,2000plannedupdates,8/update,micro2,50warmup/cosine,readerLR,KLpenalty,400development/32learning,evidence/distractors",
+    "motivation": "1/8 AC-groupgradientsmuchlarger(174vs2norm>100events)and51/87supportedanswersvs66/87for1/16. HypothesislowerACLRimprovesoptimization; notencoder-onlyattribution.",
+    "evaluation": "AuxiliaryDEVELOPMENTtest; comparematchedquestionfractionsandfixedfinal, nointermediatewinnerselection. Excludedunchangedfive-armreservedconfirmation. Correctedfixed100decodeifcompleted.",
+    "resource_trial": "Onceoldbankterminal,submitonereplacementafterany:candidatebeforerelease. Boundpendingallocationtoabout2minutes. Ifstillpendingholdverifycancel; ifrunningkeep. Nevermorethan4activeMITGPUs. NoEC2.",
+    "deadline_utc": "2026-09-22T20:00:00Z",
+    "review": "Focusedgraph/signalsreviewpass; batchTERM→USR1commitand143; verifyterminalnorestart; handlepending/runningraceafterhold.",
+    "bank_resume_dependency": "afterany:23459805",
+    "old_bank_exit": "FAILED143:0 intentionalgracefulpause;127000published/127615accepted;0restarts",
+    "allocation_check_by": "2026-09-22T06:23:29Z",
+    "allocation_result": "Aftergracefulbankstop, twominutetrialremainedpendingResources/Priority. Heldpendingthen canceled; dependent9Bbankunblocked.",
+    "canceled_utc": "2026-09-22T06:24:09.536178+00:00",
+    "restoration": "Confirmed23459805CANCELLED0:0,zeroelapsed/noassignednode; bank23459872RUNNINGnode3006 at06:26:47UTC",
+    "prior_trial": {
+      "job": 23459805,
+      "status": "DEFERRED: pendingcandidateheld/verified/canceled06:24UTC beforeallocation; noGPUtraining",
+      "canceled_utc": "2026-09-22T06:24:09.536178+00:00"
+    },
+    "extended_utc": "2026-09-22T10:04:14.825715+00:00",
+    "sbatch_sha256": "c26f8ab9cced57628cb7153595b950307996e8f7ecee0144b6b70c051221cab3",
+    "r16_companion": {
+      "job": 23469352,
+      "reference_cpu": 23469351,
+      "dependency": "afterany:23461879,afterok:23469351",
+      "name": "oracle_27b_16k_r16_half_ac_lr",
+      "ratio": 0.0625
+    },
+    "decision": "Use both ratio/LR comparisons on development evidence to choose32k recipe; originalfiveconfirmation excluded from tuning."
+  },
+  "selected_27b16k_archive": {
+    "manifest": "QA_CHECKPOINT_ARCHIVE_27B16K_R16.json",
+    "files": 18,
+    "bytes": 2496309177,
+    "verified": true
+  },
+  "monitor_0620": {
+    "jobs": "4Bandboth9Barmsrunning; both27Barmsfinal; early400responsesdecoded/reviewed",
+    "bank": "127kpublished; intentionalpauseforboundedLRallocationtrial; replacementautomaticallyqueued",
+    "storage": "local261.6GiBfree;no prune",
+    "qualitative": "frozenfull78/noctx15/r16AC66/r8AC51 ofsame87supportedreferences; all100visible",
+    "next_monitor": "06:50UTC"
+  },
+  "evaluation_queue_record": "EVALUATION_QUEUE.json is authoritative between ledger checkpoints.",
+  "insight_0500_edt": "INSIGHTS_0500_EDT.md",
+  "model_comparison_cohort100": {
+    "report": "MODEL_COMPARISON_COHORT100.tressoir.html",
+    "reviewed_responses": 800,
+    "supported_reference_questions": 87,
+    "correct": {
+      "p2_full": 78,
+      "p2_none": 15,
+      "27b_r16": 66,
+      "27b_r8": 51,
+      "9b_r16": 52,
+      "9b_r8": 55,
+      "p4_full": 80,
+      "p4_none": 18
+    },
+    "scope": "Same100 development questions; immutable87reference subset, agentannotations. Completed views NLLreplaydelta0. 9B/r8 being reviewed;4Bfinalpending. Corrected generator-specific9B semantic comparison to29/42 vs36/42; aggregate counts unchanged."
+  },
+  "context_transfer100": {
+    "plan": "CONTEXT_TRANSFER100.md",
+    "checks": "CONTEXT_TRANSFER100_CHECKS.json",
+    "2b_job": 23461879,
+    "4b_job": 23466483,
+    "status": "Queueddevelopmentonly, afterpriorities; no scores yet."
+  },
+  "ratio_9b_fixed_finals": {
+    "bank": "9b",
+    "unique_training_pool": 16000,
+    "passes": 1.0,
+    "training_questions_presented": 16000,
+    "scope": "Exploratory DEVELOPMENT comparison at matched exposure; one seed. Question bootstrap omits source clustering and training-seed variance; repeated checkpoint looks are not independent tests. Full context uses each arm's current reader; gap comparisons do not isolate encoder capacity.",
+    "cohorts": {
+      "9b": {
+        "held AC": {
+          "r16": 0.6384034165925335,
+          "r8": 0.5802272410246281,
+          "r8_minus_r16": -0.05817617556790552,
+          "paired_question_bootstrap_95": [
+            -0.1321157547956774,
+            -0.0009655413470290328
+          ],
+          "questions_lower_at_r8": 108,
+          "questions": 200
+        },
+        "held full context": {
+          "r16": 0.5802443529770109,
+          "r8": 0.5906757051485395,
+          "r8_minus_r16": 0.010431352171528623,
+          "paired_question_bootstrap_95": [
+            0.004436073823385147,
+            0.016806343368623994
+          ],
+          "questions_lower_at_r8": 91,
+          "questions": 200
+        },
+        "held no context": {
+          "r16": 1.968579088840253,
+          "r8": 1.9721663621861905,
+          "r8_minus_r16": 0.003587273345937565,
+          "paired_question_bootstrap_95": [
+            -0.002108452494400946,
+            0.009165867045917191
+          ],
+          "questions_lower_at_r8": 82,
+          "questions": 200
+        },
+        "AC_minus_own_full_context": {
+          "r16": 0.05815906361552274,
+          "r8": -0.010448464123911405,
+          "r8_minus_r16": -0.06860752773943414,
+          "paired_question_bootstrap_95": [
+            -0.14212616057844485,
+            -0.010900760459235024
+          ]
+        },
+        "families": {
+          "code": {
+            "questions": 60,
+            "r16": {
+              "held AC": 0.6203353936329065,
+              "held full context": 0.5883585977783453,
+              "held no context": 2.0594652711119057
+            },
+            "r8": {
+              "held AC": 0.5632198515189099,
+              "held full context": 0.6136635759857181,
+              "held no context": 2.063239644321912
+            }
+          },
+          "documents": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.6057820278096544,
+              "held full context": 0.4562903510501161,
+              "held no context": 2.2483354499625907
+            },
+            "r8": {
+              "held AC": 0.5280587154693888,
+              "held full context": 0.46296333734418565,
+              "held no context": 2.2625576648636545
+            }
+          },
+          "financial": {
+            "questions": 10,
+            "r16": {
+              "held AC": 1.4982272152659877,
+              "held full context": 0.4278964523203168,
+              "held no context": 2.595314681168648
+            },
+            "r8": {
+              "held AC": 0.7858702451188455,
+              "held full context": 0.4348060328239954,
+              "held no context": 2.5794679619411434
+            }
+          },
+          "legal": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.7683562728369125,
+              "held full context": 0.5719797480727333,
+              "held no context": 2.0162389754473016
+            },
+            "r8": {
+              "held AC": 0.8252887705375597,
+              "held full context": 0.5660372547453455,
+              "held no context": 2.030432406285164
+            }
+          },
+          "math_arxiv": {
+            "questions": 24,
+            "r16": {
+              "held AC": 0.6071471571373773,
+              "held full context": 0.47778615394012797,
+              "held no context": 1.7074163916204081
+            },
+            "r8": {
+              "held AC": 0.6001600673702744,
+              "held full context": 0.4793704605850182,
+              "held no context": 1.7139457871807053
+            }
+          },
+          "math_textbook": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.45157430013465594,
+              "held full context": 0.561013581708766,
+              "held no context": 1.2351406695659335
+            },
+            "r8": {
+              "held AC": 0.5616724291347795,
+              "held full context": 0.5601982263886793,
+              "held no context": 1.2357776320918308
+            }
+          },
+          "office": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.6415692634661521,
+              "held full context": 0.7754264159730878,
+              "held no context": 2.0409926891649803
+            },
+            "r8": {
+              "held AC": 0.567332527687311,
+              "held full context": 0.7856617253360675,
+              "held no context": 2.0446054988351
+            }
+          },
+          "technical_web": {
+            "questions": 10,
+            "r16": {
+              "held AC": 0.4418997702310371,
+              "held full context": 0.3743609880677897,
+              "held no context": 2.2291202212521175
+            },
+            "r8": {
+              "held AC": 0.5178019398221344,
+              "held full context": 0.37359770260681346,
+              "held no context": 2.2404531393970766
+            }
+          },
+          "web": {
+            "questions": 40,
+            "r16": {
+              "held AC": 0.5662737597879819,
+              "held full context": 0.7203043934391336,
+              "held no context": 1.912579029760876
+            },
+            "r8": {
+              "held AC": 0.5166134938782374,
+              "held full context": 0.7283856320378368,
+              "held no context": 1.910779106486833
+            }
+          }
+        }
+      },
+      "27b": {
+        "held AC": {
+          "r16": 0.6775979683664949,
+          "r8": 0.6441243769495447,
+          "r8_minus_r16": -0.033473591416950145,
+          "paired_question_bootstrap_95": [
+            -0.07500837822623944,
+            0.008329233079520725
+          ],
+          "questions_lower_at_r8": 111,
+          "questions": 200
+        },
+        "held full context": {
+          "r16": 0.4834856416616685,
+          "r8": 0.4847446707099248,
+          "r8_minus_r16": 0.001259029048256165,
+          "paired_question_bootstrap_95": [
+            -0.004517228135356393,
+            0.006507759263038889
+          ],
+          "questions_lower_at_r8": 97,
+          "questions": 200
+        },
+        "held no context": {
+          "r16": 1.6320845831054733,
+          "r8": 1.6397679817091921,
+          "r8_minus_r16": 0.007683398603718513,
+          "paired_question_bootstrap_95": [
+            -0.0008360070710319802,
+            0.017525668789327285
+          ],
+          "questions_lower_at_r8": 96,
+          "questions": 200
+        },
+        "AC_minus_own_full_context": {
+          "r16": 0.19411232670482634,
+          "r8": 0.15937970623962006,
+          "r8_minus_r16": -0.0347326204652063,
+          "paired_question_bootstrap_95": [
+            -0.07649952023887839,
+            0.007322350486850606
+          ]
+        },
+        "families": {
+          "code": {
+            "questions": 60,
+            "r16": {
+              "held AC": 0.6730670810177076,
+              "held full context": 0.3900470652067009,
+              "held no context": 1.4583447936868283
+            },
+            "r8": {
+              "held AC": 0.6103683782811212,
+              "held full context": 0.3958710335773651,
+              "held no context": 1.448059566832095
+            }
+          },
+          "documents": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.7029132845906533,
+              "held full context": 0.4128964522855537,
+              "held no context": 1.9629788224504192
+            },
+            "r8": {
+              "held AC": 0.5906589577032646,
+              "held full context": 0.3948644337716523,
+              "held no context": 1.9655652772680536
+            }
+          },
+          "financial": {
+            "questions": 10,
+            "r16": {
+              "held AC": 1.16344191954023,
+              "held full context": 0.5149612043090446,
+              "held no context": 2.336227064193582
+            },
+            "r8": {
+              "held AC": 1.172217544611744,
+              "held full context": 0.546587055637905,
+              "held no context": 2.3328659041712174
+            }
+          },
+          "legal": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.8584150337208095,
+              "held full context": 0.5901845681153485,
+              "held no context": 1.7900881333214063
+            },
+            "r8": {
+              "held AC": 0.8069761149154294,
+              "held full context": 0.5803793711554113,
+              "held no context": 1.7893285984625107
+            }
+          },
+          "math_arxiv": {
+            "questions": 24,
+            "r16": {
+              "held AC": 0.8875942641285907,
+              "held full context": 0.5211503237737307,
+              "held no context": 1.8071011579699723
+            },
+            "r8": {
+              "held AC": 0.7517076559637436,
+              "held full context": 0.5098403825999862,
+              "held no context": 1.8378679186741913
+            }
+          },
+          "math_textbook": {
+            "questions": 16,
+            "r16": {
+              "held AC": 0.6683661158949745,
+              "held full context": 0.6650746199786732,
+              "held no context": 1.3647089726122663
+            },
+            "r8": {
+              "held AC": 0.811649115175838,
+              "held full context": 0.6599007330927678,
+              "held no context": 1.4006606758792943
+            }
+          },
+          "office": {
+            "questions": 12,
+            "r16": {
+              "held AC": 0.6841485340275507,
+              "held full context": 0.5659842317940079,
+              "held no context": 1.5018615011487053
+            },
+            "r8": {
+              "held AC": 0.6619117671329592,
+              "held full context": 0.5627814442582907,
+              "held no context": 1.5055806566045244
+            }
+          },
+          "technical_web": {
+            "questions": 10,
+            "r16": {
+              "held AC": 0.5582453700313305,
+              "held full context": 0.2796606364311434,
+              "held no context": 1.8921085892906646
+            },
+            "r8": {
+              "held AC": 0.602792823564393,
+              "held full context": 0.27342798260693374,
+              "held no context": 1.9428791247142452
+            }
+          },
+          "web": {
+            "questions": 40,
+            "r16": {
+              "held AC": 0.4041300089171097,
+              "held full context": 0.5429728871705082,
+              "held no context": 1.512901108477972
+            },
+            "r8": {
+              "held AC": 0.40870253793760397,
+              "held full context": 0.5541545026924958,
+              "held no context": 1.520130392092887
+            }
+          }
+        }
+      }
+    }
+  },
+  "monitor_0932": {
+    "checked_utc": "2026-09-22T09:30:22.631787+00:00",
+    "runs": {
+      "encoder4b_oracle27b_16k_r16": {
+        "updated_at": "2026-09-22 09:30:15 UTC",
+        "status": {
+          "phase": "held full context",
+          "training seen": "16,000 unique questions × 0.8 passes",
+          "attempt elapsed minutes": "203.3",
+          "whole run wall minutes": "203.2",
+          "unique question pool": "16000",
+          "development questions": "400",
+          "train call elapsed": "3h 19m",
+          "training remaining": "about 48m 16s",
+          "no context penalty": "0.0026",
+          "latest batch loss": "0.2032",
+          "learning rates": "9.53e-06, 3.81e-06",
+          "evaluation items": "322 of 400",
+          "evaluating after": "16,000 unique questions × 0.8 passes",
+          "last complete quality panel": "16,000 unique questions × 0.7 passes"
+        },
+        "latest_panel": {
+          "update": 1400,
+          "percent": 70.0,
+          "held items": 400,
+          "AC answer NLL": 0.6250806253858999,
+          "full answer NLL": 0.6148232937101521,
+          "no-context answer NLL": 1.78354945289921,
+          "training answer NLL": 0.4706335172315969,
+          "panel seconds": 111.5,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.6570748234906248,
+              "held full context": 0.7025741873356224,
+              "held no context": 1.9590155527682795,
+              "training AC": 0.4706335172315969
+            },
+            "27b": {
+              "held AC": 0.5930864272811749,
+              "held full context": 0.5270724000846819,
+              "held no context": 1.6080833530301408,
+              "training AC": 0.4706335172315969
+            }
+          }
+        }
+      },
+      "oracle_9b_16k_r8": {
+        "updated_at": "2026-09-22 09:19:23 UTC",
+        "status": {
+          "phase": "complete",
+          "training seen": "16,000 unique questions × 1 pass",
+          "attempt elapsed minutes": "227.4",
+          "whole run wall minutes": "227.3",
+          "unique question pool": "16000",
+          "development questions": "400",
+          "train call elapsed": "3h 43m",
+          "training remaining": "finished",
+          "no context penalty": "0.0066",
+          "latest batch loss": "0.2200",
+          "learning rates": "5e-06, 2e-06",
+          "peak memory": "63.97 GB",
+          "last complete quality panel": "16,000 unique questions × 1 pass"
+        },
+        "latest_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.6121758089870863,
+          "full answer NLL": 0.5377101879292321,
+          "no-context answer NLL": 1.8059671719476913,
+          "training answer NLL": 0.43489317000173733,
+          "panel seconds": 107.8,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.5802272410246281,
+              "held full context": 0.5906757051485394,
+              "held no context": 1.9721663621861905,
+              "training AC": 0.43489317000173733
+            },
+            "27b": {
+              "held AC": 0.6441243769495447,
+              "held full context": 0.4847446707099248,
+              "held no context": 1.6397679817091921,
+              "training AC": 0.43489317000173733
+            }
+          }
+        }
+      },
+      "oracle_9b_16k_r16": {
+        "updated_at": "2026-09-22 08:54:53 UTC",
+        "status": {
+          "phase": "complete",
+          "training seen": "16,000 unique questions × 1 pass",
+          "attempt elapsed minutes": "162.4",
+          "whole run wall minutes": "162.4",
+          "unique question pool": "16000",
+          "development questions": "400",
+          "train call elapsed": "2h 40m",
+          "training remaining": "finished",
+          "no context penalty": "0.0074",
+          "latest batch loss": "0.1957",
+          "learning rates": "5e-06, 2e-06",
+          "peak memory": "62.83 GB",
+          "last complete quality panel": "16,000 unique questions × 1 pass"
+        },
+        "latest_panel": {
+          "update": 2000,
+          "percent": 100.0,
+          "held items": 400,
+          "AC answer NLL": 0.6580006924795143,
+          "full answer NLL": 0.5318649973193397,
+          "no-context answer NLL": 1.8003318359728633,
+          "training answer NLL": 0.45745137049333096,
+          "panel seconds": 109.1,
+          "cohorts": {
+            "9b": {
+              "held AC": 0.6384034165925335,
+              "held full context": 0.5802443529770108,
+              "held no context": 1.9685790888402528,
+              "training AC": 0.45745137049333096
+            },
+            "27b": {
+              "held AC": 0.6775979683664949,
+              "held full context": 0.4834856416616685,
+              "held no context": 1.6320845831054733,
+              "training AC": 0.45745137049333096
+            }
+          }
+        }
+      },
+      "synthesis_bank_v2": {
+        "updated_at": "2026-09-22 09:30:20 UTC",
+        "status": {
+          "phase": "checking answers",
+          "source family": "code",
+          "verification questions": "0/32",
+          "published questions": "159000",
+          "target questions": "200000"
+        }
+      }
+    },
+    "active_gpus": 3,
+    "active_jobs": {
+      "9B synthesis": 23459872,
+      "4B encoder training": 23446884,
+      "long context cross evaluation": 23452012
+    },
+    "local_free_gib": 260.8,
+    "cached_orcd_pool_used_gb": 435.4,
+    "cached_orcd_scratch_used_gb": 824.6,
+    "scheduler_check": "09:27UTC; 23452025/26/27 complete0:0. Synthesis restarted samejob at09:13UTC, Restarts1."
+  },
+  "context_transfer_advance": {
+    "utc": "2026-09-22T09:34:55.899053+00:00",
+    "job": 23461879,
+    "previous_dependency": "afterok:23452012",
+    "dependency": null,
+    "reason": "Fourth slot freed after9B/r8 readout completed. Advance existing2B contextscreen; same code/inputs45min bound and12UTC guard.",
+    "safety": "Verified only3activeGPUs. Held/reconfirmed pending. Completedreadout dependency rejected bySlurm, oldedge initially unchanged; reheld andcleareddependency, verified held/null thenreleased. Maximum4 includingbank;4Breadout/confirmationreplace4Btrain slot."
+  },
+  "afternoon_extension": {
+    "authorized_utc": "2026-09-22T10:04:14.825715+00:00",
+    "target_utc": "2026-09-22T20:00:00Z",
+    "insights_utc": [
+      "2026-09-22T13:00:00Z",
+      "2026-09-22T16:00:00Z",
+      "2026-09-22T18:00:00Z"
+    ],
+    "32k_gate": "ResolvedLRchoice and enougheligible27Bquestions;startfromoriginalP2,32kunique×1epoch.",
+    "gpu_cap": 4
+  }
+}

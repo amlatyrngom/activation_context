@@ -1,0 +1,14 @@
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -657,7 +657,10 @@
+                             parameter.grad = None
+                     norm_ac = self._grad_norm(ac_parameters); norm_reader = self._grad_norm(target_parameters)
+                     head_norms = self._head_grad_norms(ac_model) if ac_model.is_deep else None       # before clipping, like norm_ac
+-                    grad_norm = float(torch.nn.utils.clip_grad_norm_(ac_parameters + ([] if reader_frozen else target_parameters), config.max_grad_norm))
++                    grad_norm = math.hypot(norm_ac, 0.0 if reader_frozen else norm_reader)
++                    torch.nn.utils.clip_grad_norm_(ac_parameters, config.max_grad_norm)
++                    if not reader_frozen:
++                        torch.nn.utils.clip_grad_norm_(target_parameters, config.max_grad_norm)
+                     set_learning_rates(optimizer, self.updates_done.get(ac_model_name, 0), config.warmup_updates,
+                                        total_updates=planned_total, schedule=config.lr_schedule, final_fraction=config.lr_final_fraction)
+                     stats.grad_norm_ac.append(norm_ac); stats.grad_norm_reader.append(norm_reader)

@@ -1,0 +1,45 @@
+{
+  "status": "cpu_checks_passed_gpu_unrun",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "worker_sha256": "c0d9c1bcac1269bde9470e54c002bd227289206448bc18b80d49abfa3fda98a9",
+  "launcher_sha256": "0fa9e3c89013d0921a9ddc4a79340e31bd5c95171a3879740e767c21f1335b91",
+  "cpu_log_sha256": "f33bbb7cbb1249d283ff02f35638d23df4e7d61b87081cac40e7e020d629affb",
+  "split_k_false_and_exception_restoration": true,
+  "precision_flags_restored": true,
+  "policies": [
+    "original_enabled",
+    "reduction_disabled"
+  ],
+  "variants_per_policy": [
+    [
+      "baseline",
+      "unchanged_repeat",
+      "small_cpu"
+    ],
+    [
+      "baseline",
+      "unchanged_repeat",
+      "small_cpu"
+    ]
+  ],
+  "cross_policy_same_budget_cpu_max_abs": 0.0,
+  "cpu_scope": "Real tiny frozen Qwen AC path; CPU does not test GPU BF16 reduction effectiveness.",
+  "gpu_scope": "Read-only six encoder forwards on exact 24-passage microbatch, two fixed traced passages, no reader/backward/update/save; five-minute RTX allocation.",
+  "parent_rehash_required": true,
+  "equivalence_validated": false,
+  "checks": [
+    "syntax",
+    "bash syntax",
+    "frozen real tiny model",
+    "unchanged repeat",
+    "identical requests/masks/positions/batches across flag policies",
+    "cross-policy final outputs",
+    "supported split-K false preservation",
+    "exception restoration",
+    "encode method restoration"
+  ]
+}

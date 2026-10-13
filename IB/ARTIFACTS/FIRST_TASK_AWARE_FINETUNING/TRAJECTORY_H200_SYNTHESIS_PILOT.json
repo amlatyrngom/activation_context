@@ -1,0 +1,9 @@
+{
+  "job": "2203885",
+  "scope": "64-question isolated H200 micro16 pilot; no handoff authorized by this script",
+  "output": "trajectory_synthesis_h200_batch16_probe",
+  "source": "source_v12",
+  "model_revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+  "seconds": "actual allocation end minus120s",
+  "main_producer_unchanged": 23628641
+}

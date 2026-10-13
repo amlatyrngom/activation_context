@@ -1,0 +1,54 @@
+{
+  "scope": "Logged train-step seconds exclude reporting/checkpoint serialization; rounded to0.1s by original trainer. No causal component profile. Different runs/nodes and data pools.",
+  "oracle_27b_32k": {
+    "logged_questions": 32000,
+    "step_count": 4000,
+    "train_step_seconds_sum": 14934.2,
+    "train_step_seconds_mean": 3.73355,
+    "train_step_seconds_median": 3.7,
+    "last_complete_panel_questions": 32000,
+    "training_seconds_through_last_panel": 14934.2,
+    "trainer_elapsed_before_last_panel_callback": 18258.871747934027,
+    "time_outside_training_steps_before_last_panel_callback": 3324.671747934026,
+    "nontraining_note": "Includes initial preparation, prior full panels, saves, and current-panel AC evaluation; excludes current callback and later decode.",
+    "sum_logged_partial_panel_seconds": 1202.9,
+    "projected_8000_question_training_hours_at_mean": 1.0370972222222223,
+    "exact_completed_accounting": {
+      "placement_seconds": 704.065976531012,
+      "baseline_seconds": 242.2795520729851,
+      "cleanup_seconds": 11.241960293846205,
+      "other_seconds": 734.0308440516237,
+      "duration_s": 18457.8,
+      "training_seconds": 14934.442995199468,
+      "reporting_seconds": 1823.3660517258104
+    }
+  },
+  "piecewise_27b_4k_8k": {
+    "logged_questions": 2688,
+    "step_count": 336,
+    "train_step_seconds_sum": 7599.2,
+    "train_step_seconds_mean": 22.616666666666667,
+    "train_step_seconds_median": 22.4,
+    "last_complete_panel_questions": 2400,
+    "training_seconds_through_last_panel": 6777.5,
+    "trainer_elapsed_before_last_panel_callback": 11278.331195505336,
+    "time_outside_training_steps_before_last_panel_callback": 4500.831195505336,
+    "nontraining_note": "Includes initial preparation, prior full panels, saves, and current-panel AC evaluation; excludes current callback and later decode.",
+    "sum_logged_partial_panel_seconds": 2515.8,
+    "projected_8000_question_training_hours_at_mean": 6.282407407407407
+  },
+  "merged_27b_4k_8k": {
+    "logged_questions": 3200,
+    "step_count": 400,
+    "train_step_seconds_sum": 6633.7,
+    "train_step_seconds_mean": 16.58425,
+    "train_step_seconds_median": 16.7,
+    "last_complete_panel_questions": 2800,
+    "training_seconds_through_last_panel": 5807.1,
+    "trainer_elapsed_before_last_panel_callback": 10047.658328106161,
+    "time_outside_training_steps_before_last_panel_callback": 4240.558328106161,
+    "nontraining_note": "Includes initial preparation, prior full panels, saves, and current-panel AC evaluation; excludes current callback and later decode.",
+    "sum_logged_partial_panel_seconds": 2707.5,
+    "projected_8000_question_training_hours_at_mean": 4.606736111111111
+  }
+}

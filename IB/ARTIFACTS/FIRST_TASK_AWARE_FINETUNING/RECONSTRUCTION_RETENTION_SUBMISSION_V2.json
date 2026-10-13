@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-23T19:30:01.271912Z",
+  "status": "released",
+  "files": {
+    "evaluate_reconstruction_retention_v2.py": "c54f5e8d51a28cf5f64d5002948feb26ae387893d75c2012e300729fe6fd9b2a",
+    "evaluate_reconstruction_retention_v2.sbatch": "c3d8f39a48cd9a8c8ae87769955c6a9d04131455df60bcab16c7e0eacca8f786",
+    "RECONSTRUCTION_RETENTION_V2.json": "1b562046266cb0bb4b4808b43c82258f0da6f8aaea8a82c13f3208050ab2ded3",
+    "reconstruction_retention_held420_v1.json": "7b7ba95365a50162f1b20f9c76d3baf122d0a95828467e77ba6b5732f3999781"
+  },
+  "scope": "V2 reruns all four pairs after JSON tuple/list metadata normalization; same original420 held, matched1/16/L40S; no scoring or training changes. V1 P2 result archived intact.",
+  "review": "Focused independent scoring/data comparison review passed; root syntax, aggregation arithmetic, shell and payload/paired completion checks.",
+  "job_id": 23572371,
+  "released_utc": "2026-09-23T19:30:01.548548Z",
+  "queue": "23572371|PENDING|(None)"
+}

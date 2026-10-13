@@ -1,0 +1,27 @@
+{
+  "checked_utc": "2026-09-23T02:35:56.951876+00:00",
+  "condition": "Original32k final versus32k+10k fresh\u00d71 atconstantfinalLR, optimizer preserved",
+  "items": 400,
+  "parent_answer_nll": 0.5688311093481018,
+  "continued_answer_nll": 0.5326864100103368,
+  "mean_delta": -0.036144699337764985,
+  "median_delta": -0.007511458333333327,
+  "lower_questions": 222,
+  "higher_questions": 178,
+  "exact_equal": 0,
+  "paired_item_bootstrap_95_percent": [
+    -0.05618221410619518,
+    -0.01614694968831107
+  ],
+  "subset100_parent": 0.6079042416273781,
+  "subset100_final": 0.5544197651109397,
+  "final_panel_replay_max_difference": 0.0,
+  "generated_answers": 100,
+  "ended_at_eos": 100,
+  "reached_token_budget": 0,
+  "source_sha256": {
+    "IB/TMP/SYNC/TASK_AWARE_QA/data_amount_cohort100/oracle_27b_32k.json": "82af75710ca064d052cba8f0349c093ee2636b1be6d84e41eca5650115e9b66e",
+    "IB/TMP/SYNC/TASK_AWARE_QA/continuation_cohort100/continue32k_10k_final_lr.json": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6"
+  },
+  "caveat": "Repeated development, one training realization per condition, item bootstrap without source clustering. Descriptive uncertainty only; semantic source review now published in CONTINUATION_COHORT100.tressoir.html."
+}

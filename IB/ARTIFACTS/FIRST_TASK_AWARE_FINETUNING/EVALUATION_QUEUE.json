@@ -1,0 +1,1540 @@
+{
+  "submitted_utc": "2026-09-22T03:59:39Z",
+  "status": "Data-amount reviews published. Continuations and larger long-context adaptation active; matched merged recovery23517701 queued after repeated preemption.",
+  "qualitative_jobs": [
+    {
+      "condition": "frozen_p2",
+      "job": 23452022,
+      "dependency": "afterok:23447593",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "oracle_27b_16k_r8",
+      "job": 23452023,
+      "dependency": "afterok:23452024:23446877",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "oracle_27b_16k_r16",
+      "job": 23452024,
+      "dependency": "afterok:23452022",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "oracle_9b_16k_r8",
+      "job": 23452025,
+      "dependency": "afterok:23452027:23447677",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "oracle_9b_16k_r16",
+      "job": 23452026,
+      "dependency": "afterok:23447678",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "frozen_p4",
+      "job": 23452027,
+      "dependency": "afterok:23452026",
+      "status": "COMPLETED0:0"
+    },
+    {
+      "condition": "encoder4b_oracle27b_16k_r16",
+      "job": 23452035,
+      "dependency": "afterok:23446884",
+      "status": "COMPLETED0:0,4m46s;original400NLLdelta0"
+    }
+  ],
+  "long_cross_job": 23452012,
+  "long_cross_dependency": "afterok:23447677",
+  "long_cross_cells": [
+    "control900__32k",
+    "long_adapt_2k__32k",
+    "long_adapt_32k__2k",
+    "long_adapt_32k__32k"
+  ],
+  "resource_invariant": "User Sep23 permits compute needed on ORCD and CSAIL; no EC2. Shared-tier single-GPU jobs; actual scheduler limits still apply.",
+  "confirmation": {
+    "job": 23466479,
+    "dependency": "afterok:23452025:23452035",
+    "time_limit": "01:00:00",
+    "status": "COMPLETED 0:0, 18m36s; original five fixed final pairs",
+    "design": "Originalfive fixed16,000\u00d71 finals, reserved400 (200+200). Allfivefinalguard beforeanyconfirmationexposure. OneGPU,sequentialarms, unchangedworker/selection.",
+    "resource": "Existing4Bslotchain; ordinary08EDTrestriction superseded by user20UTCtarget.",
+    "access_note": "An agent broad JSON search incidentally printed a prefix of reserved question text during32k material research. No scores accessed, no selection or training/protocol changed; no further question-text inspection. Originalfive fixedfinals remain locked. Scores read after completion and published; they do not guide LR or 32k choices.",
+    "report": "MODEL_COMPARISON_CONFIRMATION.tressoir.html"
+  },
+  "deadline": "User extended campaign by about12h at23:25UTC Sep22; prioritize continuation and larger long-context results by tomorrow.",
+  "submitted_scripts": "Remote taskaware/logs/submitted_<job>.sbatch",
+  "chat_stopping_probe": {
+    "job": 23454544,
+    "dependency": "afterok:23441557",
+    "next_job": 23447677,
+    "next_dependency": "afterany:23454544",
+    "status": "COMPLETED0:0,2m49s",
+    "gpu": "RTX PRO6000,15minute bound",
+    "source": "train_ws_night_v1 unchanged",
+    "checkpoint": "oracle_27b_16k_r16/selected/update_01000",
+    "scope": "Two one-item HF decodes, exact same400-built prompt and paired weights; raw IDs/config/embeddings captured. No NLL/training.",
+    "source_sha256": {
+      "probe_chat_stopping.py": "df119806842b964f9c8062b25e80a354903574ca812fd14e28a640cc8667a97f",
+      "probe_chat_stopping.sbatch": "89c95ada872c77b734d5251966f517e70be8fde8cf9a9a2b0045b58e8341a9ac"
+    },
+    "checks": "Rootreview plus actualtinyCPUcapture passed, compile/bashsyntax passed.",
+    "submitted_utc": "2026-09-22T04:49:00Z",
+    "completed_utc": "2026-09-22T05:30:25Z",
+    "proof": "EVALUATION_CHAT_STOPPING_GPU.json"
+  },
+  "qualitative_decoder": {
+    "utc": "2026-09-22T05:33:00Z",
+    "worker": "bench/evaluate_model_comparison_cohort.py",
+    "sha256": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "scope": "All seven still-pending fixed100 conditions. Frozen product source/selection/NLL unchanged; explicit generation wrapper plus actual IDs.",
+    "historical_samples": "Retained unchanged; active training and previously-started long-cross protocol keep original decoder."
+  },
+  "reordered_utc": "2026-09-22T05:42:00Z",
+  "order": "27B/r16 training\u2192frozenP2\u219227B/r16 readout\u219227B/r8 readout (also waits its final)\u21929B/r16 training\u21929B/r8 readout (also waits its final)\u21929B/r16 readout\u2192frozenP4.4Bfinalreadout and longcross chains unchanged.",
+  "training_dependency_change": {
+    "job": 23447678,
+    "dependency": "afterok:23452023"
+  },
+  "review": "Focusedgraphreviewpass: acyclic, including all intermediate updates; finalguards intact; one slot retained. Allfivejobs confirmedpending andheld, exactdependencies inspected, then released.",
+  "base_reference_reuse": {
+    "job": 23458491,
+    "partition": "mit_normal CPU only",
+    "dependencies": {
+      "23446884": "afterok:23446877,afterany:23458491",
+      "23447678": "afterok:23452023,afterany:23458491"
+    },
+    "scope": "Same original frozen9Bbase references, no reader adapter; headers and requested keys verified by trainer. Copy validates then atomically publishes without replacing. Both destinations held pending while gates installed and verified, then released. Failed copy falls back to ordinary computation.",
+    "utc": "2026-09-22T05:54:07.601389+00:00",
+    "status": "COMPLETED0:0,24seconds; both16000entry caches validated/published",
+    "receipt": "BASE_REFERENCE_REUSE.json"
+  },
+  "checked_utc": "2026-09-23T00:21:00Z",
+  "completed_readout_validation": "All original nine views reproduce original400 NLL exactly; all900 responses source-reviewed.",
+  "context_transfer": {
+    "2b_job": 23461879,
+    "dependency": null,
+    "4b_job": 23466483,
+    "4b_gate": "afterok:23466479",
+    "scope": "Fixeddevelopment100;27B-supervised2Br16/r8,and4Bfinal;2k/32k,ownfull/noctx,NLLonly",
+    "limit": "Completed within 45min RTX bounds; historical startup deadline no longer affects future work.",
+    "validation": "CONTEXT_TRANSFER100_CHECKS.json;6realexamples\u00d76cells;shortmatchesexistingreport,sharedinputs/masks/spans/capsverified;focusedreviewpassed",
+    "status": "All six cells complete; report published. No-context per-question vectors agree exactly between lengths."
+  },
+  "long_cross_time_limit": "01:45:00, scheduler override2026-09-22T07:20UTC; fourcells\u00d720minbound +25mincoldsetupmargin; submitted script stillrecords original3h",
+  "readout_order_0810": {
+    "utc": "2026-09-22T08:09:26.547435+00:00",
+    "order": "9B/r16 training\u21929B/r16 fixed100\u2192frozenP4 fixed100\u21929B/r8 fixed100 (also after its own training).4Bfinalreadout andlongcross/contextscreen chains unchanged.",
+    "purpose": "Use expected20\u201330minute gap between two9Bfinals for earlier response evidence; sameoneGPUslot.",
+    "safety": "AllthreeconfirmedPENDING,held,reconfirmedJobHeldUser; broke old26\u219225dependency first,then installed25\u219227+9Br8; verified acyclic fullchain before release. Allreleasedpending. Existing finalguards/code/selection/protocol unchanged."
+  },
+  "long_cross_status": "COMPLETED0:0,34m22s;all6cells nowcomplete",
+  "context_transfer_advanced": {
+    "utc": "2026-09-22T09:34:55.899053+00:00",
+    "job": 23461879,
+    "previous_dependency": "afterok:23452012",
+    "dependency": null,
+    "reason": "Fourth slot freed after9B/r8 readout completed. Advance existing2B contextscreen; same code/inputs45min bound and12UTC guard.",
+    "safety": "Verified only3activeGPUs. Held/reconfirmed pending. Completedreadout dependency rejected bySlurm, oldedge initially unchanged; reheld andcleareddependency, verified held/null thenreleased. Maximum4 includingbank;4Breadout/confirmationreplace4Btrain slot."
+  },
+  "afternoon_jobs": {
+    "r8_half_ac_lr": 23469328,
+    "r16_half_ac_lr": 23469352,
+    "r16_reference_cpu": 23469351,
+    "bank27b": 23469329,
+    "bank9b_stopped": 23459872
+  },
+  "r16_lr_reservation": "10:24UTC held/reconfirmedpending,4h\u21923h30,released; identicalrecipe. Measuredr16controls2h43\u20132h47.",
+  "lr_readouts": {
+    "r8": {
+      "job": 23470728,
+      "dependency": "afterok:23469328",
+      "status": "COMPLETED0:0 in4m11s; all100 decoded, NLL replay exact, preselected18 reviewed."
+    },
+    "r16": {
+      "job": 23470729,
+      "dependency": "afterok:23469352",
+      "status": "COMPLETED0:0,3m58s;100 answers, exact NLL replay; fixed18 candidate8/5/5 vs original11/2/5."
+    },
+    "scope": "Samefixeddevelopment100,completed16kfinalsonly; separateprivateentrypoint,originalfrozenworkersunchanged. No confirmation.",
+    "worker_sha256": "7a96cdd731663650e03c3bbee31e3730668d40b5ac690357a16c59279491e189",
+    "sbatch_sha256": "9b581c6fd9bec99a202c8cc1cb4477925820642db04dc33147194ad236693506",
+    "review": "Focused wrapper review passed. Both running candidates match their controls exactly in inner identity and training configuration except AC LR.",
+    "resource": "Eachreadoutreusesitsparenttrainingslot;fourGPUmaximumcontinues."
+  },
+  "preparation_32k": {
+    "material_job": 23471384,
+    "status": "COMPLETED5h12m04;32,000questions\u00d71, finalheldNLL.568831/fixedtraining.397183. Final100readout23479471pending.",
+    "reference_cpu_job": 23472004,
+    "run_name": "oracle_27b_32k",
+    "reference_status": "CPU23472004 complete0:0 in5s; exact217MB cache copied.",
+    "training_job": 23479433,
+    "submitted_utc": "2026-09-22T14:05:17.844937+00:00",
+    "final_readout_job": 23479471,
+    "failed_training_job": 23478943,
+    "repair_cpu_job": 23479177,
+    "repair_status": "Full32k/400 CPU mask check passed; original16k/400 masks exact. No training occurred before failure. Original report archived outside active reports."
+  },
+  "data_amount_companion": {
+    "run_name": "oracle_27b_16k_2ep",
+    "status": "Training and final100 complete; all100 source-reviewed and published in DATA_AMOUNT_COHORT100.",
+    "reference_cpu_job": 23472386,
+    "design": "DATA_AMOUNT_32K.json",
+    "priority": "Above optional group clipping; replaces older optional8k x2 control.",
+    "training_job": 23493335,
+    "final_readout_job": 23493336,
+    "old_final_readout_job": 23479007,
+    "preempted_training_job": 23478982
+  },
+  "data_amount_evaluators": {
+    "status": "V2manifest and helpers staged/verified; original source/design preserved. Both final guards remain required.",
+    "design_to_freeze": "bench/DATA_AMOUNT_32K_EVALUATION.json after final LR choice",
+    "outputs": [
+      "data_amount_cohort100",
+      "data_amount_confirmation"
+    ],
+    "checks": "4,000 updates; own epoch1/2 final pairs; correct sample progress; original400/100 inputs; fresh confirmation only after both finals.",
+    "freeze_job": 23478901,
+    "main_cohort_job": 23479471,
+    "companion_cohort_job": 23493336,
+    "confirmation_job": 23493337,
+    "confirmation_dependency": "afterok:23479471:23493336",
+    "main_cohort_status": "COMPLETED0:0 in4m26; all400 NLL replay exact, all100 answers source-reviewed and published in DATA_AMOUNT_COHORT100.",
+    "confirmation_status": "PENDING after both repaired final readouts",
+    "amended_design": "DATA_AMOUNT_32K_EVALUATION_V2.json",
+    "amended_design_sha256": "9cefc034c59502fa3636a54b8e5f5affe69191fd6d9e09b75af8148de43f92a1",
+    "companion_cohort_reservation": "00:12:00 from22:24UTC; reduced from25min after guarded hold/PENDING checks, based on matching4m26 readout; same GPU/source/inputs/guards.",
+    "companion_cohort_status": "COMPLETED0:0 in4m12; all400 replay exact; all100 reviewed;62/87correct versus fresh32 63/87."
+  },
+  "optional_group_clipping": {
+    "run_name": "oracle_27b_16k_r8_group_clip",
+    "status": "Completed matchedL40S: supported87 correct52control vs51clipped; no clear semanticgain. Originalrecipe retained.",
+    "priority": "After main32k and matched16k x2 allocations; keep four-active-GPU cap.",
+    "design": "GROUP_CLIPPING_FOLLOWUP.json",
+    "scope": "User delegated stability experiments; choose useful tests rather than running every option.",
+    "training_job": 23479031,
+    "final_readout_job": 23493122,
+    "held_RTX_readout": 23479034,
+    "readout_launcher": "group_clip_cohort_l40s.sbatch",
+    "readout_launcher_sha256": "75c0b70dcaafd9d7c2a78f2e17602c2323aa08cb89e4516567875dc2f6075fd3",
+    "matched_control": {
+      "job": 23494064,
+      "condition": "oracle_27b_16k_r8",
+      "output": "reports/model_comparison_cohort100_l40s",
+      "status": "COMPLETED6m06s; original400+fixed100;19responses changedfromoldRTX/81identical",
+      "launcher_sha256": "f48b282880738e212544b1f9aee5b0595d58003b38c3efc66b7afc203d496d4d",
+      "scope": "Same evaluator, final weights, source, selection and scoring; separate cache/output preserve oldRTX record. Device/runtime provenance printed."
+    },
+    "replay_review": "TMP/GROUP_CLIP_L40S_REPLAY_REVIEW.md: input/mask/config/source match; all400 mean drift\u2212.000721, mean absolute.00973, max.2647 on a2-token question outside100; backend cause unproven.",
+    "report": "GROUP_CLIPPING_COHORT100.tressoir.html"
+  },
+  "afternoon_results": {
+    "r8_half_ac_lr": {
+      "completed_questions": 16000,
+      "epochs": 1,
+      "development_nll": 0.7780872154280343,
+      "control_development_nll": 0.6462716465019518,
+      "learning_nll": 0.5689504123136145,
+      "control_learning_nll": 0.521832453,
+      "duration_s": 11131.9,
+      "gradient_receipt": "LR_FINAL_GRADIENTS.json",
+      "interpretation": "Lower LR worsens both development cohorts and learning NLL; >100 gradient events170 versus174, with higher median AC norm. Preselected18 actual answers: both8correct/5partial/5incorrect; no compensating gain."
+    },
+    "r16_half_ac_lr": {
+      "status": "complete",
+      "arms": {
+        "oracle_27b_16k_r16": {
+          "development_nll": 0.603263836029209,
+          "learning_nll": 0.42436562932548455,
+          "development_cohorts": {
+            "9b": 0.6429122099595753,
+            "27b": 0.5636154620988426
+          },
+          "duration_s": 9884.5,
+          "peak_memory_gb": 62.03
+        },
+        "oracle_27b_16k_r16_half_ac_lr": {
+          "development_nll": 0.7070970261581845,
+          "learning_nll": 0.5354464669786243,
+          "development_cohorts": {
+            "9b": 0.7536647116970291,
+            "27b": 0.6605293406193398
+          },
+          "duration_s": 11978.2,
+          "peak_memory_gb": 62.03
+        }
+      }
+    }
+  },
+  "large_run_LR_decision": "LR_DECISION.json: original AC5e-5, reader2e-5,1/16; completed development NLL and fixed18 answer checks.",
+  "repair_history": {
+    "failed_main": 23478943,
+    "auto_cancelled": [
+      23478955,
+      23479010
+    ],
+    "held_then_cancelled_old_companion_readout": 23479007,
+    "CPU_validation": 23479177,
+    "repair_report": "ANSWER_MASK_REPAIR.md"
+  },
+  "current_running_gpu_jobs": {
+    "ORCD": [
+      23498367,
+      23511287,
+      23514939
+    ],
+    "CSAIL": []
+  },
+  "bank27b_pause": {
+    "job": 23469329,
+    "status": "COMPLETED0:0",
+    "ended_utc": "2026-09-22T15:21:15Z",
+    "published_questions": 53000,
+    "accepted_questions": 53615,
+    "target_file_questions": 53000,
+    "previous_target": 200000,
+    "reason": "User considers current bank sufficient; free slot for piecewise experiment.",
+    "resume": "Raise target and resubmit existing producer when more questions needed; portable bank and source cursors preserved."
+  },
+  "piecewise": {
+    "status": "Piecewise running; merged preempted with3200/4000 questions saved, exact resume23510985 queued. Final readout dependencies repaired.",
+    "material_cpu_job": 23482869,
+    "training": "4000unique27B questions\u00d71epoch;8k evidence, up to16passages",
+    "initialization": "originalP2 reconstruction pair; freshQA optimizer",
+    "arms": [
+      "piecewise_27b_4k_8k",
+      "merged_27b_4k_8k"
+    ],
+    "resource": "synthesis slot for proof/piecewise; clipping slot for merged afterreadout; maximumfouractive",
+    "material_status": "CPU23482869 complete0:0/11s",
+    "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+    "runtime_cpu_job": 23483227,
+    "runtime_status": "complete0:0/9s; sourcevariant and references ready, GPUproof pending",
+    "probe_job": 23484188,
+    "probe_status": "Numerical equivalence screen failed; no optimization adopted. Investigating exact failed comparisons.",
+    "probe_limit": "20min; controller18min",
+    "probe_sha256": "eff9a1553a3a7a219730d0aac94d7ad97fbf6d5ebd9d5adabc21fc4bfe8001a8",
+    "probe_failed_job": 23483568,
+    "probe_failed_reason": "Empty evaluation list passed toBM25builder; failure before numericalproof or optimization.",
+    "original_fit_job": 23484734,
+    "source_decision": "Original train_ws_night_v1 implementation and65536budget forbotharms; optionalpatchfailedproof andisnotadopted.",
+    "training_jobs": {
+      "piecewise_27b_4k_8k": 23498367,
+      "merged_27b_4k_8k": 23510985
+    },
+    "merged_dependency": "none; archive completion directly verified",
+    "readouts": [
+      {
+        "job": 23498368,
+        "dependency": "afterok:23498367",
+        "condition": "piecewise_27b_4k_8k",
+        "context": "8k"
+      },
+      {
+        "job": 23498369,
+        "dependency": null,
+        "condition": "frozen_p2",
+        "context": "8k"
+      },
+      {
+        "job": 23498370,
+        "dependency": "afterok:23498368",
+        "condition": "piecewise_27b_4k_8k",
+        "context": "32k"
+      },
+      {
+        "job": 23510988,
+        "dependency": null,
+        "condition": "frozen_p2",
+        "context": "32k"
+      },
+      {
+        "job": 23510986,
+        "dependency": "afterok:23510985",
+        "condition": "merged_27b_4k_8k",
+        "context": "8k"
+      },
+      {
+        "job": 23510987,
+        "dependency": "afterok:23510986",
+        "condition": "merged_27b_4k_8k",
+        "context": "32k"
+      }
+    ],
+    "design": "PIECEWISE_TRAINING_DESIGN_V2.json",
+    "design_sha256": "86fcaad5db4b24d8b5f4972567a78e7e2f3d4e821b18b3d5ca4e55ae4ed98e08",
+    "fit_receipt": "PIECEWISE_GPU_FIT.json",
+    "fit_status": "23484734 COMPLETED0:0/6m18s; bothlayoutsfit andactualsharedinputs/targets/rowsmatch",
+    "reservation": "6h each;21000s training bound; full4000\u00d71planned",
+    "source": "Originaltrain_ws_night_v1,65536batchbudgetbotharms; rejectedpatchnotused",
+    "review": "PIECEWISE_V2_PREFLIGHT_REVIEW.md",
+    "failed_training_job": 23485579,
+    "merged_status": "HeldPENDING17:17 beforeallocation",
+    "auto_cancelled_readouts": [
+      23485630,
+      23485631,
+      23485633,
+      23485634
+    ],
+    "checkpoint_probe": {
+      "job": 23490474,
+      "status": "proof_failed: losses andACoutputs exact but bothoriginalrepeat andcheckpoint_all failgradientcriterion; no fit workers run, no adoption",
+      "submitted_utc": "2026-09-22T17:39:08.682300+00:00",
+      "worker_sha256": "12df00c8fcac924cf7a11525006c626d8ef572b6fdefa809468124512fba2139",
+      "launcher_sha256": "ecaf971f2ffa9500bb1aff188c6300c919868f416942907199793eff87d6c18c",
+      "limit": "20 minutes; controller 1080 seconds",
+      "scope": "Original masks, source and 65536 budget; threshold 0 only. Real checkpoint recomputation and preset numerical comparison, then exact failing batch plus quantiles in both layouts. Fresh P2 optimizer; missing previous 15 updates are not replayed.",
+      "CPU": "Loss and all 202 trainable gradients bitwise identical; first-layer backward recomputation observed on both models.",
+      "review": "Root inspected selection, order, mode, masks, comparisons and cap. No training recipe adoption until GPU evidence.",
+      "csail_job": 2140912,
+      "csail_submitted_utc": "2026-09-22T18:14:34.380289+00:00",
+      "csail_launcher_sha256": "da3676a6cce5c656847c6c10094eb383aa9cbfda2a426209f525b5d7b64234c6",
+      "csail_output": "/data/scratch/ngom/activation/taskaware/reports/piecewise_checkpoint_probe_csail_v1",
+      "hardware_scope": "H200 results establish H200 fit and checkpoint equivalence; they do not directly prove RTX memory sufficiency. Both layout arms should share hardware for their comparison.",
+      "readiness": "Three original product source hashes and both P2 adapter config hashes match. Full P2 payload and material hashes checked in GPU worker. Same failing-run metadata copied. No source or thresholds changed.",
+      "held_jobs": {
+        "ORCD_H200": 23493668,
+        "CSAIL_H200": "2140912 cancelled; proof complete onRTX"
+      },
+      "migration_note": "NormalH200 projected20:20EDT/00:20UTC; idleRTX visible. Original short RTX job released after holding/reconfirmingH200. No duplicate execution.",
+      "launcher": "probe_piecewise_checkpoint_v1.sbatch",
+      "receipt": "PIECEWISE_CHECKPOINT_PROBE_V1_PROOF.JSON"
+    },
+    "memory_only_probe": {
+      "job": 23495243,
+      "launcher": "probe_piecewise_memory_only_v1.sbatch",
+      "sha256": "8991c607904e3ece4e91e405218e45ea75a30266e18eee5f2ed92f317c47b351",
+      "status": "PREEMPTED19:17:13 after5m31; bothpiecewisecasescomplete49.8/52.3GiB. Partialmergedcase preserved.",
+      "output": "reports/piecewise_memory_only_v1",
+      "scope": "Four original pinned fitworkers; failedbatch/quantiles,bothlayouts,threshold0. Memory/throughputonly,noequivalenceapprovalortrainingadoption. Originalfailedproofpreserved."
+    },
+    "backward_probe": {
+      "job": 23495372,
+      "worker": "probe_piecewise_backward_v1.py",
+      "worker_sha256": "fb0fc3c64c505defc623ebc5e154306387c1fabb970fec51fc499298af7ae76c",
+      "launcher_sha256": "e765857bb56c91dfd995c11bc74ff5699ce635c8cbfd6632207c986126ca2fef",
+      "status": "Diagnosticcomplete, strictgatefailed: same retainedgraph backward changesgradients, weights/trainabilityunchanged,loss/allACoutputs bitwiseequal. Confirmsbackwardrepeatabilityissue.",
+      "output": "reports/piecewise_backward_probe_v1",
+      "validation": "Rootreview; tinyrealCPU all202gradientsbitwiseidentical acrossoriginal, retainedgraph, freshoriginal, checkpoint; actualrecomputationconfirmed;11parameterstatecheckspass. GPUunchangedgates."
+    },
+    "memory_remaining_probe": {
+      "job": 23496372,
+      "status": "All4casesnowcompleteacrossoriginalandremainingjobs; matchedinputs/source/P2validated; PIECEWISE_CHECKPOINT_MEMORY_FIT.json.",
+      "launcher": "probe_piecewise_memory_remaining_v1.sbatch",
+      "launcher_sha256": "d060b36e61098e43591ad865016047d90b710a01f9efcf02ed13a15a360bc558",
+      "output": "reports/piecewise_memory_remaining_v1",
+      "scope": "Only unfinished mergedfailedbatch/quantiles; unchangedworker/noequivalenceapproval. Priorcompletepiecewisecasesretained."
+    },
+    "deterministic_probe": {
+      "job": 23497150,
+      "status": "COMPLETED0:0,52s. All strict repeat/checkpoint comparisons pass with deterministic algorithms enabled and CUBLAS configuration; ordinary production memory fits separately complete.",
+      "launcher": "probe_piecewise_backward_deterministic_v1.sbatch",
+      "launcher_sha256": "703d6b7821f1aefbda35bbd12ff5630baf3e306201aef92407d4883a94802027",
+      "output": "reports/piecewise_backward_deterministic_v1",
+      "scope": "One same-worker strict deterministic run; CUBLAS envbeforeCUDA, deterministic_algorithmsTrue/warn_onlyFalse, unchangedmasks/gates. No silentfallback/productionsettingchange.",
+      "preempted_job": 23496719,
+      "proof_receipt": "PIECEWISE_DETERMINISTIC_PROOF_V1.json",
+      "settings_receipt": "PIECEWISE_DETERMINISTIC_SETTINGS_V1.json"
+    },
+    "v1_training_jobs": {
+      "piecewise_27b_4k_8k": 23485579,
+      "merged_27b_4k_8k": 23485581
+    },
+    "v1_readouts": [
+      {
+        "job": 23485630,
+        "dependency": "afterok:23485579",
+        "condition": "piecewise_27b_4k_8k",
+        "context": "8k",
+        "chain": "piecewise"
+      },
+      {
+        "job": 23485631,
+        "dependency": "afterok:23485630",
+        "condition": "frozen_p2",
+        "context": "8k",
+        "chain": "piecewise"
+      },
+      {
+        "job": 23485633,
+        "dependency": "afterok:23485631",
+        "condition": "piecewise_27b_4k_8k",
+        "context": "32k",
+        "chain": "piecewise"
+      },
+      {
+        "job": 23485634,
+        "dependency": "afterok:23485633",
+        "condition": "frozen_p2",
+        "context": "32k",
+        "chain": "piecewise"
+      },
+      {
+        "job": 23485635,
+        "dependency": "afterok:23485581",
+        "condition": "merged_27b_4k_8k",
+        "context": "8k",
+        "chain": "merged"
+      },
+      {
+        "job": 23485636,
+        "dependency": "afterok:23485635",
+        "condition": "merged_27b_4k_8k",
+        "context": "32k",
+        "chain": "merged"
+      }
+    ],
+    "archive_job": 23498092,
+    "cancelled_inactive_v1_jobs": [
+      23485581,
+      23485635,
+      23485636,
+      23479034,
+      23493668
+    ],
+    "host_memory_GiB": 64,
+    "frozen_baselines_reordered": {
+      "utc": "2026-09-22T20:34:02.962199+00:00",
+      "reason": "Use spare fourthORCD slot to compute planned frozen8k and32k baselines before trained finals. Same inputs/code/checkpoints; no new experiment.",
+      "guard": "Allthree affected jobs confirmedPENDING, held, dependencieschanged andverified, thenreleased.",
+      "remote_receipt": "logs/piecewise_frozen_baselines_reordered_2035.json",
+      "maximum_active_orcd": 4
+    }
+  },
+  "companion_preemption": {
+    "detected_utc": "2026-09-22T15:53:46.397212+00:00",
+    "ended_utc": "2026-09-22T15:40:48Z",
+    "job": 23478982,
+    "scheduler_state": "PREEMPTED",
+    "completed_question_presentations": 7400,
+    "published_question_presentations": 7200,
+    "replay_questions": 200,
+    "resume_job": 23484685,
+    "auto_cancelled_readouts": [
+      23479472,
+      23479495
+    ],
+    "replacement_readouts": [
+      23484703,
+      23484711
+    ],
+    "scope": "Identical submitted training script plus --resume. Full paired checkpoint, optimizer moments, data order and original32k-presentation schedule required; no reset.",
+    "cancelled_pending_submission": {
+      "job": 23484619,
+      "reason": "Root caught incorrect ratio CLI before allocation; held/reconfirmedPENDING, cancelled and resubmitted with original0.0625. No execution.",
+      "auto_cancelled_dependents": [
+        23484621,
+        23484627
+      ]
+    }
+  },
+  "access_20260922_1622": {
+    "checked_utc": "2026-09-22T16:23:45.364669+00:00",
+    "guard_exit": 97,
+    "last_live_queue_utc": "2026-09-22T16:09:30Z",
+    "action": "Useraskedto reopen throughinteractivecontainerterminal. Noauthretries; nojobsinterrupted.",
+    "restored_utc": "2026-09-22T17:19:47.597366+00:00"
+  },
+  "host_memory_reservations_1803": {
+    "utc": "2026-09-22T18:02:56.470918+00:00",
+    "scope": "Only pending jobs; held and reconfirmed before change, verified and released. GPU count/type, time limits, source and experiment unchanged.",
+    "23479034": {
+      "old_GiB": 100,
+      "new_GiB": 32,
+      "basis": "Four comparable fixed100 readouts used at most 12982416 KiB MaxRSS (about 12.4 GiB), completed in 3m51s\u20134m11s."
+    },
+    "23490474": {
+      "old_GiB": 100,
+      "new_GiB": 64,
+      "basis": "Original piecewise fit probe MaxRSS 41715940 KiB (about 39.8 GiB)."
+    },
+    "recovery": "First memory update rejected size suffix 32G, leaving the readout held and unchanged. Corrected using integer MiB; both jobs verified and released."
+  },
+  "companion_preemption_2": {
+    "ended_UTC": "2026-09-22T18:28:22Z",
+    "job": 23484685,
+    "status": "PREEMPTED",
+    "completed_presentations": 20672,
+    "published_presentations": 20400,
+    "replayed_presentations": 272,
+    "checkpoint": "epoch_002_step_00550",
+    "optimizer_bytes": 4676641912,
+    "resume_job": 23493335,
+    "resume_reservation": "03:30:00; remaining work expected about2h plus setup/evaluation margin",
+    "recipe": "Original pinned launcher and runner, same LR/ratio/order/schedule; --resume. Only scheduler wall reservation shortened for remaining work.",
+    "auto_cancelled_readouts": [
+      23484703,
+      23484711
+    ],
+    "replacement_readouts": [
+      23493336,
+      23493337
+    ],
+    "startup_check": "attempts/resume_002/resume.json/effective_training_config match2550saved, firstepoch2, skip550, remaining1, original4000schedule/LRs/seed/logical8micro2/resume_optimizerTrue."
+  },
+  "host_memory_reservations_1936": {
+    "utc": "2026-09-22T19:36:49Z",
+    "jobs": [
+      23479471,
+      23493336
+    ],
+    "old_GiB": 100,
+    "new_GiB": 32,
+    "scope": "Held/reconfirmed PENDING, changed host memory only, verified32GiB, released; GPU/time/source/dependencies unchanged. Same evaluator comparable MaxRSS\u226412.4GiB.",
+    "remote_receipt": "logs/data_amount_readout_memory_adjustment.json"
+  },
+  "continuation_10k": {
+    "status": "Migrated unchanged to ORCD RTX; both training jobs and own final100 readouts released. Old still-pending CSAIL jobs cancelled with hold/recheck guards.",
+    "preparation_job": 23498249,
+    "arms": [
+      "continue32k_10k_final_lr",
+      "continue32k_10k_rewarm"
+    ],
+    "questions": 10000,
+    "epochs": 1,
+    "parent_unique_questions": 32000,
+    "schedules": {
+      "final_lr": "Constant5e-6/2e-6; no warmup",
+      "rewarm": "400-questionwarmup to2e-5/8e-6,cosine to25%=5e-6/2e-6"
+    },
+    "optimizer": "Both preserve all615 Adam states and per-parameterstep4000; newstage report/schedule clock0. Originalparentunchanged.",
+    "material_sha256": "4b67c74e365dc46093efa2d0e89bb2770b530e572d88e29035b07702b51d2585",
+    "cluster": "ORCD RTX PRO6000 for both arms; four-GPU preemptable limit includes all other campaign jobs.",
+    "training_jobs": {
+      "continue32k_10k_final_lr": 23511287,
+      "continue32k_10k_rewarm": 23511289
+    },
+    "readouts": {
+      "continue32k_10k_final_lr": {
+        "job": 23511288,
+        "dependency": "afterok:23511287"
+      },
+      "continue32k_10k_rewarm": {
+        "job": 23511290,
+        "dependency": "afterok:23511289"
+      }
+    },
+    "csail_verification_job": 2143414,
+    "initial_pair_sha256": "cd0ed98de2c22e7b20865971dff7f4da9f587b8b13e88a880685de3a511c92ec",
+    "design": "CONTINUATION_10K_DESIGN.json",
+    "design_sha256": "21291814eb97ee54cfefcf5a94b447b4671a5672b455284d509482fd0229912e",
+    "preflight": "CONTINUATION_10K_PREFLIGHT_REVIEW.md",
+    "obsolete_csail_probe_cancelled": 2140912,
+    "original_csail_training_jobs": {
+      "continue32k_10k_final_lr": 2143664,
+      "continue32k_10k_rewarm": 2143666
+    },
+    "original_csail_readouts": {
+      "continue32k_10k_final_lr": {
+        "job": 2143665,
+        "dependency": "afterok:2143664"
+      },
+      "continue32k_10k_rewarm": {
+        "job": 2143667,
+        "dependency": "afterok:2143666"
+      }
+    },
+    "deployment_design": "CONTINUATION_10K_DESIGN_ORCD.json",
+    "orcd_verification_job": 23511022,
+    "migration_receipt": "CONTINUATION_ORCD_MIGRATION_RELEASED.json"
+  },
+  "full_context_2b_cohort100": {
+    "job": 23503920,
+    "submitted_utc": "2026-09-22T21:15:25Z",
+    "status": "COMPLETED 0:0; all 100 source-reviewed and published",
+    "resource": "ORCD mit_normal_gpu L40S,25min,4CPU,32GiBhost; explicit user-requested check",
+    "evaluator_sha256": "2077edeff0cd79cd4b71f03c284e686b1c0b014fc10f37f06dda51bf96baff32",
+    "input_sha256": "82af75710ca064d052cba8f0349c093ee2636b1be6d84e41eca5650115e9b66e",
+    "output": "reports/full_context_2b_cohort100",
+    "validation": "All100 actual2B/9B tokenizer IDs/prompts/answer masks/gold-free prefixes exact;6negative guards; reuse frozen trainer padding and SFT scorer; syntaxpass.",
+    "elapsed": "00:05:22",
+    "answer_nll_100": 0.9048416806668161,
+    "supported87": {
+      "correct": 64,
+      "incorrect": 4,
+      "partial": 19
+    },
+    "report": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/DATA_AMOUNT_COHORT100.tressoir.html"
+  },
+  "readout_wall_adjustment_2224": {
+    "job": 23493336,
+    "minutes": 12,
+    "previous_minutes": 25,
+    "remote_receipt": "logs/data_amount_readout_wall_adjustment.json",
+    "reason": "Matching readout23479471 took4m26; shorter reservation enables more backfill opportunities."
+  },
+  "piecewise_budget_probe": {
+    "job": 23510989,
+    "submitted_utc": "2026-09-22T22:56:15.764295Z",
+    "status": "Replacement pending after merged preemption; original submission retained as history",
+    "dependency": "afterok:23498368:23510986",
+    "hashes": {
+      "probe_piecewise_budget_v1.py": "819d0beed15dae7d487343e2c1578491d2e95fc0c4a4a8145e7bb66ba0be3938",
+      "probe_piecewise_budget_v1.sbatch": "d8fa44c5011a285a953740f6736b6e1f5b43c588f13a65e84e04be55922ce776",
+      "PIECEWISE_CHECKPOINT_MEMORY_FIT.json": "721f78cdf844d530cf23eb05bfe466971019785828601e7fdf0b14fa6aaded4f",
+      "probe_piecewise_checkpoint_v1.py": "12df00c8fcac924cf7a11525006c626d8ef572b6fdefa809468124512fba2139",
+      "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30"
+    },
+    "output": "reports/piecewise_budget_probe_v1",
+    "workspace": "piecewise_budget_probe_v1",
+    "resources": "1RTX PRO6000,45min,8CPU,96GiBhost",
+    "recovery_receipt": "PIECEWISE_PREEMPTION_2315_RECOVERY.json"
+  },
+  "piecewise_preemption_2315": {
+    "checked_utc": "2026-09-22T23:20:30.963362Z",
+    "old_states": {
+      "23498371": "PREEMPTED",
+      "23498372": "PREEMPTED",
+      "23498373": "CANCELLED",
+      "23498374": "CANCELLED",
+      "23509310": "CANCELLED"
+    },
+    "resume_marker": {
+      "epoch_number": 1,
+      "step": 400,
+      "steps": 500,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00400",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00400"
+    },
+    "payload_sizes": {
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/ac_modules.pt": 1208881673,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/optimizer.pt": 4676641912,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_config.json": 1150,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_config.json": 1147,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_model.safetensors": 349204488,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_model.safetensors": 931173960
+    },
+    "hashes": {
+      "train_piecewise_v2.sbatch": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+      "run_qa_piecewise_v2.py": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+      "evaluate_piecewise_cohort_v3.sbatch": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+      "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30",
+      "probe_piecewise_budget_v1.sbatch": "d8fa44c5011a285a953740f6736b6e1f5b43c588f13a65e84e04be55922ce776",
+      "probe_piecewise_budget_v1.py": "819d0beed15dae7d487343e2c1578491d2e95fc0c4a4a8145e7bb66ba0be3938"
+    },
+    "new_jobs": {
+      "merged_train": {
+        "job": 23510985,
+        "dependency": null,
+        "time_limit": "02:00:00",
+        "mem": "64G"
+      },
+      "merged_8k": {
+        "job": 23510986,
+        "dependency": "afterok:23510985",
+        "time_limit": "00:45:00",
+        "mem": "64G"
+      },
+      "merged_32k": {
+        "job": 23510987,
+        "dependency": "afterok:23510986",
+        "time_limit": "00:45:00",
+        "mem": "64G"
+      },
+      "frozen_32k": {
+        "job": 23510988,
+        "dependency": null,
+        "time_limit": "00:45:00",
+        "mem": "64G"
+      },
+      "budget_probe": {
+        "job": 23510989,
+        "dependency": "afterok:23498368:23510986",
+        "time_limit": "00:45:00",
+        "mem": "96G"
+      }
+    },
+    "released": [
+      23510985,
+      23510986,
+      23510987,
+      23510988,
+      23510989
+    ],
+    "scientific_settings": "Unchanged V2, original optimizer/order500 schedule; 3200questions saved,800remaining. Resume performs full optimizer load/layout/clock guards on allocated compute.",
+    "status": "all replacements released"
+  },
+  "continuation_orcd_migration": {
+    "utc": "2026-09-22T23:27:45.058918Z",
+    "status": "all replacements released after guarded CSAIL cancellation",
+    "jobs": {
+      "final_lr": {
+        "training": 23511287,
+        "readout": 23511288,
+        "verified_held": true
+      },
+      "rewarm": {
+        "training": 23511289,
+        "readout": 23511290,
+        "verified_held": true
+      }
+    },
+    "hashes": {
+      "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+      "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52",
+      "CONTINUATION_10K_DESIGN_ORCD.json": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+      "CONTINUATION_10K_ORCD_VERIFICATION.json": "ddc2cca2c49a3b7587876db05ef9aa7e94ad9dd6f5ea9bde5c3eca72da1077fe"
+    },
+    "old_csail_jobs": [
+      2143664,
+      2143665,
+      2143666,
+      2143667
+    ],
+    "resource": "Both RTX PRO6000 under the four-GPU preemptable limit; no normal-partition campaign jobs. Existing readout chains retain eligibility.",
+    "released_utc": "2026-09-22T23:28:40.631880Z",
+    "released": [
+      23511287,
+      23511288,
+      23511289,
+      23511290
+    ]
+  },
+  "strong_piecewise_budget_probe": {
+    "job": 23511648,
+    "utc": "2026-09-22T23:37:36.561977Z",
+    "status": "verified and released",
+    "hashes": {
+      "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381",
+      "probe_strong_piecewise_budget_v1.sbatch": "843b68c00bd7960bafe597cf4965d5ce326ed4d01e9831f06b3bb116ee8852c0",
+      "STRONG_PIECEWISE_BUDGET_PARENT_V1.json": "fad49337c29ef6269d9c5a89d349ccec7fff7e7d6ca05a3b33fea27d1d1bc13b"
+    },
+    "scope": "Immediate encoder budget probe from own completed32kpair; original completed4kprobe unchanged; no new training arm",
+    "resources": "OneRTX PRO6000,45min,64GiBhost (guardedreservationupdate); fourGPUlimit",
+    "live_state": "FAILED: smaller budgets exceeded output/gradient tolerances; unchanged repeat exact. No timings ran. Original budget retained."
+  },
+  "host_memory_reservations_2350": {
+    "utc": "2026-09-22T23:51:19.006577Z",
+    "jobs": {
+      "23493337": {
+        "before": "JobId=23493337 JobName=data_amount_confirmation UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46748 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-22T14:34:11 EligibleTime=2026-09-22T19:12:18 AccrueTime=2026-09-22T14:34:11 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:50:54 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3838958 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=100G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=100G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/data_amount_confirmation_v2.sbatch SubmitLine=sbatch --parsable --output /home/ngom/orcd/pool/activation/taskaware/logs/confirmation_resume2_%j.log --dependency=afterok:23479471:23493336 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/data_amount_confirmation_v2.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/confirmation_resume2_23493337.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "requested_MiB": 32768,
+        "basis": "Priorfive-armconfirmationpeak14.33GiBhost; newtwo-armconfirmation uses same evaluation shape.",
+        "after_held": "JobId=23493337 JobName=data_amount_confirmation UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-22T14:34:11 EligibleTime=Unknown AccrueTime=2026-09-22T14:34:11 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:50:54 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3838958 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/data_amount_confirmation_v2.sbatch SubmitLine=sbatch --parsable --output /home/ngom/orcd/pool/activation/taskaware/logs/confirmation_resume2_%j.log --dependency=afterok:23479471:23493336 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/data_amount_confirmation_v2.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/confirmation_resume2_23493337.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated and released"
+      },
+      "23511648": {
+        "before": "JobId=23511648 JobName=qa_strong_piecewise_budget UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46282 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T19:37:36 EligibleTime=2026-09-22T19:37:37 AccrueTime=2026-09-22T19:37:36 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:50:54 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1677863 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=96G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=96G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_strong_piecewise_budget_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_piecewise_budget_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/probe_strong_piecewise_budget_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_piecewise_budget_23511648.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "requested_MiB": 65536,
+        "basis": "Priorreal8kfit39.78GiBhost; serialworkers,matureAdamload4.36GiB and paired buffers fit with margin.",
+        "after_held": "JobId=23511648 JobName=qa_strong_piecewise_budget UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T19:37:36 EligibleTime=Unknown AccrueTime=2026-09-22T19:37:36 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:50:54 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1677863 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_strong_piecewise_budget_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_piecewise_budget_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/probe_strong_piecewise_budget_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_piecewise_budget_23511648.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated and released"
+      }
+    },
+    "scope": "Host memory only; pending hold/recheck/update/verify/release. GPU, time, source, experiment and dependencies unchanged.",
+    "status": "complete"
+  },
+  "strong_long_adaptation": {
+    "submitted_utc": "2026-09-23T00:27:48.400709Z",
+    "status": "released",
+    "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+    "jobs": {
+      "training": 23514939,
+      "initial8k": 23514943,
+      "initial2k": 23514945,
+      "initial32k": 23514946,
+      "final8k": 23514947,
+      "final2k": 23514948,
+      "final32k": 23514951
+    },
+    "resource": "All jobs use mit_preemptable RTX, whose four-GPU user cap bounds this campaign. No normal GPU jobs submitted.",
+    "initial_readout_order": "Initial8k waits after current4k passagewise training finishes; then2k,then32k. Operational slot sharing only. Final readouts wait for own training and matching initial readout.",
+    "released_jobs": [
+      23514939,
+      23514943,
+      23514945,
+      23514946,
+      23514947,
+      23514948,
+      23514951
+    ],
+    "released_utc": "2026-09-23T00:28:15.277354Z",
+    "live_state": "RUNNING on node5106 since2026-09-23T00:37:54Z"
+  },
+  "optional_budget_superseded_0034": {
+    "utc": "2026-09-23T00:34:08.350765Z",
+    "job": 23510989,
+    "reason": "Optional completed4k batching sweep superseded by observed strong32k failure and focused forward-localization investigation; no need to repeat full timing sweep before understanding the discrepancy.",
+    "before": "JobId=23510989 JobName=qa_piecewise_budget UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46282 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23498368(unfulfilled),afterok:23510986(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T19:20:31 EligibleTime=Unknown AccrueTime=2026-09-22T19:20:31 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:20:31 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1587330 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=96G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=96G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch SubmitLine=sbatch --parsable --hold --mem=96G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_recovery_budget_probe_%j.log --dependency=afterok:23498368:23510986 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_recovery_budget_probe_23510989.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+    "held": "JobId=23510989 JobName=qa_piecewise_budget UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23498368(unfulfilled),afterok:23510986(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T19:20:31 EligibleTime=Unknown AccrueTime=2026-09-22T19:20:31 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T19:20:31 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1587330 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=96G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=96G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch SubmitLine=sbatch --parsable --hold --mem=96G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_recovery_budget_probe_%j.log --dependency=afterok:23498368:23510986 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/probe_piecewise_budget_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_recovery_budget_probe_23510989.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+    "action": "cancelled exact pending optional leaf job"
+  },
+  "forward_localization": {
+    "submitted_utc": "2026-09-23T00:41:28.870040Z",
+    "job": 23515979,
+    "status": "released",
+    "hashes": {
+      "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa",
+      "probe_piecewise_forward_localization_v1.sbatch": "2fdeb2fff0a413911b393dd7cd43c872b385a35b10a1f0281de61256c3fc2407",
+      "probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381"
+    },
+    "scope": "Diagnostic only; no equivalence validated, no optimizer updates or parent writes. Same preemptable four-GPU cap as training."
+  },
+  "continuation_rewarm_0055_recovery": {
+    "utc": "2026-09-23T00:59:32.299889Z",
+    "status": "released",
+    "old_jobs": "23511289|PREEMPTED|0:0\n23511290|CANCELLED|0:0",
+    "saved_pair": {
+      "epoch_number": 1,
+      "step": 100,
+      "steps": 1250,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00100",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00100"
+    },
+    "saved_questions": 800,
+    "last_logged_questions": 968,
+    "questions_to_replay": 168,
+    "optimizer_bytes": 4676641912,
+    "hashes": {
+      "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+      "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+    },
+    "jobs": {
+      "training": 23516714,
+      "readout": 23516715
+    },
+    "protocol": "Own paired checkpoint, inherited Adam, same original1250-step schedule, same data/order. No optimizer or learning-rate reset.",
+    "released_utc": "2026-09-23T00:59:32.857072Z"
+  },
+  "piecewise_0115_recovery": {
+    "checked_utc": "2026-09-23T01:17:29.719773Z",
+    "old_states": {
+      "23510985": "PREEMPTED",
+      "23510986": "CANCELLED",
+      "23510987": "CANCELLED"
+    },
+    "marker": {
+      "epoch_number": 1,
+      "step": 400,
+      "steps": 500,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00400",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00400"
+    },
+    "payload_sizes": {
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/optimizer.pt": 4676641912,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/ac_modules.pt": 1208881673,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_model.safetensors": 349204488,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_model.safetensors": 931173960
+    },
+    "hashes": {
+      "train_piecewise_v2.sbatch": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+      "run_qa_piecewise_v2.py": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+      "evaluate_piecewise_cohort_v3.sbatch": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+      "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30"
+    },
+    "new_jobs": {
+      "merged_train": {
+        "job": 23517701,
+        "dependency": null
+      },
+      "merged_8k": {
+        "job": 23517702,
+        "dependency": 23517701
+      },
+      "merged_32k": {
+        "job": 23517703,
+        "dependency": 23517702
+      }
+    },
+    "released": [
+      23517701,
+      23517702,
+      23517703
+    ],
+    "scientific_settings": "Unchanged V2; saved 3200 questions, original optimizer/order/500-update schedule. No new training occurred in the interrupted resume.",
+    "placement": "Exclude node5104 for recovery training after two recent early preemptions. Other experiment settings unchanged.",
+    "status": "all replacements released"
+  },
+  "diagnostic_first_order_0134": {
+    "diagnostic": 23515979,
+    "piecewise_32k_dependency": "afterok:23498368,afterany:23515979",
+    "strong_initial8k_dependency": "afterany:23515979",
+    "receipt": "DIAGNOSTIC_READOUT_ORDER_0135.json",
+    "scope": "Only pending readout order; no scientific settings or running jobs changed."
+  },
+  "rewarm_second_preemption_recovery": {
+    "checked_utc": "2026-09-23T02:03:31.002834Z",
+    "status": "released",
+    "old_states": {
+      "23516714": "PREEMPTED",
+      "23516715": "CANCELLED"
+    },
+    "saved_pair": {
+      "epoch_number": 1,
+      "step": 250,
+      "steps": 1250,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00250",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00250"
+    },
+    "saved_questions": 2000,
+    "last_logged_questions": 2368,
+    "questions_replayed": 368,
+    "payload_sizes": {
+      "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/optimizer.pt": 4676641912,
+      "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/ac_modules.pt": 1208881737,
+      "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00250/side_lora/adapter_model.safetensors": 349204488,
+      "/home/ngom/orcd/pool/activation/taskaware/continue32k_10k_rewarm/LORAS/rag_reader/epoch_001_step_00250/adapter_model.safetensors": 931173960
+    },
+    "hashes": {
+      "train_continuation_10k_orcd_v1.sbatch": "4a256d5cedbe92c7c5f34a0d45377ee4651dec4559a4456d37b7ace38a6ee638",
+      "continuation_cohort_orcd_v1.sbatch": "a62833a101f217cebedff62d916bbab020b2d806e20e16581a76b544d800dc52"
+    },
+    "jobs": {
+      "training": 23520578,
+      "readout": 23520579
+    },
+    "released": [
+      23520578,
+      23520579
+    ],
+    "protocol": "Same original optimizer/order/1250-update schedule; exclude nodes5101/5104 after recent preemptions. No other experiment settings changed."
+  },
+  "strong_long_final32k_answers": {
+    "utc": "2026-09-23T02:04:07.755108Z",
+    "hashes": {
+      "decode_strong_long_32k_v1.py": "fe399c1ca687fc10db1e8f83c6a3877329d21fb86664913c595a94fa31017385",
+      "decode_strong_long_32k_v1.sbatch": "0028584ce034d8ed6acec0dfc5872287c160604d055807d628da0bec06d364e3",
+      "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+      "STRONG_LONG_ADAPTATION_DESIGN_V1.json": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506"
+    },
+    "predecessor_job": 23514951,
+    "review": "Root source review and existing15CPU checks accepted; pinned inputs/pair/sampler, separate100AC decode output, no repeatedNLL. No frozen source edits.",
+    "job": 23520611,
+    "status": "released"
+  },
+  "attention_operator_diagnostic": {
+    "utc": "2026-09-23T02:20:54.141249Z",
+    "status": "released",
+    "hashes": {
+      "probe_piecewise_attention_operators_v1.py": "01152f8f977931b6091d9c76e1ff28254bac83a9d6c408a08d3426caf139189c",
+      "probe_piecewise_attention_operators_v1.sbatch": "478c17d92ad4583a46ab897d7cddc66457b67bd7feede5cae2c8746b43cd5503",
+      "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa"
+    },
+    "job": 23521114,
+    "review": "Root source review accepted. Real tiny-model CPU38stage checks and mask/reference guards passed. Read-only first-full-attention attribution, not equivalence or speedproof.",
+    "scope": "Original/repeat/32768 on same113valid positions; no reader/backward/update; parent rehash. No active jobs, readout dependencies, source or tolerances changed."
+  },
+  "merged_third_preemption_recovery": {
+    "checked_utc": "2026-09-23T02:38:24.097376Z",
+    "old_states": {
+      "23517701": "PREEMPTED",
+      "23517702": "CANCELLED",
+      "23517703": "CANCELLED"
+    },
+    "marker": {
+      "epoch_number": 1,
+      "step": 400,
+      "steps": 500,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00400",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00400"
+    },
+    "payload_sizes": {
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/optimizer.pt": 4676641912,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/ac_modules.pt": 1208881673,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_model.safetensors": 349204488,
+      "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_model.safetensors": 931173960
+    },
+    "hashes": {
+      "train_piecewise_v2.sbatch": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+      "run_qa_piecewise_v2.py": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+      "evaluate_piecewise_cohort_v3.sbatch": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+      "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30"
+    },
+    "new_jobs": {
+      "merged_train": {
+        "job": 23521941,
+        "dependency": null
+      },
+      "merged_8k": {
+        "job": 23521942,
+        "dependency": 23521941
+      },
+      "merged_32k": {
+        "job": 23521943,
+        "dependency": 23521942
+      }
+    },
+    "released": [
+      23521941,
+      23521942,
+      23521943
+    ],
+    "scientific_settings": "Unchanged V2; saved 3200 questions, original optimizer/order/500-update schedule. Interrupted after3,536 questions;3,200saved,336replayed.",
+    "placement": "Exclude nodes5101 and5104 for recovery after repeated preemptions. Other experiment settings unchanged.",
+    "status": "all replacements released"
+  },
+  "bf16_reduction_diagnostic": {
+    "utc": "2026-09-23T02:47:21.853292Z",
+    "status": "released",
+    "hashes": {
+      "probe_piecewise_bf16_reduction_v1.py": "c0d9c1bcac1269bde9470e54c002bd227289206448bc18b80d49abfa3fda98a9",
+      "probe_piecewise_bf16_reduction_v1.sbatch": "0fa9e3c89013d0921a9ddc4a79340e31bd5c95171a3879740e767c21f1335b91",
+      "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa"
+    },
+    "job": 23522375,
+    "review": "Root source review accepted. Frozen-source CPUchecks passed; BF16reduction flag and independent splitK restoration verified. Six read-only encoder forwards, not equivalence or speedproof.",
+    "scope": "Enabled/disabled BF16reduction with baseline/repeat/32768; same shortest/longest affected passages. No reader/backward/update; parent rehash. No active jobs, readout dependencies, source or tolerances changed."
+  },
+  "continuation_long8k_v1": {
+    "utc": "2026-09-23T03:06:52.796453Z",
+    "status": "released",
+    "hashes": {
+      "evaluate_continuation_long_8k_v1.py": "c84649afa4743f3dda7126620116d78e1aaaca4c48521ee24d21597749b4be7b",
+      "evaluate_continuation_long_8k_v1.sbatch": "e2c336473dd0aed18f01ca29963f71f4dbe908712d11613d4b2846404588abf4"
+    },
+    "job": 23523743,
+    "review": "Root source review plus syntax and16 focused CPU rejection checks passed. Final-pair, exact400-input and runtime-base/source guards remain enforced on compute.",
+    "scope": "Completed32k+10k constant-floor final pair on matched8k400 development inputs, with100AC answers and its own full/no-context NLL. Original65536 batching and precision. No training or confirmation read."
+  },
+  "readout_reservations_0346": [
+    {
+      "job": 23520579,
+      "state_before": "PENDING",
+      "utc": "2026-09-23T03:46:25.079424Z",
+      "evidence": "Matched constant-floor native100 completed in4m01;12min reservation.",
+      "action": "shortened reservation and released",
+      "old_limit": "00:45:00",
+      "new_limit": "00:12:00",
+      "unchanged": "Weights,inputs,scoring,decoding,GPU,dependencies and internal evaluation deadline remain unchanged. Per-answer/phase JSON remains resumable if allocation ends."
+    },
+    {
+      "job": 23521942,
+      "state_before": "PENDING",
+      "utc": "2026-09-23T03:46:25.614597Z",
+      "evidence": "Matched piecewise8k completed in14m57;25min reservation.",
+      "action": "shortened reservation and released",
+      "old_limit": "00:45:00",
+      "new_limit": "00:25:00",
+      "unchanged": "Weights,inputs,scoring,decoding,GPU,dependencies and internal evaluation deadline remain unchanged. Per-answer/phase JSON remains resumable if allocation ends."
+    }
+  ],
+  "rewarm_readout_retry_0408": {
+    "utc": "2026-09-23T04:06:27.017165+00:00",
+    "preempted_job": 23520579,
+    "job": 23526542,
+    "status": "released",
+    "settings": "Same native2k own final1250 readout; 12min32GiB; partial evidence resumed; no training changes."
+  },
+  "readout_reservations_0420": {
+    "utc": "2026-09-23T04:19:53.591770Z",
+    "changes": [
+      {
+        "job": 23521943,
+        "before": "JobId=23521943 JobName=piecewise_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46285 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T22:38:24 EligibleTime=2026-09-23T00:14:18 AccrueTime=2026-09-22T22:38:24 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:19:03 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2672620 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch SubmitLine=sbatch --parsable --hold --mem=64G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_%j.log --time=00:45:00 --dependency=afterok:23521942 /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch merged_27b_4k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_23521943.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23521943 JobName=piecewise_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T22:38:24 EligibleTime=Unknown AccrueTime=2026-09-22T22:38:24 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:19:03 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2672620 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch SubmitLine=sbatch --parsable --hold --mem=64G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_%j.log --time=00:45:00 --dependency=afterok:23521942 /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch merged_27b_4k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_23521943.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "released": true
+      },
+      {
+        "job": 23521943,
+        "before": "JobId=23521943 JobName=piecewise_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46386 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T22:38:24 EligibleTime=2026-09-23T00:19:56 AccrueTime=2026-09-22T22:38:24 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:20:03 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2672620 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch SubmitLine=sbatch --parsable --hold --mem=64G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_%j.log --time=00:45:00 --dependency=afterok:23521942 /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch merged_27b_4k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_23521943.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23521943 JobName=piecewise_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T22:38:24 EligibleTime=Unknown AccrueTime=2026-09-22T22:38:24 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:20:03 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2672620 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch SubmitLine=sbatch --parsable --hold --mem=64G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_%j.log --time=00:45:00 --dependency=afterok:23521942 /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch merged_27b_4k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_23521943.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23521943 JobName=piecewise_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-22T22:38:24 EligibleTime=Unknown AccrueTime=2026-09-22T22:38:24 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:20:03 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2672620 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch SubmitLine=sbatch --parsable --hold --mem=64G --output /home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_%j.log --time=00:45:00 --dependency=afterok:23521942 /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_piecewise_cohort_v3.sbatch merged_27b_4k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/piecewise_0231_merged_32k_23521943.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated pending reservation only",
+        "released": true
+      },
+      {
+        "job": 23514947,
+        "before": "JobId=23514947 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46544 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23514939(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_%j.log --dependency=afterok:23514939:23514943 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 8k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_23514947.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23514947 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514939(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_%j.log --dependency=afterok:23514939:23514943 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 8k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_23514947.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23514947 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514939(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_%j.log --dependency=afterok:23514939:23514943 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 8k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final8k_23514947.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated pending reservation only",
+        "released": true
+      },
+      {
+        "job": 23514948,
+        "before": "JobId=23514948 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46544 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23514947(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_%j.log --dependency=afterok:23514947:23514945 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 2k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_23514948.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23514948 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514947(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_%j.log --dependency=afterok:23514947:23514945 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 2k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_23514948.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23514948 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514947(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:08:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_%j.log --dependency=afterok:23514947:23514945 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 2k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final2k_23514948.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated pending reservation only",
+        "released": true
+      },
+      {
+        "job": 23514951,
+        "before": "JobId=23514951 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46544 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23514948(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_%j.log --dependency=afterok:23514948:23514946 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_23514951.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23514951 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514948(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_%j.log --dependency=afterok:23514948:23514946 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_23514951.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23514951 JobName=strong_long_cohort UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514948(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-22T20:27:49 EligibleTime=Unknown AccrueTime=2026-09-22T20:27:49 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T20:27:49 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:1963198 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_%j.log --dependency=afterok:23514948:23514946 --kill-on-invalid-dep=yes /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_strong_long_cohort_v1.sbatch strong32k_piecewise_8k_8k 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong_long_final32k_23514951.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated pending reservation only",
+        "released": true
+      },
+      {
+        "job": 23520611,
+        "before": "JobId=23520611 JobName=strong_long_32k_answers UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46353 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Dependency Dependency=afterok:23514951(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-22T22:04:07 EligibleTime=Unknown AccrueTime=2026-09-22T22:04:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T22:04:07 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2429147 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch SubmitLine=sbatch --parsable --hold --dependency=afterok:23514951 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_23520611.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23520611 JobName=strong_long_32k_answers UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514951(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-22T22:04:07 EligibleTime=Unknown AccrueTime=2026-09-22T22:04:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T22:04:07 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2429147 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch SubmitLine=sbatch --parsable --hold --dependency=afterok:23514951 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_23520611.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23520611 JobName=strong_long_32k_answers UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23514951(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:30:00 TimeMin=N/A SubmitTime=2026-09-22T22:04:07 EligibleTime=Unknown AccrueTime=2026-09-22T22:04:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-22T22:04:07 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2429147 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch SubmitLine=sbatch --parsable --hold --dependency=afterok:23514951 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/decode_strong_long_32k_v1.sbatch WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/strong32k_answers_23520611.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "action": "updated pending reservation only",
+        "released": true
+      }
+    ],
+    "initial_attempt_error": "scontrol MinMemoryNode requires MiB integer;32G rejected, no resources changed, held job released.",
+    "evidence": "Matched8k readouts13m56\u201314m57, initialstrong2k1m26, initialstrong32k11m55, smallpiece32k10m47. HostMaxRSS4\u20136.3GiB;32GiB broad headroom. Final32k actual-answer30min wall retained because decode unmeasured.",
+    "unchanged": "GPU type/count, CPU count, dependencies, inputs, sources, weights, packing, precision, NLL/decoding settings and internal deadlines. Training reservation unchanged. Partial evaluation can resume."
+  },
+  "rewarm42k_long8k": {
+    "utc": "2026-09-23T04:26:51.259044Z",
+    "status": "released",
+    "hashes": {
+      "evaluate_continuation_long_rewarm_8k_v1.py": "51014314fdb42341bd0e123696ccc10ebe87084817d26b76fec9175a486aa3cd",
+      "evaluate_continuation_long_rewarm_8k_v1.sbatch": "3736ada8fe917bb6018c4db401282a07d9ab11de6a0da84a0f0e63b93c924b79"
+    },
+    "job": 23527573,
+    "scope": "Same matched8k400/100 as constant42k; rewarm own completed final1250 pair. Original65536/precision; no optimizer updates.",
+    "review": "Root verified exact sibling diff; actual completed receipt/input binding and16 negative checks; syntax passed.",
+    "held_job": "JobId=23527573 JobName=rewarm42k_long8k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-23T00:26:51 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:26:51 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3255489 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_rewarm_8k_v1.sbatch SubmitLine=sbatch --parsable --hold --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/continuation_rewarm_long8k_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_long_rewarm_8k_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/continuation_rewarm_long8k_23527573.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+  },
+  "fresh42k_native8k_cpu": {
+    "utc": "2026-09-23T04:40:25.854392Z",
+    "status": "released CPU preparation",
+    "job": 23528267,
+    "hashes": {
+      "run_qa_fresh42k_native8k_v1.py": "7fdc1fed7da33395cff4e50e728642e43077757c334f3c37b03606bd542bda4f",
+      "prepare_fresh42k_native8k_v1.py": "d30161755e53188886e4a72c925647f1aa4f61f8ecd98a5ddf26da7940a2f408",
+      "train_fresh42k_native8k_v1.sbatch": "214517d58b856dd656d007328e7fcd0dc4b7a5c4b5adc38246aaddaea0c8740d",
+      "evaluate_fresh42k_native8k_v1.py": "37054b5c5822e61d32278ab8ccdefdb7d85048913491ca63281fa04844eeccf5",
+      "evaluate_fresh42k_native8k_v1.sbatch": "4b4718184f8a99095300a40673e2a431f3296e2c04f163866fea81b3bef31e0a",
+      "prepare_fresh42k_native8k_v1.sbatch": "cee69b275dc314c1c3e3e6356c20d73b31767aa1270cca9255a1b52894ec11d0"
+    },
+    "parent": "continue32k_10k_final_lr",
+    "scope": "Actual fresh8000 balanced selection from immutable bank plus independent exactAdam5250 copy. No GPU/model forward/training; design stays prepared pending root review.",
+    "review": "Root code review and32 focused CPU checks passed; follows existing20min48GiB CPU-only preparation allocation.",
+    "held_job": "JobId=23528267 JobName=prepare_fresh42k8k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:20:00 TimeMin=N/A SubmitTime=2026-09-23T00:40:25 EligibleTime=Unknown AccrueTime=2026-09-23T00:40:25 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:40:25 Scheduler=Main Partition=mit_normal AllocNode:Sid=login009:3318524 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=2 NumTasks=1 CPUs/Task=2 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=2,mem=48G,node=1,billing=2 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=2 MinMemoryNode=48G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/prepare_fresh42k_native8k_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_prepare_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/prepare_fresh42k_native8k_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_prepare_23528267.log TresPerTask=cpu=2"
+  },
+  "fresh42k_native8k": {
+    "utc": "2026-09-23T04:48:31.778978Z",
+    "status": "released",
+    "design_sha256": "31d422fa93d74d07daa63dee9265d6897e2b03498bd4b0c2e5f1babe165b42ab",
+    "prepared_design_sha256": "280f910ecdb8405b02bd73dc4ee8c2636083e346a1afcdf33c88a8a9df55b5d5",
+    "jobs": {
+      "training": 23528661,
+      "readout": 23528662
+    },
+    "scope": "8k genuinelyfresh\u00d71 native2k, constant42k final pairedweights/Adam5250\u21926250, own final1000 only; final400replay+100 actualanswers.",
+    "allocation": "OneRTX64GiB2h train; one dependentRTX32GiB20min readout.",
+    "actual_cpu_preparation": 23528267,
+    "held_states": {
+      "23528661": "JobId=23528661 JobName=fresh42k_native8k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T00:48:31 EligibleTime=Unknown AccrueTime=2026-09-23T00:48:31 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:48:31 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3350916 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_v1.sbatch SubmitLine=sbatch --parsable --hold --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_train_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/fresh42k_native8k_final_lr_v1/FRESH42K_NATIVE8K_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_train_23528661.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+      "23528662": "JobId=23528662 JobName=fresh42k_native100 UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23528661(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:20:00 TimeMin=N/A SubmitTime=2026-09-23T00:48:31 EligibleTime=Unknown AccrueTime=2026-09-23T00:48:31 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:48:31 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:3350916 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_v1.sbatch SubmitLine=sbatch --parsable --hold --mem=32G --exclude=node5101,node5104 --dependency=afterok:23528661 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_readout_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/fresh42k_native8k_final_lr_v1/FRESH42K_NATIVE8K_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_readout_23528662.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+    },
+    "released": [
+      23528661,
+      23528662
+    ],
+    "training_status": "COMPLETED",
+    "training_wall_seconds": 5534,
+    "readout_status": "COMPLETE",
+    "semantic_correct_supported": 70,
+    "followup_decision": "No conditional8k readout/S3 promotion; no clear semantic gain over42k71/87. FRESH50K_FOLLOWUP_DECISION_V1.md"
+  },
+  "gentle42k_long": {
+    "jobs": {
+      "training": 23529275,
+      "readout": 23529276
+    },
+    "status": "released",
+    "design_sha256": "f7fef157964562fabc7e5fe5fd2a23f1ed24f10b6823612f612ef51f5ab4bb3f",
+    "parent": "continue32k_10k_final_lr",
+    "cpu_preparation": 23528918,
+    "submission_receipt": "GENTLE42K_LONG_SUBMISSION_V1.json",
+    "training_status": "500/500 saved; final report hit internal duration limit",
+    "readout_status": "23529276 failed incomplete-publication guard; replaced by23546190 after zero-update finalization23546188"
+  },
+  "continuation_constant_32k": {
+    "job": 23530004,
+    "status": "COMPLETED",
+    "receipt": "CONTINUATION_LONG_32K_SUBMISSION_V1.json",
+    "wall_seconds": 1002,
+    "qualitative_review": "complete:58/87; STRONG_LONG_COHORT100"
+  },
+  "reader_checkpoint_probe_v1": {
+    "job": 23533352,
+    "status": "COMPLETE; audited exact numerical proof; no adoption",
+    "receipt": "READER_CHECKPOINT_SUBMISSION_V1.json",
+    "receipt_result": "READER_CHECKPOINT_GPU_RESULT_V1.json"
+  },
+  "gentle42k_finalize500_v1": {
+    "utc": "2026-09-23T13:50:17.770951Z",
+    "status": "released",
+    "hashes": {
+      "finalize_gentle42k_long_v1.py": "20c95eb4bec70d1fe3ba8d5335407c9aeb7ad58259a0f2068b828134d8c9cc70",
+      "finalize_gentle42k_long_v1.sbatch": "1ebdfcb85a4a99afb27c4dcb1c66c7de1b3baab27f3b03cc259a669161baedb4"
+    },
+    "jobs": {
+      "finalization": 23546188,
+      "readout": 23546190
+    },
+    "scope": "Zero-update final reporting of saved500/500 familiar4k pair; exact weights/Adam5750 proof before afterok100 readout.",
+    "review": "Root7CPUchecks and independent finalizer source review PASS. One-shot recovery; inspect failure before retry.",
+    "held_states": {
+      "23546188": "JobId=23546188 JobName=gentle42k_finalize500 UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T09:50:17 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T09:50:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2344474 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/finalize_gentle42k_long_v1.sbatch SubmitLine=sbatch --parsable --hold --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/gentle42k_finalize500_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/finalize_gentle42k_long_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/gentle42k_final_lr_familiar4k_v1/GENTLE42K_LONG_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/gentle42k_finalize500_23546188.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+      "23546190": "JobId=23546190 JobName=gentle42k_long100 UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23546188(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:25:00 TimeMin=N/A SubmitTime=2026-09-23T09:50:17 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T09:50:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2344474 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_gentle42k_long_v1.sbatch SubmitLine=sbatch --parsable --hold --mem=32G --time=00:25:00 --exclude=node5101,node5104 --dependency=afterok:23546188 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/gentle42k_long_readout_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_gentle42k_long_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/gentle42k_final_lr_familiar4k_v1/GENTLE42K_LONG_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/gentle42k_long_readout_23546190.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+    },
+    "released": [
+      23546188,
+      23546190
+    ]
+  },
+  "pi_native_lr_v1": {
+    "utc": "2026-09-23T14:49:44.722789Z",
+    "status": "released",
+    "files": {
+      "run_qa_fresh42k_native8k_lr_v1.py": "29301866b5be9fc3ac6d8c4d22dce6cb30df28c4c4c19b58db9fcea574497ae4",
+      "train_fresh42k_native8k_lr_v1.sbatch": "d58c74f3af6c65e070dbadc0fe136234e692eff953338d459df248007ed6fc3a",
+      "evaluate_fresh42k_native8k_lr_v1.py": "c6b8aa04acb32ae10bf790617178b613fc5eb0b25d65741b9ea13303e2c78cf9",
+      "evaluate_fresh42k_native8k_lr_v1.sbatch": "59c2aabfdb9b0b9f6741408dc65b8f2e5bf677de98b3de1bf4ac6688b9fb9899",
+      "prepare_fresh42k_native8k_lr_v1.py": "0d434225ec9b833426e7eacecc78c9eb740f43894baa19dd290d473fb67b0fe2",
+      "FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json": "ae4378317cc6f631758458462c2da1b7b450f626951a412d4476acc7aebe22a2",
+      "FRESH42K_NATIVE8K_LR_COSINE2X_DESIGN_V1.json": "c888f05dbf52202b8e0f5750d1f753bc9296a3350d3fd15b370a8a065e95a4ee"
+    },
+    "jobs": {
+      "constant": {
+        "training": 23549844,
+        "readout": 23549845
+      },
+      "cosine": {
+        "training": 23549846,
+        "readout": 23549848
+      }
+    },
+    "scope": "Two matched fresh8000x1 arms fromconstant42k, inheritedAdam5250;constant2x versuscosine2x-tofloor. NoEC2.",
+    "deadline": "PI meeting18UTC; earlypanels preserved; queue/preemption not guaranteed.",
+    "held_states": {
+      "23549844": "JobId=23549844 JobName=pi_lr_constant UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:44 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T10:49:44 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_constant --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_23549844.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+      "23549845": "JobId=23549845 JobName=pi_lr_constant_100 UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23549844(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:15:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:44 EligibleTime=Unknown AccrueTime=2026-09-23T10:49:44 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T10:49:44 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_constant_100 --mem=32G --time=00:15:00 --exclude=node5101,node5104 --dependency=afterok:23549844 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_100_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_100_23549845.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+      "23549846": "JobId=23549846 JobName=pi_lr_cosine UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:45 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T10:49:45 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_cosine --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_cosine_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_COSINE2X_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_cosine_23549846.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+      "23549848": "JobId=23549848 JobName=pi_lr_cosine_100 UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterok:23549846(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:15:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:45 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T10:49:45 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=32G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=32G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_cosine_100 --mem=32G --time=00:15:00 --exclude=node5101,node5104 --dependency=afterok:23549846 --kill-on-invalid-dep=yes --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_cosine_100_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_COSINE2X_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_cosine_100_23549848.log KillOnInvalidDependent=Yes TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8"
+    },
+    "released": [
+      23549844,
+      23549845,
+      23549846,
+      23549848
+    ]
+  },
+  "pi_merged_parent_v1": {
+    "utc": "2026-09-23T14:55:07.780799Z",
+    "status": "released",
+    "files": {
+      "evaluate_continuation_merged_v1.py": "b91e3d275f17e1bc0678ca7626bb7436daf41facda90afd87a9d49baf63d9722",
+      "evaluate_continuation_merged_v1.sbatch": "77324f786070b99fc98e31e74daecbf2fc65b6d1c40c25ebd3d2ea2f896ad013"
+    },
+    "job_id": 23550350,
+    "held_state": "JobId=23550350 JobName=pi_merged32k_parent UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T10:55:07 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T10:55:07 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2868268 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged32k_parent --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch 32k WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_23550350.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8\n"
+  },
+  "pi_deadline": "2026-09-23T18:00:00Z",
+  "pi_merged960_v1": {
+    "utc": "2026-09-23T15:01:18.153401Z",
+    "status": "released",
+    "files": {
+      "evaluate_continuation_10k_v1.py": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+      "evaluate_continuation_long_8k_v1.py": "c84649afa4743f3dda7126620116d78e1aaaca4c48521ee24d21597749b4be7b",
+      "evaluate_fresh42k_native8k_v1.py": "37054b5c5822e61d32278ab8ccdefdb7d85048913491ca63281fa04844eeccf5",
+      "evaluate_fresh42k_native8k_v1.sbatch": "4b4718184f8a99095300a40673e2a431f3296e2c04f163866fea81b3bef31e0a",
+      "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+      "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+      "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+      "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+      "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+      "evaluate_strong_long_cohort_v1.sbatch": "474fa3776a5822d3232ffab5876c6e45370eecc7936df69d88f3becff853c4a3",
+      "prepare_continuation_10k.py": "fe189d997f1d18af76e9f5dd61f6cab11e80cd3dedaea88d4093160efa8b35d7",
+      "prepare_data_budget.py": "3247440cf58081856a7889b4f9f5c14a98baafa695ea03a5589ad8625b491bd7",
+      "prepare_fresh42k_native8k_v1.py": "d30161755e53188886e4a72c925647f1aa4f61f8ecd98a5ddf26da7940a2f408",
+      "prepare_gentle42k_long_v1.py": "ee38ee2ee28dedb32e68e5d2cd2dd0050c56d8f34fa109d3a61b37d91dab40dd",
+      "prepare_model_comparison.py": "7754bcfa6ffc58abec4e36d7f4581dddb55b3f1e0ec27844f5680507e4f71e53",
+      "prepare_strong_long_adaptation_v1.py": "b953bb6b39044533000609650bf0100bd68543e1576258fbb3d81d29c1080885",
+      "run_qa_fresh42k_native8k_v1.py": "7fdc1fed7da33395cff4e50e728642e43077757c334f3c37b03606bd542bda4f",
+      "run_qa_gentle42k_long_v1.py": "2a3060762a16dd66b65c92df23609ef87d94af46300f184c8ec72478ecfdb647",
+      "run_qa_strong_long_v1.py": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+      "select_bank.py": "a75f17e6c0129c87720c573eeffb5d667bb9fed6f096dca9c1b5158528386336",
+      "train_fresh42k_native8k_v1.sbatch": "214517d58b856dd656d007328e7fcd0dc4b7a5c4b5adc38246aaddaea0c8740d",
+      "train_strong_long_v1.sbatch": "2ab442715af62037ca22d9309161fc1b2fbda0489442b5f20c90dffc13e575bb",
+      "run_qa_pi42k_merged32k_v1.py": "016d28622bfc26c0f28bcd1cdc7b7eb7adf830e7ce977aed7eac5a2dd99a7303",
+      "prepare_pi42k_merged32k_v1.py": "9fcce23f5a290028fef809379c6dd4dcaeebc1e2893932081ca3347744639158",
+      "train_pi42k_merged32k_v1.sbatch": "5f007f86896663b7be8741cc0ddc9a74665dab1b157a3d9b4331af36398fe1eb",
+      "train_pi42k_merged32k_csail_v1.sbatch": "885acf29e1c6b31885aba7d63260aa8ecb64b215e3895f253dad4508564c35e4",
+      "PI42K_MERGED32K_FRESH960_DESIGN_V1.json": "b9869a9618721cf6a052374d53baa477c994248ddf0627a6d3343273397085cd"
+    },
+    "cpu_proof_dependency": 2181811,
+    "run": "pi42k_merged32k_fresh960_v1",
+    "cpu_proof_verified": {
+      "status": "complete",
+      "job_id": "2181811",
+      "host": "groenig-3.csail.mit.edu",
+      "verified_utc": "2026-09-23T15:00:04.649352+00:00",
+      "manifest_sha256": "d2adf5e54c2fc0496f37adbba1c8f80208684dd9c35afbc9a2b7887261a02b5d",
+      "pair_sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7",
+      "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+      "payload_sha256": {
+        "ac_modules": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+        "encoder_config": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+        "encoder_weights": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+        "reader_config": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+        "reader_weights": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+      },
+      "optimizer_sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac",
+      "optimizer_states": 615,
+      "adam_parameter_steps": 5250,
+      "stage_updates_done": 0,
+      "stage_epoch_number": 0,
+      "param_group_counts": [
+        374,
+        256
+      ],
+      "optimizer_bytes_unchanged": true,
+      "source_path": "/data/scratch/ngom/activation/taskaware/train_ws_night_v1",
+      "source_files_verified": 90,
+      "total_bytes": 7659206392,
+      "original_orcd_pair_unchanged": true,
+      "files": {
+        "PRESERVE": {
+          "bytes": 124,
+          "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+        },
+        "ac/PRESERVE": {
+          "bytes": 124,
+          "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+        },
+        "ac/ac_modules.pt": {
+          "bytes": 1208881673,
+          "sha256": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93"
+        },
+        "ac/optimizer.pt": {
+          "bytes": 4676633951,
+          "sha256": "f2d319ebffd7ab4ad8b7e499fb65074a45dde594e5d7c52fd7d39ea8f3d207ac"
+        },
+        "ac/side_lora/adapter_config.json": {
+          "bytes": 1150,
+          "sha256": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342"
+        },
+        "ac/side_lora/adapter_model.safetensors": {
+          "bytes": 349204488,
+          "sha256": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5"
+        },
+        "material.json": {
+          "bytes": 493218587,
+          "sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9"
+        },
+        "pair.json": {
+          "bytes": 10867,
+          "sha256": "d423ee26b4404cfc0f78d4ef9299ebbf9e31116c0bf7eaa6cf63a6130bf537f7"
+        },
+        "pair.orcd.json": {
+          "bytes": 10068,
+          "sha256": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c"
+        },
+        "parent_checkpoint_metadata.json": {
+          "bytes": 3922,
+          "sha256": "68ffa907b396f287bc2a357bc7c5cd896aa9867bbaa414c8ee3e6f36c90dc630"
+        },
+        "parent_completed_epoch.json": {
+          "bytes": 132,
+          "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+        },
+        "parent_native_readout_identity.json": {
+          "bytes": 56137,
+          "sha256": "9a8774ff7a0c12953441b54a073b36ba56d0ceb8ee1661fd199a966b9f73e8e5"
+        },
+        "reader/PRESERVE": {
+          "bytes": 124,
+          "sha256": "0a2a9f6a9e28d51e1d98eafd12f1308eb52e80906d2629221f3de93cf4b7f083"
+        },
+        "reader/adapter_config.json": {
+          "bytes": 1147,
+          "sha256": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0"
+        },
+        "reader/adapter_model.safetensors": {
+          "bytes": 931173960,
+          "sha256": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+        },
+        "source_material_design.json": {
+          "bytes": 6833,
+          "sha256": "280f910ecdb8405b02bd73dc4ee8c2636083e346a1afcdf33c88a8a9df55b5d5"
+        },
+        "verify_stage.py": {
+          "bytes": 2707,
+          "sha256": "cb21504d1f4d6159f8ec8bd6411994443f32c09c61c10b291110663768a5cc8a"
+        },
+        "verify_stage.sbatch": {
+          "bytes": 398,
+          "sha256": "e697e4c21a34a6634681ede75dd5c9d2a68c0f392fc907ad08e3c02b5e83e334"
+        }
+      }
+    },
+    "dependency_adjustment": "CPU2181811 already complete and purged from active controller; first sbatch rejected before creating GPU job. Verified exact completed receipt instead of stale afterok dependency.",
+    "job_id": 2182017,
+    "held_state": "JobId=2182017 JobName=pi42k_merged32k UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=03:00:00 TimeMin=N/A SubmitTime=2026-09-23T11:02:52 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:02:52 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3178501 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=5792,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/bench/train_pi42k_merged32k_csail_v1.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/logs/pi42k_merged32k_2182017.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/logs/pi42k_merged32k_2182017.log TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n",
+    "released_utc": "2026-09-23T15:02:52.341077Z"
+  },
+  "pi_merged960_readout_v1": {
+    "utc": "2026-09-23T15:06:21.094427Z",
+    "status": "released",
+    "files": {
+      "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+      "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+      "PI42K_MERGED32K_READOUT_MANIFEST_V1.json": "52441eea5c793db394ce867cc6de35f44666e98ab77233e57efe406640d141b6",
+      "MODEL_COMPARISON_COHORT100_SELECTION.json": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051"
+    },
+    "training_job": 2182017,
+    "review": "Root full worker/launcher review and21focusedCPUchecks passed; final-only5370, fresh H200 scores, original100, no training source changes.",
+    "job_id": 2182208,
+    "held_state": "JobId=2182208 JobName=pi42k_final100 UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=afterok:2182017(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-23T11:06:22 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:06:22 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3185543 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=5792,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/bench/evaluate_pi42k_merged32k_v1.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/logs/pi42k_final100_2182208.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/logs/pi42k_final100_2182208.log KillOInInvalidDependent=Yes TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n"
+  },
+  "pi_parent_csail_v1": {
+    "utc": "2026-09-23T15:14:04.396183Z",
+    "status": "released",
+    "files": {
+      "evaluate_constant42k_csail_merged_v1.py": "58bb0f23138ddf4c81904d424ed932d8d7e08f70dd0fa2054f705adc578eb15d",
+      "evaluate_constant42k_csail_merged_v1.sbatch": "4f9fe40b1f664653d6dcac424f1446f7484bd6403108451cf62ca7a1264c2c76",
+      "CONSTANT42K_CSAIL_MERGED_MANIFEST_V1.json": "12085ddff480a9d9857a8f5a8b221bc1c0b8d29c423c5b6e074ee5478de90aea"
+    },
+    "review": "Root full worker/launcher review +10 focused CPU checks; fresh H200 baselines, exact staged42k, no960 dependency. Unique report root.",
+    "job_id": 2182542,
+    "held_state": "JobId=2182542 JobName=parent42k_merged100 UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T11:14:06 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:14:06 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3200957 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=5792,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/bench/evaluate_constant42k_csail_merged_v1.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/logs/pi_parent_csail_2182542.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/logs/pi_parent_csail_2182542.log TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n"
+  },
+  "pi_node5104_eligibility": {
+    "utc": "2026-09-23T15:13:21.222028Z",
+    "reason": "Node5104 idle at15:12; earlier exclusion was for historical preemptions. Restore eligibility for short resumable parent readout and checkpointed constantLR arm. Keep node5101 excluded. No science/config changes.",
+    "jobs": {
+      "23550350": {
+        "before": "JobId=23550350 JobName=pi_merged32k_parent UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46127 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T10:55:07 EligibleTime=2026-09-23T10:55:10 AccrueTime=2026-09-23T10:55:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2868268 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged32k_parent --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_23550350.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23550350 JobName=pi_merged32k_parent UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T10:55:07 EligibleTime=Unknown AccrueTime=2026-09-23T10:55:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2868268 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged32k_parent --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_23550350.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23550350 JobName=pi_merged32k_parent UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T10:55:07 EligibleTime=Unknown AccrueTime=2026-09-23T10:55:07 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2868268 ReqNodeList=(null) ExcNodeList=node5101 NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged32k_parent --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_v1.sbatch 32k WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_merged32k_parent_23550350.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "released": true
+      },
+      "23549844": {
+        "before": "JobId=23549844 JobName=pi_lr_constant UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=46128 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:44 EligibleTime=2026-09-23T10:49:48 AccrueTime=2026-09-23T10:49:44 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_constant --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_23549844.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "held": "JobId=23549844 JobName=pi_lr_constant UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:44 EligibleTime=Unknown AccrueTime=2026-09-23T10:49:44 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node[5101,5104] NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_constant --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_23549844.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "after": "JobId=23549844 JobName=pi_lr_constant UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T10:49:44 EligibleTime=Unknown AccrueTime=2026-09-23T10:49:44 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:13:17 Scheduler=Main Partition=mit_preemptable AllocNode:Sid=login009:2783339 ReqNodeList=(null) ExcNodeList=node5101 NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:rtx_pro_6000=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_lr_constant --exclude=node5101,node5104 --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_fresh42k_native8k_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json WorkDir=/home/ngom Comment=***TEST_COMMENT*** StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_lr_constant_23549844.log TresPerNode=gres/gpu:rtx_pro_6000:1 TresPerTask=cpu=8",
+        "released": true
+      }
+    }
+  },
+  "csail27b_restart_v1": {
+    "utc": "2026-09-23T15:15:18.990354Z",
+    "status": "released",
+    "target_questions": 100000,
+    "initial_published_questions": 53000,
+    "initial_accepted_questions": 53615,
+    "producer": "sole active27B writer onCSAIL; ORCD/9B remain paused",
+    "cpu_preparation_sha256": "177aeb078580395d7c33a2cbd69a1b00a2888a19ca2cc4a9534a44903a5a03cd",
+    "requeue_proof_sha256": "acdee2085cbda34bbc45dd2663ea4f41bc352034a3a86d353610224d3976143b",
+    "launcher_sha256": "39576f82038c177a351b52249c0d74e3ad38e6d39e91d9104b15e83e963cd3cf",
+    "manifest_sha256": "e8b5b45a9a3577e29926b10994663ba2687f64e3a1b0ef1503200243f825943f",
+    "active_bank": "/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/reports/synthesis_bank_27b",
+    "report_alias": "/data/scratch/ngom/activation/taskaware/reports/synthesis_bank_27b_csail",
+    "review": "Root source/launcher/trap/cursor/report ownership review; pinned model and runtime imports verified; actualGPUstartup pending.3h segments,64microbatch,portablebalanced1k releases; noEC2.",
+    "job_id": 2182587,
+    "held_state": "JobId=2182587 JobName=qa27b_csail_100k UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=03:00:00 TimeMin=N/A SubmitTime=2026-09-23T11:15:19 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:15:19 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3203170 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=100G,node=1,billing=5801,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=100G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bench/bank_csail.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bank_csail_2182587.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/qa27b_csail_restart_v1/bank_csail_2182587.log TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n"
+  },
+  "pi_parent_l40s_v1": {
+    "utc": "2026-09-23T15:27:56.323167Z",
+    "status": "released",
+    "files": {
+      "evaluate_continuation_merged_l40s_v1.py": "aaf07967a720e1d2efefc6f3f5b5caf3eb245d99c5bad25efeb9d18997966744",
+      "evaluate_continuation_merged_l40s_v1.sbatch": "145a1eae117ec4392544cbb82a1c05e380725961b023bee34ae09f3004adf235"
+    },
+    "review": "Root delta/launcher review and7focusedCPUchecks; same parent/input/rows/source, allNLL fresh onL40S; no shape/precision fallback. User latest authorizes ORCD compute as needed; normaltier documented in skill and existing deployment.",
+    "job_id": 23552209,
+    "held_state": "JobId=23552209 JobName=pi_merged32k_l40s UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:40:00 TimeMin=N/A SubmitTime=2026-09-23T11:27:56 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:27:56 Scheduler=Main Partition=mit_normal_gpu AllocNode:Sid=login009:3119589 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:l40s=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_l40s_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name=pi_merged32k_l40s --output /home/ngom/orcd/pool/activation/taskaware/logs/pi_parent_l40s_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/evaluate_continuation_merged_l40s_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/pi_parent_l40s_23552209.log TresPerNode=gres/gpu:l40s:1 TresPerTask=cpu=8\n"
+  }
+}

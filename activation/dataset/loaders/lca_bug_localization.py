@@ -1,20 +1,24 @@
 """
 LongCodeArena bug localization (`JetBrains-Research/lca-bug-localization`): an issue and the repository at the base
-commit; the task is to name the file that must change. The loader fetches the base commit's tarball into a local cache
-(REPO_CACHE/<owner>__<repo>/<sha>, no git history) and the task's CopyTreeSetup copies it to /workspace/repo in the
-sandbox. Exact match on any changed file's path (the first is the gold, the rest aliases). The repository's text files
-are corpus documents so semantic_search works over the code. `max_changed_files` and `max_repo_files` keep tasks
-localizable and checkouts small.
+commit; the task is to name the file that must change. Exact match on any changed file's path (the first is the gold,
+the rest aliases). `max_changed_files` and `max_repo_files` keep tasks localizable and checkouts small.
+
+Without a passage index (`index_files_per_repo=0`, the suite's setting: agents use ripgrep) nothing is fetched at load:
+each rollout's RepoTarballSetup downloads the base commit's GitHub tarball into node-local temp space, checks the gold
+file exists, copies the tree to /workspace/repo in the sandbox and deletes the download. A repository that is gone
+(or keeps failing to fetch) makes the task unavailable: the run ends before its first turn, recorded and skipped.
+With an index, the loader fetches every checkout into a persistent cache (REPO_CACHE/<owner>__<repo>/<sha>) at load,
+indexes its text files as corpus documents, drops tasks whose gold is absent, and CopyTreeSetup copies from the cache.
 """
 from __future__ import annotations
 
 import ast
 from concurrent.futures import ThreadPoolExecutor
-import io
 import os
 import random
 import shutil
 import tarfile
+import tempfile
 import threading
 import time
 import urllib.error
@@ -24,6 +28,7 @@ from pathlib import Path
 
 from datasets import load_dataset
 
+from activation.agent.agent_env import AgentEnvSetup, TaskUnavailable
 from activation.common.data_syncing import resolve_path
 
 from ..dataset import DatasetDocument, DatasetTask, DatasetTaskMetricsKind, LoadedDataset
@@ -37,6 +42,9 @@ HF_DATASET = "JetBrains-Research/lca-bug-localization"
 REPO_CACHE = "REPO_CACHE"
 REPO_PATH = "/workspace/repo"
 COPY_TREE_SETUP = "activation.agent.agent_env:CopyTreeSetup"
+REPO_TARBALL_SETUP = f"{__name__}:RepoTarballSetup"
+PERMANENT_HTTP = {404, 410, 451}                 # repository or commit gone / blocked: retrying cannot help
+FETCH_ATTEMPTS, FETCH_BACKOFF_SECONDS = 4, 15
 TEXT_SUFFIXES = {".py", ".md", ".rst", ".txt", ".toml", ".cfg", ".ini", ".yaml", ".yml", ".json", ".java", ".kt", ".kts", ".gradle",
                  ".xml", ".sh", ".js", ".ts", ".html", ".css", ".c", ".h", ".cpp", ".hpp", ".go", ".rs", ".rb", ".sql"}
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", ".idea", ".mypy_cache"}
@@ -78,18 +86,12 @@ def _ensure_checkout_locked(target: Path, owner: str, repo: str, sha: str, timeo
         return str(target)
     if target.exists():
         shutil.rmtree(target)
-    url = f"https://github.com/{owner}/{repo}/archive/{sha}.tar.gz"
+    url = tarball_url(owner, repo, sha)
     staging = target.parent / f".{sha}.partial"
     shutil.rmtree(staging, ignore_errors=True)
     staging.mkdir(parents=True)
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "activation-suite"}), timeout=timeout) as response:
-            with tarfile.open(fileobj=io.BytesIO(response.read()), mode="r:gz") as archive:
-                archive.extractall(staging, filter=_tar_filter)
-        roots = [entry for entry in staging.iterdir() if entry.is_dir()]
-        if len(roots) != 1:
-            raise RuntimeError(f"unexpected archive layout {sorted(entry.name for entry in staging.iterdir())}")
-        roots[0].rename(target)
+        _extract_tarball(url, staging, timeout).rename(target)
         marker.write_text(f"{url}\n")
     except (urllib.error.URLError, tarfile.TarError, OSError, RuntimeError) as error:
         shutil.rmtree(target, ignore_errors=True)
@@ -97,6 +99,73 @@ def _ensure_checkout_locked(target: Path, owner: str, repo: str, sha: str, timeo
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return str(target)
+
+
+def tarball_url(owner: str, repo: str, sha: str) -> str:
+    return f"https://github.com/{owner}/{repo}/archive/{sha}.tar.gz"
+
+
+def _extract_tarball(url: str, staging: Path, timeout: int) -> Path:
+    """
+    Downloads and extracts a GitHub commit tarball into `staging`; returns its single top-level directory. The archive is
+    streamed to disk, never held in memory: some repositories are GBs, and a dozen concurrent in-memory downloads
+    fragmented the rollout threads' heaps until the host OOM-killed the campaign.
+    """
+    archive_path = staging / "archive.tar.gz"
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "activation-suite"}), timeout=timeout) as response:
+        with open(archive_path, "wb") as sink:
+            shutil.copyfileobj(response, sink, 1 << 20)
+    with tarfile.open(archive_path, mode="r:gz") as archive:
+        archive.extractall(staging, filter=_tar_filter)
+    archive_path.unlink()
+    roots = [entry for entry in staging.iterdir() if entry.is_dir()]
+    if len(roots) != 1:
+        raise RuntimeError(f"unexpected archive layout {sorted(entry.name for entry in staging.iterdir())}")
+    return roots[0]
+
+
+def fetch_tarball(owner: str, repo: str, sha: str, staging: Path, timeout: int = 600) -> Path:
+    """
+    The repository at `sha`, extracted under `staging` (no cache). A permanent HTTP failure (gone, blocked) raises
+    TaskUnavailable at once; transient failures (timeouts, 5xx, torn downloads) retry with backoff, then raise it too.
+    """
+    url, last = tarball_url(owner, repo, sha), None
+    for attempt in range(FETCH_ATTEMPTS):
+        attempt_dir = staging / f"attempt_{attempt}"
+        attempt_dir.mkdir(parents=True)
+        try:
+            return _extract_tarball(url, attempt_dir, timeout)
+        except urllib.error.HTTPError as error:
+            if error.code in PERMANENT_HTTP:
+                raise TaskUnavailable(f"{owner}/{repo}@{sha[:10]}: HTTP {error.code}") from error
+            last = error
+        except (urllib.error.URLError, tarfile.TarError, OSError, RuntimeError, TimeoutError) as error:
+            last = error
+        shutil.rmtree(attempt_dir, ignore_errors=True)
+        if attempt + 1 < FETCH_ATTEMPTS:
+            time.sleep(FETCH_BACKOFF_SECONDS * 3 ** attempt * random.uniform(.5, 1.5))   # jittered: many rollouts start together
+    raise TaskUnavailable(f"{owner}/{repo}@{sha[:10]}: fetch failed {FETCH_ATTEMPTS} times ({last})")
+
+
+class RepoTarballSetup(AgentEnvSetup):
+    """
+    Per rollout: the task's repository at its base commit, downloaded into node-local temp space, checked to contain a
+    gold file, copied into the sandbox at `env_path`, and deleted (the sandbox has its own copy; nothing persists on the host).
+    """
+
+    def __init__(self, harness, agent, env_path: str):
+        super().__init__(harness, agent)
+        self.env_path = env_path
+
+    def setup(self, agent_env) -> None:
+        datum = self.task_datum
+        owner, repo = str(datum["repo"]).split("/", 1)
+        sha = str(datum["base_sha"])
+        with tempfile.TemporaryDirectory(prefix="lca-checkout-") as temporary:
+            root = fetch_tarball(owner, repo, sha, Path(temporary))
+            if not any((root / path).is_file() for path in datum["changed_files"]):
+                raise TaskUnavailable(f"{owner}/{repo}@{sha[:10]}: no changed file exists at the base commit")
+            agent_env.copy_in(str(root), self.env_path)
 
 
 def iter_text_files(root: str, max_files: int) -> t.Iterator[tuple[str, str]]:
@@ -134,7 +203,9 @@ class LcaBugLocalizationDataset:
         tasks: dict[str, DatasetTask] = {}
         per_repo: dict[str, int] = {}                # the split is grouped by repository; the cap spreads tasks over many
         candidates: list[tuple[dict, list[str]]] = []
-        margin = None if max_examples is None else max_examples + max(20, max_examples // 5)     # fetch failures and missing gold files drop rows
+        lazy = index_files_per_repo <= 0                    # no passage index: rollouts fetch their own checkout (module docstring)
+        # Eager fetching drops rows (fetch failures, absent gold) at load, so it reads a margin; lazy rows are all kept.
+        margin = None if max_examples is None else max_examples if lazy else max_examples + max(20, max_examples // 5)
         for row in load_dataset(HF_DATASET, config, split=split, streaming=True):
             changed = [str(path) for path in ast.literal_eval(row["changed_files"])]
             if not changed or len(changed) > max_changed_files or int(row["repo_files_without_tests_count"]) > max_repo_files:
@@ -156,28 +227,33 @@ class LcaBugLocalizationDataset:
             except RuntimeError as error:
                 print(f"{dataset_id} - skipping {row['text_id']}: {error}", flush=True)
                 return None
-        with ThreadPoolExecutor(max_workers=fetch_workers) as pool:
-            checkouts = list(pool.map(fetch, candidates))
+        if lazy:
+            checkouts = [None] * len(candidates)
+        else:
+            with ThreadPoolExecutor(max_workers=fetch_workers) as pool:
+                checkouts = list(pool.map(fetch, candidates))
         for (row, changed), local in zip(candidates, checkouts):
-            if local is None:
+            if not lazy and local is None:
                 continue
-            if not any(os.path.exists(os.path.join(local, path)) for path in changed):
+            if not lazy and not any(os.path.exists(os.path.join(local, path)) for path in changed):
                 continue                                                                        # the gold must exist at the base commit
             task_id = str(row["text_id"]).replace("/", "__")
             issue = f"Issue: {row['issue_title']}\n\n{str(row['issue_body'] or '')[:max_issue_chars]}"
             task = (f"The repository {row['repo_owner']}/{row['repo_name']} is checked out at {REPO_PATH} (the state before the fix). "
                     f"The issue below was fixed by changing one file. Find that file.\n\n{issue}")
-            for relative, text in iter_text_files(local, index_files_per_repo):
+            for relative, text in (iter_text_files(local, index_files_per_repo) if not lazy else ()):
                 doc_id = f"{row['repo_owner']}/{row['repo_name']}@{str(row['base_sha'])[:8]}/{relative}"
                 documents.setdefault(doc_id, DatasetDocument(doc_id=doc_id, dataset_id=dataset_id, text=f"{relative}\n{text}"))
             tasks[task_id] = DatasetTask(
                 task_id=task_id, dataset_id=dataset_id,
                 task_datum={"repo": f"{row['repo_owner']}/{row['repo_name']}", "base_sha": row["base_sha"], "issue_title": row["issue_title"],
-                            "issue_body": row["issue_body"], "changed_files": changed, "checkout_path": local,
-                            "issue_url": row.get("issue_url")},
+                            "issue_body": row["issue_body"], "changed_files": changed, "issue_url": row.get("issue_url"),
+                            **({"tarball_url": tarball_url(str(row["repo_owner"]), str(row["repo_name"]), str(row["base_sha"]))}
+                               if lazy else {"checkout_path": local})},
                 reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH, gold_answer=changed[0], gold_answer_aliases=changed[1:],
                 agent_prompt=bare_prompt(task, ANSWER_RULES["path"]), task_kind=DatasetTaskKind.CODE_SEARCH,
-                env_setups={"repo": {"class": COPY_TREE_SETUP, "kwargs": {"datum_key": "checkout_path", "env_path": REPO_PATH}}},
+                env_setups={"repo": {"class": REPO_TARBALL_SETUP, "kwargs": {"env_path": REPO_PATH}} if lazy else
+                            {"class": COPY_TREE_SETUP, "kwargs": {"datum_key": "checkout_path", "env_path": REPO_PATH}}},
             )
             if max_examples is not None and len(tasks) >= max_examples:
                 break

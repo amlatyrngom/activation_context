@@ -1,0 +1,26 @@
+{
+  "status": "prepared, CPU checks passed; not staged/submitted",
+  "checks": [
+    "bind_readouts unchanged from real100-tokenizer/negative-guard-tested parent worker",
+    "bind_adam_receipt unchanged from real100-tokenizer/negative-guard-tested parent worker",
+    "bind_inputs unchanged from real100-tokenizer/negative-guard-tested parent worker",
+    "ActualORCD own1250 final and615Adam5250 receipt accepted",
+    "All three NLL views invoke actual scorer; no RTX score copying or runtime-reuse gate",
+    "L40S identity explicit; AC100 precedes fresh controls and optional full answers; core retained on optional timeout",
+    "NormalL40S oneGPU,64GiBhost,40min/app2250, isolated output root;32k/micro1/65536 remains fixed"
+  ],
+  "check_count": 7,
+  "worker_sha256": "aaf07967a720e1d2efefc6f3f5b5caf3eb245d99c5bad25efeb9d18997966744",
+  "launcher_sha256": "145a1eae117ec4392544cbb82a1c05e380725961b023bee34ae09f3004adf235",
+  "fixture_sha256": "ad9e534554d112f0155685229d2c37bf11715b00fab210b661fcb29ad0c32ad7",
+  "parent_actual_tokenizer_receipt_sha256": "3086257d61610b39e2303132a1e73c971f052d497b65149c8a9b47a3303c63f6",
+  "limitations": "No GPU or fit claim. Same strict input/row/parent guards and actual100 tokenizer evidence reused; fresh L40S scoring and decoding pending. No source, packing, precision or microbatch change.",
+  "cpu_receipt_sha256": "2340b192405e49cdb4fc7c1624328c610a0f7485f2b7e2abb8b0ffd7b85f401c",
+  "allocation": {
+    "partition": "mit_normal_gpu",
+    "gpu": "l40s:1",
+    "host_gib": 64,
+    "wall_minutes": 40,
+    "app_seconds": 2250
+  }
+}

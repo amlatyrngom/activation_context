@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+  "builder_sha256": "86231c5ea0464a4de7c5fbb8cb386500ebd3c1a1374ea61fd41ea2af70d7981f",
+  "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "P2_pair_sha256": {
+    "ac_modules": "e4e46616d612e95bd8410cff8e2539204670079b1f353c1ab487b2075604a651",
+    "encoder_config": "52a19605b9067310cc732c19c929f7b0c9bf63b58257b52c7a46aa8fa64df05d",
+    "reader_config": "ac75776de84da50653cc3da839ab9b326c58170dd2c47aac65effbb4f9fe21f3",
+    "encoder_weights": "26e0b910f856005c28efa82c2b39c682c1586b7e2e8846d6ba3fb7f361a670ec",
+    "reader_weights": "39590931bd800b384111d69a424ed2d4d3018016b92aa6c842a0aef10044b1e6"
+  },
+  "arms": {
+    "piecewise_27b_4k_8k": {
+      "passage_parts": true,
+      "encode_batch_max_tokens": 65536,
+      "micro_batch_examples": 2
+    },
+    "merged_27b_4k_8k": {
+      "passage_parts": false,
+      "encode_batch_max_tokens": 65536,
+      "micro_batch_examples": 2
+    }
+  },
+  "training": {
+    "unique_questions": 4000,
+    "epochs": 1,
+    "evidence_tokens": 8192,
+    "max_passages": 16,
+    "ratio": 0.0625,
+    "logical_batch_examples": 8,
+    "learning_rate_ac": 5e-05,
+    "learning_rate_reader": 2e-05,
+    "fresh_optimizer": true,
+    "initialization": "Original paired P2 reconstruction",
+    "reporting_fraction": 0.1
+  },
+  "source_decision": "Use original frozen train_ws_night_v1. Mask/checkpoint optimization failed preset real-GPU gradient equivalence and is not applied. Original batching65536 forbotharms. Fit/timing is a launch gate, not a quality selection.",
+  "readout": {
+    "selection": "Originaldevelopment100; no confirmation",
+    "8k": "Replayall400, decodefixed100; frozenP2full/noctx onidenticalevidence",
+    "32k": "Samefixed100, NLLonly"
+  },
+  "launcher_sha256": "0e22c8954232f61a52e15d1fe28ac44f17ecdbff4d12ba671344b985bb8ace8b",
+  "evaluator_sha256": "16868714b565777774421b7111fdf85cc62eb256880f9a982b5ecfd2ba571fd8",
+  "evaluator_launcher_sha256": "8425b3422f65cd84066bc83bcc718ee5bb9a7a9b0f0b612426024b9170dd6550"
+}

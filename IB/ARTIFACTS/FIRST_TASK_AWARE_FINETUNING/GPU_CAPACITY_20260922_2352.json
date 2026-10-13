@@ -1,0 +1,156 @@
+{
+  "status": "read_only_capacity_snapshot",
+  "observed_utc": "2026-09-22T23:46:00Z through 2026-09-22T23:52:00Z",
+  "scope": "Guarded existing SSH masters; scheduler metadata and local launcher/source inspection only. No job submissions, cancellations, updates, authentication, contacts, or large filesystem work.",
+  "csail": {
+    "association": {
+      "cluster": "csail-slurm",
+      "account": "csail",
+      "qos": [
+        "lab-free",
+        "normal",
+        "shared-if-available",
+        "tig-debug",
+        "tig-main"
+      ]
+    },
+    "own_jobs": [],
+    "shared_h200": {
+      "accessible": true,
+      "account": "csail",
+      "partition": "csail-shared-h200",
+      "qos": "shared-if-available",
+      "max_time": "24h",
+      "preemption": "REQUEUE",
+      "configured_gpus": 119,
+      "allocated_usable_gpus": 103,
+      "down_or_drained_gpus": 16,
+      "available_usable_gpus": 0,
+      "pending_one_gpu_requests": 109,
+      "queue_start_estimate": null
+    },
+    "quanta": {
+      "accessible": false,
+      "reason": "Only csail association/QOS; quanta-h200 requires quanta/tig accounts and quanta-main QoS; quanta-gh200 requires clear/quanta/tig accounts and quanta-main QoS. No membership grant is visible.",
+      "gh200_physically_idle_nodes": 3,
+      "physical_idle_is_not_permission": true,
+      "additional_limitation": "Grace/aarch64 environment compatibility has not been established; excluded from quick fallback."
+    }
+  },
+  "orcd": {
+    "normal_partition": "mit_normal_gpu",
+    "max_time": "6h",
+    "preemption": "OFF",
+    "h200": {
+      "unreserved_free_gpus": 0,
+      "reserved_unallocated_gpus": 3,
+      "reserved_nodes": {
+        "node3100": "7/8 allocated; MIXED+RESERVED+PLANNED",
+        "node3101": "6/8 allocated; MIXED+RESERVED"
+      },
+      "pending_typed_requests_by_gpu_count": {
+        "1": 97,
+        "2": 13,
+        "3": 2,
+        "4": 42,
+        "8": 1
+      }
+    },
+    "h100": {
+      "node": "node2906",
+      "allocated_gpus": 4,
+      "configured_gpus": 4,
+      "state": "MIXED+PLANNED",
+      "pending_typed_requests_by_gpu_count": {
+        "1": 15,
+        "2": 4,
+        "3": 2,
+        "4": 1
+      }
+    },
+    "own_queued_starts": "N/A; runnable jobs Priority, dependent readouts Dependency",
+    "deployment_options": [
+      "mit_preemptable gpu:rtx_pro_6000:1",
+      "mit_normal_gpu gpu:h200:1",
+      "mit_normal_gpu gpu:h100:1"
+    ],
+    "interpretation": "No observed queue-capacity advantage justifying migration. H100/H200 are potential matched-hardware alternatives when capacity actually opens. Mixed node state does not imply a spare GPU.",
+    "limits": "Root coordinates total ORCD campaign GPUs <=4, normal GPUs <=2; CSAIL <=2. No mutation in this task."
+  },
+  "host_memory": {
+    "units": "GiB; sacct MaxRSS sampled job-step peak, distinct from GPU memory",
+    "observed": [
+      {
+        "job": "23466479",
+        "purpose": "Original five-arm confirmation",
+        "max_rss_gib": 14.33,
+        "requested_gib": 100,
+        "elapsed": "00:18:36"
+      },
+      {
+        "job": "23479471",
+        "purpose": "Main32k final100 readout",
+        "max_rss_gib": 6.83,
+        "requested_gib": 32,
+        "elapsed": "00:04:26"
+      },
+      {
+        "job": "23493336",
+        "purpose": "Companion final100 readout",
+        "max_rss_gib": 6.65,
+        "requested_gib": 32,
+        "elapsed": "00:04:12"
+      },
+      {
+        "job": "23484734",
+        "purpose": "Prior8k memoryfit",
+        "max_rss_gib": 39.78,
+        "requested_gib": 100,
+        "elapsed": "00:06:18"
+      },
+      {
+        "job": "23497150",
+        "purpose": "Strict gradient proof",
+        "max_rss_gib": 9.01,
+        "requested_gib": 64,
+        "elapsed": "00:00:52"
+      },
+      {
+        "job": "23498369",
+        "purpose": "Frozen8k full/no-context readout",
+        "max_rss_gib": 4.23,
+        "requested_gib": 64,
+        "elapsed": "00:15:43"
+      }
+    ],
+    "recommendations": [
+      {
+        "job": "23493337",
+        "current_request_gib": 100,
+        "recommended_request_gib": 32,
+        "reason": "Prior five-arm confirmation peaked14.33GiB. Current launcher evaluates arms in serial separate Python processes, one paired model per process; same16k retrieval material.32GiB provides >2x observed margin.48GiB is optional extra cushion, not supported as necessary by observations."
+      },
+      {
+        "job": "23511648",
+        "current_request_gib": 96,
+        "recommended_request_gib": 64,
+        "reason": "Same8k geometry prior timing peaked39.78GiB; new mature Adam payload is4.68GB (4.36GiB). Controller runs fresh workers serially. Initial CPU optimizer guard explicitly deletes state and collects before proof/training; no concurrent model replicas.64GiB retains substantial headroom even allowing an additional optimizer-sized transient.",
+        "caveat": "Recommendation, not an empirical peak for this unrun strong probe. Proof retains CPU gradient/output references; sampled MaxRSS may miss short spikes. Do not reduce to32/48GiB."
+      }
+    ],
+    "gpu_fit": "Unchanged2k-evidence training measured61.69\u201363.87GiB allocated on RTX PRO6000; L40S remains excluded. Host-memory reduction does not change GPU allocation."
+  },
+  "local_source_sha256": {
+    "bench/probe_strong_piecewise_budget_v1.py": "377e022e868dce0ae64fed25e639e886276189b67acfc1832003982758faf381",
+    "bench/probe_strong_piecewise_budget_v1.sbatch": "843b68c00bd7960bafe597cf4965d5ce326ed4d01e9831f06b3bb116ee8852c0",
+    "bench/evaluate_data_amount_confirmation_v2.py": "d7f628bffb6aeb7bd3b7bde03d1e3d5b6cef54c6ea39b3579d104c7edd8c22b7",
+    "bench/data_amount_confirmation_v2.sbatch": "e21b26cdee3595614dc44bd5ff1dd2ea104246d1f0284f7c3721df30dd731031"
+  },
+  "evidence_commands": [
+    "sacctmgr -nP show assoc where user=ngom format=Cluster,Account,Partition,QOS,DefaultQOS",
+    "sinfo -a -N -h -o %N|%P|%T|%G; targeted scontrol show node",
+    "scontrol -a show partition quanta-gh200/quanta-h200 -o",
+    "squeue --start -u ngom; partition queue request-count summaries",
+    "sacct -j explicit prior job IDs --units=G with MaxRSS/ReqMem/Elapsed fields"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "utc": "2026-09-23T04:40:25.854392Z",
+  "status": "released CPU preparation",
+  "job": 23528267,
+  "hashes": {
+    "run_qa_fresh42k_native8k_v1.py": "7fdc1fed7da33395cff4e50e728642e43077757c334f3c37b03606bd542bda4f",
+    "prepare_fresh42k_native8k_v1.py": "d30161755e53188886e4a72c925647f1aa4f61f8ecd98a5ddf26da7940a2f408",
+    "train_fresh42k_native8k_v1.sbatch": "214517d58b856dd656d007328e7fcd0dc4b7a5c4b5adc38246aaddaea0c8740d",
+    "evaluate_fresh42k_native8k_v1.py": "37054b5c5822e61d32278ab8ccdefdb7d85048913491ca63281fa04844eeccf5",
+    "evaluate_fresh42k_native8k_v1.sbatch": "4b4718184f8a99095300a40673e2a431f3296e2c04f163866fea81b3bef31e0a",
+    "prepare_fresh42k_native8k_v1.sbatch": "cee69b275dc314c1c3e3e6356c20d73b31767aa1270cca9255a1b52894ec11d0"
+  },
+  "parent": "continue32k_10k_final_lr",
+  "scope": "Actual fresh8000 balanced selection from immutable bank plus independent exactAdam5250 copy. No GPU/model forward/training; design stays prepared pending root review.",
+  "review": "Root code review and32 focused CPU checks passed; follows existing20min48GiB CPU-only preparation allocation.",
+  "held_job": "JobId=23528267 JobName=prepare_fresh42k8k UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:20:00 TimeMin=N/A SubmitTime=2026-09-23T00:40:25 EligibleTime=Unknown AccrueTime=2026-09-23T00:40:25 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T00:40:25 Scheduler=Main Partition=mit_normal AllocNode:Sid=login009:3318524 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=2 NumTasks=1 CPUs/Task=2 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=2,mem=48G,node=1,billing=2 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=2 MinMemoryNode=48G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/prepare_fresh42k_native8k_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_prepare_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/prepare_fresh42k_native8k_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/fresh42k_native8k_prepare_23528267.log TresPerTask=cpu=2"
+}

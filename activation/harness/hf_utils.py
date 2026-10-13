@@ -3,7 +3,7 @@ HF-facing code for model configuration parsing, message formatting, etc.
 Stores overly detailed/specific logic to keep the rest of code cleaner.
 """
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import typing as t
 import torch
 import torch.nn.functional as F
@@ -46,7 +46,7 @@ _FFN_ONLY_NAMES = frozenset({"mlp", "moe"})
 
 @contextmanager
 def checkpoint_adapter_scope(model, adapter_context, enabled: bool | None = None):
-    """Bind each layer's recomputation to the adapter used for its original forward."""
+    """Bind recomputation to the adapter already scoped around the original decoder forward."""
     previous = [(module, module.gradient_checkpointing, getattr(module, "_gradient_checkpointing_func", None))
                 for module in model.modules() if hasattr(module, "gradient_checkpointing")]
     was_enabled = model.is_gradient_checkpointing
@@ -62,7 +62,7 @@ def checkpoint_adapter_scope(model, adapter_context, enabled: bool | None = None
             original = module._gradient_checkpointing_func
             def scoped(function, *args, _checkpoint=original, **kwargs):
                 return _checkpoint(function, *args, **(kwargs | {
-                    "use_reentrant": False, "context_fn": lambda: (adapter_context(), adapter_context())}))
+                    "use_reentrant": False, "context_fn": lambda: (nullcontext(), adapter_context())}))
             module._gradient_checkpointing_func = scoped
         yield
     finally:
@@ -72,6 +72,49 @@ def checkpoint_adapter_scope(model, adapter_context, enabled: bool | None = None
                 module._gradient_checkpointing_func = original
             elif hasattr(module, "_gradient_checkpointing_func"):
                 del module._gradient_checkpointing_func
+
+
+@contextmanager
+def peft_adapter_scope(model, adapter_name: str | None):
+    """Route an existing PEFT model without resetting an already-correct ordinary LoRA.
+
+    Trainability belongs to the optimizer: snapshot it live on every entry and restore
+    it even when routing was unchanged. No parameter/layer references survive this scope.
+    """
+    from peft.tuners.tuners_utils import BaseTunerLayer
+    from peft.utils.other import AuxiliaryTrainingWrapper
+
+    previous_adapter = model.active_adapter
+    trainability = [(parameter, parameter.requires_grad) for parameter in model.parameters()]
+    modules = list(model.modules())
+    layers = [(module, module.disable_adapters) for module in modules if isinstance(module, BaseTunerLayer)]
+    ordinary = not any(isinstance(module, AuxiliaryTrainingWrapper) for module in modules)
+    ordinary = ordinary and not any(layer.merged for layer, _ in layers)
+    adapters = tuple(model.peft_config)
+
+    def route(name):
+        names = [name] if isinstance(name, str) else list(name)
+        if (not ordinary or tuple(model.peft_config) != adapters or model.active_adapter != name
+                or model.base_model.active_adapter != name
+                or any(layer.active_adapters != names or layer.merged for layer, _ in layers)):
+            model.set_adapter(name)
+
+    try:
+        if adapter_name is not None:
+            route(adapter_name)
+        for layer, _ in layers:
+            if not ordinary or layer.disable_adapters != (adapter_name is None):
+                layer.enable_adapters(adapter_name is not None)
+        for parameter, trainable in trainability:
+            parameter.requires_grad_(trainable)
+        yield
+    finally:
+        route(previous_adapter)
+        for layer, disabled in layers:
+            if not ordinary or layer.disable_adapters != disabled:
+                layer.enable_adapters(not disabled)
+        for parameter, trainable in trainability:
+            parameter.requires_grad_(trainable)
 
 
 
@@ -86,17 +129,37 @@ class Interventions(t.TypedDict, total=False):
     positions: list[int]
     layer_inputs: dict[int, torch.Tensor]
     row_rms: dict[int, torch.Tensor]     # written by the reader hooks: residual RMS at the row positions per intervened layer (0-d tensors; diagnostic)
+    # Key/value transfer (kv_transfer.bind_kv_prefix; instead of `layer_inputs`): the row positions stay as inert placeholders and
+    # every decoder layer attends the transferred entries.
+    kv_values: dict[int, tuple[torch.Tensor, torch.Tensor]]   # layer -> (keys, values), each [M, kv_heads, head_dim], keys not rotated
+    kv_positions: torch.Tensor           # [M] long: each entry's position in its encoder sequence
+    kv_runs: list[tuple[int, int, int]]  # per part: (start, end) of its placeholder run and the length of the encoder sequence it stands for
+    kv_overwrite: bool                   # overwrite mode: the rows are real positions and their own keys/values are replaced at the attention layers
 
 
 class BoundInterventions:
     """The payloads of one decoder forward bound to that forward's cache offset (set once by the text-model pre-hook);
     travels in the layer kwargs, so a checkpointed layer recomputes with exactly the same tensors."""
 
-    __slots__ = ("payloads", "offset")
+    __slots__ = ("payloads", "offset", "_indices")
 
     def __init__(self, payloads: list[Interventions | None], offset: int) -> None:
         self.payloads = payloads
         self.offset = offset
+        self._indices = {}
+
+    def indices(self, row: int, length: int, device: torch.device):
+        """Position metadata is fixed for this forward, including its checkpoint recomputation."""
+        source_positions = tuple(self.payloads[row]["positions"])
+        key = (source_positions, self.offset, length, device)
+        if key not in self._indices:
+            local = [position - self.offset for position in source_positions]
+            selected = [index for index, position in enumerate(local) if 0 <= position < length]
+            positions = torch.tensor([local[index] for index in selected], device=device, dtype=torch.long)
+            rows = (None if len(selected) == len(local)
+                    else torch.tensor(selected, device=device, dtype=torch.long))
+            self._indices[key] = positions, rows
+        return self._indices[key]
 
 
 def text_decoder(model) -> torch.nn.Module:
@@ -163,18 +226,17 @@ def install_intervention_hooks(model) -> None:
                 rows = payload["layer_inputs"].get(index)
                 if rows is None:
                     continue
-                positions = torch.as_tensor(payload["positions"], device=hidden.device, dtype=torch.long)
-                if positions.numel() != rows.shape[0]:
+                if len(payload["positions"]) != rows.shape[0]:
                     raise ValueError("positions and delta rows differ in count")
-                local = positions - bound.offset
-                keep = (local >= 0) & (local < length)
-                if not bool(keep.any()):
+                local, selected = bound.indices(row, length, hidden.device)
+                if local.numel() == 0:
                     continue
                 # Diagnostic for the producer: the residual RMS at this forward's row positions (the deltas' true denominator).
-                payload.setdefault("row_rms", {})[index] = hidden[row, local[keep]].detach().float().pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
+                payload.setdefault("row_rms", {})[index] = hidden[row, local].detach().float().pow(2).mean(dim=-1).sqrt().mean()   # 0-d tensor: no host sync here
                 if output is None:
                     output = hidden.clone()
-                output[row].index_add_(0, local[keep], rows[keep].to(device=hidden.device, dtype=hidden.dtype))
+                rows = rows if selected is None else rows.index_select(0, selected)
+                output[row].index_add_(0, local, rows.to(device=hidden.device, dtype=hidden.dtype))
             return ((output if output is not None else hidden, *args[1:]), kwargs)
         return hook
     for index, layer in enumerate(decoder_layers(model)):
@@ -193,6 +255,11 @@ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, inte
     import functools
     if inputs_embeds.dim() != 3 or inputs_embeds.shape[0] != 1 or len(interventions) != 1:
         raise ValueError("generate_with_interventions takes one sequence and one payload")
+    from .kv_transfer import generate_with_kv_overwrite, generate_with_kv_prefix, has_kv, is_overwrite
+    if is_overwrite(interventions):          # key/value transfer, overwrite mode: HF's own loop, the overwrite bound at the prefill
+        return generate_with_kv_overwrite(peft_model, inputs_embeds=inputs_embeds, interventions=interventions, **generate_kwargs)
+    if has_kv(interventions):                # key/value transfer: its own prefill and greedy loop
+        return generate_with_kv_prefix(peft_model, inputs_embeds=inputs_embeds, interventions=interventions, **generate_kwargs)
     if generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("do_sample", False) or generate_kwargs.get("num_return_sequences", 1) != 1:
         raise ValueError("generate_with_interventions supports greedy single-sequence decoding only")
     base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
@@ -212,6 +279,62 @@ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, inte
             del base_model.__dict__["prepare_inputs_for_generation"]
         else:
             base_model.prepare_inputs_for_generation = previous
+
+
+def generate_batch_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, attention_mask: torch.Tensor,
+                                      interventions: list[Interventions | None], **generate_kwargs):
+    """
+    Greedy `generate` for B rows at once: LEFT-padded embeddings [B, L, d] with their mask [B, L] (0 on the pads) and one payload
+    (or None) per row whose positions are already in the padded row's coordinates (the unpadded position plus the row's pad
+    count). Left padding is what keeps every row equal to its single-sequence run: HF derives the positions from the mask (a
+    row's first real token is position 0), the full-attention layers mask the pads, and a linear-attention layer zeroes the
+    pads' hidden states (`create_recurrent_attention_mask`), so its bias-free projections, convolution window and recurrent
+    state are still exactly zero at the row's first real token. Right padding would run the recurrence over the pads before
+    the first new token. The payload is bound only while the forward can still reach a row position (the prefill): the decode
+    steps would add nothing, and run without the per-layer hook work.
+    """
+    import functools
+    if inputs_embeds.dim() != 3 or attention_mask.shape != inputs_embeds.shape[:2] or len(interventions) != inputs_embeds.shape[0]:
+        raise ValueError("generate_batch_with_interventions takes [B, L, d] embeddings, their [B, L] mask and one payload per row")
+    if not bool(attention_mask[:, -1].all()):
+        raise ValueError("generate_batch_with_interventions takes left-padded rows (every row ends on a real token)")
+    from .kv_transfer import generate_with_kv_overwrite, generate_with_kv_prefix, has_kv, is_overwrite
+    if is_overwrite(interventions):          # key/value transfer, overwrite mode: HF's own loop, the overwrite bound at the prefill
+        return generate_with_kv_overwrite(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
+    if has_kv(interventions):                # key/value transfer: its own prefill and greedy loop
+        return generate_with_kv_prefix(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
+    if generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("do_sample", False) or generate_kwargs.get("num_return_sequences", 1) != 1:
+        raise ValueError("generate_batch_with_interventions supports greedy decoding only")
+    base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
+    # A multimodal wrapper keeps `rope_deltas` of the last generate's batch size, and a later embeddings-only forward of another
+    # batch size would read them: put back what was there.
+    holder = getattr(base_model, base_model.base_model_prefix, None)
+    restore_deltas = hasattr(holder, "rope_deltas")
+    deltas = holder.rope_deltas if restore_deltas else None
+    last = max((max(payload["positions"]) for payload in interventions if payload and payload["positions"]), default=-1)
+    try:
+        if last < 0:
+            return peft_model.generate(inputs_embeds=inputs_embeds, attention_mask=attention_mask, **generate_kwargs)
+        install_intervention_hooks(base_model)
+        previous = base_model.__dict__.get("prepare_inputs_for_generation")
+        original = base_model.prepare_inputs_for_generation
+        @functools.wraps(original)
+        def bound(*args, **kwargs):
+            model_inputs = original(*args, **kwargs)
+            if _cache_offset(model_inputs) <= last:
+                model_inputs[INTERVENTIONS_KWARG] = interventions
+            return model_inputs
+        base_model.prepare_inputs_for_generation = bound
+        try:
+            return peft_model.generate(inputs_embeds=inputs_embeds, attention_mask=attention_mask, **generate_kwargs)
+        finally:
+            if previous is None:
+                del base_model.__dict__["prepare_inputs_for_generation"]
+            else:
+                base_model.prepare_inputs_for_generation = previous
+    finally:
+        if restore_deltas:
+            holder.rope_deltas = deltas
 
 
 def canonical_layer_type(raw_type: object) -> LayerType:

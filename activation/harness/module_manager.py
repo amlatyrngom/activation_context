@@ -28,7 +28,7 @@ from torch import nn
 
 from activation.common.data_syncing import resolve_path
 
-from .hf_utils import TARGET_DEVICE, make_peft_lora_config
+from .hf_utils import TARGET_DEVICE, make_peft_lora_config, peft_adapter_scope
 
 if t.TYPE_CHECKING:
     from peft import PeftModel
@@ -201,25 +201,8 @@ class ModuleManager:
         if peft_model is None:
             yield
             return
-        previous_adapter = peft_model.active_adapter
-        trainability = [(parameter, parameter.requires_grad) for parameter in peft_model.parameters()]
-        from peft.tuners.tuners_utils import BaseTunerLayer
-        layers = [(module, module.disable_adapters) for module in peft_model.modules() if isinstance(module, BaseTunerLayer)]
-        try:
-            if lora_name is not None:
-                peft_model.set_adapter(lora_config.adapter_name)
-            for layer, _ in layers:
-                layer.enable_adapters(lora_name is not None)
-            # PEFT routing changes trainability. Optimizer ownership, not the active adapter, controls it here.
-            for parameter, trainable in trainability:
-                parameter.requires_grad_(trainable)
+        with peft_adapter_scope(peft_model, None if lora_name is None else lora_config.adapter_name):
             yield
-        finally:
-            peft_model.set_adapter(previous_adapter)
-            for layer, disabled in layers:
-                layer.enable_adapters(not disabled)
-            for parameter, trainable in trainability:
-                parameter.requires_grad_(trainable)
 
     def lora_parameters(self, lora_name: str) -> list[nn.Parameter]:
         """The trainable parameters of that adapter only (injecting it if needed)."""

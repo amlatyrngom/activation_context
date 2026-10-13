@@ -1,0 +1,28 @@
+{
+  "utc": "2026-09-23T16:27:39.434232Z",
+  "status": "released",
+  "files": {
+    "run_qa_pi42k_native960_lr_v1.py": "469ff46fa9c1d6395acd83345be2f1ed751067fbf27cac1a063142d92f44ab80",
+    "prepare_pi42k_native960_lr_v1.py": "dc4c382fb63ddd3c24e7ee46c93278136b60ab3c9ac2381521e370b024f49731",
+    "train_pi42k_native960_lr_v1.sbatch": "78fd108e6ba73462754e8991e07ab2917b14fce87d820acc3a1454a07e776dbf",
+    "PI42K_NATIVE960_FLOOR_DESIGN_V1.json": "6795aad760a2d567db5ffdea314c4a0f36db594c2598317019170cfd1ccb3951",
+    "PI42K_NATIVE960_2X_DESIGN_V1.json": "84273cf00dbc495a8c3746d3adfea2ac0cbd2fa20f8262c341f0a9a3b3e166a3"
+  },
+  "jobs": {
+    "FLOOR": {
+      "job_id": 23557303,
+      "dependency": 23555878,
+      "status": "released",
+      "held_state": "JobId=23557303 JobName=pi960_lr_floor UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterany:23555878(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T12:27:39 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T12:27:39 Scheduler=Main Partition=mit_normal_gpu AllocNode:Sid=login009:3689528 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:l40s=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_pi42k_native960_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name pi960_lr_floor --dependency afterany:23555878 --output /home/ngom/orcd/pool/activation/taskaware/logs/native960_floor_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_pi42k_native960_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/PI42K_NATIVE960_FLOOR_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/native960_floor_23557303.log TresPerNode=gres/gpu:l40s:1 TresPerTask=cpu=8\n"
+    },
+    "2X": {
+      "job_id": 23557305,
+      "dependency": 23555733,
+      "status": "released",
+      "held_state": "JobId=23557305 JobName=pi960_lr_2x UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=afterany:23555733(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=02:00:00 TimeMin=N/A SubmitTime=2026-09-23T12:27:39 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T12:27:39 Scheduler=Main Partition=mit_normal_gpu AllocNode:Sid=login009:3689528 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:l40s=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/train_pi42k_native960_lr_v1.sbatch SubmitLine=sbatch --parsable --hold --job-name pi960_lr_2x --dependency afterany:23555733 --output /home/ngom/orcd/pool/activation/taskaware/logs/native960_2x_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/train_pi42k_native960_lr_v1.sbatch /home/ngom/orcd/pool/activation/taskaware/bench/PI42K_NATIVE960_2X_DESIGN_V1.json WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/native960_2x_23557305.log TresPerNode=gres/gpu:l40s:1 TresPerTask=cpu=8\n"
+    }
+  },
+  "scope": "Two fresh960x1 native2k matched L40S arms; inherited Adam5250, resident optimizer, no offload.",
+  "review": "72CPU checks/root rerun; independentreview no blockers; runtime-autotuning and baseline comparison required before LR-only interpretation.",
+  "released_utc": "2026-09-23T16:27:39.981703Z"
+}

@@ -1,0 +1,1316 @@
+{
+  "summary": {
+    "status": "All100 new actual answers manually reviewed",
+    "view": "constant42k_32k",
+    "label": "32,000 questions ×1 +10,000 fresh questions ×1; inherited Adam, constant floor; actual32k evidence",
+    "indexing": "Zero-based machine indices; human item number is index+1",
+    "review_method": "Read every new actual raw response, question, gold and frozen source annotation. Reused unchanged source judgments and reopened supplied primary/full evidence for new assertions and boundary cases. Scored semantic equivalence and material omissions/errors; no NLL-based judgment, outside judge or source relabeling. Did not re-audit every distractor.",
+    "reference_split": {
+      "supported": 87,
+      "fixed_concerns": 13,
+      "fixed_concern_indices": [
+        0,
+        6,
+        19,
+        25,
+        27,
+        29,
+        36,
+        67,
+        76,
+        84,
+        85,
+        89,
+        95
+      ]
+    },
+    "counts": {
+      "all100": {
+        "p2_none_8k": {
+          "incorrect": 64,
+          "correct": 15,
+          "partial": 18,
+          "abstain": 2,
+          "ambiguous": 1
+        },
+        "p2_full_8k": {
+          "partial": 12,
+          "correct": 78,
+          "incorrect": 6,
+          "ambiguous": 4
+        },
+        "piecewise_8k": {
+          "incorrect": 42,
+          "correct": 35,
+          "partial": 21,
+          "ambiguous": 2
+        },
+        "initial32k_8k": {
+          "partial": 15,
+          "correct": 61,
+          "incorrect": 21,
+          "ambiguous": 3
+        },
+        "constant42k_8k": {
+          "partial": 18,
+          "correct": 64,
+          "incorrect": 16,
+          "ambiguous": 2
+        },
+        "rewarm42k_8k": {
+          "partial": 23,
+          "correct": 60,
+          "incorrect": 16,
+          "ambiguous": 1
+        },
+        "constant42k_32k": {
+          "incorrect": 24,
+          "correct": 61,
+          "partial": 13,
+          "ambiguous": 2
+        }
+      },
+      "supported87": {
+        "p2_none_8k": {
+          "correct": 15,
+          "partial": 18,
+          "incorrect": 52,
+          "abstain": 2
+        },
+        "p2_full_8k": {
+          "correct": 74,
+          "partial": 8,
+          "incorrect": 4,
+          "ambiguous": 1
+        },
+        "piecewise_8k": {
+          "correct": 34,
+          "incorrect": 34,
+          "partial": 19
+        },
+        "initial32k_8k": {
+          "correct": 58,
+          "incorrect": 17,
+          "partial": 11,
+          "ambiguous": 1
+        },
+        "constant42k_8k": {
+          "correct": 61,
+          "partial": 13,
+          "incorrect": 12,
+          "ambiguous": 1
+        },
+        "rewarm42k_8k": {
+          "partial": 20,
+          "correct": 54,
+          "incorrect": 13
+        },
+        "constant42k_32k": {
+          "correct": 58,
+          "incorrect": 18,
+          "partial": 10,
+          "ambiguous": 1
+        }
+      },
+      "fixed_concerns13": {
+        "p2_none_8k": {
+          "incorrect": 12,
+          "ambiguous": 1
+        },
+        "p2_full_8k": {
+          "partial": 4,
+          "correct": 4,
+          "ambiguous": 3,
+          "incorrect": 2
+        },
+        "piecewise_8k": {
+          "incorrect": 8,
+          "partial": 2,
+          "correct": 1,
+          "ambiguous": 2
+        },
+        "initial32k_8k": {
+          "partial": 4,
+          "correct": 3,
+          "incorrect": 4,
+          "ambiguous": 2
+        },
+        "constant42k_8k": {
+          "partial": 5,
+          "correct": 3,
+          "incorrect": 4,
+          "ambiguous": 1
+        },
+        "rewarm42k_8k": {
+          "partial": 3,
+          "correct": 6,
+          "incorrect": 3,
+          "ambiguous": 1
+        },
+        "constant42k_32k": {
+          "incorrect": 6,
+          "partial": 3,
+          "correct": 3,
+          "ambiguous": 1
+        }
+      }
+    },
+    "per_generator": {
+      "9b": {
+        "all_denominator": 50,
+        "supported_denominator": 42,
+        "all": {
+          "p2_none_8k": {
+            "partial": 12,
+            "incorrect": 31,
+            "correct": 5,
+            "abstain": 1,
+            "ambiguous": 1
+          },
+          "p2_full_8k": {
+            "partial": 5,
+            "correct": 40,
+            "incorrect": 3,
+            "ambiguous": 2
+          },
+          "piecewise_8k": {
+            "correct": 17,
+            "incorrect": 20,
+            "partial": 12,
+            "ambiguous": 1
+          },
+          "initial32k_8k": {
+            "correct": 32,
+            "incorrect": 9,
+            "partial": 7,
+            "ambiguous": 2
+          },
+          "constant42k_8k": {
+            "correct": 34,
+            "partial": 10,
+            "incorrect": 5,
+            "ambiguous": 1
+          },
+          "rewarm42k_8k": {
+            "correct": 34,
+            "partial": 11,
+            "incorrect": 5
+          },
+          "constant42k_32k": {
+            "correct": 33,
+            "partial": 8,
+            "incorrect": 8,
+            "ambiguous": 1
+          }
+        },
+        "supported": {
+          "p2_none_8k": {
+            "partial": 12,
+            "incorrect": 24,
+            "correct": 5,
+            "abstain": 1
+          },
+          "p2_full_8k": {
+            "partial": 2,
+            "correct": 38,
+            "incorrect": 1,
+            "ambiguous": 1
+          },
+          "piecewise_8k": {
+            "correct": 17,
+            "incorrect": 15,
+            "partial": 10
+          },
+          "initial32k_8k": {
+            "correct": 30,
+            "incorrect": 6,
+            "partial": 5,
+            "ambiguous": 1
+          },
+          "constant42k_8k": {
+            "correct": 32,
+            "incorrect": 2,
+            "partial": 7,
+            "ambiguous": 1
+          },
+          "rewarm42k_8k": {
+            "correct": 30,
+            "partial": 9,
+            "incorrect": 3
+          },
+          "constant42k_32k": {
+            "correct": 31,
+            "incorrect": 5,
+            "partial": 5,
+            "ambiguous": 1
+          }
+        }
+      },
+      "27b": {
+        "all_denominator": 50,
+        "supported_denominator": 45,
+        "all": {
+          "p2_none_8k": {
+            "incorrect": 33,
+            "correct": 10,
+            "abstain": 1,
+            "partial": 6
+          },
+          "p2_full_8k": {
+            "partial": 7,
+            "correct": 38,
+            "incorrect": 3,
+            "ambiguous": 2
+          },
+          "piecewise_8k": {
+            "incorrect": 22,
+            "correct": 18,
+            "partial": 9,
+            "ambiguous": 1
+          },
+          "initial32k_8k": {
+            "partial": 8,
+            "correct": 29,
+            "incorrect": 12,
+            "ambiguous": 1
+          },
+          "constant42k_8k": {
+            "partial": 8,
+            "correct": 30,
+            "incorrect": 11,
+            "ambiguous": 1
+          },
+          "rewarm42k_8k": {
+            "partial": 12,
+            "correct": 26,
+            "incorrect": 11,
+            "ambiguous": 1
+          },
+          "constant42k_32k": {
+            "incorrect": 16,
+            "correct": 28,
+            "partial": 5,
+            "ambiguous": 1
+          }
+        },
+        "supported": {
+          "p2_none_8k": {
+            "correct": 10,
+            "abstain": 1,
+            "incorrect": 28,
+            "partial": 6
+          },
+          "p2_full_8k": {
+            "correct": 36,
+            "partial": 6,
+            "incorrect": 3
+          },
+          "piecewise_8k": {
+            "correct": 17,
+            "incorrect": 19,
+            "partial": 9
+          },
+          "initial32k_8k": {
+            "correct": 28,
+            "partial": 6,
+            "incorrect": 11
+          },
+          "constant42k_8k": {
+            "correct": 29,
+            "partial": 6,
+            "incorrect": 10
+          },
+          "rewarm42k_8k": {
+            "partial": 11,
+            "correct": 24,
+            "incorrect": 10
+          },
+          "constant42k_32k": {
+            "correct": 27,
+            "incorrect": 13,
+            "partial": 5
+          }
+        }
+      }
+    },
+    "paired": {
+      "constant42k_8k": {
+        "all100": {
+          "denominator": 100,
+          "both_correct": [
+            1,
+            2,
+            3,
+            4,
+            7,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            19,
+            24,
+            26,
+            28,
+            29,
+            30,
+            32,
+            33,
+            34,
+            36,
+            38,
+            39,
+            41,
+            43,
+            44,
+            45,
+            48,
+            49,
+            52,
+            53,
+            54,
+            55,
+            56,
+            58,
+            59,
+            60,
+            61,
+            63,
+            65,
+            66,
+            68,
+            70,
+            71,
+            72,
+            75,
+            77,
+            79,
+            82,
+            88,
+            90,
+            92,
+            93,
+            97,
+            99
+          ],
+          "only_32k_correct": [
+            69,
+            73,
+            80,
+            87
+          ],
+          "only_baseline_correct": [
+            5,
+            22,
+            46,
+            64,
+            83,
+            86,
+            91
+          ],
+          "neither_correct": [
+            0,
+            6,
+            8,
+            11,
+            18,
+            20,
+            21,
+            23,
+            25,
+            27,
+            31,
+            35,
+            37,
+            40,
+            42,
+            47,
+            50,
+            51,
+            57,
+            62,
+            67,
+            74,
+            76,
+            78,
+            81,
+            84,
+            85,
+            89,
+            94,
+            95,
+            96,
+            98
+          ],
+          "net_correct_gain": -3,
+          "transitions_baseline_to_32k": {
+            "partial -> incorrect": 2,
+            "correct -> correct": 57,
+            "correct -> incorrect": 7,
+            "partial -> partial": 13,
+            "incorrect -> incorrect": 15,
+            "ambiguous -> ambiguous": 2,
+            "incorrect -> correct": 1,
+            "partial -> correct": 3
+          }
+        },
+        "supported87": {
+          "denominator": 87,
+          "both_correct": [
+            1,
+            2,
+            3,
+            4,
+            7,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            24,
+            26,
+            28,
+            30,
+            32,
+            33,
+            34,
+            38,
+            39,
+            41,
+            43,
+            44,
+            45,
+            48,
+            49,
+            52,
+            53,
+            54,
+            55,
+            56,
+            58,
+            59,
+            60,
+            61,
+            63,
+            65,
+            66,
+            68,
+            70,
+            71,
+            72,
+            75,
+            77,
+            79,
+            82,
+            88,
+            90,
+            92,
+            93,
+            97,
+            99
+          ],
+          "only_32k_correct": [
+            69,
+            73,
+            80,
+            87
+          ],
+          "only_baseline_correct": [
+            5,
+            22,
+            46,
+            64,
+            83,
+            86,
+            91
+          ],
+          "neither_correct": [
+            8,
+            11,
+            18,
+            20,
+            21,
+            23,
+            31,
+            35,
+            37,
+            40,
+            42,
+            47,
+            50,
+            51,
+            57,
+            62,
+            74,
+            78,
+            81,
+            94,
+            96,
+            98
+          ],
+          "net_correct_gain": -3,
+          "transitions_baseline_to_32k": {
+            "correct -> correct": 54,
+            "correct -> incorrect": 7,
+            "partial -> partial": 10,
+            "incorrect -> incorrect": 11,
+            "ambiguous -> ambiguous": 1,
+            "incorrect -> correct": 1,
+            "partial -> correct": 3
+          }
+        },
+        "fixed_concerns13": {
+          "denominator": 13,
+          "both_correct": [
+            19,
+            29,
+            36
+          ],
+          "only_32k_correct": [],
+          "only_baseline_correct": [],
+          "neither_correct": [
+            0,
+            6,
+            25,
+            27,
+            67,
+            76,
+            84,
+            85,
+            89,
+            95
+          ],
+          "net_correct_gain": 0,
+          "transitions_baseline_to_32k": {
+            "partial -> incorrect": 2,
+            "partial -> partial": 3,
+            "correct -> correct": 3,
+            "incorrect -> incorrect": 4,
+            "ambiguous -> ambiguous": 1
+          }
+        }
+      },
+      "initial32k_8k": {
+        "all100": {
+          "denominator": 100,
+          "both_correct": [
+            1,
+            2,
+            3,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            19,
+            26,
+            28,
+            29,
+            30,
+            32,
+            33,
+            34,
+            36,
+            38,
+            39,
+            41,
+            43,
+            44,
+            48,
+            49,
+            52,
+            53,
+            54,
+            55,
+            56,
+            58,
+            59,
+            60,
+            61,
+            63,
+            65,
+            66,
+            68,
+            70,
+            71,
+            72,
+            73,
+            75,
+            77,
+            80,
+            82,
+            88,
+            90,
+            92,
+            93,
+            97,
+            99
+          ],
+          "only_32k_correct": [
+            4,
+            7,
+            24,
+            45,
+            69,
+            79,
+            87
+          ],
+          "only_baseline_correct": [
+            5,
+            18,
+            37,
+            47,
+            86,
+            91,
+            96
+          ],
+          "neither_correct": [
+            0,
+            6,
+            8,
+            11,
+            20,
+            21,
+            22,
+            23,
+            25,
+            27,
+            31,
+            35,
+            40,
+            42,
+            46,
+            50,
+            51,
+            57,
+            62,
+            64,
+            67,
+            74,
+            76,
+            78,
+            81,
+            83,
+            84,
+            85,
+            89,
+            94,
+            95,
+            98
+          ],
+          "net_correct_gain": 0,
+          "transitions_baseline_to_32k": {
+            "partial -> incorrect": 2,
+            "correct -> correct": 54,
+            "incorrect -> correct": 2,
+            "correct -> incorrect": 4,
+            "partial -> partial": 8,
+            "partial -> correct": 5,
+            "incorrect -> incorrect": 18,
+            "correct -> partial": 3,
+            "ambiguous -> ambiguous": 2,
+            "incorrect -> partial": 1,
+            "ambiguous -> partial": 1
+          }
+        },
+        "supported87": {
+          "denominator": 87,
+          "both_correct": [
+            1,
+            2,
+            3,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            26,
+            28,
+            30,
+            32,
+            33,
+            34,
+            38,
+            39,
+            41,
+            43,
+            44,
+            48,
+            49,
+            52,
+            53,
+            54,
+            55,
+            56,
+            58,
+            59,
+            60,
+            61,
+            63,
+            65,
+            66,
+            68,
+            70,
+            71,
+            72,
+            73,
+            75,
+            77,
+            80,
+            82,
+            88,
+            90,
+            92,
+            93,
+            97,
+            99
+          ],
+          "only_32k_correct": [
+            4,
+            7,
+            24,
+            45,
+            69,
+            79,
+            87
+          ],
+          "only_baseline_correct": [
+            5,
+            18,
+            37,
+            47,
+            86,
+            91,
+            96
+          ],
+          "neither_correct": [
+            8,
+            11,
+            20,
+            21,
+            22,
+            23,
+            31,
+            35,
+            40,
+            42,
+            46,
+            50,
+            51,
+            57,
+            62,
+            64,
+            74,
+            78,
+            81,
+            83,
+            94,
+            98
+          ],
+          "net_correct_gain": 0,
+          "transitions_baseline_to_32k": {
+            "correct -> correct": 51,
+            "incorrect -> correct": 2,
+            "correct -> incorrect": 4,
+            "partial -> correct": 5,
+            "partial -> partial": 6,
+            "incorrect -> incorrect": 14,
+            "correct -> partial": 3,
+            "ambiguous -> ambiguous": 1,
+            "incorrect -> partial": 1
+          }
+        },
+        "fixed_concerns13": {
+          "denominator": 13,
+          "both_correct": [
+            19,
+            29,
+            36
+          ],
+          "only_32k_correct": [],
+          "only_baseline_correct": [],
+          "neither_correct": [
+            0,
+            6,
+            25,
+            27,
+            67,
+            76,
+            84,
+            85,
+            89,
+            95
+          ],
+          "net_correct_gain": 0,
+          "transitions_baseline_to_32k": {
+            "partial -> incorrect": 2,
+            "partial -> partial": 2,
+            "correct -> correct": 3,
+            "incorrect -> incorrect": 4,
+            "ambiguous -> partial": 1,
+            "ambiguous -> ambiguous": 1
+          }
+        }
+      }
+    },
+    "generation": {
+      "answers": 100,
+      "ended_at_eos": 100,
+      "reached_cap": 0,
+      "post_wrapper_tail_indices": [],
+      "parsing_counts": {
+        "submit_answer": 100
+      },
+      "generated_tokens": 4330,
+      "max_new_tokens": [
+        160
+      ],
+      "observed_repetition_loops": 0
+    },
+    "generation_provenance": {
+      "inherited_generation_config": {
+        "_from_model_config": true,
+        "eos_token_id": 248044,
+        "transformers_version": "5.15.1",
+        "use_cache": true
+      },
+      "explicit_eos_ids": [
+        248044,
+        248046
+      ],
+      "eot": "<|im_end|>",
+      "eot_id": 248046,
+      "max_new_tokens": 160,
+      "thinking": false,
+      "do_sample": false,
+      "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "tokenizer": "Qwen/Qwen3.5-9B"
+    },
+    "nll": {
+      "AC": {
+        "answer_nll": 0.6785348643641559,
+        "selected100_answer_nll": 0.6785348643641559,
+        "selected50_by_generator": {
+          "9b": 0.7454882665312628,
+          "27b": 0.611581462197049
+        }
+      },
+      "full context": {
+        "answer_nll": 0.5734437824782258,
+        "selected100_answer_nll": 0.5734437824782258,
+        "selected50_by_generator": {
+          "9b": 0.6307102335256275,
+          "27b": 0.5161773314308241
+        }
+      },
+      "no context": {
+        "answer_nll": 1.84384579644697,
+        "selected100_answer_nll": 1.84384579644697,
+        "selected50_by_generator": {
+          "9b": 1.8951792035900816,
+          "27b": 1.7925123893038586
+        }
+      }
+    },
+    "identity": {
+      "condition": "continue32k_10k_final_lr",
+      "context": "32k",
+      "update": 1250,
+      "lifetime_questions": 42000,
+      "parent_questions": 32000,
+      "stage_questions": 10000,
+      "paired_checkpoint": {
+        "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001",
+        "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/LORAS/rag_reader/epoch_001",
+        "parent_questions": 32000,
+        "stage_unique_questions": 10000,
+        "stage_epochs": 1,
+        "continuation_schedule": "final_lr",
+        "optimizer_policy": "inherited Adam, stage-only schedule reset",
+        "continuation_design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+        "continuation_evaluator_sha256": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+        "result_sha256": "a7fa5afce4160cb5e3ff15eb3611fc58655f4d51dd915925368a9dee3c52ab77",
+        "marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+        "training_identity_sha256": "b2fd63869b8786c77197eb77141f9c504a9249c636f5c0f7d63b9733501bbc5c",
+        "training_config_sha256": "22474d21b581ceb2a53a0e76c8184222dd1c562a2c7bcabb076b8e47ab57e98a",
+        "source_receipt_sha256": "eefd6c729a15608254e070ac186507eba32c318e2297bd6c6c237b1ae75ea77a",
+        "inherited_optimizer_check_sha256": "ec037e9226734342f9fbf1607a81373a5b264bf3ababd07271a7ae50ccf67929",
+        "parent_input_check_sha256": "adefb93b67890c5b148c6d465b5be27b673c7f3dbe5834641dbbe63904981d2d",
+        "final_panel_sha256": "b1dd53830ea76e966ec405239b1fd28cef5c69dd18f1d1f02cef541b93cf46d4",
+        "initial_pair_sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+        "inherited_optimizer": {
+          "parent_files": {
+            "ac/PRESERVE": {
+              "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+              "bytes": 101
+            },
+            "ac/ac_modules.pt": {
+              "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+              "bytes": 1208881673
+            },
+            "ac/optimizer.pt": {
+              "sha256": "475e99170d7dd8c1bb09e7cafca7891e18f04815252a9f4fa1e444325f709a9c",
+              "bytes": 4676641912
+            },
+            "ac/side_lora/README.md": {
+              "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+              "bytes": 5184
+            },
+            "ac/side_lora/adapter_config.json": {
+              "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+              "bytes": 1150
+            },
+            "ac/side_lora/adapter_model.safetensors": {
+              "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+              "bytes": 349204488
+            },
+            "reader/PRESERVE": {
+              "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+              "bytes": 101
+            },
+            "reader/README.md": {
+              "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+              "bytes": 5184
+            },
+            "reader/adapter_config.json": {
+              "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+              "bytes": 1147
+            },
+            "reader/adapter_model.safetensors": {
+              "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+              "bytes": 931173960
+            }
+          },
+          "derived_files": {
+            "ac/PRESERVE": {
+              "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+              "bytes": 101
+            },
+            "ac/ac_modules.pt": {
+              "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+              "bytes": 1208881673
+            },
+            "ac/optimizer.pt": {
+              "sha256": "1eeb5c60f7cb2aa3b213c7cf970bfd5ec10b1295412ad9891f6dd915086dc661",
+              "bytes": 4676633951
+            },
+            "ac/side_lora/README.md": {
+              "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+              "bytes": 5184
+            },
+            "ac/side_lora/adapter_config.json": {
+              "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+              "bytes": 1150
+            },
+            "ac/side_lora/adapter_model.safetensors": {
+              "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+              "bytes": 349204488
+            },
+            "reader/PRESERVE": {
+              "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+              "bytes": 101
+            },
+            "reader/README.md": {
+              "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+              "bytes": 5184
+            },
+            "reader/adapter_config.json": {
+              "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+              "bytes": 1147
+            },
+            "reader/adapter_model.safetensors": {
+              "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+              "bytes": 931173960
+            }
+          },
+          "parent_training_questions": 32000,
+          "parent_updates_done": 4000,
+          "parent_epoch_number": 1,
+          "stage_updates_done": 0,
+          "stage_epoch_number": 0,
+          "adam_state_preserved_byte_exact": true,
+          "param_groups_preserved_exact": true,
+          "adam_parameter_step_histogram": {
+            "4000.0": 615
+          },
+          "optimizer_parameter_states": 615,
+          "parameter_groups": [
+            374,
+            256
+          ],
+          "weight_bytes_unchanged": true,
+          "independent_files_not_hardlinks": true,
+          "ac_modules_saved_epoch_number": 1,
+          "runner_requirement": "Set loaded ac.epoch_number=0 for this stage; resume_optimizer=True and exact group-layout validation. Preserve Adam state and per-parameter steps. Stage schedule overrides group LRs at runtime."
+        }
+      },
+      "checkpoint_sha256": {
+        "ac_modules": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+        "encoder_config": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+        "encoder_weights": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+        "reader_config": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+        "reader_weights": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+      },
+      "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+      "continuation_design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+      "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+      "material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+      "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+      "source_sha256": {
+        "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+        "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+        "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+      },
+      "evaluator_sha256": "1714f76c71d709a216b671f490b54062879225ae46cf30849d3e15547b62977c",
+      "long_helper_sha256": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+      "continuation_helper_sha256": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+      "native2k_readout_sha256": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6",
+      "initial32k_32k_readout_sha256": "b1f55b40bd7c789370c604b1e14145a3266e60dcdb1f85ae8cf04224b11d02b9",
+      "passage_parts": true,
+      "encode_batch_max_tokens": 65536,
+      "ratio": 0.0625,
+      "evidence_tokens": 32768,
+      "max_passages": 64,
+      "micro_batch_examples": 1,
+      "reader": "Completed42k constant-LR continuation paired reader, including its own full/no-context controls",
+      "scope": "One32k development cell: exact selected100 scored and AC decoded; no confirmation or training. Extra retrieved context tests distractor robustness, not distributed required evidence.",
+      "nll_replay": "No42k 32k training panel exists; exact input binding is to the completed initial32k 32k readout, not a same-weight NLL replay.",
+      "decoding": "Greedy160, thinking off, inherited EOS union chat EOT; actual generated IDs retained"
+    },
+    "identity_checks": {
+      "all100_fingerprints_order_rows_equal_to_initial32k32k": [
+        "shared_input_fingerprint",
+        "ac_input_fingerprint",
+        "total_rows_fingerprint",
+        "input_rows",
+        "selected_ids",
+        "scored_ids"
+      ],
+      "all100_required_source_question_gold_equal": [
+        "item_id",
+        "question",
+        "gold",
+        "required_source",
+        "generator_cohort",
+        "source_family"
+      ]
+    },
+    "input_receipt": {
+      "input_paths": {
+        "new": "IB/TMP/SYNC/TASK_AWARE_QA/continuation_long_cohort100/continue32k_10k_final_lr__32k/result.json",
+        "prior": "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json"
+      },
+      "sha256": {
+        "new": "a25798cdae7fc50ab84f921344c4491bc89ee9fa6859df6dd1fdf5758e8bc6cb",
+        "prior": "e9f07c75dfd8f812d5bb57fabfaa849874f1ced8ff0cf9266ed196909b08582b"
+      },
+      "identity_fields_equal_all100": [
+        "item_id",
+        "question",
+        "gold",
+        "required_source",
+        "generator_cohort",
+        "source_family"
+      ],
+      "prior_views": [
+        "p2_none_8k",
+        "p2_full_8k",
+        "piecewise_8k",
+        "initial32k_8k",
+        "constant42k_8k",
+        "rewarm42k_8k"
+      ],
+      "reference_labels_frozen": true,
+      "new_full_evidence_differs": 100
+    },
+    "interpretation": "The same constant-floor42k weights score58/87correct at32k versus61/87 at8k, four gains and seven losses. This descriptive development comparison adds retrieved distractors and rows; it is not evidence that longer context always hurts or that distributed required evidence has been tested.",
+    "caveats": [
+      "Same42k constant-floor checkpoint at8k and32k; both use independent passages. Actual evidence differs for all100: 32k uses up to64passages, not inherited8k inputs.",
+      "Own trained-reader full/no-context scores are NLL-only. Frozen P2 decoded controls remain unchanged and use different reader weights.",
+      "All600 previous raw responses/reviews and87/13 source flags remain unchanged.",
+      "Existing pytest competing-announcement ambiguity remains; actual32k Passage1 explicitly announces the new answer2.8.4.",
+      "Finer partial/incorrect boundaries in inherited labels are preserved; strict-correct comparisons are the primary count."
+    ],
+    "responses_sha256": "193787c6d69719fc143c04051b3d806dbda8fc724d7967606c3baaf74a6d7906",
+    "nll_scope": {
+      "scored_questions": 100,
+      "all_and_selected_mean_are_same100": true,
+      "no400question_score_in_this_readout": true,
+      "same_weight_training_panel_replay": false
+    },
+    "actual32k_inputs": {
+      "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+      "ac_input_fingerprint": "a7864a62fe9096fa2a638dda49474b25a3449b7cf4e872406611aff108710143",
+      "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb",
+      "required_sources_retained_whole": true,
+      "configured_evidence_tokens": 32768,
+      "configured_max_passages": 64,
+      "max_view_rows": 4096,
+      "ranges": {
+        "compressed_rows": {
+          "min": 1995,
+          "mean": 2055.33,
+          "max": 2074
+        },
+        "passages": {
+          "min": 10,
+          "mean": 22.43,
+          "max": 64
+        },
+        "evidence_tokens": {
+          "min": 31736,
+          "mean": 32660.02,
+          "max": 32767
+        }
+      },
+      "capped_items": 0
+    },
+    "runtime": {
+      "torch": "2.13.0+cu130",
+      "cuda": "13.0",
+      "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "tf32_matmul": true,
+      "tf32_cudnn": true,
+      "bf16_reduced_precision_reduction": true,
+      "bf16_reduction_split_k": true,
+      "autotuning": {
+        "fla": [
+          "shared",
+          "shared"
+        ],
+        "seconds": 0.211,
+        "checkpoint": "heuristic: always recompute; no matching whole-model memory profile",
+        "logits": "heuristic: bounded vocabulary scratch",
+        "memory_budget_bytes": 74469998592
+      }
+    }
+  },
+  "publication_receipt": {
+    "status": "complete",
+    "checked_utc": "2026-09-23T06:39:54.626405+00:00",
+    "task": "Seventh view: same constant-floor42k checkpoint at actual32k inference",
+    "prior_answer_records_compared_equal": 600,
+    "new_raw_response_records_compared_equal": 100,
+    "new_actual32k_input_records_compared_equal": 100,
+    "prior8k_evidence_retained_exactly": true,
+    "unchanged_reference_labels": {
+      "supported": 87,
+      "concern": 13
+    },
+    "all700_answer_cards_browser_checked": true,
+    "supported_correct": {
+      "constant42k_32k": 58,
+      "constant42k_8k": 61,
+      "initial32k_8k": 58
+    },
+    "paired_supported_vs_same42k8k": {
+      "both": 54,
+      "only32k": 4,
+      "only8k": 7,
+      "neither": 22
+    },
+    "nll_scope": {
+      "scored_questions": 100,
+      "all_and_selected_mean_are_same100": true,
+      "no400question_score_in_this_readout": true,
+      "same_weight_training_panel_replay": false
+    },
+    "actual32k_inputs": {
+      "shared_input_fingerprint": "13757fa9acf319bae58f58d60b0cd49ac79150aab5d371b5fc8db2ea8cd6c4bf",
+      "ac_input_fingerprint": "a7864a62fe9096fa2a638dda49474b25a3449b7cf4e872406611aff108710143",
+      "total_rows_fingerprint": "11a8c680279e7f8c0c7c468c78cec6d05806979b8182b09d2fda170967a7e7cb",
+      "required_sources_retained_whole": true,
+      "configured_evidence_tokens": 32768,
+      "configured_max_passages": 64,
+      "max_view_rows": 4096,
+      "ranges": {
+        "compressed_rows": {
+          "min": 1995,
+          "mean": 2055.33,
+          "max": 2074
+        },
+        "passages": {
+          "min": 10,
+          "mean": 22.43,
+          "max": 64
+        },
+        "evidence_tokens": {
+          "min": 31736,
+          "mean": 32660.02,
+          "max": 32767
+        }
+      },
+      "capped_items": 0
+    },
+    "root_spotchecks": [
+      "1correct prospective confusion paraphrase",
+      "8partial omitted unrepresented qualification",
+      "31 existing ambiguity, actual32k Passage1 announces2.8.4",
+      "55correct redaction and unchanged input list",
+      "96partial current-index replacement versus clearing all"
+    ],
+    "scope_limits": [
+      "Repeated development cohort; small paired exploratory difference, no population or significance claim.",
+      "Frozen P2 decoded controls retain8k evidence. Own trained-reader32k full/no-context scores are NLL-only.",
+      "Standalone Chromium does not exercise actual VSCode custom-editor CSP or live morphing."
+    ],
+    "files": {
+      "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.tressoir.html": {
+        "sha256": "6b3ad3d20c813e2603c54f0efb5d346863ebdce7e090d4b760dd9d492e7685ab",
+        "bytes": 18777540
+      },
+      "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/STRONG_LONG_COHORT100.evidence.json": {
+        "sha256": "ec17f380b7aaf2c51564aaac047c5c18cff40df49b2e853406ead890c114deee",
+        "bytes": 35819551
+      },
+      "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/CONSTANT42K_32K_QUALITATIVE_RESULT_V1.md": {
+        "sha256": "7a3ad06edada816c3ddf7978796d140b248385716a379fc69fdbcac0d84ee22d",
+        "bytes": 3022
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/build_strong_long_cohort100.py": {
+        "sha256": "5985ddf3c45ef3021817155be39543d574389b596b7a9d96141e15c4b64b193d",
+        "bytes": 41416
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/check_constant42k_32k_cohort100.cjs": {
+        "sha256": "9fb1a9613efedfe64d1b8fb6ba8a13eae74c760390fd72e052bf00d357116e21",
+        "bytes": 10755
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/input_new.json": {
+        "sha256": "a25798cdae7fc50ab84f921344c4491bc89ee9fa6859df6dd1fdf5758e8bc6cb",
+        "bytes": 30165249
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/input_prior.json": {
+        "sha256": "e9f07c75dfd8f812d5bb57fabfaa849874f1ced8ff0cf9266ed196909b08582b",
+        "bytes": 7646907
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/responses_constant42k_32k.json": {
+        "sha256": "193787c6d69719fc143c04051b3d806dbda8fc724d7967606c3baaf74a6d7906",
+        "bytes": 26589
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/summary_constant42k_32k.json": {
+        "sha256": "049b08b179395e298e142cd0cc73e2402948fcef88680a665e7ac88b0aa12c87",
+        "bytes": 30588
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/review_constant42k_32k_receipt.json": {
+        "sha256": "379fc6fe09589c3ceb581a58342c6e809c65d332c6ee5acc326c3f423015b932",
+        "bytes": 1799
+      },
+      "IB/TMP/FIRST_TASK_AWARE_FINETUNING/constant42k_32k_review/browser_check_constant32k.json": {
+        "sha256": "3524a7595d9413780f2df482980e136bfda8b1b877616f0135b5532ed41a4b22",
+        "bytes": 1279
+      }
+    }
+  }
+}

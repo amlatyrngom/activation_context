@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "counts": {
+    "train": 32000,
+    "held": 400,
+    "old_train_exact_masks": 16000,
+    "old_held_exact_masks": 400
+  },
+  "canonicalized_answers": [
+    {
+      "split": "train",
+      "item_id": "c9de5ef532687336d09750473146e08f5ff59090538e4189e4fafa62661e87bc"
+    }
+  ],
+  "normalizer": "NFC()",
+  "targets_and_masks_sha256": "bb60ffe393e5d641bb7840d04b645c386d50c72616b4c72918e8fd454e6ef551",
+  "builder_sha256": "524b54df83fa197f2737214166b5bbd57bdd16a4295320a9ce1920159b296527",
+  "seconds": 21.9,
+  "model_weights_loaded": false,
+  "scope": "All32000 training and400 development answer targets/masks. No confirmation questions or model weights read. Original16000 and400 masks identical; genuine mismatch still rejected."
+}

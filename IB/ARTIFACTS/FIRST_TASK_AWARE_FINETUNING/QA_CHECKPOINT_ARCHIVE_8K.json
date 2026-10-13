@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "bucket": "general-bucket-aln",
+  "region": "us-east-2",
+  "prefix": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001",
+  "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/",
+  "checkpoint": {
+    "training_questions": 8000,
+    "training_epochs": 1,
+    "global_update": 1000,
+    "is_final_training_checkpoint": true,
+    "completed_epoch": {
+      "epoch_number": 1,
+      "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+      "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+    },
+    "selection": "Best development result in fixed-budget data study; fixed final pair also led reserved confirmation. No checkpoint switching on confirmation."
+  },
+  "files": [
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/ac/ac_modules.pt",
+      "bytes": 1208881673,
+      "sha256": "16ffecfdac67956cac8324f0f51a83c9e18eaf7c76158b38465647a2f3cf92d6",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/ac/side_lora/README.md",
+      "bytes": 5184,
+      "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/ac/side_lora/adapter_config.json",
+      "bytes": 1150,
+      "sha256": "2b13ba7a94a799711ec535f493ce601daa2997eae8e65d0c10f6c98bbb5fb6dd",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/ac/side_lora/adapter_model.safetensors",
+      "bytes": 349204488,
+      "sha256": "5447f39d285299be25d9b207cf94c4400947500c42e82da4669bbc785d55a16d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/completed_epoch.json",
+      "bytes": 132,
+      "sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/confirmation_summary.json",
+      "bytes": 292923,
+      "sha256": "38df5d42a1f7dffd819a310e3998fe9414c701175a86b89cf25294b64cff8f99",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/material_ids.json",
+      "bytes": 590435,
+      "sha256": "23a57aa98c3a30d16d03efa88c5d263dee9e0ec911c0e9560ad4cf3c0138d86b",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/panel_01000.json",
+      "bytes": 904037,
+      "sha256": "4e1752f39ef91bc221283ccb5e1d6208e4e4bd2b1b74d7b68ac43e57f0f812ea",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/reader/README.md",
+      "bytes": 5184,
+      "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/reader/adapter_config.json",
+      "bytes": 1147,
+      "sha256": "2c360ccb54751eba9c499283307446ed83e04e596ae72791cf0eee09d7db51c7",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/reader/adapter_model.safetensors",
+      "bytes": 931173960,
+      "sha256": "2841c9f46db55298ce179d6a7f338ccb7f5093468ccd678a281ad3be8fb8f9f4",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/result.json",
+      "bytes": 881543,
+      "sha256": "fa926839a43447c3979ddde1ed34461f5c5bcd9f80cba7bda9dd8df5df5013a2",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/run_identity.json",
+      "bytes": 475,
+      "sha256": "ab8e03dd9c112e038f39fe4324684e5756ee2b0cd6c4e686b1546929a0c0ab9d",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/selected_checkpoint.json",
+      "bytes": 380,
+      "sha256": "c419dff07168e0493841025eb05fe5d94b8d44581f136e3287ca7974f670ed99",
+      "server_checksum_verified": true
+    },
+    {
+      "key": "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/training_config.json",
+      "bytes": 1013,
+      "sha256": "e1b922744e84f06b764e0e2672ec367d46fd1174925fef11534cc4b46945eae7",
+      "server_checksum_verified": true
+    }
+  ],
+  "payload_bytes": 2491943724,
+  "contents": "Selected paired AC modules, encoder LoRA, reader LoRA and frozen selection/training metadata. Base weights, optimizer state, other checkpoints and full training corpus excluded.",
+  "validation": "Every PUT supplied SHA256 with create-only IfNoneMatch; each object then matched S3 HEAD checksum and byte count. This manifest was uploaded and verified last. No new GPU restoration test was run for archival."
+}

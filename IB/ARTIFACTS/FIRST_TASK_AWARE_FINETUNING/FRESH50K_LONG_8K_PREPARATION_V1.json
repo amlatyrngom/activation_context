@@ -1,0 +1,101 @@
+{
+  "status": "conditional_candidate_ready_not_staged",
+  "scope": "Actual initial32k8k and original native row metadata; hypothetical50k final publication/native completion. Real final/Adam6250/readout validation remains required at runtime.",
+  "check_count": 29,
+  "checks": [
+    "Exact existing8k reference and helper pins",
+    "Actual frozen fresh training design and original400 IDs match",
+    "Existing input-binding function reused directly",
+    "Every fresh design dependency remains unchanged",
+    "Hypothetical own1000/Adam6250 native completion binds actual400/100 source/gold identity",
+    "Actual8k shared/AC/row fingerprints accepted",
+    "Incomplete native readout rejected",
+    "Wrong own stage rejected",
+    "Foreign pair rejected",
+    "Different payload rejected",
+    "Changed final publication/Adam receipt rejected",
+    "Different design rejected",
+    "Wrong native layout rejected",
+    "Native replay failure rejected",
+    "Absent native replay rejected",
+    "Native noctx unfinished rejected",
+    "Native actual tokenIDs missing rejected",
+    "Native selected100 order changed rejected",
+    "Gold/source disagreement rejected",
+    "Wrong long-context reference rejected",
+    "No same-weight score replay demanded from different32k checkpoint",
+    "Changed rebuilt AC inputs rejected",
+    "Changed runtime row budget rejected",
+    "harness remains the completed8k implementation",
+    "material_items remains the completed8k implementation",
+    "_evaluate remains the completed8k implementation",
+    "sample_with_token_ids remains the completed8k implementation",
+    "Own final guard, source receipt and final rehash retained",
+    "Bounded25min/32GiB,1350swhole-attempt, ownnative path"
+  ],
+  "worker_sha256": "dc36e8115b9a245f5a8c3e926b4a05b05a290e21821097ba621de9fdabf7f817",
+  "launcher_sha256": "958242c803788823ec5328c0ab09e6b22fe932e6922c636c73196c93a1dacd68",
+  "fixture_sha256": "6cc6d94f961bfd1e8054550cac8729c724e28840b4ca0512fe8a78dbe58aac40",
+  "fresh_training_design_sha256": "31d422fa93d74d07daa63dee9265d6897e2b03498bd4b0c2e5f1babe165b42ab",
+  "initial32k8k_sha256": "59e5d55aae0fe39e992db57fcceb77a78dea5cea17e65da5c69cf9ab5d296af4",
+  "syntax": {
+    "python": "passed",
+    "shell": "passed"
+  },
+  "reused_final_guard_cpu_receipt": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/fresh42k_native8k_v1_cpu.json",
+  "staged": false,
+  "submitted": false,
+  "confirmation_access": false,
+  "utc": "2026-09-23T06:05:27.887793+00:00",
+  "purpose": "Test whether the completed42k\u219250k fresh native continuation improves8k retrieval-context performance without explicit long-context training.",
+  "conditions": {
+    "condition": "continue42k_8k_final_lr_floor",
+    "context": "8k",
+    "prior_native_questions": 50000,
+    "new_training_updates": 0,
+    "readout_questions": 400,
+    "decoded_questions": 100,
+    "source": "train_ws_night_v1",
+    "ratio": 0.0625,
+    "passage_parts": true,
+    "evidence_budget": 8192,
+    "max_passages": 16,
+    "microbatch": 2,
+    "encoder_batch_budget": 65536,
+    "decoded_max_new_tokens": 160
+  },
+  "eligibility": [
+    "Root decision after final native quality evidence",
+    "Own completed1000-stage pair and actual inheritedAdam6250",
+    "Complete ownnative400 score replay inAC/full/no-context and100actualAC answers",
+    "Exact initial32k8k400 inputs/rows and fixed100 question/source/gold identity"
+  ],
+  "invocation": "evaluate_fresh50k_long_8k_v1.sbatch <same frozen FRESH42K_NATIVE8K_DESIGN_V1.json used by training/native100>",
+  "output": "reports/continuation_long_cohort100/continue42k_8k_final_lr_floor__8k/result.json",
+  "allocation": {
+    "gpu": "one RTX PRO6000",
+    "partition": "mit_preemptable",
+    "host_gib": 32,
+    "wall_minutes": 25,
+    "application_whole_attempt_seconds": 1350,
+    "anticipated_minutes": [
+      15,
+      20
+    ]
+  },
+  "limitations": [
+    "Actual own50k completed pair and native100 have not been validated by this candidate yet; CPU fixture labels that lineage hypothetical",
+    "8k adds retrieved context and independent-passage layout; this is not distributed-required-evidence synthesis",
+    "NLL at8k is a new measurement, never a numerical replay of another checkpoint",
+    "Partial output requires unchanged-identity resume before complete100 qualitative interpretation"
+  ],
+  "root_review": {
+    "utc": "2026-09-23T06:06:40.621914+00:00",
+    "status": "candidate accepted; conditional launch remains pending",
+    "scope": "Reviewed siblingdiff and actual fresh-native final evaluator schema. Same own1000/Adam6250publication, original400 ordering/micro2, native100 complete all-viewreplay requirement, exact8k source/row binding, final pairedpayload rehash. Hypothetical final-lineage fixtures are not actual final validation. No training source or activejobs modified.",
+    "hashes": {
+      "evaluate_fresh50k_long_8k_v1.py": "dc36e8115b9a245f5a8c3e926b4a05b05a290e21821097ba621de9fdabf7f817",
+      "evaluate_fresh50k_long_8k_v1.sbatch": "958242c803788823ec5328c0ab09e6b22fe932e6922c636c73196c93a1dacd68"
+    }
+  }
+}

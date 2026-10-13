@@ -1,0 +1,831 @@
+{
+  "created_utc": "2026-09-22T14:04:07.611189+00:00",
+  "status": "complete",
+  "candidate": "oracle_27b_16k_r16_half_ac_lr",
+  "comparison": "16,000 unique 27B-synthesized QA ×1 epoch, 2B encoder, 1/16 compression; AC LR2.5e-5 versus5e-5, other recipe settings unchanged.",
+  "scope": "Quick qualitative check of the two LR candidates against their controls. Not a representative accuracy estimate or substitute for the 400-question NLL readout. Expand to all100 if a candidate looks promising or the small check reveals a material discrepancy.",
+  "selection": "One supported-reference item from each of nine source families in each of two generator cohorts; fixed ID hash, independent of model losses and answers.",
+  "reviewed_items": 18,
+  "input_sha256": {
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/LR_QUALITATIVE_CHECK_SELECTION.json": "7084e55ec28379ddaafc77f43e9100bd6d68deff0b835fb9db44a9e055e52459",
+    "IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/MODEL_COMPARISON_COHORT100.evidence.json": "61a97d0a76f2ddbafb39809e1f98a46805cd060d4842e9fe12749e065712d220",
+    "IB/TMP/SYNC/TASK_AWARE_QA/model_comparison_cohort100/oracle_27b_16k_r16_half_ac_lr.json": "64720e61ae485e6f3ff9f7b8afd4c1667ed00904f898c399b02436a9bed78c50"
+  },
+  "source_review_policy": "Same sources and fixed18 as the preceding r8 review; source/selection hashes verified unchanged. Judge complete actual responses against supplied evidence, preserving existing source annotations and original judgments. No NLL-based correctness labels.",
+  "counts": {
+    "candidate": {
+      "incorrect": 5,
+      "partial": 5,
+      "correct": 8
+    },
+    "original_r16": {
+      "incorrect": 5,
+      "partial": 2,
+      "correct": 11
+    }
+  },
+  "gains_vs_original_r16": [
+    50
+  ],
+  "losses_vs_original_r16": [
+    8,
+    17,
+    79
+  ],
+  "format_summary": {
+    "candidate": {
+      "submit_answer_parsed": 18,
+      "ended_at_eos": 18,
+      "reached_token_budget": 0
+    },
+    "original_r16": {
+      "submit_answer_parsed": 18,
+      "ended_at_eos": 17,
+      "reached_token_budget": 1
+    }
+  },
+  "format_note": "All18 candidate outputs parse, terminate at EOS, and remain below the cap. Original r16 item94 repeats punctuation to the cap; candidate terminates cleanly with three exclamation marks but still merges tokens, omits is and shortens the word incorrectly. Parser success alone does not prove a complete wrapper: the old parser also accepted that truncated answer.",
+  "decision": {
+    "keep_original_learning_rate": true,
+    "expand_to_all100": false,
+    "reason": "Keep the original AC learning rate. The fixed18 expose no compelling semantic reversal of the worse final NLL: candidate loses three correct responses, recovers part of one incorrect response, and fixes one repetition failure without making that answer correct. No all100 expansion is warranted by this check."
+  },
+  "new_source_concerns": [],
+  "original400_nll_replay_max_abs_delta": 0.0,
+  "rows": [
+    {
+      "item_id": "f66108a07b880194709c00da96807da04083d48ec919881d4a6d2cde5b382f0d",
+      "generator_cohort": "27b",
+      "source_family": "code",
+      "index": 94,
+      "question": "When `TweetTokenizer` is instantiated with `reduce_len=True` and `strip_handles=True`, what is the exact output of tokenizing the string '@user: This is waaaaayyyy too much for you!!!!!!'?",
+      "gold": "[':', 'This', 'is', 'waaayyy', 'too', 'much', 'for', 'you', '!', '!', '!']",
+      "source_review": {
+        "item_id": "f66108a07b880194709c00da96807da04083d48ec919881d4a6d2cde5b382f0d",
+        "reference": "supported",
+        "source_note": "The doctest shows the exact same sentence and options with another removed handle; the output is identical after stripping @user, and the length-reduction code supports the triple repeated characters."
+      },
+      "required_source_sha256": "ac2dd2f839eb030ea583791213a8b1f6d0ed865e8e225f04a470130f57626628",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n[':This', 'waaay', 'too', 'much', 'for', 'you', '!', '!', '!']\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Still merges colon and This, omits is, and writes waaay instead of waaayyy. The source doctest requires separate tokens and three repeated a and y characters."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 53,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n[': This', 'waaay', 'too', 'much', 'for', 'you', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!',",
+        "review": {
+          "status": "incorrect",
+          "note": "Merges tokens, drops is, gives the wrong shortened word, and repeats many exclamation marks instead of the exact three-token punctuation tail."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 160,
+          "ended_at_eos": false,
+          "reached_token_budget": true,
+          "post_first_wrapper_text": null
+        }
+      },
+      "paired_note": "Stops after the correct three exclamation marks, fixing repetition/termination; the requested exact token sequence remains incorrect."
+    },
+    {
+      "item_id": "10f56d1edd978753dbb41d13de3ff6b7870c68fbb4e4533f3b4569a00736ae7a",
+      "generator_cohort": "27b",
+      "source_family": "documents",
+      "index": 24,
+      "question": "In the VariableSparsityConfig, how does the local_window_blocks parameter determine the size of local attention windows across the sequence?",
+      "gold": "The list defines the block count for each specific window sequentially, with the last number applying to all remaining local windows.",
+      "source_review": {
+        "item_id": "10f56d1edd978753dbb41d13de3ff6b7870c68fbb4e4533f3b4569a00736ae7a",
+        "reference": "supported",
+        "source_note": "VariableSparsityConfig explicitly assigns successive list entries to successive windows and repeats the final entry for remaining windows."
+      },
+      "required_source_sha256": "3893b081f3f5c51f7344f888a67209f7980ea8376d5e43efd165568115050d6d",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt is a list of integers where the first number defines the first window size, the second defines the second window size, and subsequent numbers define the remaining local windows.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Describes successive list-defined window sizes but never says the final entry repeats for all remaining local windows."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 59,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt defines a list where the first number is the window size for the first local window, the second for the second, and so on, determining the number of blocks in each respective local window.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Gets successive list-defined window block counts, but omits the last-entry repetition supplied by frozen full."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 65,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Same material omission as the control."
+    },
+    {
+      "item_id": "6e8f12064d578b8da7494b4b53b701779bf8f81b120cd7538560e1aeb96ebb7c",
+      "generator_cohort": "27b",
+      "source_family": "financial",
+      "index": 62,
+      "question": "What was the increase in DynaResource, Inc.'s total current liabilities from the prior period to the current period ending March 31, 2024?",
+      "gold": "$3,061,258",
+      "source_review": {
+        "item_id": "6e8f12064d578b8da7494b4b53b701779bf8f81b120cd7538560e1aeb96ebb7c",
+        "reference": "supported",
+        "source_note": "The displayed total current liabilities are 27,468,403 and 24,407,145; their difference is 3,061,258. The balance-table column date headers are outside this excerpt; the question supplies the current/prior-period framing."
+      },
+      "required_source_sha256": "446162fe08537676d430172a457cf8eb9480a8b5448239da10817b4416b47b53",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$1,926,000\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Gives $1,926,000 instead of $27,468,403 − $24,407,145 = $3,061,258 from the current-liabilities row."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$2,763,288\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Gives $2,763,288 instead of 27,468,403 − 24,407,145 = $3,061,258."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Different wrong value; no semantic gain."
+    },
+    {
+      "item_id": "6efc127b2b897cdcc7f20668889e93d53a996d84769d7a5d367d6bff030cf269",
+      "generator_cohort": "27b",
+      "source_family": "legal",
+      "index": 8,
+      "question": "According to the court's analysis of Formal Ethics Opinion KBA E-381, why were the contacts made by Grasch and Cowen with former Humana employees not considered a violation of SCR 3.130(4.2)?",
+      "gold": "Because the opinion states that communications with unrepresented former employees of an organizational party do not violate the rule prohibiting contact with represented persons.",
+      "source_review": {
+        "item_id": "6efc127b2b897cdcc7f20668889e93d53a996d84769d7a5d367d6bff030cf269",
+        "reference": "supported",
+        "source_note": "The excerpt explicitly quotes KBAE-381: communicating with unrepresented former organizational employees does not violate SCR3.130(4.2), and applies it to Grasch/Cowen's contacts."
+      },
+      "required_source_sha256": "2748058c4ce5cfc3137ef3e47f6229ee32ac9d664ee829e20dc8f7085bf59239",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe contacts were not prohibited because the former employees were not represented by Humana at the time of contact, and the communication was not directed to a current or former employee of Humana.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Incorrectly says the communication was not directed to a current or former Humana employee and describes Humana itself as the representative. The source concerns unrepresented former organizational employees."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 63,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe contacts were not prohibited because the former employees were not represented by counsel at the time, and the prohibition applies only to current or former employees represented by counsel.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Correctly grounds the exception in the former employees being unrepresented, repairing the no-context account that miscast Humana as a law firm."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 58,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Regression from correct: loses the control’s accurate unrepresented-former-employee rationale and contradicts who was contacted."
+    },
+    {
+      "item_id": "a77a6822f59bf6d0217d6fe8b447167d0424c85c218eed2422848e1a6f0a8903",
+      "generator_cohort": "27b",
+      "source_family": "math_arxiv",
+      "index": 42,
+      "question": "Calculate the numerical difference between the sharp upper bound for $|γ_3|$ derived for the class $ℂR^+$ and the bound established by Thomas (2016) for the class $ℂK_0$ with a real second coefficient, rounding the result to four decimal places.",
+      "gold": "0.1273",
+      "source_review": {
+        "item_id": "a77a6822f59bf6d0217d6fe8b447167d0424c85c218eed2422848e1a6f0a8903",
+        "reference": "supported",
+        "source_note": "7/12-(28+19*sqrt19)/243 is approximately0.1272877, rounding to0.1273. These are the two specified source bounds."
+      },
+      "required_source_sha256": "85dbfefce000b2477d5f26a22aa6cab93c34a11e9959a203b2a4aa3758eab819",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n0.0000\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "The two supplied bounds differ by 0.1273, not zero: 7/12 − (28+19√19)/243."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 32,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n0.0000\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Gives zero for unequal bounds; source arithmetic gives0.1273, correctly computed by frozen full."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 32,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Repeats the control’s incorrect zero result."
+    },
+    {
+      "item_id": "f603807e5ec9f05c708f5a90d10098f1fb710c3a37d41ed0a0c9e7b64beb4f23",
+      "generator_cohort": "27b",
+      "source_family": "math_textbook",
+      "index": 30,
+      "question": "Calculate the domain boundary for the function f(x) = log₃(3x + 4) and express the resulting domain in interval notation.",
+      "gold": "The domain boundary is x = -4/3, resulting in the interval (-4/3, ∞).",
+      "source_review": {
+        "item_id": "f603807e5ec9f05c708f5a90d10098f1fb710c3a37d41ed0a0c9e7b64beb4f23",
+        "reference": "supported",
+        "source_note": "The worked example requires3x+4>0, giving x>-4/3 and open interval(-4/3,infinity)."
+      },
+      "required_source_sha256": "adcc6bc390d5c1bcd95ea62c59edb0c73a80e9cb1a34b69eee6e57ff634e67c8",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n(-4/3, ∞)\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "The interval (−4/3, ∞) and its boundary follow from 3x+4>0."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 34,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n(-4/3, ∞)\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Gives the correct open interval, completing the no-context derivation that stopped before interval notation."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 34,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the correct interval."
+    },
+    {
+      "item_id": "c2959dc1427a45e7727aa6aed10edf0be8251b12e1c13047d6a9740589b3518d",
+      "generator_cohort": "27b",
+      "source_family": "office",
+      "index": 75,
+      "question": "In the provided VBA example, if the connector named 'Conn1To2' is not attached to a shape at its end, what specific outcome occurs when the code attempts to assign the value of .EndConnectionSite to the variable endConnSite1?",
+      "gold": "The property access generates an error because the end of the connector is not attached to a shape.",
+      "source_review": {
+        "item_id": "c2959dc1427a45e7727aa6aed10edf0be8251b12e1c13047d6a9740589b3518d",
+        "reference": "supported",
+        "source_note": "The Remarks explicitly say EndConnectionSite raises an error if the connector end is unattached, which directly covers the assignment in the example."
+      },
+      "required_source_sha256": "0bb9ef02775fa483b63c0e4788ee15d52a6378876afa66562b29595b3f29681f",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe code generates an error.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "The source explicitly says accessing EndConnectionSite with an unattached connector end generates an error."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 32,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe code generates an error because the EndConnectionSite property cannot be accessed if the connector is not attached to a shape.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Correctly explains that accessing this property on an unattached connector end raises an error."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 50,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the requested outcome, more concisely."
+    },
+    {
+      "item_id": "8385cc53b576537b175de6a06d68f7e2cc15ef817b6ee264dfaffb7991e0cd3a",
+      "generator_cohort": "27b",
+      "source_family": "technical_web",
+      "index": 22,
+      "question": "Which nation listed as an APEC member is simultaneously designated as an observer in ASEAN and is a current Commonwealth realm with a monarchy?",
+      "gold": "Papua New Guinea",
+      "source_review": {
+        "item_id": "8385cc53b576537b175de6a06d68f7e2cc15ef817b6ee264dfaffb7991e0cd3a",
+        "reference": "supported",
+        "source_note": "The supplied lists put PapuaNewGuinea in APEC, ASEAN Observers, and Current Commonwealth realms with monarchy; their intersection supports the answer."
+      },
+      "required_source_sha256": "c5caddb78d3fbfab54425be2588bfec7005d4316ca71721f1a46b7dbebc20127",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nNew Zealand\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "New Zealand appears in APEC and current Commonwealth realms but not the ASEAN-observer list; Papua New Guinea satisfies all three conditions."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 28,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nAustralia\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Australia meets the APEC/realm conditions but is not the listed ASEAN observer; frozen full correctly identifies Papua New Guinea."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 27,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Changes Australia to New Zealand without resolving the failed observer condition."
+    },
+    {
+      "item_id": "3fdf307b5965ab5ee01c9037cb0ae671874f487888d5f5161c7c9ed4e676d27a",
+      "generator_cohort": "27b",
+      "source_family": "web",
+      "index": 37,
+      "question": "In 1600, how much higher was the per capita income of Ireland compared to India, and which major corporate entity was founded in that same year?",
+      "gold": "Ireland's per capita income was $65 higher than India's ($615 vs. $550), and the East India Company was founded in 1600.",
+      "source_review": {
+        "item_id": "3fdf307b5965ab5ee01c9037cb0ae671874f487888d5f5161c7c9ed4e676d27a",
+        "reference": "supported",
+        "source_note": "The passage supplies Ireland615 and India550, whose difference is65, and explicitly dates EastIndiaCompany founding to1600."
+      },
+      "required_source_sha256": "932a59814b058bc4610462653dda0243f696e9913b34a325ec8ed1cdacb114e3",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIreland's per capita income was $15 higher than India's, and the East India Company was founded in 1600.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Correctly names the East India Company but repeats $15 instead of Ireland615 minus India550 = $65."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 55,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIreland's per capita income was $15 higher than India's, and the East India Company was founded in 1600.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Gets the East India Company right, but gives$15 rather than$65, apparently subtracting China’s600 instead of India’s550; frozen full calculates correctly."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 55,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Same incorrect income difference as the control."
+    },
+    {
+      "item_id": "a3e3e477d2fcdef8fb39e52f92bccd939646fc7155140fa35dd7eb408d9ab025",
+      "generator_cohort": "9b",
+      "source_family": "code",
+      "index": 17,
+      "question": "If a command exits with code 1 and `failOnError` is set to false, what happens to the error stream content and does an exception get thrown?",
+      "gold": "The error stream content is logged as an error via LOGGER.error, but no exception is thrown.",
+      "source_review": {
+        "item_id": "a3e3e477d2fcdef8fb39e52f92bccd939646fc7155140fa35dd7eb408d9ab025",
+        "reference": "supported",
+        "source_note": "For a nonzero exit and failOnError=false, the else logs the error-stream string and returns exitCode; no failure exception is deliberately raised. This does not assert immunity from unrelated I/O errors."
+      },
+      "required_source_sha256": "6a067b7f7a94e79e8469197e541071318f80fa924d32f4c642c4a8344751de94",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe error stream content is printed to the console, but no exception is thrown.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Correctly says no exception is thrown, but the error-stream text is passed to LOGGER.error; its being printed to the console is not established by this snippet."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 42,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe error stream content is logged via LOGGER.error, and no exception is thrown.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "States error-level logging and no exception, completing the no-context response’s missing logging detail."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 42,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Regression from correct: replaces explicit error-level logging with an unsupported output destination."
+    },
+    {
+      "item_id": "14933818b2392e7b521b1b31166c943968d420efdd96f74248fc9e7d8e1b4a43",
+      "generator_cohort": "9b",
+      "source_family": "documents",
+      "index": 79,
+      "question": "According to the PEP, what specific requirement must be met using the sysconfig module for successful cross-builds?",
+      "gold": "The data module name must be overwritten via the _PYTHON_SYSCONFIGDATA_NAME environment variable.",
+      "source_review": {
+        "item_id": "14933818b2392e7b521b1b31166c943968d420efdd96f74248fc9e7d8e1b4a43",
+        "reference": "supported",
+        "source_note": "The Upstream support section explicitly identifies overriding the sysconfig data module name through _PYTHON_SYSCONFIGDATA_NAME as required for cross-builds."
+      },
+      "required_source_sha256": "d5e99df0e591bab971d259c51f9b19b638a9acc8311b8836e14de3937e6f51b1",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe sysconfig module must be able to overwrite the data module name.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Identifies the data-module-name override but omits the required _PYTHON_SYSCONFIGDATA_NAME environment variable specified in the PEP."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 40,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThe sysconfig module must allow overwriting the data name via the _PYTHON_SYSCONFIGDATA_NAME environment variable.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Identifies overriding the data name through the exact required environment variable."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 50,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Regression from correct: the control named both the override and its environment variable."
+    },
+    {
+      "item_id": "786c2f5c368772e9a56e31e968e04ffdc91a3083ad3c82480a9fa9acc6a186db",
+      "generator_cohort": "9b",
+      "source_family": "financial",
+      "index": 52,
+      "question": "Based on the supplemental noncash activities for the three months ended March 31, 2024, what was the total dollar value of intangible assets acquired via stock issuances?",
+      "gold": "$1,365,000",
+      "source_review": {
+        "item_id": "786c2f5c368772e9a56e31e968e04ffdc91a3083ad3c82480a9fa9acc6a186db",
+        "reference": "supported",
+        "source_note": "The2024 supplemental noncash row Issuancesofstockforintangibleassets is1365000."
+      },
+      "required_source_sha256": "8fc5fe7a85266ea8b879dc99deabd214e22bc25c6739e0288cb25da090085d83",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$1,365,000\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "The 2024 supplemental noncash row reports $1,365,000 for stock issued for intangible assets."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n$1,365,000\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Gives the exact $1,365,000 noncash stock-issuance amount."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the exact amount."
+    },
+    {
+      "item_id": "1c3b354c8b2024ae336d9f6a9337b1b6866b8ac050d05a8851f195bb6bbaa38b",
+      "generator_cohort": "9b",
+      "source_family": "legal",
+      "index": 34,
+      "question": "According to Brulotte v. Thys Co., which portion of a license agreement permitting royalties after patent expiration is considered illegal?",
+      "gold": "Only the provision concerning royalties accruing after the patent has expired; earlier accrued royalties remain collectable.",
+      "source_review": {
+        "item_id": "1c3b354c8b2024ae336d9f6a9337b1b6866b8ac050d05a8851f195bb6bbaa38b",
+        "reference": "supported",
+        "source_note": "The Brulotte paragraph says later-accruing royalties are uncollectable but that this does not affect the payment due long before expiration."
+      },
+      "required_source_sha256": "ddf7fb2a04519aca036c608f71cd578bd0616d4a2602915891543c75a7bc2d12",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nOnly the portion of the agreement allowing royalties to accrue after the patent expiration is illegal.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Correctly limits illegality to royalties accruing after patent expiration, preserving the source’s distinction from earlier accruals."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 44,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nOnly the portion of the agreement concerning accrued royalties after the patent has expired is illegal.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Limits illegality to the portion concerning post-expiration accrual, matching the supplied opinion and frozen full."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 43,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the correct condition."
+    },
+    {
+      "item_id": "343a1a3d08afbe6203fb59d093aed337b24a6ed9eb2c5d344c1be9e7bd037883",
+      "generator_cohort": "9b",
+      "source_family": "math_arxiv",
+      "index": 50,
+      "question": "In the (MixR) sparse scenario, what are the specific values for the number of relevant functional covariates ($q_{\\text{fun}}$), relevant categorical covariates ($q_{\\text{cat}}$), total functional covariates ($p_{\\text{fun}}$), and total categorical covariates ($p_{\\text{cat}}$)?",
+      "gold": "$q_{\\text{fun}}=2$, $q_{\\text{cat}}=2$, $p_{\\text{fun}}=8$, and $p_{\\text{cat}}=8$. Source: 0.",
+      "source_review": {
+        "item_id": "343a1a3d08afbe6203fb59d093aed337b24a6ed9eb2c5d344c1be9e7bd037883",
+        "reference": "supported",
+        "source_note": "The sparse MixR definition explicitly sets both q values to2 and both p values to8. The extra Source:0 suffix is unnecessary citation text, not a factual error."
+      },
+      "required_source_sha256": "e9f63aa50cd4d9c7d48af0e1e7a4b11ce2eb68860443229feb33abd77bea9e6d",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nq_fun=2, q_cat=8, p_fun=8, p_cat=8.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "partial",
+          "note": "Correctly gives q_fun=2 and both p values=8, but q_cat must be2, not8."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 46,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nq_fun = 1, q_cat = 1, p_fun = 2, p_cat = 2.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "incorrect",
+          "note": "Uses 1, 1, 2, 2 instead of the MixR sparse values 2, 2, 8, 8."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 50,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Gain from incorrect: three of four requested values are now right; the answer is still incomplete in correctness."
+    },
+    {
+      "item_id": "41a8287ef36af8d6f63d05de84bd059e04a8612589578b02adc096d8a00cc68d",
+      "generator_cohort": "9b",
+      "source_family": "math_textbook",
+      "index": 10,
+      "question": "Given the kurtosis equation for a data set X, what specific numerical value is subtracted from the fourth-moment term to standardize the measure relative to a normal distribution?",
+      "gold": "3",
+      "source_review": {
+        "item_id": "41a8287ef36af8d6f63d05de84bd059e04a8612589578b02adc096d8a00cc68d",
+        "reference": "supported",
+        "source_note": "The displayed kurtosis equation ends with minus3, matching the stated normal-distribution baseline."
+      },
+      "required_source_sha256": "4b792fc39075783cd30cbc42724ef4d98e90e7a10d7f3cfbf98faab11e5c97ac",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n3\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Returns3, the constant subtracted in the displayed fourth-moment equation."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 27,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\n3\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Gives the exact subtracted constant 3, matching both controls."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 27,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the exact constant."
+    },
+    {
+      "item_id": "636fce7fe18c851977201a78df23c55c8252232b6985f0ab902ef44e652fc9c9",
+      "generator_cohort": "9b",
+      "source_family": "office",
+      "index": 14,
+      "question": "According to the text, what specific negative outcome might result from enriching a job for an employee with a low need for achievement or an external locus of control?",
+      "gold": "It may only increase anxiety and fear of failure.",
+      "source_review": {
+        "item_id": "636fce7fe18c851977201a78df23c55c8252232b6985f0ab902ef44e652fc9c9",
+        "reference": "supported",
+        "source_note": "The JobRedesign paragraph explicitly says enrichment for low-achievement-need/external-locus employees may increase anxiety and fear of failure."
+      },
+      "required_source_sha256": "3d961fecfe3b6d9b6339af0f6a60f8254c9442b923fcdcf7cfd187f2591efcbc",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nAnxiety and fear of failure.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Returns both consequences named in Job Redesign: anxiety and fear of failure."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 33,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt may only increase anxiety and fear of failure.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Retrieves anxiety and fear of failure rather than the no-context boredom/frustration substitute."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the stated consequences."
+    },
+    {
+      "item_id": "38087e20e174cab80a8e8148ec81b995b26f2748453862a886c269884c007515",
+      "generator_cohort": "9b",
+      "source_family": "technical_web",
+      "index": 46,
+      "question": "Which specific UF/IFAS division is designated by the URL segment 'sfyl.ifas.ufl.edu'?",
+      "gold": "The URL segment 'sfyl.ifas.ufl.edu' designates the UF/IFAS Extension division.",
+      "source_review": {
+        "item_id": "38087e20e174cab80a8e8148ec81b995b26f2748453862a886c269884c007515",
+        "reference": "supported",
+        "source_note": "The Extension navigation link has the sfyl.ifas.ufl.edu URL and title UF/IFAS Extension–SolutionsforYourLife."
+      },
+      "required_source_sha256": "4ff568c0253fb572a9c295b5cfe6b13db325ca05270134776e3751dec298c834",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nUF/IFAS Extension - Solutions for Your Life.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Names UF/IFAS Extension–Solutions for Your Life, matching the sfyl.ifas.ufl.edu link."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 37,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nUF/IFAS Extension - Solutions for Your Life\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Reads the full Extension–Solutions for Your Life link title, rather than the invented no-context expansion."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the correct division."
+    },
+    {
+      "item_id": "fbb1c49657a40aad9c62eb630052826e8242a64c657579674e517b2dc4d30378",
+      "generator_cohort": "9b",
+      "source_family": "web",
+      "index": 80,
+      "question": "What clinical implication is indicated when a D-dimer test reveals a negative result within the normal range of approximately 0.5 mg/l?",
+      "gold": "It indicates that thrombosis has not occurred and the body's blood clotting healing system is functioning well.",
+      "source_review": {
+        "item_id": "fbb1c49657a40aad9c62eb630052826e8242a64c657579674e517b2dc4d30378",
+        "reference": "supported",
+        "source_note": "The provided passage explicitly makes both claims: negative normal D-dimer indicates no thrombosis and normal values indicate the clotting healing system is doing well. This is passage support only, not independent medical verification."
+      },
+      "required_source_sha256": "21378df3ac443add724fb198e3f1f0e3ef7fb52d445e385b062c72170f71a33d",
+      "candidate": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nThrombosis has not occurred.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Reports the supplied passage’s central implication that thrombosis has not occurred; this is source support, not independent medical validation."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 34,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "original_r16": {
+        "response": "<tool_call>\n<function=submit_answer>\n<parameter=answer>\nIt indicates that thrombosis has not occurred.\n</parameter>\n</function>\n</tool_call>",
+        "review": {
+          "status": "correct",
+          "note": "Gives the passage’s central clinical implication, no thrombosis; it makes no additional medical claim."
+        },
+        "generation": {
+          "parsing": "submit_answer",
+          "generated_tokens": 36,
+          "ended_at_eos": true,
+          "reached_token_budget": false,
+          "post_first_wrapper_text": ""
+        }
+      },
+      "paired_note": "Retains the same central implication."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-23T16:11:57.382022Z",
+  "status": "released",
+  "files": {
+    "probe_adam_moment_offload_v1.py": "b292c3097fac2cf9e84c8f9d03b5713dcd7bc3fd7590ac34c72b39b6dd3ebf3e",
+    "probe_adam_moment_offload_v1.sbatch": "246de7f6632d98417a698f6938cdc3cf217022ff4038ed5fa6916df7f5aa622f",
+    "ADAM_MOMENT_OFFLOAD_PROBE_V1.json": "adbe8ea07a80b51bd8cab1af92baa9c3c1809acb7c22c94e9198ad5cf8a7d9d3",
+    "PI42K_MERGED32K_FRESH960_DESIGN_V1.json": "b9869a9618721cf6a052374d53baa477c994248ddf0627a6d3343273397085cd"
+  },
+  "scope": "Private proof only; no production continuation/adoption",
+  "root_review": "37focusedCPU checks/root run passed; independent review found all-clock gap, fixed with all615clock/active-ID gates and negative cases. Original arithmetic/flags, exact2step comparisons and matureAdam32k fit. Serialization limitation recorded.",
+  "job_id": 23555733,
+  "held_state": "JobId=23555733 JobName=qa_adam_offload_probe UserId=ngom(194548) GroupId=ngom(100194548) MCS_label=N/A Priority=0 Nice=0 Account=mit_general QOS=normal JobState=PENDING Reason=JobHeldUser Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-23T12:11:57 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T12:11:57 Scheduler=Main Partition=mit_normal_gpu AllocNode:Sid=login009:3459820 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=8,gres/gpu=1,gres/gpu:l40s=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/home/ngom/orcd/pool/activation/taskaware/bench/probe_adam_moment_offload_v1.sbatch SubmitLine=sbatch --parsable --hold --output /home/ngom/orcd/pool/activation/taskaware/logs/adam_offload_probe_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/probe_adam_moment_offload_v1.sbatch WorkDir=/home/ngom StdErr= StdIn=/dev/null StdOut=/home/ngom/orcd/pool/activation/taskaware/logs/adam_offload_probe_23555733.log TresPerNode=gres/gpu:l40s:1 TresPerTask=cpu=8\n",
+  "released_utc": "2026-09-23T16:11:57.656954Z"
+}

@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "views": {
+    "AC": {
+      "answer_nll": 0.9164916510316956,
+      "selected100_answer_nll": 1.018062524390749,
+      "seconds": 293.07839489076287,
+      "peak_allocated_gib": 31.529109954833984,
+      "complete": true
+    },
+    "full context": {
+      "answer_nll": 0.5899494037727551,
+      "selected100_answer_nll": 0.5842254881005962,
+      "seconds": 317.49525023205206,
+      "peak_allocated_gib": 27.352952480316162,
+      "complete": true
+    },
+    "no context": {
+      "answer_nll": 1.805666303379744,
+      "selected100_answer_nll": 1.8420814359562485,
+      "seconds": 17.738769604358822,
+      "peak_allocated_gib": 24.28515100479126,
+      "complete": true
+    }
+  },
+  "ac_snapshot_unchanged": true,
+  "identity": {
+    "condition": "piecewise_27b_4k_8k",
+    "context": "8k",
+    "update": 500,
+    "paired_checkpoint": {
+      "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/piecewise_27b_4k_8k/AC_MODELS/rag_poc/epoch_001",
+      "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/piecewise_27b_4k_8k/LORAS/rag_reader/epoch_001"
+    },
+    "checkpoint_sha256": {
+      "ac_modules": "f3be267ebb27f2e34e5784c9e3ef3e7338a19822d1d7184b97c1a63d8562706b",
+      "encoder_config": "2762ac10d982976c12b94621d8444ec227ede04f83838efb0f4c08f1784a8320",
+      "encoder_weights": "1e1837265ca6382810ddd8fc85cca76a53eebc188df47cb435a5db18e4221397",
+      "reader_config": "c88291b9959dd3ccab8e287d6961af9d8b992df9ee1941a64716e387b426a2cb",
+      "reader_weights": "fb8627595584ef686321017fadd357151a2e1fa264879b155823a3cb09ca9f2a"
+    },
+    "publication_sha256": {
+      "result.json": "269fade356901e124d5a13896f93faa14b4153565def9ac442bd8c7b79be365a",
+      "run_identity.json": "918894b551a562d09ae7b692a15356f88249390641baff30d8f5705ec63e09c1",
+      "training_config.json": "87577b88a003270375092b21cf3dd75fbe5156ea96157ed00f3863d7cfc9b752",
+      "material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+      "source_receipt.json": "7de4be66f4c3208fb05ee75e2210c7467d33a32ddd0f3c7a781bac8f04f1a9ef",
+      "completed_marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d"
+    },
+    "design_sha256": "86fcaad5db4b24d8b5f4972567a78e7e2f3d4e821b18b3d5ca4e55ae4ed98e08",
+    "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+    "evaluator_sha256": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30",
+    "helper_sha256": {
+      "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+      "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+      "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+      "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+    },
+    "source_sha256": {
+      "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+    },
+    "builder_sha256": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+    "passage_parts": true,
+    "encode_batch_max_tokens": 65536,
+    "ratio": 0.0625,
+    "evidence_tokens": 8192,
+    "max_passages": 16,
+    "micro_batch_examples": 2,
+    "selection_policy": "Original immutable development100 (50 per generator); no confirmation access.",
+    "reader": "This completed arm's paired final reader",
+    "nll_scope": "Original400 in original order, then retain selected100",
+    "decoding": "8k only: greedy160 tokens, thinking disabled, inherited EOS union chat EOT, actual token IDs retained",
+    "transfer_scope": "32k adds retrieval context/distractors; this does not test distributed-required-evidence synthesis."
+  },
+  "generated": {
+    "AC": {
+      "count": 100
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "checked_utc": "2026-09-22T23:20:30.963362Z",
+  "old_states": {
+    "23498371": "PREEMPTED",
+    "23498372": "PREEMPTED",
+    "23498373": "CANCELLED",
+    "23498374": "CANCELLED",
+    "23509310": "CANCELLED"
+  },
+  "resume_marker": {
+    "epoch_number": 1,
+    "step": 400,
+    "steps": 500,
+    "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_00400",
+    "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_00400"
+  },
+  "payload_sizes": {
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/ac_modules.pt": 1208881673,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/optimizer.pt": 4676641912,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_config.json": 1150,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_config.json": 1147,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001_step_00400/side_lora/adapter_model.safetensors": 349204488,
+    "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001_step_00400/adapter_model.safetensors": 931173960
+  },
+  "hashes": {
+    "train_piecewise_v2.sbatch": "d8b709316dd0afe626374ae7c0fb5afa90e760944f7a399600ff7fc23bf5c1ad",
+    "run_qa_piecewise_v2.py": "29f4c4109ac07021ff625b28117677e0cdbcea1c87f774165ee2662ed5df8825",
+    "evaluate_piecewise_cohort_v3.sbatch": "220055487a26735a92103205d7af655bdff58115753b6e0ec05b70ae5dadb9fa",
+    "evaluate_piecewise_cohort_v3.py": "ddd905e0d28a952cf7a1965e2527355f5dfe2e4bfea59b1c31acb5e3e799cd30",
+    "probe_piecewise_budget_v1.sbatch": "d8fa44c5011a285a953740f6736b6e1f5b43c588f13a65e84e04be55922ce776",
+    "probe_piecewise_budget_v1.py": "819d0beed15dae7d487343e2c1578491d2e95fc0c4a4a8145e7bb66ba0be3938"
+  },
+  "new_jobs": {
+    "merged_train": {
+      "job": 23510985,
+      "dependency": null,
+      "time_limit": "02:00:00",
+      "mem": "64G"
+    },
+    "merged_8k": {
+      "job": 23510986,
+      "dependency": "afterok:23510985",
+      "time_limit": "00:45:00",
+      "mem": "64G"
+    },
+    "merged_32k": {
+      "job": 23510987,
+      "dependency": "afterok:23510986",
+      "time_limit": "00:45:00",
+      "mem": "64G"
+    },
+    "frozen_32k": {
+      "job": 23510988,
+      "dependency": null,
+      "time_limit": "00:45:00",
+      "mem": "64G"
+    },
+    "budget_probe": {
+      "job": 23510989,
+      "dependency": "afterok:23498368:23510986",
+      "time_limit": "00:45:00",
+      "mem": "96G"
+    }
+  },
+  "released": [
+    23510985,
+    23510986,
+    23510987,
+    23510988,
+    23510989
+  ],
+  "scientific_settings": "Unchanged V2, original optimizer/order500 schedule; 3200questions saved,800remaining. Resume performs full optimizer load/layout/clock guards on allocated compute.",
+  "status": "all replacements released"
+}

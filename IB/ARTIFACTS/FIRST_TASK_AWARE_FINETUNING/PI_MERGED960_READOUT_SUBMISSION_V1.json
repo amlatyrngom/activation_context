@@ -1,0 +1,14 @@
+{
+  "utc": "2026-09-23T15:06:21.094427Z",
+  "status": "released",
+  "files": {
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+    "PI42K_MERGED32K_READOUT_MANIFEST_V1.json": "52441eea5c793db394ce867cc6de35f44666e98ab77233e57efe406640d141b6",
+    "MODEL_COMPARISON_COHORT100_SELECTION.json": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051"
+  },
+  "training_job": 2182017,
+  "review": "Root full worker/launcher review and21focusedCPUchecks passed; final-only5370, fresh H200 scores, original100, no training source changes.",
+  "job_id": 2182208,
+  "held_state": "JobId=2182208 JobName=pi42k_final100 UserId=ngom(26284) GroupId=ngom(26284) MCS_label=N/A Priority=0 Nice=0 Account=csail QOS=shared-if-available JobState=PENDING Reason=JobHeldUser Dependency=afterok:2182017(unfulfilled) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=00:45:00 TimeMin=N/A SubmitTime=2026-09-23T11:06:22 EligibleTime=Unknown AccrueTime=Unknown StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-23T11:06:22 Scheduler=Main Partition=csail-shared-h200 AllocNode:Sid=0.0.0.0:3185543 ReqNodeList=(null) ExcNodeList=(null) NodeList= NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=8,mem=64G,node=1,billing=5792,gres/gpu=1 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=8 MinMemoryNode=64G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=OK Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/data/scratch/ngom/activation/taskaware/bench/evaluate_pi42k_merged32k_v1.sbatch WorkDir=/afs/csail.mit.edu/u/n/ngom StdErr=/data/scratch/ngom/activation/taskaware/logs/pi42k_final100_2182208.log StdIn=/dev/null StdOut=/data/scratch/ngom/activation/taskaware/logs/pi42k_final100_2182208.log KillOInInvalidDependent=Yes TresPerJob=gres/gpu:1 TresPerTask=cpu=8 \n"
+}

@@ -1,0 +1,220 @@
+{
+  "status": "pass",
+  "seconds": 161.69207406928763,
+  "checks": {
+    "p2r16__2k": {
+      "encoder_tokens": {
+        "min": 988,
+        "mean": 2006.5,
+        "max": 3219,
+        "total": 12039
+      },
+      "compressed_rows": {
+        "min": 62,
+        "mean": 125.83333333333333,
+        "max": 202,
+        "total": 755
+      },
+      "evidence_tokens": {
+        "min": 931,
+        "mean": 1943,
+        "max": 3122,
+        "total": 11658
+      },
+      "passages": {
+        "min": 1,
+        "mean": 2.1666666666666665,
+        "max": 4,
+        "total": 13
+      },
+      "reader_tokens": {
+        "min": 465,
+        "mean": 586,
+        "max": 772,
+        "total": 3516
+      },
+      "capped_items": 0,
+      "aggregate_rows_per_encoder_token": 0.06271284990447712
+    },
+    "p2r16__32k": {
+      "encoder_tokens": {
+        "min": 32802,
+        "mean": 32910,
+        "max": 33058,
+        "total": 197460
+      },
+      "compressed_rows": {
+        "min": 2051,
+        "mean": 2057.5,
+        "max": 2067,
+        "total": 12345
+      },
+      "evidence_tokens": {
+        "min": 32573,
+        "mean": 32693.333333333332,
+        "max": 32742,
+        "total": 196160
+      },
+      "passages": {
+        "min": 13,
+        "mean": 22.166666666666668,
+        "max": 37,
+        "total": 133
+      },
+      "reader_tokens": {
+        "min": 2470,
+        "mean": 2517.6666666666665,
+        "max": 2624,
+        "total": 15106
+      },
+      "capped_items": 0,
+      "aggregate_rows_per_encoder_token": 0.06251899118808872
+    },
+    "p2r8__2k": {
+      "encoder_tokens": {
+        "min": 988,
+        "mean": 2006.5,
+        "max": 3219,
+        "total": 12039
+      },
+      "compressed_rows": {
+        "min": 124,
+        "mean": 251.33333333333334,
+        "max": 403,
+        "total": 1508
+      },
+      "evidence_tokens": {
+        "min": 931,
+        "mean": 1943,
+        "max": 3122,
+        "total": 11658
+      },
+      "passages": {
+        "min": 1,
+        "mean": 2.1666666666666665,
+        "max": 4,
+        "total": 13
+      },
+      "reader_tokens": {
+        "min": 527,
+        "mean": 711.5,
+        "max": 973,
+        "total": 4269
+      },
+      "capped_items": 0,
+      "aggregate_rows_per_encoder_token": 0.12525957305424038
+    },
+    "p2r8__32k": {
+      "encoder_tokens": {
+        "min": 32802,
+        "mean": 32910,
+        "max": 33058,
+        "total": 197460
+      },
+      "compressed_rows": {
+        "min": 4096,
+        "mean": 4096,
+        "max": 4096,
+        "total": 24576
+      },
+      "evidence_tokens": {
+        "min": 32573,
+        "mean": 32693.333333333332,
+        "max": 32742,
+        "total": 196160
+      },
+      "passages": {
+        "min": 13,
+        "mean": 22.166666666666668,
+        "max": 37,
+        "total": 133
+      },
+      "reader_tokens": {
+        "min": 4499,
+        "mean": 4556.166666666667,
+        "max": 4666,
+        "total": 27337
+      },
+      "capped_items": 6,
+      "aggregate_rows_per_encoder_token": 0.12446065025828015
+    },
+    "p4r16__2k": {
+      "encoder_tokens": {
+        "min": 988,
+        "mean": 2006.5,
+        "max": 3219,
+        "total": 12039
+      },
+      "compressed_rows": {
+        "min": 62,
+        "mean": 125.83333333333333,
+        "max": 202,
+        "total": 755
+      },
+      "evidence_tokens": {
+        "min": 931,
+        "mean": 1943,
+        "max": 3122,
+        "total": 11658
+      },
+      "passages": {
+        "min": 1,
+        "mean": 2.1666666666666665,
+        "max": 4,
+        "total": 13
+      },
+      "reader_tokens": {
+        "min": 465,
+        "mean": 586,
+        "max": 772,
+        "total": 3516
+      },
+      "capped_items": 0,
+      "aggregate_rows_per_encoder_token": 0.06271284990447712
+    },
+    "p4r16__32k": {
+      "encoder_tokens": {
+        "min": 32802,
+        "mean": 32910,
+        "max": 33058,
+        "total": 197460
+      },
+      "compressed_rows": {
+        "min": 2051,
+        "mean": 2057.5,
+        "max": 2067,
+        "total": 12345
+      },
+      "evidence_tokens": {
+        "min": 32573,
+        "mean": 32693.333333333332,
+        "max": 32742,
+        "total": 196160
+      },
+      "passages": {
+        "min": 13,
+        "mean": 22.166666666666668,
+        "max": 37,
+        "total": 133
+      },
+      "reader_tokens": {
+        "min": 2470,
+        "mean": 2517.6666666666665,
+        "max": 2624,
+        "total": 15106
+      },
+      "capped_items": 0,
+      "aggregate_rows_per_encoder_token": 0.06251899118808872
+    }
+  },
+  "fingerprints": {
+    "2k": "60b8030d56d960c3694d97a7354ee2ade879344b3fe458a647cc468da242aa1d",
+    "32k": "3a34fd2fa8bafbdac9fb4349ee88b0554c9ca2070fdc6185184fa6a08a68bbf9"
+  },
+  "checked_examples_per_cell": 6,
+  "no_weights_or_confirmation": true,
+  "evaluator_sha256": "d1235d05f096d705030b7455149496ccecf1b38f280e95d9f8cbe3b0e44a4277",
+  "review": "Focused independent review passed; elapsed field clarified as current-attempt time.",
+  "checked_utc": "2026-09-22T07:05:26.425101+00:00",
+  "launcher_sha256": "b8eaa746c072def9030ddfd5ef2cb3f493956f3c75573a87160ddd3d1db18033"
+}

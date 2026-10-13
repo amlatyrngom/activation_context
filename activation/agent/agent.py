@@ -30,17 +30,18 @@ from copy import deepcopy
 
 import torch
 
-from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, activation_part, direct_parts, resolve_activation_part
+from activation.common.ac_parts import COMPACTION_INSTRUCTIONS, COMPACTION_TEXT_INSTRUCTIONS, activation_part, direct_parts, resolve_activation_part
 
 from .agent_config import AgentConfig, AgentRunResult, TrajectoryStep
-from .agent_env import AgentEnv
-from .agent_tools import (DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_content, segment_messages_with_parts,
+from .agent_env import AgentEnv, TaskUnavailable
+from .agent_tools import (DEFAULT_TOOLS, AgentTool, CompactionTool, SubagentTool, ToolCallResult, injected_block_text, injected_content, segment_messages_with_parts,
                           tool_content, truncate_output, subagent_config_of)
 from .agent_utils import (PARSE_ERROR_TOOL, ModelDialect, parameter_types_of, capture_ac_spans,
                           trajectory_step_dict, load_ac_rows)
 
 MAX_CONSECUTIVE_NO_TOOL_TURNS = 3   # nudged after each; the run ends with no_tool_call at the third in a row
 MAX_COMPACTION_REFUSALS = 5         # turns that ignore a due compaction before the run ends with compaction_refused
+SUMMARY_MARKER = "Summary written before compaction:\n"   # opens the summary in a compaction message (flattened views keep only this)
 OFFLOAD_CHARS = 10_000                 # a task text longer than twice this is offloaded to the sandbox (head and tail stay in the prompt)
 OFFLOAD_PATH = "/workspace/task_full.txt"
 REPEATED_CALL_NOTE = ("Not run: this {name} call is identical to your previous one and its result would be the same (see above). "
@@ -51,8 +52,35 @@ if t.TYPE_CHECKING:
     from .rollout_reporter import RolloutReporter
 
 
+
+def summary_message(message: dict) -> dict:
+    """A compaction message as it appears in a flattened view: the compact tool's summary alone."""
+    from activation.dataset.dataset_utils import message_text
+    text = message_text(message)
+    if SUMMARY_MARKER in text:
+        return {"role": "user", "content": SUMMARY_MARKER + text.split(SUMMARY_MARKER, 1)[1]}
+    return {"role": "user", "content": "[The conversation before this point was compacted without a summary.]"}
+
+
+def head_message(message: dict, blocks: list[str], limit: int) -> dict:
+    """A head user message of a flattened view: the dropped injected blocks removed (text pieces too), long text kept as head and tail."""
+    def trim(text: str) -> str:
+        for block in blocks:
+            text = text.replace(block, "", 1)
+        if len(text) > limit:
+            text = f"{text[:limit // 2]}\n[... {len(text) - limit:,} characters omitted ...]\n{text[-(limit // 2):]}"
+        return text
+    content = message.get("content")
+    if isinstance(content, str):
+        return {**message, "content": trim(content)}
+    if isinstance(content, list):
+        return {**message, "content": [{**piece, "text": trim(piece["text"])} if isinstance(piece, dict) and piece.get("type") == "text" else piece
+                                       for piece in content]}
+    return message
+
 class Agent:
-    COMPACTION_DEMAND = "The context threshold is reached: call compact(summary) now, alone, before any other tool."
+    COMPACTION_DEMAND = ("The context threshold is reached: call compact(summary) now, alone, before any other tool. "
+                         "Use the five-section handoff format in its description.")
 
     def __init__(
         self,
@@ -154,29 +182,64 @@ class Agent:
         dtype = self.loaded_model.model_config.dtype
         return dtype if isinstance(dtype, torch.dtype) else torch.bfloat16
 
+    def flattened_view(self, drop_injected: t.Collection[str] = ()) -> list[dict]:
+        """
+        This agent's history as flat text messages, the input of every segment part (09-26: no part ever holds another
+        part, so depth is 1): the system message and first user message(s), then one summary message per compaction
+        (the text the compact tool returned, oldest first), then the current segment's turns. Every activation part is
+        removed. Injected blocks of the tools named in `drop_injected` are removed with their text (a subagent's return
+        omits the parent context it inherited); a head user message longer than AC_FLAT_HEAD_CHARS keeps its head and
+        tail. The oldest middle messages are dropped whole to fit AC_FLAT_MAX_TOKENS (counted with the encoder's
+        tokenizer, tool calls and definitions included); the head and the last message always stay, and the kept part
+        never opens with a tool message. Before the first turn it is the first prompt as `begin()` will build it now.
+        """
+        import json
+        from activation.common.ac_parts import AC_FLAT_HEAD_CHARS, AC_FLAT_MAX_TOKENS, AC_MESSAGE_TOKEN_OVERHEAD, strip_ac_parts
+        from activation.dataset.dataset_utils import render_message
+        results = self.run_results
+        if not self.started:
+            system = self.agent_config.system_prompt or ""
+            messages = ([{"role": "system", "content": system}] if system else []) + self.first_user_messages(render=lambda parts: [])
+            head, middle = strip_ac_parts(messages), []
+        else:
+            segment = strip_ac_parts(segment_messages_with_parts(results, lambda parts: []))
+            prompt_length = len(results.prompt_messages)
+            if results.compactions:                                                      # the prompt ends with the latest compaction message
+                head = segment[:prompt_length - 1]
+                notes = [strip_ac_parts(record.prompt_messages[-1:])[0] for record in results.compactions[1:]] + [segment[prompt_length - 1]]
+                middle = [summary_message(note) for note in notes] + segment[prompt_length:]
+            else:
+                head, middle = segment[:prompt_length], segment[prompt_length:]
+        blocks = [injected_block_text(result) for result in results.injected_input if result.get("tool") in drop_injected]
+        head = [head_message(message, blocks, AC_FLAT_HEAD_CHARS) if message.get("role") == "user" else message for message in head]
+        tokenizer = self.ac_model.side.tokenizer if self.ac_model is not None else self.loaded_model.tokenizer
+        count = lambda message: len(tokenizer.encode(render_message(message), add_special_tokens=False)) + AC_MESSAGE_TOKEN_OVERHEAD
+        tools = json.dumps(self.tool_definitions or self._tool_definitions(), ensure_ascii=False)
+        budget = AC_FLAT_MAX_TOKENS - len(tokenizer.encode(tools, add_special_tokens=False)) - sum(map(count, head)) - 2 * AC_MESSAGE_TOKEN_OVERHEAD
+        kept: list[dict] = []
+        for message in reversed(middle):
+            size = count(message)
+            if kept and size > budget:
+                break
+            kept.append(message)
+            budget -= size
+        while len(kept) > 1 and len(kept) < len(middle) and kept[-1].get("role") == "tool":
+            kept.pop()                                                                   # its call was cut: no orphan tool message
+        omitted = len(middle) - len(kept)
+        note = [{"role": "user", "content": f"[{omitted} earlier messages omitted]"}] if omitted else []
+        return head + note + kept[::-1]
+
     def to_activation_context(self, kind: str) -> dict:
         """
-        This agent's current segment as an activation part of `kind`: its system message first, then the segment with every
-        recorded activation part nested raw (the record's `injected_input` and `tool_results`, so a base agent's part nests
-        the same parts an AC agent's would; a compaction tree rides inside the first user message), with its tool definitions
-        as the part's `tools`. Before the first turn it is the first prompt as `begin()` will build it now: system prompt,
-        injected context so far, task. The one builder of segment parts: subagent prompt and return, compaction, and the
-        parent context nested in tool parts.
+        This agent's flattened view (`flattened_view`) as an activation part of `kind`, with its tool definitions as the part's
+        `tools`: the one builder of segment parts (subagent prompt and return, compaction). A subagent's return leaves out the
+        parent context it inherited.
         """
-        raw = lambda parts: deepcopy(parts)
-        if self.started:
-            messages = segment_messages_with_parts(self.run_results, raw)
-        else:
-            system = self.agent_config.system_prompt or ""
-            messages = ([{"role": "system", "content": system}] if system else []) + self.first_user_messages(render=raw)
-        return activation_part(kind, messages, deepcopy(self.tool_definitions or self._tool_definitions()))
-
-    def nested_in_context(self, message: dict) -> list[dict]:
-        """`message` after this agent's segment (or its first prompt, before the first turn) as a nested parent_context part."""
-        return [{"role": "user", "content": [self.to_activation_context("parent_context")]}, message]
+        drop = ("parent",) if kind == "subagent_return" else ()
+        return activation_part(kind, self.flattened_view(drop_injected=drop), deepcopy(self.tool_definitions or self._tool_definitions()))
 
     def render_activation(self, parts: list[dict]) -> list[dict]:
-        """The parts with this reader's encoder settings (ac_name and compression target by kind, nested parts too); [] without an AC model."""
+        """The parts with this reader's encoder settings (ac_name and compression target by kind); [] without an AC model."""
         if self.ac_model is None or not parts:
             return []
         return [resolve_activation_part(part, self.agent_config) for part in parts]
@@ -281,7 +344,11 @@ class Agent:
     def compact(self, summary: str) -> None:
         """Close the current segment into run_results.compactions and start the next one from its tree (or the summary alone)."""
         config, results = self.agent_config, self.run_results
-        tree = self.render_activation([self.to_activation_context("compaction")])           # the segment through the compact call; [] without an AC model
+        try:
+            tree = self.render_activation([self.to_activation_context("compaction")])       # the flattened history; [] without an AC model
+        except ValueError as error:                                                      # a part over its guard: compact on the summary alone
+            print(f"Agent {self.agent_id} - compaction part refused, summary only: {error}", flush=True)
+            tree = []
         record = AgentRunResult(
             agent_config=config, seed=self.seed, source=results.source, lora_name=results.lora_name, finish_reason="compacted",
             trajectory=results.trajectory, prompt_token_ids=results.prompt_token_ids, prompt_messages=results.prompt_messages,
@@ -290,7 +357,8 @@ class Agent:
         )
         results.compactions.append(record)
         results.trajectory = []
-        text = COMPACTION_INSTRUCTIONS + (f"\n\nSummary written before compaction:\n{summary}" if summary.strip() else "")
+        results.num_turns = 0
+        text = (COMPACTION_INSTRUCTIONS if tree else COMPACTION_TEXT_INSTRUCTIONS) + (f"\n\n{SUMMARY_MARKER}{summary}" if summary.strip() else "")
         if tree:
             after = {"role": "user", "content": tree + [{"type": "text", "text": "\n\n" + text}]}
         else:
@@ -494,6 +562,8 @@ class Agent:
                 self.reporter.report_agent_start(self)
                 self.reported = True
             self._check_engine_context()
+            if config.env_setups:
+                self.agent_env          # prepared before the first turn: a task that cannot be set up costs no generation
             while True:
                 if results.finish_reason:                                                        # trajectory_cap, set by an append
                     break
@@ -556,6 +626,10 @@ class Agent:
                 if self.errors > config.max_tool_errors:
                     results.finish_reason = "max_tool_errors"
                     break
+        except TaskUnavailable as error:
+            results.finish_reason = "task_unavailable"
+            results.score_feedback = str(error)[:500]
+            print(f"Agent {self.agent_id[:8]} - task unavailable: {results.score_feedback}", flush=True)
         except Exception as error:
             if _is_context_overflow(error):
                 # The conversation outgrew the model's context: a budget, not a bug.
@@ -686,7 +760,7 @@ class Agent:
     def _finalize_result(self, call: dict, result: ToolCallResult) -> ToolCallResult:
         """The tool's name on the result, then truncation: the visible text replaces the output and the full text becomes a part."""
         result.tool = call["name"]
-        visible, part = truncate_output(self._env, result.output, call["id"], agent=self if not result.compacted else None)
+        visible, part = truncate_output(self._env, result.output, call["id"], call=call if not result.compacted else None)
         if visible != result.output:
             content = [dict(item) for item in tool_content(result)]
             for item in content:

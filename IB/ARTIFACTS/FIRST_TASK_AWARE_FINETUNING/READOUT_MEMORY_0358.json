@@ -1,0 +1,16 @@
+[
+  {
+    "job": 23520579,
+    "state_before": "PENDING",
+    "utc": "2026-09-23T03:58:04.315190Z",
+    "action": "hostRAM64GiBto32GiB and released",
+    "evidence": "Matched native readout MaxRSS7,472,000KiB;8k readouts4,324,432\u20134,807,592KiB. Retain32GiB margin; no training-memory/CPU/GPU/scientific changes."
+  },
+  {
+    "job": 23521942,
+    "state_before": "PENDING",
+    "utc": "2026-09-23T03:58:04.853927Z",
+    "action": "hostRAM64GiBto32GiB and released",
+    "evidence": "Matched native readout MaxRSS7,472,000KiB;8k readouts4,324,432\u20134,807,592KiB. Retain32GiB margin; no training-memory/CPU/GPU/scientific changes."
+  }
+]

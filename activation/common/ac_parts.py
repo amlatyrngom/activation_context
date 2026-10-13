@@ -12,10 +12,43 @@ if t.TYPE_CHECKING:
     from transformers import PreTrainedTokenizerBase
 
 AC_PART_TYPE = "activation_context"
+# Agent-side parts (09-26): depth 1, flat text only. A segment part keeps the latest whole messages that fit AC_FLAT_MAX_TOKENS
+# (the encoder was validated to 65,536 tokens; the rest is left for the part's tool definitions and template). A part whose
+# serialized size passes AC_PART_MAX_CHARS is refused: nested copies once grew rollout records to several GB each.
+AC_FLAT_MAX_TOKENS = 56_000
+AC_FLAT_HEAD_CHARS = 80_000                # a head user message (task, brief, injected context) keeps head + tail beyond this
+AC_MESSAGE_TOKEN_OVERHEAD = 8             # template tokens per message on top of its rendered text (estimate)
+AC_PART_MAX_CHARS = 2_000_000
 PART_SENTINEL = "⁣ACPART{index}⁣"     # rendered in place of a part by the chat template, split out before tokenizing
+COMPACTION_SUMMARY_PROMPT = """Write a concise handoff so the task can resume without rereading the conversation. Keep the entire handoff under 500 words, prioritizing details needed to resume. Preserve exact details and uncertainty. Keep guesses separate from observed results; searches are not confirmation. Preserve conflicting evidence. Use these five sections:
+
+# Summary Overview
+The current goal and overall situation.
+
+# Progress So Far
+[v] Completed work and results.
+[-] Work in progress or blocked.
+[ ] Work remaining.
+
+# Notes/Insights/Lessons To Preserve
+Key findings, decisions, and concrete details needed later.
+
+# Immediate Continuation
+The next action, including any blocker that must be resolved first.
+
+# DOs/DON'Ts
+Quote still-applicable constraints from the original task's system/user messages, preserving their scope. If absent, write "None".
+
+Update older notes to reflect the latest state. Avoid repetition; distinguish completed work from plans and attempts."""
+
 COMPACTION_INSTRUCTIONS = (
-    "The conversation so far has been compacted into the activation context above. Continue the task "
-    "from exactly where it left off, as if the full conversation were still in front of you."
+    "Continue the task from the compacted state above. Resume the next unfinished action; "
+    "do not treat plans or pending work as completed."
+)
+# Without an AC model the compacted history is not in the prompt: only the summary below carries it.
+COMPACTION_TEXT_INSTRUCTIONS = (
+    "Continue the task from the summary below. Resume the next unfinished action; "
+    "do not treat plans or pending work as completed."
 )
 
 
@@ -39,9 +72,15 @@ def activation_part(kind: str, messages: list[dict], tools: list[dict] | None = 
     `render_activation` / `resolve_activation_part` fills `ac_name` and `compression_target` by kind. `tools` are the
     definitions the compressed segment ran with; the encoder templates them natively when the side template takes tools.
     """
+    import json
+    if direct_parts(messages):
+        raise ValueError(f"{kind} part would nest another activation part; agent-side parts hold flat text only")
     part = {"type": AC_PART_TYPE, "kind": kind, "messages": messages}
     if tools:
         part["tools"] = tools
+    size = len(json.dumps(part, ensure_ascii=False))
+    if size > AC_PART_MAX_CHARS:
+        raise ValueError(f"{kind} part serializes to {size:,} chars (limit {AC_PART_MAX_CHARS:,})")
     return part
 
 

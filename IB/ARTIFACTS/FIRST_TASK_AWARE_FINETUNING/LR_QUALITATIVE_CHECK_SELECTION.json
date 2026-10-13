@@ -1,0 +1,115 @@
+{
+  "created_utc": "2026-09-22T12:30:26.548124+00:00",
+  "selection": "One supported-reference item from each of nine source families in each of two generator cohorts; fixed ID hash, independent of model losses and answers.",
+  "scope": "Quick qualitative check of the two LR candidates against their controls. Not a representative accuracy estimate or substitute for the 400-question NLL readout. Expand to all100 if a candidate looks promising or the small check reveals a material discrepancy.",
+  "items": [
+    {
+      "item_id": "f66108a07b880194709c00da96807da04083d48ec919881d4a6d2cde5b382f0d",
+      "generator_cohort": "27b",
+      "source_family": "code",
+      "index": 94
+    },
+    {
+      "item_id": "10f56d1edd978753dbb41d13de3ff6b7870c68fbb4e4533f3b4569a00736ae7a",
+      "generator_cohort": "27b",
+      "source_family": "documents",
+      "index": 24
+    },
+    {
+      "item_id": "6e8f12064d578b8da7494b4b53b701779bf8f81b120cd7538560e1aeb96ebb7c",
+      "generator_cohort": "27b",
+      "source_family": "financial",
+      "index": 62
+    },
+    {
+      "item_id": "6efc127b2b897cdcc7f20668889e93d53a996d84769d7a5d367d6bff030cf269",
+      "generator_cohort": "27b",
+      "source_family": "legal",
+      "index": 8
+    },
+    {
+      "item_id": "a77a6822f59bf6d0217d6fe8b447167d0424c85c218eed2422848e1a6f0a8903",
+      "generator_cohort": "27b",
+      "source_family": "math_arxiv",
+      "index": 42
+    },
+    {
+      "item_id": "f603807e5ec9f05c708f5a90d10098f1fb710c3a37d41ed0a0c9e7b64beb4f23",
+      "generator_cohort": "27b",
+      "source_family": "math_textbook",
+      "index": 30
+    },
+    {
+      "item_id": "c2959dc1427a45e7727aa6aed10edf0be8251b12e1c13047d6a9740589b3518d",
+      "generator_cohort": "27b",
+      "source_family": "office",
+      "index": 75
+    },
+    {
+      "item_id": "8385cc53b576537b175de6a06d68f7e2cc15ef817b6ee264dfaffb7991e0cd3a",
+      "generator_cohort": "27b",
+      "source_family": "technical_web",
+      "index": 22
+    },
+    {
+      "item_id": "3fdf307b5965ab5ee01c9037cb0ae671874f487888d5f5161c7c9ed4e676d27a",
+      "generator_cohort": "27b",
+      "source_family": "web",
+      "index": 37
+    },
+    {
+      "item_id": "a3e3e477d2fcdef8fb39e52f92bccd939646fc7155140fa35dd7eb408d9ab025",
+      "generator_cohort": "9b",
+      "source_family": "code",
+      "index": 17
+    },
+    {
+      "item_id": "14933818b2392e7b521b1b31166c943968d420efdd96f74248fc9e7d8e1b4a43",
+      "generator_cohort": "9b",
+      "source_family": "documents",
+      "index": 79
+    },
+    {
+      "item_id": "786c2f5c368772e9a56e31e968e04ffdc91a3083ad3c82480a9fa9acc6a186db",
+      "generator_cohort": "9b",
+      "source_family": "financial",
+      "index": 52
+    },
+    {
+      "item_id": "1c3b354c8b2024ae336d9f6a9337b1b6866b8ac050d05a8851f195bb6bbaa38b",
+      "generator_cohort": "9b",
+      "source_family": "legal",
+      "index": 34
+    },
+    {
+      "item_id": "343a1a3d08afbe6203fb59d093aed337b24a6ed9eb2c5d344c1be9e7bd037883",
+      "generator_cohort": "9b",
+      "source_family": "math_arxiv",
+      "index": 50
+    },
+    {
+      "item_id": "41a8287ef36af8d6f63d05de84bd059e04a8612589578b02adc096d8a00cc68d",
+      "generator_cohort": "9b",
+      "source_family": "math_textbook",
+      "index": 10
+    },
+    {
+      "item_id": "636fce7fe18c851977201a78df23c55c8252232b6985f0ab902ef44e652fc9c9",
+      "generator_cohort": "9b",
+      "source_family": "office",
+      "index": 14
+    },
+    {
+      "item_id": "38087e20e174cab80a8e8148ec81b995b26f2748453862a886c269884c007515",
+      "generator_cohort": "9b",
+      "source_family": "technical_web",
+      "index": 46
+    },
+    {
+      "item_id": "fbb1c49657a40aad9c62eb630052826e8242a64c657579674e517b2dc4d30378",
+      "generator_cohort": "9b",
+      "source_family": "web",
+      "index": 80
+    }
+  ]
+}

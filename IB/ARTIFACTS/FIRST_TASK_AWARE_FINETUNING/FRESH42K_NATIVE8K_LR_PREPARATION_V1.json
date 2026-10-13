@@ -1,0 +1,51 @@
+{
+  "status": "prepared_awaiting_root_review",
+  "purpose": "Matched native2k modest-LR continuation, constant42k plus exact same fresh8000 once as completed floor baseline",
+  "files": {
+    "run_qa_fresh42k_native8k_lr_v1.py": {
+      "sha256": "29301866b5be9fc3ac6d8c4d22dce6cb30df28c4c4c19b58db9fcea574497ae4",
+      "bytes": 58861
+    },
+    "train_fresh42k_native8k_lr_v1.sbatch": {
+      "sha256": "d58c74f3af6c65e070dbadc0fe136234e692eff953338d459df248007ed6fc3a",
+      "bytes": 4737
+    },
+    "evaluate_fresh42k_native8k_lr_v1.py": {
+      "sha256": "c6b8aa04acb32ae10bf790617178b613fc5eb0b25d65741b9ea13303e2c78cf9",
+      "bytes": 24097
+    },
+    "evaluate_fresh42k_native8k_lr_v1.sbatch": {
+      "sha256": "59c2aabfdb9b0b9f6741408dc65b8f2e5bf677de98b3de1bf4ac6688b9fb9899",
+      "bytes": 2290
+    },
+    "prepare_fresh42k_native8k_lr_v1.py": {
+      "sha256": "0d434225ec9b833426e7eacecc78c9eb740f43894baa19dd290d473fb67b0fe2",
+      "bytes": 5388
+    },
+    "FRESH42K_NATIVE8K_LR_CONSTANT2X_DESIGN_V1.json": {
+      "sha256": "639e902b3b466260e7ec4f3f2732a88811c00788f60ea1d8aee4b031523bc8e0",
+      "bytes": 8225
+    },
+    "FRESH42K_NATIVE8K_LR_COSINE2X_DESIGN_V1.json": {
+      "sha256": "7abc71b912f32df97d8b3f03697ba0a8d5dbc43fa1099348f4899f75c56fddbf",
+      "bytes": 8482
+    }
+  },
+  "baseline_design_sha256": "31d422fa93d74d07daa63dee9265d6897e2b03498bd4b0c2e5f1babe165b42ab",
+  "validation": {
+    "cpu_checks_passed": 69,
+    "syntax": "Python modules, embedded launcher Python and bash -n passed",
+    "receipt": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/native8k_lr_preparation/checks.json",
+    "review_delta": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/native8k_lr_preparation/delta.patch"
+  },
+  "immutable_reuse": {
+    "material_sha256": "49f711e3eff25b0063f148f850e73ff4fe7917c05dad0898db0167623d7e11a9",
+    "initial_pair_sha256": "33fc87f7272acd9ec4140fb3ec5ceb6b98ec47ea6009f4366cedd28bca4d706c"
+  },
+  "no_remote_calls": true,
+  "no_submissions": true,
+  "no_product_edits": true,
+  "no_large_material_read_or_rebuild": true,
+  "operational_expectation": "Baseline92m14 training/reporting plus8min fixed100; reserve2h training +20min readout per arm. Queue/preemption unknown.",
+  "next_action": "Root review/freeze prepared design; sync new private files only; allocate/train each once and run matched evaluator after successful completion."
+}

@@ -1,0 +1,115 @@
+{
+  "control": "oracle_27b_16k_2ep",
+  "candidate": "oracle_27b_32k",
+  "training_exposure": "Matched question presentations; see exposure by arm.",
+  "training_exposure_by_arm": {
+    "oracle_27b_16k_2ep": "16,000 unique questions \u00d7 2 epochs",
+    "oracle_27b_32k": "32,000 unique questions \u00d7 1 epoch"
+  },
+  "panel_sha256": {
+    "oracle_27b_16k_2ep": "bbc281d2dac763bb1fb7a4af14e2eb2d4d2131c62d382d0c5e3201d4004c7466",
+    "oracle_27b_32k": "755d8bae1744480c79c07002bb540f9c2a40f2ccd1c6391b71e8d4dd8cd61a71"
+  },
+  "cohorts": {
+    "9b": {
+      "control_nll": 0.6469548141935468,
+      "candidate_nll": 0.605943026827936,
+      "candidate_minus_control": -0.04101178736561078,
+      "paired_question_bootstrap_95": [
+        -0.08481057294230884,
+        0.0022340675910438833
+      ],
+      "questions_lower_with_candidate": 112,
+      "questions": 200
+    },
+    "27b": {
+      "control_nll": 0.5564460647526144,
+      "candidate_nll": 0.5317191918682677,
+      "candidate_minus_control": -0.024726872884346697,
+      "paired_question_bootstrap_95": [
+        -0.06171590773462382,
+        0.013422256435619279
+      ],
+      "questions_lower_with_candidate": 106,
+      "questions": 200
+    },
+    "all400": {
+      "control_nll": 0.6017004394730806,
+      "candidate_nll": 0.5688311093481018,
+      "candidate_minus_control": -0.03286933012497874,
+      "paired_question_bootstrap_95": [
+        -0.06187134110426107,
+        -0.004892520713138201
+      ],
+      "questions_lower_with_candidate": 218,
+      "questions": 400
+    }
+  },
+  "scope": "Exploratory DEVELOPMENT comparison; one training seed. Question bootstrap omits source clustering and seed variance. Repeated checkpoint looks are not independent tests.",
+  "status": "Both final training runs complete; final answer review and reserved confirmation pending.",
+  "checked_utc": "2026-09-22T20:59:20.350985+00:00",
+  "final_pairs": {
+    "oracle_27b_32k": {
+      "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/AC_MODELS/rag_poc/epoch_001",
+      "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_32k/LORAS/rag_reader/epoch_001",
+      "result_sha256": "980c53ffd3899e529b65220c3e976033262ba5eec833828c83af4b39d82b59c4",
+      "final_panel": {
+        "update": 4000,
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.5688311093481019,
+        "full answer NLL": 0.6548811837319469,
+        "no-context answer NLL": 1.81059039357462,
+        "training answer NLL": 0.39718307142845216,
+        "panel seconds": 109.3,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.605943026827936,
+            "held full context": 0.7395754927463054,
+            "held no context": 1.9836575158820624,
+            "training AC": 0.39718307142845216
+          },
+          "27b": {
+            "held AC": 0.5317191918682677,
+            "held full context": 0.5701868747175883,
+            "held no context": 1.6375232712671768,
+            "training AC": 0.39718307142845216
+          }
+        }
+      },
+      "summary_scope": "whole run",
+      "dropped_too_long": 0
+    },
+    "oracle_27b_16k_2ep": {
+      "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_2ep/AC_MODELS/rag_poc/epoch_002",
+      "reader_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/oracle_27b_16k_2ep/LORAS/rag_reader/epoch_002",
+      "result_sha256": "53b76417c2be9f26fce74a13cbf68aa51a64f8f6bbd73670d67a32179c669c5a",
+      "final_panel": {
+        "update": 4000,
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.6017004394730805,
+        "full answer NLL": 0.6411428870909583,
+        "no-context answer NLL": 1.7880301672570118,
+        "training answer NLL": 0.31168996876313154,
+        "panel seconds": 108.8,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.6469548141935468,
+            "held full context": 0.7279414881315919,
+            "held no context": 1.9523978324410416,
+            "training AC": 0.31168996876313154
+          },
+          "27b": {
+            "held AC": 0.5564460647526144,
+            "held full context": 0.5543442860503248,
+            "held no context": 1.623662502072982,
+            "training AC": 0.31168996876313154
+          }
+        }
+      },
+      "summary_scope": "latest resume attempt",
+      "dropped_too_long": 0
+    }
+  }
+}

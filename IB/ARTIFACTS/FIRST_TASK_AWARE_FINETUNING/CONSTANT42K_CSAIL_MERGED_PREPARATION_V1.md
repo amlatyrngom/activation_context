@@ -1,0 +1,11 @@
+# Independent H200 parent42k merged32k readout
+
+This candidate can run before the960-question adaptation completes. It loads the constant-floor42k pair already copied to CSAIL and verified by CPU job2181811:615 actual Adam states at5250, stage clock reset only for later training, unchanged AC/reader scientific payloads. Evaluation does not load or use an optimizer. Exact completed native1250-update publication metadata and payload hashes bind the chosen parent.
+
+The same original100 development questions use one merged32k encoder sequence,1/16 rows, original65536 packing/precision and whole required sources. Exact shared full/no-context prompts/tools/targets, AC messages and total-row fingerprints must reproduce the previously checked real-tokenizer100 receipt. The pinned fresh8k material retains the common retrieval pool. No960-stage design, final checkpoint, RTX score values or confirmation data is required.
+
+It measures AC NLL and100 actual AC answers first and rehashes parent weights before publication. It then measures the same reader's full/no-context NLL freshly on H200. Once all three score views plus AC100 are complete, `core_complete` is published. Remaining budget generates matched full-context answers; these are optional and resumable. A timeout after core completion retains a complete core result and an explicit unfinished optional-full flag. Greedy160, thinking off, inherited EOS plus chat end and actual generated IDs remain unchanged.
+
+Files: `bench/evaluate_constant42k_csail_merged_v1.py`, its `.sbatch`, and `CONSTANT42K_CSAIL_MERGED_MANIFEST_V1.json`. The wrapper requests40minutes/H200/64GiB host with2250seconds application time. Output is a separate `reports/continuation_merged_csail_cohort100/continue32k_10k_final_lr__merged_32k_h200/result.json`. The original RTX parent worker and final960 worker remain unchanged.
+
+Ten focused CPU checks passed against the actual staging receipts, with negative parent/clock/publication cases. The earlier100-question real-tokenizer receipt supplies canonical input fingerprints; rebuilding from staged retrieval must pass again on compute. No staging, GPU jobs or remote calls were performed. Expect the AC100 phase roughly8–12minutes plus freshly measured controls and optional full answers; H200 timing remains unmeasured.

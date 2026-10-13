@@ -1,0 +1,106 @@
+{
+  "checked_utc": "2026-09-22T11:06:02.391986+00:00",
+  "status": "Repaired32k run allocated; full-pool masks validated, data/recipe unchanged",
+  "sha256": {
+    "prepare_model_comparison.py": "7754bcfa6ffc58abec4e36d7f4581dddb55b3f1e0ec27844f5680507e4f71e53",
+    "prepare_32k_extension.sbatch": "95dee8d9690a1a10407884a8fe4880e2328f9dbc2b778e9c5761b007cb43d605",
+    "run_qa_comparison_v2.py": "8e1113157bde49e206a0a70f532880ce9d696b5264a5a77b318cbc2e8d812e46",
+    "model_comparison_32k.sbatch": "281a697ab9b69dd7799c1a928e4bf836dc524404869dc3d5a92e40d72e841deb"
+  },
+  "checks": {
+    "selection_fixture": "Deterministic balanced additions, original rows and all reporting inputs preserved, protected request closure across published batches, old training excluded from fresh confirmation, prior material required.",
+    "real_builder": {
+      "status": "pass",
+      "existing_train_and_held_identical": true,
+      "new_required_source_outside_frozen_index_retained": true,
+      "new_source_keeps_original_gold_token_ids": true,
+      "model_weights_loaded": false
+    },
+    "review": "Focused extension review passed after requiring prior material; no other blocking finding.",
+    "remote_files": "All four hashes match local.",
+    "both_lr_controls": "Both live candidates have identical inner run identities to their own control; only learning_rate_ac differs in training_config.",
+    "launcher_resume": "Both large-run launchers now accept only optional --resume after their three recipe arguments; first launch unchanged. Shell syntax and8 actual argument-parser cases passed. Staged at13:05UTC."
+  },
+  "planned_training": {
+    "questions": 32000,
+    "epochs": 1,
+    "encoder": "2B",
+    "reader": "9B",
+    "supervision": "27B synthesized",
+    "initialization": "Original P2 pair, not a16k QA final",
+    "evidence_tokens": 2048,
+    "max_passages": 4,
+    "reporting_interval": 0.1,
+    "learning_rate_ac": "Decide from matched16k development LR experiments.",
+    "learning_rate_reader": 2e-05,
+    "ratio": "Decide from matched16k development experiments;1/16 practical baseline."
+  },
+  "selection": "Keep original16k rows unchanged as subset, interleave balanced16k additions, preserve originalheld400/learning32/retrieval32398. Fresh400 confirmation excludes all original9B/27B training requests and all earlier reserved questions.",
+  "readiness": "Freeze only after exact eligible family quotas pass; published count alone is insufficient.",
+  "launch": "As soon as learning-rate choice and bank readiness resolve; reuse freed slot within fourGPUcap. Expected5.5\u20136h for1/16 onRTXPRO6000.",
+  "material_attempt": {
+    "job": 23471384,
+    "status": "COMPLETED 0:0",
+    "elapsed_seconds": 56,
+    "bank_published_questions": 35000,
+    "training": {
+      "questions": 32000,
+      "source_requests": 27421,
+      "by_family": {
+        "code": 9600,
+        "documents": 2560,
+        "financial": 1600,
+        "legal": 1920,
+        "math_arxiv": 3840,
+        "math_textbook": 2560,
+        "office": 1920,
+        "technical_web": 1600,
+        "web": 6400
+      },
+      "source_tokens": {
+        "known": 32000,
+        "sum": 48459002,
+        "mean": 1514.3438125,
+        "median": 1701.0,
+        "p95": 3223
+      },
+      "answer_tokens": {
+        "known": 32000,
+        "sum": 668371,
+        "mean": 20.88659375,
+        "median": 21.0,
+        "p95": 43
+      }
+    },
+    "original_questions_preserved": 16000,
+    "added_questions": 16000,
+    "preserved_fields": [
+      "held",
+      "held_cohorts",
+      "learning_ids",
+      "retrieval"
+    ],
+    "prior_training_requests_excluded_from_confirmation": 29210
+  },
+  "timing": "Aim16EDT; main32k run has7h allocation/24600s training ceiling and no wall-clock cutoff, so queue delays do not deliberately truncate its requested full pass.",
+  "material_sha256": "a73de2273d600ab3693540310510e496736c554d1685312132885cc24b5973aa",
+  "fresh_confirmation_sha256": "0f0a8330c1a442b3f354bfc746780df98b56684406a3aec9ba9fe1c8a13aef25",
+  "selection_sha256": "8f75544b9681775fa7ca463faab75e7220fd1881c35895ae5e4431c979142268",
+  "run_name": "oracle_27b_32k",
+  "reference_reuse": {
+    "cpu_job": 23472004,
+    "status": "COMPLETED 0:0, 5 seconds",
+    "source_questions": 16000,
+    "behavior": "Existing trainer merges matching original-base reference keys and computes missing ones; identity and top-k must match.",
+    "sha256": "5131a2e319f59e7b0400388b5fde3bc946f7cd19defac1dbdc52f6a5ea1ed0f1",
+    "bytes": 217341397
+  },
+  "training_job": 23479433,
+  "selected_recipe": {
+    "learning_rate_ac": 5e-05,
+    "learning_rate_reader": 2e-05,
+    "ratio": 0.0625
+  },
+  "failed_main_attempt": 23478943,
+  "repair": "ANSWER_MASK_REPAIR.md"
+}

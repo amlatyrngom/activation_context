@@ -1,0 +1,260 @@
+{
+  "8192": [
+    {
+      "item_id": "bank_v1_0005_code_q1:study:47b680883b4889f4:20260927:122:910769424c5f7b4b:0",
+      "encoded_source_tokens": 8256,
+      "compressed_rows": 516,
+      "evidence_source_tokens": 8172,
+      "passages": 7
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:143:7e35cb6c958206b8:0",
+      "encoded_source_tokens": 8289,
+      "compressed_rows": 519,
+      "evidence_source_tokens": 8187,
+      "passages": 7
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:53:b21bbdb9789c35f2:0",
+      "encoded_source_tokens": 8252,
+      "compressed_rows": 516,
+      "evidence_source_tokens": 8143,
+      "passages": 10
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:132:69c719e81e80580e:0",
+      "encoded_source_tokens": 8297,
+      "compressed_rows": 519,
+      "evidence_source_tokens": 8183,
+      "passages": 9
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:478:4ba6c9dff8b5fe35:0",
+      "encoded_source_tokens": 8257,
+      "compressed_rows": 517,
+      "evidence_source_tokens": 8180,
+      "passages": 7
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:452:76aa7a95818d8da0:0",
+      "encoded_source_tokens": 8161,
+      "compressed_rows": 511,
+      "evidence_source_tokens": 8092,
+      "passages": 5
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:168:e4ee2880490e43a2:0",
+      "encoded_source_tokens": 8320,
+      "compressed_rows": 520,
+      "evidence_source_tokens": 8168,
+      "passages": 15
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:102:a5a168cf88a7b6bf:0",
+      "encoded_source_tokens": 8289,
+      "compressed_rows": 519,
+      "evidence_source_tokens": 8176,
+      "passages": 11
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+      "encoded_source_tokens": 8268,
+      "compressed_rows": 517,
+      "evidence_source_tokens": 8173,
+      "passages": 9
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+      "encoded_source_tokens": 8270,
+      "compressed_rows": 517,
+      "evidence_source_tokens": 8186,
+      "passages": 8
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+      "encoded_source_tokens": 8243,
+      "compressed_rows": 516,
+      "evidence_source_tokens": 8169,
+      "passages": 6
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "encoded_source_tokens": 8267,
+      "compressed_rows": 517,
+      "evidence_source_tokens": 8182,
+      "passages": 7
+    }
+  ],
+  "16384": [
+    {
+      "item_id": "bank_v1_0005_code_q1:study:47b680883b4889f4:20260927:122:910769424c5f7b4b:0",
+      "encoded_source_tokens": 16496,
+      "compressed_rows": 1031,
+      "evidence_source_tokens": 16382,
+      "passages": 11
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:143:7e35cb6c958206b8:0",
+      "encoded_source_tokens": 16462,
+      "compressed_rows": 1029,
+      "evidence_source_tokens": 16322,
+      "passages": 12
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:53:b21bbdb9789c35f2:0",
+      "encoded_source_tokens": 16544,
+      "compressed_rows": 1034,
+      "evidence_source_tokens": 16379,
+      "passages": 17
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:132:69c719e81e80580e:0",
+      "encoded_source_tokens": 16534,
+      "compressed_rows": 1034,
+      "evidence_source_tokens": 16380,
+      "passages": 14
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:478:4ba6c9dff8b5fe35:0",
+      "encoded_source_tokens": 16490,
+      "compressed_rows": 1031,
+      "evidence_source_tokens": 16359,
+      "passages": 14
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:452:76aa7a95818d8da0:0",
+      "encoded_source_tokens": 16450,
+      "compressed_rows": 1029,
+      "evidence_source_tokens": 16345,
+      "passages": 10
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:168:e4ee2880490e43a2:0",
+      "encoded_source_tokens": 16501,
+      "compressed_rows": 1032,
+      "evidence_source_tokens": 16325,
+      "passages": 18
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:102:a5a168cf88a7b6bf:0",
+      "encoded_source_tokens": 16531,
+      "compressed_rows": 1034,
+      "evidence_source_tokens": 16370,
+      "passages": 17
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+      "encoded_source_tokens": 16425,
+      "compressed_rows": 1027,
+      "evidence_source_tokens": 16322,
+      "passages": 10
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+      "encoded_source_tokens": 16517,
+      "compressed_rows": 1033,
+      "evidence_source_tokens": 16370,
+      "passages": 16
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+      "encoded_source_tokens": 16496,
+      "compressed_rows": 1031,
+      "evidence_source_tokens": 16353,
+      "passages": 15
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "encoded_source_tokens": 16460,
+      "compressed_rows": 1029,
+      "evidence_source_tokens": 16345,
+      "passages": 11
+    }
+  ],
+  "32768": [
+    {
+      "item_id": "bank_v1_0005_code_q1:study:47b680883b4889f4:20260927:122:910769424c5f7b4b:0",
+      "encoded_source_tokens": 32856,
+      "compressed_rows": 2054,
+      "evidence_source_tokens": 32646,
+      "passages": 23
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:143:7e35cb6c958206b8:0",
+      "encoded_source_tokens": 32985,
+      "compressed_rows": 2062,
+      "evidence_source_tokens": 32749,
+      "passages": 24
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:53:b21bbdb9789c35f2:0",
+      "encoded_source_tokens": 32981,
+      "compressed_rows": 2062,
+      "evidence_source_tokens": 32696,
+      "passages": 32
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:132:69c719e81e80580e:0",
+      "encoded_source_tokens": 32998,
+      "compressed_rows": 2063,
+      "evidence_source_tokens": 32716,
+      "passages": 30
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:478:4ba6c9dff8b5fe35:0",
+      "encoded_source_tokens": 32966,
+      "compressed_rows": 2061,
+      "evidence_source_tokens": 32755,
+      "passages": 24
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:452:76aa7a95818d8da0:0",
+      "encoded_source_tokens": 32920,
+      "compressed_rows": 2058,
+      "evidence_source_tokens": 32735,
+      "passages": 20
+    },
+    {
+      "item_id": "bank_v1_0002_code_q1:study:47b680883b4889f4:20260924:168:e4ee2880490e43a2:0",
+      "encoded_source_tokens": 32998,
+      "compressed_rows": 2063,
+      "evidence_source_tokens": 32718,
+      "passages": 31
+    },
+    {
+      "item_id": "bank_v1_0000_code_q1:study:47b680883b4889f4:20260922:102:a5a168cf88a7b6bf:0",
+      "encoded_source_tokens": 32950,
+      "compressed_rows": 2060,
+      "evidence_source_tokens": 32733,
+      "passages": 24
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:591:97d62bae173c851d:0",
+      "encoded_source_tokens": 32932,
+      "compressed_rows": 2059,
+      "evidence_source_tokens": 32741,
+      "passages": 21
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:525:dc3a9c9179a7c71f:0",
+      "encoded_source_tokens": 32999,
+      "compressed_rows": 2063,
+      "evidence_source_tokens": 32756,
+      "passages": 28
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:179:58cd3b8d8d776e96:0",
+      "encoded_source_tokens": 32960,
+      "compressed_rows": 2060,
+      "evidence_source_tokens": 32761,
+      "passages": 22
+    },
+    {
+      "item_id": "taskaware_code:study:5d9fe21d397faebb:20260921:322:c44471080c87f84f:0",
+      "encoded_source_tokens": 32983,
+      "compressed_rows": 2062,
+      "evidence_source_tokens": 32740,
+      "passages": 27
+    }
+  ]
+}

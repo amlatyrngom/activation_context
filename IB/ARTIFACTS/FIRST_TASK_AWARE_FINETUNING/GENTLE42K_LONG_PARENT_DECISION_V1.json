@@ -1,0 +1,25 @@
+{
+  "utc": "2026-09-23T04:50:43.991912+00:00",
+  "experiment": "Gentle42k long adaptation on4000 familiar questions once",
+  "parent": "continue32k_10k_final_lr",
+  "parent_readout_sha256": "3a689635e419edcb2aea2708f5321e1561300c4ded9cc75690bfae76c66b2cbd",
+  "evidence": {
+    "constant8k_supported_correct": 61,
+    "rewarm8k_supported_correct": 54,
+    "supported_questions": 87,
+    "rewarm_only_correct": 5,
+    "constant_only_correct": 12,
+    "constant_held400_nll": 0.6218535951792562,
+    "rewarm_held400_nll": 0.6278053798576625,
+    "root_source_checks": [
+      75,
+      80,
+      87,
+      18,
+      68
+    ]
+  },
+  "decision": "Use constantfloor42k ownfinal pair and actualAdam5250; adapt gently at5e-6/2e-6 on4000 familiar questions,8k independent passages, original1/16 and65536 packing.",
+  "limits": "One fixed development sample; no general LRwinner or independentconfirmation claim. Other source/length/layout factors remain explicit.",
+  "gpu_submitted": false
+}

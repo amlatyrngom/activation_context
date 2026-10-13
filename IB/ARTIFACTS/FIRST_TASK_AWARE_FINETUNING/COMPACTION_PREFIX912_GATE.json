@@ -1,0 +1,14 @@
+{
+  "status": "Not launched: GPU prefix equivalence gate failed for both 512 and 2048 targets",
+  "cpu_job": 23645166,
+  "source": "2efea9f11ba6e2158370f2a9374d35b3129406c3",
+  "worker": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/run_compaction_prefix912_v1.py",
+  "worker_sha256": "940764cd95f5a57a91b8b07a43000a4ec08cee324029720cbe973496f3874689",
+  "histories": 912,
+  "held_histories": 100,
+  "training_targets_prefix512": 436883,
+  "training_targets_full": 2608122,
+  "held_targets": 286130,
+  "gate_result": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/ec2_compaction_optimization_v1/short_supervision_v1/result.json",
+  "decision": "Retain original continuation control; investigate numerical gradient differences before any shortened-prefix run. Summary SFT is a separate approved objective."
+}

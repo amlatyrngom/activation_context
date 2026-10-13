@@ -1,0 +1,165 @@
+{
+  "complete": true,
+  "activated_utc": "2026-09-22T10:35:06.656678+00:00",
+  "slurm_job_id": "23470885",
+  "watched_directory": "/home/ngom/orcd/pool/activation/taskaware/bank_source_extensions",
+  "completion_receipt_sha256": "514258eefeb0d5b1c4beb87cce8d50524d042011b53318572038e50475781235",
+  "registry_sha256": "0ccf7937a262feeebf3ced9999dab6d5829c968320ad4ae59fd2f2e0c25f9898",
+  "actions": [
+    {
+      "file": "code__raw_27b_headroom_20260922_v2.jsonl",
+      "action": "create-only hard link"
+    },
+    {
+      "file": "office__raw_27b_headroom_20260922_v2.jsonl",
+      "action": "create-only hard link"
+    },
+    {
+      "file": "technical_web__raw_27b_headroom_20260922_v2.jsonl",
+      "action": "create-only hard link"
+    },
+    {
+      "file": "web__raw_27b_headroom_20260922_v2.jsonl",
+      "action": "create-only hard link"
+    }
+  ],
+  "new_files": {
+    "technical_web__raw_27b_headroom_20260922_v2.jsonl": {
+      "sha256": "6a0858730984691de1755a39eff9c465a93fb593690893e231e947710f94d2b7",
+      "bytes": 26788160,
+      "device": 2097357,
+      "inode": 115648
+    },
+    "web__raw_27b_headroom_20260922_v2.jsonl": {
+      "sha256": "2ce75752f1ea496dce2004280f9caacc8c73cfb18472a4824cf6b475ded88df1",
+      "bytes": 128630050,
+      "device": 2097357,
+      "inode": 124337
+    },
+    "code__raw_27b_headroom_20260922_v2.jsonl": {
+      "sha256": "44063dd854ee690fea2ddb3d1aa2c923607c7028666bab98bd84067aa5362300",
+      "bytes": 263380247,
+      "device": 2097357,
+      "inode": 124338
+    },
+    "office__raw_27b_headroom_20260922_v2.jsonl": {
+      "sha256": "4fcab6ce5e7fde890a28bb099d3b2d2758b05418c8542df05443aa80fe87f0a0",
+      "bytes": 15585346,
+      "device": 2097357,
+      "inode": 122801
+    }
+  },
+  "linked_to_staged_inode": {
+    "code__raw_27b_headroom_20260922_v2.jsonl": true,
+    "office__raw_27b_headroom_20260922_v2.jsonl": true,
+    "web__raw_27b_headroom_20260922_v2.jsonl": true,
+    "technical_web__raw_27b_headroom_20260922_v2.jsonl": true
+  },
+  "eight_previous_files_unchanged": {
+    "code__additional_cached_files_20260921_v1.jsonl": {
+      "sha256": "9c9006a5065623c4299d6d9446cda625a83dd19971fc21a0dc54c1f8fe600a48",
+      "bytes": 82823018,
+      "device": 2097357,
+      "inode": 45268
+    },
+    "documents__official_manuals_20260921_v1.jsonl": {
+      "sha256": "10b51fa0674c0a53757ab216fbb7b289f08f5a356697619dff259b8ff6aabe23",
+      "bytes": 90285264,
+      "device": 2097357,
+      "inode": 10530
+    },
+    "financial__sec_filings_20260921_v1.jsonl": {
+      "sha256": "1f7492dc45609dfcfefcce436a8da46c568876d549f7d5471e57c5c1445437cd",
+      "bytes": 153125182,
+      "device": 2097357,
+      "inode": 49080
+    },
+    "math_textbook__quantitative_exposition_20260921_v1.jsonl": {
+      "sha256": "591f510aaf4409787d700cec268cbbdeb23ecd06e2241341b3744d6644c697a7",
+      "bytes": 45813554,
+      "device": 2097357,
+      "inode": 45752
+    },
+    "math_textbook__web_exposition_20260921_v1.jsonl": {
+      "sha256": "eb58b5b0e4508dc30ab0670ce6c39d230be663148adba981c303ccdd93264bfa",
+      "bytes": 76925280,
+      "device": 2097357,
+      "inode": 7331
+    },
+    "office__business_workflows_20260921_v1.jsonl": {
+      "sha256": "22750cbe9f57a70457cea96eeaebf3a2657b7b2cba9fd34fd46db4ca873a9f67",
+      "bytes": 24387935,
+      "device": 2097357,
+      "inode": 42848
+    },
+    "technical_web__bright_corpora_20260921_v1.jsonl": {
+      "sha256": "97b883adf06d22da13d282b9a6d1e472638013abfcc3f146203c43bfdf341614",
+      "bytes": 22085814,
+      "device": 2097357,
+      "inode": 41154
+    },
+    "web__msmarco_headroom_20260921_v1.jsonl": {
+      "sha256": "4587781c6ccabc8a2d8e1fa7be2fdc465d020f856bdece539dd3976b7e3879ff",
+      "bytes": 46752214,
+      "device": 2097357,
+      "inode": 5280
+    }
+  },
+  "producer_observation_before": {
+    "updated_utc": "2026-09-22 10:34:55 UTC",
+    "published_questions": 34000,
+    "registered_extensions": [
+      "code__additional_cached_files_20260921_v1.jsonl",
+      "documents__official_manuals_20260921_v1.jsonl",
+      "financial__sec_filings_20260921_v1.jsonl",
+      "math_textbook__quantitative_exposition_20260921_v1.jsonl",
+      "math_textbook__web_exposition_20260921_v1.jsonl",
+      "office__business_workflows_20260921_v1.jsonl",
+      "technical_web__bright_corpora_20260921_v1.jsonl",
+      "web__msmarco_headroom_20260921_v1.jsonl"
+    ],
+    "cursors": {
+      "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c": {
+        "code": 18752,
+        "math_arxiv": 3424,
+        "math_textbook": 3392,
+        "financial": 1920,
+        "web": 31936,
+        "technical_web": 4992,
+        "documents": 2112,
+        "legal": 1344,
+        "office": 3552
+      }
+    }
+  },
+  "producer_observation_after": {
+    "updated_utc": "2026-09-22 10:34:55 UTC",
+    "published_questions": 34000,
+    "registered_extensions": [
+      "code__additional_cached_files_20260921_v1.jsonl",
+      "documents__official_manuals_20260921_v1.jsonl",
+      "financial__sec_filings_20260921_v1.jsonl",
+      "math_textbook__quantitative_exposition_20260921_v1.jsonl",
+      "math_textbook__web_exposition_20260921_v1.jsonl",
+      "office__business_workflows_20260921_v1.jsonl",
+      "technical_web__bright_corpora_20260921_v1.jsonl",
+      "web__msmarco_headroom_20260921_v1.jsonl"
+    ],
+    "cursors": {
+      "18340ba16c1d584d4f5c2354cac7d112f662dcdf98d266028bce7b51f31afe5c": {
+        "code": 18752,
+        "math_arxiv": 3424,
+        "math_textbook": 3392,
+        "financial": 1920,
+        "web": 31936,
+        "technical_web": 4992,
+        "documents": 2112,
+        "legal": 1344,
+        "office": 3552
+      }
+    }
+  },
+  "producer_has_registered_new_files_at_snapshot": [],
+  "scope": "Only four create-only source-file links and this receipt were written. No producer signals, bank/cursor/code writes, checkpoint actions or GPU allocation. Producer may naturally advance while read-only snapshots are taken.",
+  "discovery": "Available immediately to the existing loader; current producer discovers at next startup or source exhaustion, preserving its recorded order and cursors."
+}

@@ -1,0 +1,94 @@
+{
+  "created_utc": "2026-09-25T22:41:46.258359+00:00",
+  "baseline": "/source",
+  "status": "GPU readiness checks ongoing; exact source-sync package",
+  "files": {
+    "activation/ac_model/ac_model.py": {
+      "before_sha256": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "after_sha256": "cdf705cfc3dcf42740378a46d8a9a66950be016a8c3a9bc73df8ff8c005aedc3"
+    },
+    "activation/ac_model/ac_model_reporter.py": {
+      "before_sha256": "23eef560f7993814d9bcf44defeebb952a730068e7d1a9a7582c1e8f6984cb28",
+      "after_sha256": "b031e71c8459ea72867194be95f73d41df35930b8ecd7300132ad596eff5c157"
+    },
+    "activation/ac_model/ac_model_study.py": {
+      "before_sha256": "332a3cbac69b691d2576eabfbed2196dfbd3241dd2a71e26a9ae8f5349098d7b",
+      "after_sha256": "c748c68b8b0b1f76e5abbf05ff8b661617a830501eb58adf9bb7b7b134de4b9c"
+    },
+    "activation/ac_model/ac_model_training.py": {
+      "before_sha256": "f0eb298ba1b5714a0e4f4a79269b32989670f0fd84c61985d7d27a4de9e0d601",
+      "after_sha256": "e36b26c7f33ae7f1ddccdf9ed1c4599e995939162702e8dc46ad3b67c1e48a86"
+    },
+    "activation/ac_model/ac_model_utils.py": {
+      "before_sha256": "081297c4a4f1062ce26f0e9f847e2ce728cc0db8d5076526bdb626359e5bfbbb",
+      "after_sha256": "9e207fd1a07bd1fbf45ddc108f96dd749c3fc6517343c5f4df4add656a043e8a"
+    },
+    "activation/bench/agent_probes/cheap_synthetic_bench.py": {
+      "before_sha256": "48224857b1c8719288801716c11e451d525b4340cd9ce08ab1b7732a48e50fed",
+      "after_sha256": "48ffd4ebfc977acf41343afcf310220bc005528f2b71c63cf0a75a35cda5ad69"
+    },
+    "activation/common/reporting.py": {
+      "before_sha256": "821532bd96b0ce50eb805a1e3d387b3ca75e48d59f5f4910c139fdea8cb4577e",
+      "after_sha256": "1d8cef4d94c585fc8f8abacdcea230f8a87eea2719cc41d9670353c95718bbfa"
+    },
+    "activation/dataset/dataset.py": {
+      "before_sha256": "4090e96af0946617cdfb3a44809aca94a75a4b87cc3c6afef67864f962c48196",
+      "after_sha256": "dfe83053f6251088856a4a4a5cd51501f5c7c29681a4bceb694dd5aa78b8cd17"
+    },
+    "activation/dataset/dataset_manager.py": {
+      "before_sha256": "dfbcaee43ea92954f3930c848b21332eb4755a2ca6f7da4c06eab61f5eeb26c5",
+      "after_sha256": "8a195afe841c7c4b2dd651f202e934363fd55e4d17ecb51fca950f66b721b2f2"
+    },
+    "activation/dataset/dataset_study.py": {
+      "before_sha256": "356d55a4a5f0fb7de3167ab03d00a28d6268d0fbbf06efb39f99df811d9eae18",
+      "after_sha256": "df79a3441f760dc43763057ecc90d47b9766f3a29f3848e2589811983452e77e"
+    },
+    "activation/dataset/dataset_study_prompts.py": {
+      "before_sha256": null,
+      "after_sha256": "50dae9e1f2348998a9a7c1ea121819fd0ec071ad2df472290c14eee4d01bc22d"
+    },
+    "activation/agent/agent.py": {
+      "before_sha256": "1d79c345a7008961ae9c48ddefb6aaca691a4baa5edb2901c55018145ee5bef1",
+      "after_sha256": "cc5e20809fc8c942bb249a016ea60fbeab01a3ee816832c5dba2b261019818d3"
+    },
+    "activation/dataset/dataset_caching.py": {
+      "before_sha256": "1bf3a95d62ad975126fb9096456a127515866f270859545e7ac3ed50fbaa761c",
+      "after_sha256": "74b81d228ed58d056ac393a9600bd2931f0f63ce0658d93328c73fd12149a92b"
+    },
+    "activation/common/ac_parts.py": {
+      "before_sha256": "7c1579f66cd097522fb572ad497b028fa15faa1cdb2fc78a25ca2bbc0cdb1ec6",
+      "after_sha256": "69bb3c4f444004fb3bf71d4fe1fc5a5bd86cc00b5d1d73458f23942c1e663a11"
+    },
+    "activation/agent/agent_tools.py": {
+      "before_sha256": "438cfdd8843b3b13e5a9d6c8b8c17b58d8def274a1e4c83f37d08560485fb9d8",
+      "after_sha256": "977d013b8708683d93ac93eaae0ff5465614da2681b740571772143d377cdac5"
+    },
+    "activation/harness/hf_utils.py": {
+      "before_sha256": "25c1e3f6708524ac9201d42e2b10a0905a5e168062b1463c594212a7003dc5a9",
+      "after_sha256": "079a6f5d52a3f52eb3f6309e0a1d53dfd3f99664ec6a229286c4ea063ddf41f0"
+    },
+    "activation/harness/module_manager.py": {
+      "before_sha256": "4c54d76147c9e5a3ceb6d6c3c471a614f02e7f960f1ccd22128268bc341fc055",
+      "after_sha256": "b4ec7ebd90eb9d54781e02d008fe47c816397d1ede3774ee45d81b20234e17a6"
+    },
+    "activation/autotuners/__init__.py": {
+      "before_sha256": "ab0504685cb07475cddce418342c75d1b9ad47af7c3f5dd4c5b919c37df282d4",
+      "after_sha256": "c8fd6060568d47830d4839d68ab13d58e1b9ab066ddf6423e6584499f5afb431"
+    },
+    "activation/autotuners/core.py": {
+      "before_sha256": "a52afeee3451f55834f55d4b7323ac5bb8825800922dbb706fac2bb69a2e7f08",
+      "after_sha256": "be593e6b218f0c0eedaa9778607454b658b2c042a062c2b879081d2d6aa4eaed"
+    },
+    "activation/autotuners/worker.py": {
+      "before_sha256": "b0d6ce3b9ef81e0ac1c5fb430bac382a9fd306e66b2c1a03077f44317006616c",
+      "after_sha256": "893aa192a2ad5d2e379c3c55d78629ae749ff6bb7d7a54cf222cc97c6128e42e"
+    }
+  },
+  "excluded": [
+    "Private tests/probes/data",
+    "Unrelated user changes",
+    "Bench entry points are linked in the handoff, outside the product patch"
+  ],
+  "patch_sha256": "b9b30686cbb3330ed1619700cc8c4130d91f97ec78132de0acc88f951c3dc209",
+  "patch_validation": "applies cleanly to isolated current /source copies; reproduces all staged hashes"
+}

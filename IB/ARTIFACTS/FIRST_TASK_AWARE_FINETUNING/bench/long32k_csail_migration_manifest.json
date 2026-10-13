@@ -1,0 +1,274 @@
+{
+  "source": "ORCD immutable update24 published pair, pulled via guarded rsync",
+  "source_original_root": "/orcd/pool/007/ngom/activation/taskaware",
+  "destination_root": "/data/scratch/ngom/activation/taskaware",
+  "destination_run": "long_adapt_32k_csail",
+  "run_identity": {
+    "arm": "joint",
+    "epochs": 1,
+    "planned_updates": 80,
+    "steps_per_epoch": 80,
+    "material_sha256": "f937470fde3f231aac98e7fe4f209488108699b329ac00f222a919e3a0a4bc4e",
+    "material_ids_sha256": "c67a9e461ad5b682cbceb844ec78d91f461baa7adcbaf0ed2093775aba0db4cb",
+    "passage_parts": false,
+    "evidence_tokens": 32768,
+    "max_passages": 64,
+    "ratio": 0.0625,
+    "initial_pair_sha256": "27fa2e70c254a2ab1e211483e3b2ba0844404a56d3c1f7050c566f05d82c8297"
+  },
+  "files": {
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/ac_modules.pt": {
+      "bytes": 1208881673,
+      "sha256": "e97b3ff72c680feced263f6de910f98f1a818c1c09b4b9dd4d225ab3094f9c3e",
+      "mtime_ns": 1790031047929985399
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/optimizer.pt": {
+      "bytes": 4676641912,
+      "sha256": "a931a82a59c35ec1968fe5bd43e8271dd289de5be7337eb78292f4432f5fe38d",
+      "mtime_ns": 1790031057057970546
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/README.md": {
+      "bytes": 5184,
+      "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+      "mtime_ns": 1790031048082985150
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_config.json": {
+      "bytes": 1150,
+      "sha256": "bb2c77e76f96f80be188931f390faabbe96250a6ecbf1ea32c74946e54417963",
+      "mtime_ns": 1790031048685984168
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_model.safetensors": {
+      "bytes": 349204488,
+      "sha256": "e5cdfa0f323ae7cc7e0ce3faa3c369b12e6baf89d361e5f9765df61c01a5fc91",
+      "mtime_ns": 1790031048636984248
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/no_context_reference.pt": {
+      "bytes": 7814437,
+      "sha256": "a7ac5918d0ea9ae37e02fc8c818ccb85e73d5b42bd081ee3ffea076b4ad1fc3d",
+      "mtime_ns": 1790028298368044950
+    },
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/partial_epoch.json": {
+      "bytes": 183,
+      "sha256": "39812fe90717f08aed7cc39c162e4e2541f249ea6709e070f58840ed5ed999bd",
+      "mtime_ns": 1790031057449969908
+    },
+    "long_adapt_32k_csail/LORAS/rag_reader/epoch_001_step_00024/README.md": {
+      "bytes": 5184,
+      "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+      "mtime_ns": 1790031048703984139
+    },
+    "long_adapt_32k_csail/LORAS/rag_reader/epoch_001_step_00024/adapter_config.json": {
+      "bytes": 1147,
+      "sha256": "765c747875f62b758e414b1efcd50a18ffa03da908a4f38fdf87b7ca81b38b04",
+      "mtime_ns": 1790031049852982269
+    },
+    "long_adapt_32k_csail/LORAS/rag_reader/epoch_001_step_00024/adapter_model.safetensors": {
+      "bytes": 931173960,
+      "sha256": "22d33e679efb05d69ad95caa82a889304b909ce6707206467452930e28fcab37",
+      "mtime_ns": 1790031049774982397
+    },
+    "long_adaptation_material/initial_pair.json": {
+      "bytes": 349,
+      "sha256": "27fa2e70c254a2ab1e211483e3b2ba0844404a56d3c1f7050c566f05d82c8297",
+      "mtime_ns": 1790021183133387134
+    },
+    "long_adaptation_material/material.json": {
+      "bytes": 55303534,
+      "sha256": "f937470fde3f231aac98e7fe4f209488108699b329ac00f222a919e3a0a4bc4e",
+      "mtime_ns": 1790021183090686745
+    },
+    "reports/long_adapt_32k_csail/answers_00000.json": {
+      "bytes": 11065,
+      "sha256": "3da246d97c040d59c00e4d1bb6ddf0a18b61f857d9001b7cbf98f2cb3c01cee5",
+      "mtime_ns": 1790028891316454897
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/effective_training_config.json": {
+      "bytes": 1010,
+      "sha256": "d38c8644e4bb22b19ff39ddb7c65835a2cab6fd4499c234e3eae9272dacde981",
+      "mtime_ns": 1790031643684163123
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/panels.json": {
+      "bytes": 833,
+      "sha256": "ea400f415c9e7a730361811bcd0cea6c8c61a1d3919341e04a064d4f221e19ad",
+      "mtime_ns": 1790030740097370350
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/report_data.json": {
+      "bytes": 37936,
+      "sha256": "8d3c06bcd7c01df8637e93c76038ea567c4bc0aba669c0fc2a9434d516db77f5",
+      "mtime_ns": 1790031139683854409
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/resume.json": {
+      "bytes": 437,
+      "sha256": "a08dbd11d1a4ed799ff5812d6f2ddca57eff00a26176b240ac2dec239bccd957",
+      "mtime_ns": 1790031579331249268
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/selected_checkpoint.json": {
+      "bytes": 384,
+      "sha256": "75e88182835f1d58e42ddc011b4f0f09d2b08f653444a26367679d0ba77b58e4",
+      "mtime_ns": 1790030740098370348
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_001/trainer_resume_baseline.json": {
+      "bytes": 114645,
+      "sha256": "8920985c4142144f63e66b1c75b47de797852be4a618edfb6fa8484d091ad568",
+      "mtime_ns": 1790031895966881141
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/effective_training_config.json": {
+      "bytes": 1010,
+      "sha256": "d38c8644e4bb22b19ff39ddb7c65835a2cab6fd4499c234e3eae9272dacde981",
+      "mtime_ns": 1790034052931322616
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/panels.json": {
+      "bytes": 833,
+      "sha256": "ea400f415c9e7a730361811bcd0cea6c8c61a1d3919341e04a064d4f221e19ad",
+      "mtime_ns": 1790031643682163126
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/report_data.json": {
+      "bytes": 37828,
+      "sha256": "90422dc70ae0c3b72d1402564265cbf08519ce31ea39ad4b09e8dd4f922fed5c",
+      "mtime_ns": 1790032148563603420
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/resume.json": {
+      "bytes": 437,
+      "sha256": "a08dbd11d1a4ed799ff5812d6f2ddca57eff00a26176b240ac2dec239bccd957",
+      "mtime_ns": 1790033926915481546
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/resume_baseline.json": {
+      "bytes": 467195,
+      "sha256": "4b5adc37f1577f01509f9a03942b3734044954774b6706dee8706c9f50cfa22a",
+      "mtime_ns": 1790034676713556984
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/selected_checkpoint.json": {
+      "bytes": 384,
+      "sha256": "75e88182835f1d58e42ddc011b4f0f09d2b08f653444a26367679d0ba77b58e4",
+      "mtime_ns": 1790030740098370348
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_002/trainer_resume_baseline.json": {
+      "bytes": 114645,
+      "sha256": "8920985c4142144f63e66b1c75b47de797852be4a618edfb6fa8484d091ad568",
+      "mtime_ns": 1790034304439008201
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/baseline_reuse.json": {
+      "bytes": 331,
+      "sha256": "82b08a56d35fa181a9150ba047ccb5e037faf65995b17ed396b13c1310fa6055",
+      "mtime_ns": 1790036208647853097
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/effective_training_config.json": {
+      "bytes": 1011,
+      "sha256": "9aae0e2df18d8c50fa691208887d9f23790370dcdf9035c17f1bebbe22b12c2d",
+      "mtime_ns": 1790036020265069134
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/panels.json": {
+      "bytes": 833,
+      "sha256": "ea400f415c9e7a730361811bcd0cea6c8c61a1d3919341e04a064d4f221e19ad",
+      "mtime_ns": 1790034052928322620
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/report_data.json": {
+      "bytes": 40379,
+      "sha256": "759e73c812325e12e3d874b9cb582f5164813cdeb9bccc751d5a80eb4df41e23",
+      "mtime_ns": 1790034925784254407
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/resume.json": {
+      "bytes": 437,
+      "sha256": "a08dbd11d1a4ed799ff5812d6f2ddca57eff00a26176b240ac2dec239bccd957",
+      "mtime_ns": 1790035894681132621
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/resume_baseline.json": {
+      "bytes": 467519,
+      "sha256": "4e0df4f91dfe76de4bc3bed41afc8d26240ec6672da33f5074c5b849af073fe9",
+      "mtime_ns": 1790036208647853097
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/selected_checkpoint.json": {
+      "bytes": 384,
+      "sha256": "75e88182835f1d58e42ddc011b4f0f09d2b08f653444a26367679d0ba77b58e4",
+      "mtime_ns": 1790030740098370348
+    },
+    "reports/long_adapt_32k_csail/attempts/resume_003/trainer_resume_baseline.json": {
+      "bytes": 114645,
+      "sha256": "8920985c4142144f63e66b1c75b47de797852be4a618edfb6fa8484d091ad568",
+      "mtime_ns": 1790036208646853098
+    },
+    "reports/long_adapt_32k_csail/full_context_answers_00000.json": {
+      "bytes": 7861,
+      "sha256": "c4cc1a24eb4d4d0cee2b98fc2be945a30d56242cbbd48fc5379edcf758569930",
+      "mtime_ns": 1790028953360386414
+    },
+    "reports/long_adapt_32k_csail/material_ids.json": {
+      "bytes": 60870,
+      "sha256": "c5793e6b8d016e3bda4ce892d6540938537cfd14d012defd0d861c31757b8a9d",
+      "mtime_ns": 1790028192148178599
+    },
+    "reports/long_adapt_32k_csail/panel_00000.json": {
+      "bytes": 467767,
+      "sha256": "2427bdbb9dd7cefaacba5249426fe6d73f32b7e1efaa524531bce4f00980e626",
+      "mtime_ns": 1790028826834532844
+    },
+    "reports/long_adapt_32k_csail/panel_00008.json": {
+      "bytes": 467582,
+      "sha256": "6445236cc28b345ef4c04d226e8f0aa4b96f0d2f8175dc49ea7fcb23bda8361c",
+      "mtime_ns": 1790029814652556737
+    },
+    "reports/long_adapt_32k_csail/panel_00016.json": {
+      "bytes": 467638,
+      "sha256": "17c4fa83d774a3479a55873d46694c08392588be2ce65dd3895aee43732c1092",
+      "mtime_ns": 1790030740097370350
+    },
+    "reports/long_adapt_32k_csail/panels.json": {
+      "bytes": 833,
+      "sha256": "ea400f415c9e7a730361811bcd0cea6c8c61a1d3919341e04a064d4f221e19ad",
+      "mtime_ns": 1790036020263069137
+    },
+    "reports/long_adapt_32k_csail/report.tressoir.html": {
+      "bytes": 53681,
+      "sha256": "f57413d1842fcd47d31e3bf5617a5b538c001f1be5253e492396e6280a736347",
+      "mtime_ns": 1790036272747787695
+    },
+    "reports/long_adapt_32k_csail/report_data.json": {
+      "bytes": 39532,
+      "sha256": "4d1e7885fd31643bb051b0ff138a425b802e9f9d0af77a6206a28daf3af8b3fb",
+      "mtime_ns": 1790036208645853099
+    },
+    "reports/long_adapt_32k_csail/row_budget.json": {
+      "bytes": 867,
+      "sha256": "1fd60ca76500a8f255433b7554ba62eb895aefb2d9f79e6d01137c3c285b4598",
+      "mtime_ns": 1790036020263069137
+    },
+    "reports/long_adapt_32k_csail/run_identity.json": {
+      "bytes": 534,
+      "sha256": "0fa97bb2af064111d80193b1e93d98a1e0445b510a82f423407f94cf051ba6f1",
+      "mtime_ns": 1790036020263069137
+    },
+    "reports/long_adapt_32k_csail/selected_checkpoint.json": {
+      "bytes": 384,
+      "sha256": "75e88182835f1d58e42ddc011b4f0f09d2b08f653444a26367679d0ba77b58e4",
+      "mtime_ns": 1790030740098370348
+    },
+    "reports/long_adapt_32k_csail/training_config.json": {
+      "bytes": 1010,
+      "sha256": "b3d85c5466b5c184093085f4e03b892a0073cc703cb32c25e631a40992497fc0",
+      "mtime_ns": 1790028192150178597
+    }
+  },
+  "required_for_first_resume": [
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/ac_modules.pt",
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/optimizer.pt",
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_config.json",
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/epoch_001_step_00024/side_lora/adapter_model.safetensors",
+    "long_adapt_32k_csail/LORAS/rag_reader/epoch_001_step_00024/adapter_config.json",
+    "long_adapt_32k_csail/LORAS/rag_reader/epoch_001_step_00024/adapter_model.safetensors",
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/partial_epoch.json",
+    "long_adapt_32k_csail/AC_MODELS/rag_poc/no_context_reference.pt",
+    "long_adaptation_material/material.json",
+    "long_adaptation_material/initial_pair.json",
+    "reports/long_adapt_32k_csail/training_config.json",
+    "reports/long_adapt_32k_csail/material_ids.json",
+    "reports/long_adapt_32k_csail/run_identity.json",
+    "reports/long_adapt_32k_csail/attempts/resume_002/resume_baseline.json",
+    "reports/long_adapt_32k_csail/attempts/resume_002/resume.json",
+    "reports/long_adapt_32k_csail/attempts/resume_002/effective_training_config.json"
+  ],
+  "base_revisions": {
+    "2B": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "9B": "c202236235762e1c871ad0ccb60c8ee5ba337b9a"
+  },
+  "verification": "Local SHA256 after verified ORCD-to-workspace rsync; destination compute preflight verifies required SHA256 before model load."
+}

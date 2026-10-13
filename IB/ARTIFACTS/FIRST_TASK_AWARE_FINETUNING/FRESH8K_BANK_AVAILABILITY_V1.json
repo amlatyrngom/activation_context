@@ -1,0 +1,213 @@
+{
+  "status": "available",
+  "checked_utc": "2026-09-23T04:17:58Z",
+  "bank_manifest_sha256": "5bed7effb878c816759179a418f1fe55250289b7454c7927fa612a2730e6f497",
+  "published_snapshot_identical_to_continuation_recipe": true,
+  "raw_published": 53000,
+  "raw_accepted": 53615,
+  "raw_buffered": 615,
+  "old_unique_questions": 42000,
+  "fresh_published_by_family": {
+    "code": 3120,
+    "office": 615,
+    "financial": 503,
+    "web": 2080,
+    "technical_web": 520,
+    "math_textbook": 772,
+    "documents": 779,
+    "math_arxiv": 900,
+    "legal": 574
+  },
+  "fresh_buffered_by_family": {
+    "financial": 74,
+    "documents": 37,
+    "office": 18,
+    "math_arxiv": 115,
+    "legal": 95,
+    "web": 65,
+    "technical_web": 38,
+    "code": 111,
+    "math_textbook": 58
+  },
+  "fresh_combined_by_family": {
+    "code": 3231,
+    "office": 633,
+    "financial": 577,
+    "web": 2145,
+    "technical_web": 558,
+    "math_textbook": 830,
+    "documents": 816,
+    "math_arxiv": 1015,
+    "legal": 669
+  },
+  "desired8000_by_family": {
+    "code": 2400,
+    "math_arxiv": 960,
+    "math_textbook": 640,
+    "financial": 400,
+    "web": 1600,
+    "technical_web": 400,
+    "documents": 640,
+    "legal": 480,
+    "office": 480
+  },
+  "fresh_published_total": 9863,
+  "fresh_buffered_total": 611,
+  "fresh_combined_total": 10474,
+  "published_shortfalls": {
+    "math_arxiv": 60
+  },
+  "combined_shortfalls": {},
+  "buffer_needed_for8000": {
+    "math_arxiv": 60
+  },
+  "exclusions": {
+    "training42k": 42000,
+    "reserved_question": 600,
+    "corrupted_qa": 345,
+    "reserved_sibling": 196
+  },
+  "protected_question_count": 1900,
+  "protected_request_count": 799,
+  "published_only_balanced_max_multiple100": 7500,
+  "read_only": true,
+  "confirmation_scores_read": false,
+  "large_material_loads": false,
+  "freshness": "Different IDs and NFC/strip/casefold question text from all original32k plus shared10k; held/reserved whole source requests excluded. Other siblings of prior training requests and raw-source reuse remain allowed by the existing split policy.",
+  "inputs": {
+    "prior_id_files": [
+      {
+        "path": "IB/TMP/SYNC/TASK_AWARE_QA/oracle_27b_32k/material_ids.json",
+        "sha256": "5e232bc3295e620d75889c9879412f148b0b079f21f0e9b60e080b47a005e980"
+      },
+      {
+        "path": "IB/TMP/SYNC/TASK_AWARE_QA/continue32k_10k_final_lr/material_ids.json",
+        "sha256": "065230210b8b0f2ffb6231dcb115b77c60453b4fd15a14d795c26d1f43454668"
+      }
+    ],
+    "question_only_reservations": [
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_32k_material/reserved_questions.json",
+        "sha256": "16fef7e38cea3a4b211ffcc3c643105bafeb802b92d97b65e5a51976dbe10fd4",
+        "questions": 1900
+      },
+      {
+        "path": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_material/reserved_questions.json",
+        "sha256": "c2e84e0a3d5df62aec79acb269e4a5eec489d41d5e5a8aa787c5e180c29ee7e8",
+        "questions": 1500
+      }
+    ],
+    "held_metadata_streamed_from": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/model_comparison_material/material_27b_16000.json",
+    "all_read_published_and_surplus_payload_hashes": {
+      "batches/batch_00001_54bbe353789e4e77b1fdccf39b841d34.jsonl": "0391243af7d965e80d3201862d4192c574d3ec4733732b0bce895fce64dda690",
+      "batches/batch_00002_63cf6c0057394ddd8bda6f63b2f716e3.jsonl": "4d66cfc370cb92fe5ff5cdbb8b807f24463ab75865d14a101f03f588f3d2665f",
+      "batches/batch_00003_23e97d7a1b444ba9982fda643781e9a3.jsonl": "06deee5c7a8ceadba9f1eb4a03d365932342dfd760db2057c2f53bb8e5de8686",
+      "batches/batch_00004_aee9d799e2894e159528498037093e0b.jsonl": "7d69dc1f7741158e65ffaad7eba7301b769759b111e136b9b91650a622ddd764",
+      "batches/batch_00005_5bcfe2d6dbad4f1ea06e062308229629.jsonl": "7119f1bd8fd4ae22922af4a016eb672e10117a17ab21489657439c7da523163b",
+      "batches/batch_00006_2228911472f449689104e62f035a7c1e.jsonl": "b411793c2bb74e2a025a79901b417312c7c01ae8ce8ed4db9671e784bd84b71b",
+      "batches/batch_00007_ddf7e7e3f59a4a70b8a5178d29e308c7.jsonl": "56c0756cd3382dc77ef687596ec74a9b3b3a8dd267277ab9e7773ecd6463757b",
+      "batches/batch_00008_6feb30b1b3274b4487c7c1039c096151.jsonl": "9adf5d4c2fb6881fd9e1bab88b48a3c0be99211cf6bd947ea0811e3869ef0522",
+      "batches/batch_00009_49f79f975b4c4d68a9e9063b28fd9ec5.jsonl": "d81d32c4133a69ccaf759d0c35441ca6c17dd9c921680b54073f64cd6dd47a8c",
+      "batches/batch_00010_b6dc34e12d5c4b2f980cd05888c91c07.jsonl": "ad299abeccd20ebf16bfd1e54853a378999abbed253735db44e7a77c14459ed6",
+      "batches/batch_00011_bc3bd870bf484fb68aae812bfb01a847.jsonl": "17c47c964ad03e2ced00979043e55a8c533a2859ad1e8feae7a40f89d35ce0ef",
+      "batches/batch_00012_e43eccde88834787aaadfe7b76f33167.jsonl": "3bfbabaf15458109f1ae4ffd67ebaf291c96b00de773ff6166546f749423d11a",
+      "batches/batch_00013_4eca6154b39241d58daddf2ac87d4070.jsonl": "4ea12ba73e593c6b534ec8f43bb9826e1db4076aec3eaadc3508f7d8869affd0",
+      "batches/batch_00014_6593503ed4554f8caec014711aea8b0e.jsonl": "625ab841afb1ecc9938d93646614f4289a15a305a7628eb167f608bf988b7925",
+      "batches/batch_00015_b50fb817e68d45c3be8187f4cb922471.jsonl": "7382ea6701e14257af63a40b6f6938798eb83c3b16dcb60a3ebbcba35ff86dc1",
+      "batches/batch_00016_77097132a05542a399334cf34cdc2ba4.jsonl": "5333f1ca0148a9a1acbaa2d4e0f05b894ccfcfa96dfa4f353db6556e4fb423a1",
+      "batches/batch_00017_19ae0794f3df44b08608af19213a46bc.jsonl": "cd56ff078c4836a57bf3978cbfa31adcfa3685e4d087e850a38f733509cbb257",
+      "batches/batch_00018_11d03b9801b548bcb52d989024a8dd6d.jsonl": "39fc6e9904f441a66f21bba4b356070c6446017d68752b053e80747092a21480",
+      "batches/batch_00019_0d5a9973f1fa4538bd5b169791418693.jsonl": "b170f4d9d45494579c07bd93bdaea61c314fdc7573bd2d3b51a459fe88be3d2a",
+      "batches/batch_00020_a96fcd46f8c24414ab8d4a1bd6fa8e6c.jsonl": "9f3f823032925e0f2b62b0b7bb76598d400aa83564e5c8b94a57d40e19d40000",
+      "batches/batch_00021_fda8ea56763a4858b746c1b687e7e104.jsonl": "b8520f00f7d5ee41e8063242ca7d0745ca18b7119b5667445c473b2e6956029f",
+      "batches/batch_00022_e27a92e3d2be49bbbf42e9dc97bd871d.jsonl": "1e2099eef02030da2e8a25847ec21530b651bda74bc59b54ef5eae4f8dd8f5d9",
+      "batches/batch_00023_c76a60e00143453fb2ad0bd721154ec4.jsonl": "72ca87bc4cb451026a05ba4094b4e48173e897eb1c5b7e878a4500146b7271ea",
+      "batches/batch_00024_a713bdf01c894bf4bc2fb3aefc1e6a3c.jsonl": "18c1bcb98b6023ed0c21710d2687de8a0376cc7b956d39213236293298f2be8d",
+      "batches/batch_00025_96044b83a0e946fc9bbf89f009dd7823.jsonl": "591e443c7e7c8000d72be080e3dc2475ad2b15e12629fe735fc46d95335f3d03",
+      "batches/batch_00026_790ab55c61bb4f4788a14feaa244af57.jsonl": "c80e7f409832ec9be7da771632b2d2f4397ab3625b1d01d0a783683a491334e6",
+      "batches/batch_00027_511db548d3c44a5fac477c4be311f179.jsonl": "dea0038a42c91e205ae276cee6e888374ba650d3feb4bc8444f4d4267c768459",
+      "batches/batch_00028_a6ca5277ab8648f29975f31681f8c03c.jsonl": "05ffe8c677d1ca2efcf19f0acac93774024dd0e098c5a63926bc64db79adf9fd",
+      "batches/batch_00029_5fcee4a283b149589899656a6fdf4b31.jsonl": "42f21ae278d329bdd2bb56acabdd72e111c6d8c378f2517cf723707c736fb087",
+      "batches/batch_00030_7f919796b0e844779ed0b11beedd4b53.jsonl": "61fda88b7abdf0f5cc0bd335e0961b2b99d293651b2308db328b47088f9a062a",
+      "batches/batch_00031_d08e26aff4654f7fa835a6b70b95a41a.jsonl": "156892cc0b5df0aa2577b463b81419ece47b7d0b865003e9ca7f7ade8d874ace",
+      "batches/batch_00032_4733e8cdff594810ad14b5a707bd03d0.jsonl": "d85b10f6f2f8f7540d2efc2e28a8d7599b4bb4e270585385361ce30ded884473",
+      "batches/batch_00033_4d585e76c15148dea8437040db6563fa.jsonl": "dc54f6b60df6f2d5c88a588c1d8945113ce08d9b785b06bf7149da6df454b642",
+      "batches/batch_00034_6f85412f74284ce0a2a0c57e2f288052.jsonl": "787f4e783e20412234543a78811938cad02b6248774a845335d988d5392a9f6a",
+      "batches/batch_00035_9d7f478aae71466e9f99c478ef916216.jsonl": "d04a5978adc6d3b42f79a80a701e6a3d2fb2c3d22d46a481c78acd961d5f5cf3",
+      "batches/batch_00036_8072fb9255a74c36adbed61234485dbd.jsonl": "c7b7a4dbf27a7a49a326b3fe713d008460eb44e5f6f4bcd47b8481f17f9c3b61",
+      "batches/batch_00037_86f4c8aaf27b49d08a36c93b33fda572.jsonl": "579ec8aa87c4d668c6b6a55f1e393ec2aa56c154040f6dffc0f7ceb13a430e60",
+      "batches/batch_00038_0b4c6d16de7040129e005d06d27efb85.jsonl": "353909890d3d9a3c72af97fe05d45882b78fe0c679234f2fb6cd3ce8ebe6ef36",
+      "batches/batch_00039_22d20433f846468c9656a16ef323a079.jsonl": "f035afcd8fb1d0b34a082abfabf40243aa78d9a104510097c86cca09599b9b3e",
+      "batches/batch_00040_9f645132b8764788b98da06f17299420.jsonl": "4597c790c97469932bf32791665d09f889f32b0140d41ae6e44a6fd2806058ad",
+      "batches/batch_00041_8361e1f1773f4fe3a5f12bfa33682c9d.jsonl": "c65818b7f0ec16d4d893e6f3135c13a17f68a3bfc23f564289bf13129888ed22",
+      "batches/batch_00042_23d6527267454106b9ac38ce827de690.jsonl": "8be11bcec7c61ff80a31d484688ed6384ac7b903738c37fe2c3c441efaf7eab9",
+      "batches/batch_00043_004c11cff9f347a3a4089ba4e50600cc.jsonl": "87fb5e425a18b5c642ae544f0600cb0c897b082f24949eea4aa63fcb6f33fc72",
+      "batches/batch_00044_38e7e468e2254d85ac3b62fe8bb850fe.jsonl": "9d6bce787df367f492b0ad46bc73d80c7b8dbb426e21592c37b38ed174913cf9",
+      "batches/batch_00045_38ab07326ee444509f4d1b9524fa0347.jsonl": "c5a0e696a76084d54a9c7ea9721abfed7439378455a5874e4b1ab71ebbd92e9d",
+      "batches/batch_00046_7a3a28e85e79422295425bf202791b40.jsonl": "2daf3a59b37c97740b194112929143661e14256d6d29a4b5954b2618bea6ffa9",
+      "batches/batch_00047_78491eea0f304911ba8f9613320edce0.jsonl": "3172f69a0d650efa6bdf1435560079528eb3dd3f7c0f05592e038ea2226a6866",
+      "batches/batch_00048_882f0f7bda6b4e72943622bfe3198f34.jsonl": "fb80a157d435baaa9fc6ecef6a85cbc9f8a97fcbd94cdca8c0b1f085c8019e62",
+      "batches/batch_00049_267b55196fdd44d59be709025ec44625.jsonl": "ec30a2ccb2cb459583da64baadc4ceb828a73aaac89973e8286bdc3de019d5b2",
+      "batches/batch_00050_4560d86a4a2a4866a27ccab669bb5c32.jsonl": "0bc1aa9f87233690fe56e2904e33cc4dff60b8fb658500fd40e2062bbf3353f1",
+      "batches/batch_00051_e6e6247525a24f4aad9881d8b0ba0599.jsonl": "723af8703891590351993aca7c07145f3c2e8b2111ad3a7f7936c3f1477c5a54",
+      "batches/batch_00052_50c0c9da52ba4919b22a18df06bfddb4.jsonl": "92780038edc4828592dd07f8dcddfd7457a70b009030d0aa9d700d257e5f442c",
+      "batches/batch_00053_b02b6b92f3264f67b24ab77adbefd037.jsonl": "4dbce4e34cd06fb628d8610513c2dfd8a5712dbd8650e2a18db144f2c5134bfa",
+      "microchunks/chunk_001821_financial_9a12a1ccf3474693ba171305fa520c4e.jsonl": "c8ca4021c4f577553db7de6b372592fbe51fd62b86fa41617c32d983d432c9c9",
+      "microchunks/chunk_001834_documents_839a35ae51044db0b538a77f9f65380e.jsonl": "5040119f5cd412dc3e05abfaf13f91167089b0ac28d2406056398c8813f67125",
+      "microchunks/chunk_001837_office_9a9534a68ecc4732b54614b6d9d00004.jsonl": "a7ddc7a56e8c6265517754ea56ff881a5f03de8e7b420aa7da3507c26275d85a",
+      "microchunks/chunk_001841_math_arxiv_d7049e8683db4d378cb705d4c87dbb4d.jsonl": "fecb34112fe2020c6cade271c23c762e561e511b2fb5d94f000dc6874bd2d1b8",
+      "microchunks/chunk_001846_legal_62b79008231d4f1b906757318b0e24ea.jsonl": "1c4a964b2253acac01a86b7c164e2cc4dde228de5d5fca790050955b21ce5f3c",
+      "microchunks/chunk_001848_web_16527163576e4318ac0af329d752ccef.jsonl": "2c94eefb0d5e9ba07e8855262e638afe7d8d53a760c30deb31327f7e4ebeafb9",
+      "microchunks/chunk_001849_technical_web_af9c94eeeaad47a8b879704d50574b0f.jsonl": "ed3bf70a927650f46bc5bfe330d8dd3a7db71dba505591a6b3d73da1ef6ffb65",
+      "microchunks/chunk_001850_code_c64b8df1505342b382c1df8abe6e10ad.jsonl": "55e6eddd7331c3648e92909f042bdc5574fb2fcac14a2392f5df6d89e52def11",
+      "microchunks/chunk_001851_math_textbook_d7c5fbd2ac614fb0ad59942a1d7b3f6a.jsonl": "b34d03e5f63218225e731d3417accad7b5df32e5c26ede0f6506b2a148614765",
+      "microchunks/chunk_001852_web_6d1d813b20124c8d93d2d2581cbccbf4.jsonl": "8045dfc212fae78f40be2992f48e0fd48aa0ec86b9caf21e55f8236ba923986e",
+      "microchunks/chunk_001853_code_4d0522892939409b80cfd7cee5df2a2b.jsonl": "21a9046d4bbb24f16bed15f4ce24ad1eaf8824b161c772d10559b6eab5f64610",
+      "microchunks/chunk_001854_web_75894e18b7354b48b8863466e82624ba.jsonl": "3d74cb5b877dc6d451cff9c438707197b158029cb0dba671a00ce79fb5e67b6f",
+      "microchunks/chunk_001855_web_ec4b0effdeb2416e88a3d12990275921.jsonl": "54eaa716d4f974bc05f8628b5239bd5885d371f8eb075dd13a7d5bc4a5d0546f",
+      "microchunks/chunk_001856_code_a271a6e9ce1e40c0b30c876bb58bac4a.jsonl": "3b3259c6c108e9b4c75f14f79ce7499e3a1ef439ace9fee8daa3f5e62bc7a4a9",
+      "microchunks/chunk_001857_web_81ab2786d1994726a6d37fc907a1e61c.jsonl": "6b6c7d06558680a6d7809725c41a596e3d89da8688a6f52664555ac9d8e528cc",
+      "microchunks/chunk_001858_technical_web_d0230a3393e8470da105da23f2e41672.jsonl": "07df42c3fc4e9741df166577ba188ea7bfb0d12991be2ddb71f04925391c10a4",
+      "microchunks/chunk_001859_math_arxiv_f04d97b0b5f24b8ab5f31d21aa0badea.jsonl": "9a5a9db723e92f5ef29afb09f92e364a8585d4371b557858fd0fd8c13f888665",
+      "microchunks/chunk_001860_financial_5f71f80f098c458580beccfb86e99a28.jsonl": "8a30e99935b9c12d09c6d17e7db607124a9346ba2a0a5b3b31092cdfd362cbd7"
+    }
+  },
+  "timing_seconds": 9.84,
+  "assessment_script_sha256": "fba8a8a8731f2caa52a0324bd27f1597aca50123129373ff968fc1356207752a",
+  "recommendation": {
+    "parent_selection": "open",
+    "fresh_questions": 8000,
+    "epochs": 1,
+    "native_evidence_tokens": 2048,
+    "max_passages": 4,
+    "passage_parts": false,
+    "ratio": 0.0625,
+    "encode_batch_max_tokens": 65536,
+    "gradient_checkpointing_min_tokens": 1700,
+    "learning_rates": [
+      5e-06,
+      2e-06
+    ],
+    "schedule": "constant",
+    "warmup_updates": 0,
+    "stage_updates": 1000,
+    "initial_adam_parameter_step": 5250,
+    "final_adam_parameter_step": 6250,
+    "unique_questions_after": 50000,
+    "actual_preparation_executed": false,
+    "jobs_submitted": false
+  },
+  "runtime_estimate": {
+    "measured_parent10k_training_seconds": 4654.570297186263,
+    "measured_parent10k_reporting_seconds": 1792.263077906333,
+    "measured_parent10k_trainer_seconds": 7333.9,
+    "scaled8k_training_minutes": 62.06093729581684,
+    "estimated8k_total_minutes": [
+      90,
+      110
+    ],
+    "estimated_native100_readout_minutes": 4,
+    "note": "About1h is pure update compute, not end-to-end. Sparse-control reporting savings are unmeasured."
+  },
+  "note_sha256": "0090883aa22b384a58a32bb6c70312953946a7e03f7e512b35f18557969bcb34"
+}

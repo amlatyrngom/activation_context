@@ -1,0 +1,42 @@
+{
+  "status": "complete",
+  "script_sha256": "ebd7796c5b4a3812c0c9f05ab102257a03c6d2a7792fc7efc229ae2be642dcfe",
+  "conditions": {
+    "pieces_original_65536": {
+      "status": "complete",
+      "returncode": 0
+    },
+    "merged_original_65536": {
+      "status": "complete",
+      "returncode": 0
+    }
+  },
+  "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+  "deadline_seconds": 1080,
+  "limits": "Train-only eight-question length-quantile timing selection; numerical tolerances and exact batch geometry retained. Does not establish training quality or average speed over the full source-length distribution.",
+  "identical_full_evidence_targets_and_total_rows": true,
+  "timing": {
+    "pieces_original_65536": {
+      "steady_median_seconds": 25.1895428779535,
+      "first_update_seconds": 29.784802596084774,
+      "peak_memory_gib": 52.29168367385864,
+      "padded_decoder_tokens": 675852,
+      "real_decoder_tokens": 277432
+    },
+    "merged_original_65536": {
+      "steady_median_seconds": 15.18465671595186,
+      "first_update_seconds": 16.513998811133206,
+      "peak_memory_gib": 40.75364971160889,
+      "padded_decoder_tokens": 276536,
+      "real_decoder_tokens": 269804
+    }
+  },
+  "elapsed_seconds": 376.4803916369565,
+  "job": 23484734,
+  "scheduler": "COMPLETED0:0/6m18s",
+  "launch_decision": "Bothfit. Sixhourreservation/21000strainerbound; actualtiming~3.5h piecewiseupdates and~2.1h mergedupdates for4000questions, plussetup/panels/saves. Smalllength-quantilesample, notfull-runtimingguarantee.",
+  "receipt_sha256": {
+    "pieces_original_65536.json": "b7820be1e0956d4951df0320bb88bb4318ec610e48f539231b1e775e8c7081bb",
+    "merged_original_65536.json": "d0382d1995a98a16b9e301d5cca334c761af369d997689ca8db3551ff3d6f4e6"
+  }
+}

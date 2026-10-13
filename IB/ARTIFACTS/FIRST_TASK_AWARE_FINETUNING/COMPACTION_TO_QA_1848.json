@@ -1,0 +1,29 @@
+{
+  "training_roots": 18408,
+  "qa_held_roots": 30,
+  "overlap": [],
+  "source_selection": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/compaction_50m_selection_v8.json",
+  "selected_pair": {
+    "examples_presented": 1848,
+    "selection_loss": 0.12337262685259423,
+    "selection_metric": "held token KL",
+    "ac_checkpoint": "/home/ngom/orcd/pool/activation/trajectory_compaction/compaction_50m_v8/selected/examples_0001848/ac",
+    "reader_checkpoint": "/home/ngom/orcd/pool/activation/trajectory_compaction/compaction_50m_v8/selected/examples_0001848/reader",
+    "optimizer_saved": false
+  },
+  "question_count": 100,
+  "supervised_tokens": 5210764,
+  "purpose": "Cross-task transfer from compaction training to the same unseen trajectory QA cohort; not equal compute to 2k QA.",
+  "job_id": "23640218",
+  "queued_utc": "2026-09-24T10:20:00Z",
+  "dependency": "afterany:23639898",
+  "output": "/home/ngom/orcd/pool/activation/trajectory_compaction/qa_cohort_compaction_1848",
+  "views": [
+    "trained AC",
+    "trained reader without history"
+  ],
+  "held_controls": "Existing initial 1/16 cohort remains fixed",
+  "source": "V11 unchanged",
+  "launcher": "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/compaction_to_qa_1848_orcd.sbatch",
+  "backfill_minimum": "30 minutes; completed views/responses retained across requeue, 10-minute save reserve unchanged"
+}

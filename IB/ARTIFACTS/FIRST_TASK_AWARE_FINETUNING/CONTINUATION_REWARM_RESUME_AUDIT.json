@@ -1,0 +1,419 @@
+{
+  "status": "read_only_audit_no_confirmed_resume_bug",
+  "recommendation": "Keep the current continuation running; preserve both histories and do not claim bitwise replay.",
+  "inputs": {
+    "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/RAW_REPORTS/continue32k_10k_rewarm/attempts/resume_001/report_data.json": "e4f551bd6246f00c7fa36c64f08993560920b5ec1e4bba2bc786285d6a5e026c",
+    "/workspace/IB/TMP/FIRST_TASK_AWARE_FINETUNING/RAW_REPORTS/continue32k_10k_rewarm/report_data.json": "2e6ba4991906cd08f767ccb342527e85a46bec319bcb2f550791283b0f059527"
+  },
+  "report_updated_at": [
+    "2026-09-23 00:54:59 UTC",
+    "2026-09-23 01:43:03 UTC"
+  ],
+  "source_sha256": {
+    "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+    "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+  },
+  "config_changes": {
+    "resume_skip_steps": [
+      0,
+      100
+    ]
+  },
+  "resume": {
+    "updates": 100,
+    "first_epoch": 1,
+    "skip_steps": 100,
+    "remaining_epochs": 1,
+    "saved_epoch": 0,
+    "ac_path": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/epoch_001_step_00100",
+    "reader_path": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_rewarm/LORAS/rag_reader/epoch_001_step_00100",
+    "marker": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_rewarm/AC_MODELS/rag_poc/partial_epoch.json"
+  },
+  "overlap_updates": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120
+  ],
+  "logged_loss_excludes_penalty": true,
+  "metric_comparison": {
+    "loss": {
+      "101": {
+        "original": 0.36597520718351007,
+        "resumed": 0.36597520718351007,
+        "difference": 0.0
+      },
+      "102": {
+        "original": 0.16168510471470654,
+        "resumed": 0.16332223429344594,
+        "difference": 0.0016371295787394047
+      },
+      "103": {
+        "original": 0.24452177993953228,
+        "resumed": 0.24384271912276745,
+        "difference": -0.0006790608167648315
+      },
+      "104": {
+        "original": 0.21914058725815266,
+        "resumed": 0.22042414819588885,
+        "difference": 0.0012835609377361834
+      },
+      "105": {
+        "original": 0.1901967735029757,
+        "resumed": 0.18959590862505138,
+        "difference": -0.0006008648779243231
+      },
+      "106": {
+        "original": 0.16053833485057112,
+        "resumed": 0.16243606816715328,
+        "difference": 0.001897733316582162
+      },
+      "107": {
+        "original": 0.16029842011630535,
+        "resumed": 0.16398574691265821,
+        "difference": 0.0036873267963528633
+      },
+      "108": {
+        "original": 0.2488663106050808,
+        "resumed": 0.24027861983631738,
+        "difference": -0.008587690768763423
+      },
+      "109": {
+        "original": 0.19452774577075616,
+        "resumed": 0.1929137977422215,
+        "difference": -0.0016139480285346508
+      },
+      "110": {
+        "original": 0.2544580972753465,
+        "resumed": 0.2447848569136113,
+        "difference": -0.009673240361735225
+      },
+      "111": {
+        "original": 0.2162877915543504,
+        "resumed": 0.22383044817252085,
+        "difference": 0.00754265661817044
+      },
+      "112": {
+        "original": 0.24592934176325798,
+        "resumed": 0.24053959315642715,
+        "difference": -0.005389748606830835
+      },
+      "113": {
+        "original": 0.3806491633877158,
+        "resumed": 0.38528974290238693,
+        "difference": 0.004640579514671117
+      },
+      "114": {
+        "original": 0.2809304534457624,
+        "resumed": 0.2688710994552821,
+        "difference": -0.012059353990480304
+      },
+      "115": {
+        "original": 0.30072043603286147,
+        "resumed": 0.3084379252977669,
+        "difference": 0.007717489264905453
+      },
+      "116": {
+        "original": 0.19874403066933155,
+        "resumed": 0.20715390075929463,
+        "difference": 0.008409870089963078
+      },
+      "117": {
+        "original": 0.19603540445677936,
+        "resumed": 0.19180125510320067,
+        "difference": -0.004234149353578687
+      },
+      "118": {
+        "original": 0.34622029680758715,
+        "resumed": 0.33620895724743605,
+        "difference": -0.0100113395601511
+      },
+      "119": {
+        "original": 0.21465625008568168,
+        "resumed": 0.2196960155852139,
+        "difference": 0.005039765499532223
+      },
+      "120": {
+        "original": 0.27342171082273126,
+        "resumed": 0.23717185226269066,
+        "difference": -0.03624985856004059
+      }
+    },
+    "grad": {
+      "101": {
+        "original": 11.972111701965332,
+        "resumed": 11.969069480895996,
+        "difference": -0.0030422210693359375
+      },
+      "102": {
+        "original": 7.097588539123535,
+        "resumed": 5.781368255615234,
+        "difference": -1.3162202835083008
+      },
+      "103": {
+        "original": 7.196514129638672,
+        "resumed": 8.996020317077637,
+        "difference": 1.7995061874389648
+      },
+      "104": {
+        "original": 7.86241340637207,
+        "resumed": 12.130123138427734,
+        "difference": 4.267709732055664
+      },
+      "105": {
+        "original": 7.635645389556885,
+        "resumed": 7.885331153869629,
+        "difference": 0.24968576431274414
+      },
+      "106": {
+        "original": 5.101156711578369,
+        "resumed": 5.3328118324279785,
+        "difference": 0.23165512084960938
+      },
+      "107": {
+        "original": 4.8362860679626465,
+        "resumed": 4.1085004806518555,
+        "difference": -0.727785587310791
+      },
+      "108": {
+        "original": 9.35944938659668,
+        "resumed": 8.686627388000488,
+        "difference": -0.6728219985961914
+      },
+      "109": {
+        "original": 9.07125473022461,
+        "resumed": 7.831119060516357,
+        "difference": -1.240135669708252
+      },
+      "110": {
+        "original": 10.865175247192383,
+        "resumed": 17.186372756958008,
+        "difference": 6.321197509765625
+      },
+      "111": {
+        "original": 5.790767669677734,
+        "resumed": 5.080853462219238,
+        "difference": -0.7099142074584961
+      },
+      "112": {
+        "original": 10.315139770507812,
+        "resumed": 7.080562114715576,
+        "difference": -3.2345776557922363
+      },
+      "113": {
+        "original": 8.826070785522461,
+        "resumed": 9.025668144226074,
+        "difference": 0.19959735870361328
+      },
+      "114": {
+        "original": 10.951919555664062,
+        "resumed": 9.49803352355957,
+        "difference": -1.4538860321044922
+      },
+      "115": {
+        "original": 7.3533172607421875,
+        "resumed": 17.76424789428711,
+        "difference": 10.410930633544922
+      },
+      "116": {
+        "original": 10.089494705200195,
+        "resumed": 7.012842178344727,
+        "difference": -3.0766525268554688
+      },
+      "117": {
+        "original": 4.4145612716674805,
+        "resumed": 22.184511184692383,
+        "difference": 17.769949913024902
+      },
+      "118": {
+        "original": 7.6428327560424805,
+        "resumed": 6.557297706604004,
+        "difference": -1.0855350494384766
+      },
+      "119": {
+        "original": 13.624017715454102,
+        "resumed": 9.126437187194824,
+        "difference": -4.497580528259277
+      },
+      "120": {
+        "original": 11.09279727935791,
+        "resumed": 13.751789093017578,
+        "difference": 2.658991813659668
+      }
+    },
+    "penalty": {
+      "101": {
+        "original": 0.010891259647905827,
+        "resumed": 0.010891259647905827,
+        "difference": 0.0
+      },
+      "102": {
+        "original": 0.0046183013667662936,
+        "resumed": 0.004565552109852433,
+        "difference": -5.274925691386035e-05
+      },
+      "103": {
+        "original": 0.006927273119799793,
+        "resumed": 0.006854354578536004,
+        "difference": -7.291854126378894e-05
+      },
+      "104": {
+        "original": 0.008661300875246525,
+        "resumed": 0.008604555856436491,
+        "difference": -5.67450188100338e-05
+      },
+      "105": {
+        "original": 0.004093568616857131,
+        "resumed": 0.0038405331627776227,
+        "difference": -0.00025303545407950835
+      },
+      "106": {
+        "original": 0.0044204797595739365,
+        "resumed": 0.004305797629058361,
+        "difference": -0.00011468213051557541
+      },
+      "107": {
+        "original": 0.007946701487526298,
+        "resumed": 0.007407438630859057,
+        "difference": -0.0005392628566672402
+      },
+      "108": {
+        "original": 0.0055720205418765545,
+        "resumed": 0.004965959815308452,
+        "difference": -0.0006060607265681028
+      },
+      "109": {
+        "original": 0.0020970068871974945,
+        "resumed": 0.0020675817504525185,
+        "difference": -2.9425136744976044e-05
+      },
+      "110": {
+        "original": 0.005614743218757212,
+        "resumed": 0.00569308502599597,
+        "difference": 7.834180723875761e-05
+      },
+      "111": {
+        "original": 0.005350187246222049,
+        "resumed": 0.005264697305392474,
+        "difference": -8.548994082957506e-05
+      },
+      "112": {
+        "original": 0.0028869972156826407,
+        "resumed": 0.0031479349127039313,
+        "difference": 0.00026093769702129066
+      },
+      "113": {
+        "original": 0.003851652145385742,
+        "resumed": 0.0038260661143188677,
+        "difference": -2.558603106687452e-05
+      },
+      "114": {
+        "original": 0.0072940937243402,
+        "resumed": 0.0076302713714540005,
+        "difference": 0.00033617764711380005
+      },
+      "115": {
+        "original": 0.0022180413361638784,
+        "resumed": 0.0024707962293177843,
+        "difference": 0.00025275489315390587
+      },
+      "116": {
+        "original": 0.004755595466122031,
+        "resumed": 0.00464542528303961,
+        "difference": -0.00011017018308242133
+      },
+      "117": {
+        "original": 0.010165766812860966,
+        "resumed": 0.011166904121637344,
+        "difference": 0.0010011373087763786
+      },
+      "118": {
+        "original": 0.005815158365294337,
+        "resumed": 0.006092580850236118,
+        "difference": 0.00027742248494178057
+      },
+      "119": {
+        "original": 0.005815158365294337,
+        "resumed": 0.006092580850236118,
+        "difference": 0.00027742248494178057
+      },
+      "120": {
+        "original": 0.00130809610709548,
+        "resumed": 0.0016995181795209646,
+        "difference": 0.00039142207242548466
+      }
+    }
+  },
+  "first_update_gradient_relative_difference": -0.0002541089780206886,
+  "expected_learning_rates_from_exact_frozen_helper": {
+    "101": [
+      1.993583646030358e-05,
+      7.97433458412143e-06
+    ],
+    "102": [
+      1.9933248105244815e-05,
+      7.973299242097925e-06
+    ],
+    "120": [
+      1.9877964717121522e-05,
+      7.951185886848607e-06
+    ],
+    "121": [
+      1.987441180672966e-05,
+      7.949764722691863e-06
+    ]
+  },
+  "penalty_rng_reconstruction": {
+    "all_items_have_reference_candidates": "RAG builder emits AC requests; all10000 reference keys loaded on resume.",
+    "consumed_draws": 800,
+    "next168_draws_match_uninterrupted_stream": true,
+    "expected_counts_by_update": {
+      "101": 1,
+      "102": 3,
+      "103": 4,
+      "104": 2,
+      "105": 3,
+      "106": 1,
+      "107": 3,
+      "108": 2,
+      "109": 1,
+      "110": 2,
+      "111": 4,
+      "112": 2,
+      "113": 3,
+      "114": 2,
+      "115": 1,
+      "116": 3,
+      "117": 1,
+      "118": 4,
+      "119": 0,
+      "120": 1,
+      "121": 1
+    },
+    "actual_selected_question_IDs": "Not recorded; counts shown are source-derived expectations."
+  },
+  "remaining_uncertainty": [
+    "Actual resumed optimizer tensor payload was not reloaded independently in this bounded audit; runner had validated marker, epoch, nonempty states and per-parameter shapes.",
+    "Historical per-update LR arrays, signed gradients and Adam update tensors were not persisted live.",
+    "Shared autotune choices and all dependency/kernel versions are not captured for both historical attempts.",
+    "Torch RNG state is reseeded, not serialized; no intentional stochastic training operation was found in this dropout-disabled SFT path."
+  ],
+  "reporting_note": "intervention_grads records pre-update100 for logical update101; archive retains oldx100 and resume appends anotherx100. Comparison uses the last entry for the resumed branch; this duplicate is reporting-only."
+}

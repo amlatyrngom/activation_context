@@ -154,7 +154,9 @@ class DatasetIndex:
         max_chunks = 0
         for excluded in all_excluded_sets:
             for doc_id in excluded:
-                document = self.loaded_dataset.documents[doc_id]
+                document = self.loaded_dataset.documents.get(doc_id)
+                if document is None:
+                    continue  # not in this index: nothing to exclude, nothing crowds the ranking
                 max_chunks = max(max_chunks, len(document.chunks))
         return 5 + max_chunks if max_chunks else 0
 
@@ -199,18 +201,24 @@ class DatasetIndex:
         queries: list[str],
         top_k: int = 20,
         excluded_doc_ids: list[list[str] | None] | None = None,
+        extra_fetches: int | None = None,
     ) -> list[list[DatasetDocumentChunk]]:
         """
         Batched frozen bm25 queries: for each query, up to top_k chunks outside the excluded
-        documents. Queries with no matching term return an empty list.
+        documents. Queries with no matching term return an empty list. The fetch depth
+        (top_k + extra) depends on the batch's excluded documents; `extra_fetches` fixes it (at
+        least the batch's own estimate), so a batch split into chunks retrieves exactly as one batch.
         """
         assert self.bm25_index is not None, "bm25_query_many_frozen needs the bm25 index (build_bm25_index)."
         stats = self.loaded_dataset.stats
         stats.query_batch_sizes.append(len(queries))
         search_start_time = time.time()
-        all_excluded_sets, extra_fetches = self._build_excluded_sets(
+        all_excluded_sets, estimated = self._build_excluded_sets(
             len(queries), excluded_doc_ids
         )
+        if extra_fetches is not None and extra_fetches < estimated:
+            raise ValueError(f"extra_fetches={extra_fetches} is below this batch's exclusion estimate {estimated}")
+        extra_fetches = estimated if extra_fetches is None else extra_fetches
         _all_scores, all_indices = self.bm25_index.search(
             queries,
             k=min(top_k + extra_fetches, len(self.chunk_ids)),

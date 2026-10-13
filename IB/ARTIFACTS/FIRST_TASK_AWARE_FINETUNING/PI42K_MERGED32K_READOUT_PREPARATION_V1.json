@@ -1,0 +1,50 @@
+{
+  "status": "prepared, CPU checks passed; no staging/submission",
+  "check_count": 21,
+  "checks": [
+    "Actual prepared design/subset meet960-stage config and fixed100 metadata; only fixture status set frozen",
+    "wrong question count",
+    "wrong layout",
+    "wrong parent",
+    "wrong schedule",
+    "New runner harness/material builder/answer masks AST-identical to already real-tokenizer-checked parent merged100 builder",
+    "Actual100 parent merged requests preserve shared input and row capacity; own final GPU will rebind input_check and replay all gold tokens",
+    "Hypothetical own complete960/120 paired epoch001 publication accepted on relocated host paths",
+    "incomplete stage",
+    "partial checkpoint",
+    "foreign reader",
+    "config drift",
+    "wrong held order",
+    "wrong initial optimizer",
+    "wrong receipt",
+    "incomplete paired marker",
+    "Small metadata fixture accepts615 actual5370 states at stage120 epoch1",
+    "wrong optimizer lifetime",
+    "fresh Adam",
+    "partial optimizer stage",
+    "Fresh scores for every view; separate-process same-host parent/final2k binding; completed32k actual100 and final payload rehash"
+  ],
+  "limitations": "Future final publication/optimizer tests use synthetic metadata only; no final5370 checkpoint claimed, no GPU/modelweights/confirmation access. Real own final and full100 panel replay are fail-closed GPU-time checks.",
+  "worker_sha256": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+  "launcher_sha256": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+  "fixture_sha256": "45108fc102e7668c4077cfd45d1d05efc1c4af5edcbfe2ccec8f0f805981fff8",
+  "parent_real_tokenizer_receipt_sha256": "3086257d61610b39e2303132a1e73c971f052d497b65149c8a9b47a3303c63f6",
+  "manifest_sha256": "52441eea5c793db394ce867cc6de35f44666e98ab77233e57efe406640d141b6",
+  "cpu_receipt_sha256": "55ef8d5b712372570222f5c76caef9b228e43ee04ab5c859f5b99339706c6e5c",
+  "manifest": {
+    "kind": "pi42k_merged32k_readout_v1",
+    "helper_sha256": {
+      "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+      "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+      "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+      "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+      "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+      "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+      "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90"
+    },
+    "scope": "Own completed960\u00d71/120-stage Adam5370 final32k100 actualAC plus fresh three-view NLL; same-allocation parent42k/final2k retention NLL. No confirmation.",
+    "training_design": "External frozen design is checked by training source receipt; this readout manifest does not mutate that design.",
+    "numeric_replay": "Final32k every gold-token logp and answer NLL versus own saved100 panel, existing1e-3 absolute gate; no gate relaxation.",
+    "runtime": "45min allocation;1850s final32k then300s each parent2k andfinal2k; fresh process percell, partial output stops sequence for explicit resume."
+  }
+}

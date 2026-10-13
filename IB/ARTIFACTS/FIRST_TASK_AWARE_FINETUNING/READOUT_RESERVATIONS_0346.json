@@ -1,0 +1,22 @@
+[
+  {
+    "job": 23520579,
+    "state_before": "PENDING",
+    "utc": "2026-09-23T03:46:25.079424Z",
+    "evidence": "Matched constant-floor native100 completed in4m01;12min reservation.",
+    "action": "shortened reservation and released",
+    "old_limit": "00:45:00",
+    "new_limit": "00:12:00",
+    "unchanged": "Weights,inputs,scoring,decoding,GPU,dependencies and internal evaluation deadline remain unchanged. Per-answer/phase JSON remains resumable if allocation ends."
+  },
+  {
+    "job": 23521942,
+    "state_before": "PENDING",
+    "utc": "2026-09-23T03:46:25.614597Z",
+    "evidence": "Matched piecewise8k completed in14m57;25min reservation.",
+    "action": "shortened reservation and released",
+    "old_limit": "00:45:00",
+    "new_limit": "00:25:00",
+    "unchanged": "Weights,inputs,scoring,decoding,GPU,dependencies and internal evaluation deadline remain unchanged. Per-answer/phase JSON remains resumable if allocation ends."
+  }
+]

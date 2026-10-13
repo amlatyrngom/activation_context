@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-23T19:56:27.830771+00:00",
+  "reason": "User clarified synthesis should continue while RAG experiments close",
+  "job_id": 23573758,
+  "job_type": "27B synthesis only",
+  "submit_command": "sbatch --parsable --job-name=qa27b_orcd_100k --partition=mit_preemptable --gres=gpu:h200:1 --output=/home/ngom/orcd/pool/activation/taskaware/logs/qa27b_resume_%j.log /home/ngom/orcd/pool/activation/taskaware/bench/bank_27b_unicode_v1.sbatch",
+  "queue": "23573758|qa27b_orcd_100k|PENDING|(Priority)",
+  "gpu": "H200 \u00d7 1",
+  "target": 100000,
+  "published_before": 53000,
+  "buffered_before": 615,
+  "automatic_requeue": "existing three-hour launcher; same bank and cursors",
+  "worker_sha256": "c8dd4d49a491eb5e2a574e58a1c1f79a0d5d7b95e92f9046e97b01d4e102a71d",
+  "source_changed": false,
+  "scope": "9B stays stopped; RAG training/evaluation jobs stay stopped"
+}

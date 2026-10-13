@@ -1,0 +1,17 @@
+{
+  "status": "prepared_not_launched",
+  "source_and_helper_pins_consistent": true,
+  "design_sha256": "59e50b84f7a756bf6d83dadb07f9af745308fed3a007456e6bbabbf9ebfec62d",
+  "files": {
+    "run_qa_strong_long_v1.py": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+    "train_strong_long_v1.sbatch": "3c00acde1b2ff6148a8d783c655cbd9a8ec459114c5b8b77b88a90c7ccac6b58",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_strong_long_cohort_v1.sbatch": "474fa3776a5822d3232ffab5876c6e45370eecc7936df69d88f3becff853c4a3",
+    "STRONG_LONG_INITIAL_PAIR_V1.json": "e9be3f58cf7fb5d4679529844ec158a865d65c7ef8bda8ea4d62075d50b09a6a"
+  },
+  "checks": {
+    "callback_real_reporter": "391292208ad38b5a55ec5416b1af0401572e1508bc2cb1092b39ac83ae494e87",
+    "final_pair_and_builder": "32beb9c2ab7941c46381b289306aaa33898d9dcb34b276668423c2172db3f524"
+  },
+  "pending": "Root selects measured budget/resources, freezes design and stages full new package/material; no GPU launch by preparer."
+}

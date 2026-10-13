@@ -1,0 +1,17 @@
+{
+  "job_id": 23639898,
+  "host": "orcd",
+  "submitted_utc": "2026-09-24T10:08:35.079267+00:00",
+  "launcher": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/trajectory_qa_ratio8_orcd.sbatch",
+  "worker": "IB/TMP/FIRST_TASK_AWARE_FINETUNING/evaluate_trajectory_cohort_ratio_v3.py",
+  "worker_sha256": "bc690a6260a27959df86b9af7a0b18398d6ba65ae2632fba600349b5d77e2f86",
+  "source": "V11 unchanged; standalone versioned evaluator",
+  "comparison": "Initial and final2000-question pairs evaluated at1/8 rows/source tokens; same100questions/history/gold; AC-only. Original1/16 controls remain in their reports.",
+  "output": [
+    "qa_cohort_2000_r8",
+    "qa_cohort_initial_r8"
+  ],
+  "training_change": false,
+  "proof": "Syntax/bash and source argument flow checked; underlying evaluator already ran300+400responses. GPUexecution pending.",
+  "backfill_minimum": "30 minutes; completed views/responses retained across requeue, 10-minute save reserve unchanged"
+}

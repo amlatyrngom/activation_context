@@ -1,0 +1,19 @@
+{
+  "utc": "2026-09-23T17:10:21.346357+00:00",
+  "change": "ORCD rsync follows report directory aliases using --copy-dirlinks in payload and raw JSON transfers. Existing file/weight exclusions unchanged.",
+  "validation": [
+    "Local fixture replaces dangling directory link with directory",
+    "Both filtered rsync modes follow directory alias",
+    "Excluded .pt remains excluded",
+    "Live H200 report and rawJSON now present",
+    "Overview HTML mtime unchanged across restart"
+  ],
+  "changed_preexisting_pages": [
+    "IB/TMP/SYNC/TASK_AWARE_QA/continue42k_8k_cosine_2x_floor/report.tressoir.html",
+    "IB/TMP/SYNC/TASK_AWARE_QA/continue42k_8k_constant_2x/report.tressoir.html"
+  ],
+  "page_change_note": "Only both newly-started8k arms acquired training widget structure; stable existing pages unchanged.",
+  "transport_session": 69271,
+  "source_sha256": "c2bf1e1ca147adbba0c0bd287cc249c15a4fc55bf7044de4c0a509e6f5e537fe",
+  "h200_report_updated": "2026-09-23 17:09:12 UTC"
+}

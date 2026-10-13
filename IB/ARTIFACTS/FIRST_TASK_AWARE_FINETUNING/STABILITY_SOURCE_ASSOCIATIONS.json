@@ -1,0 +1,2316 @@
+{
+  "recorded_utc": "2026-09-22T15:09:09.819132+00:00",
+  "scope": "Original 27B16k x1 arms; exact logical batches; metadata-only exploratory associations, not per-example blame or causality.",
+  "identity": {
+    "material_sha256": "34c36167c381e3be22a76692f929373fff272eaefcb6ec14515b39fda63683e3",
+    "material_ids_sha256": "ad2aa5edb8454211860738d5cb73ec1a2acabe746b1145038c185f7a2e83b1f1",
+    "trainer_sha256": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+    "builder_sha256": "af08ef76fc1df6d704cfd32b958e2ef7bde4605bac6ed868772c5dc77ab6b43e",
+    "result_sha256": {
+      "r8": "7a799b05f01da6e33e65548115765ae7b2e83a1625e9800ceaaaa55e68fe9f68",
+      "r16": "0a5c69746ccdef1cdea249b973d594f48e5a2edcecfe5473b48072416f196e27"
+    },
+    "python": "3.14.7 (main, Aug 14 2026, 15:35:28) [Clang 22.1.3 ]",
+    "shuffle_seed": 20260922,
+    "start_epoch": 1,
+    "examples_per_update": 8,
+    "optimizer_batch_ids_sha256": "45e1cfbe95e409d5c95ac15e2d95772111c5feba2d5db18b381b32906946dd0a",
+    "independent_python311_batch_ids_sha256": "45e1cfbe95e409d5c95ac15e2d95772111c5feba2d5db18b381b32906946dd0a",
+    "proof": "Rebuilt domain interleave equals persisted material_ids in both arms; frozen trainer shuffles with seed+epoch_number, then slices8; microbatch sorting only permutes each slice; no dropped rows/resume."
+  },
+  "limitations": [
+    "source_tokens are generator-tokenizer counts of required source units, not total retrieved evidence or actual encoder input lengths; those per-training-item lengths were not persisted.",
+    "answer_tokens are stored generator-tokenizer bare-answer counts, not exact reader answer-mask spans.",
+    "Eight-example gradient is aggregated; family presence does not identify the example that caused a spike.",
+    "Logical membership is shared; ratio-dependent physical microbatch sorting and penalty assignment can differ.",
+    "One seed and many correlated descriptive comparisons; no significance or causal claim."
+  ],
+  "training_metadata": {
+    "families": {
+      "code": 4800,
+      "documents": 1280,
+      "legal": 960,
+      "financial": 800,
+      "office": 960,
+      "technical_web": 800,
+      "math_arxiv": 1920,
+      "web": 3200,
+      "math_textbook": 1280
+    },
+    "source_tokens": {
+      "min": 56.0,
+      "p25": 404.0,
+      "median": 1681.0,
+      "p75": 2308.0,
+      "p95": 3236.0499999999993,
+      "max": 6114.0
+    },
+    "answer_tokens": {
+      "min": 1.0,
+      "p25": 10.0,
+      "median": 21.0,
+      "p75": 29.0,
+      "p95": 43.0,
+      "max": 120.0
+    }
+  },
+  "arms": {
+    "r8": {
+      "spikes": 174,
+      "source_answer_comparison": {
+        "source_tokens_mean": {
+          "spike": {
+            "min": 433.75,
+            "p25": 1248.25,
+            "median": 1593.5625,
+            "p75": 1777.8125,
+            "p95": 2175.21875,
+            "max": 2430.375
+          },
+          "nonspike": {
+            "min": 334.75,
+            "p25": 1253.40625,
+            "median": 1492.5,
+            "p75": 1761.71875,
+            "p95": 2138.96875,
+            "max": 2705.0
+          },
+          "post20percent_spike": {
+            "min": 433.75,
+            "p25": 1248.25,
+            "median": 1593.5625,
+            "p75": 1777.8125,
+            "p95": 2175.21875,
+            "max": 2430.375
+          },
+          "post20percent_nonspike": {
+            "min": 334.75,
+            "p25": 1253.78125,
+            "median": 1489.0625,
+            "p75": 1752.34375,
+            "p95": 2138.96875,
+            "max": 2705.0
+          }
+        },
+        "source_tokens_max": {
+          "spike": {
+            "min": 1008.0,
+            "p25": 2570.0,
+            "median": 2927.5,
+            "p75": 3404.25,
+            "p95": 4132.0,
+            "max": 5158.0
+          },
+          "nonspike": {
+            "min": 1028.0,
+            "p25": 2561.25,
+            "median": 2961.0,
+            "p75": 3406.0,
+            "p95": 4137.0,
+            "max": 6114.0
+          },
+          "post20percent_spike": {
+            "min": 1008.0,
+            "p25": 2570.0,
+            "median": 2927.5,
+            "p75": 3404.25,
+            "p95": 4132.0,
+            "max": 5158.0
+          },
+          "post20percent_nonspike": {
+            "min": 1028.0,
+            "p25": 2570.25,
+            "median": 2952.5,
+            "p75": 3394.0,
+            "p95": 4148.5,
+            "max": 6114.0
+          }
+        },
+        "answer_tokens_mean": {
+          "spike": {
+            "min": 8.625,
+            "p25": 18.25,
+            "median": 21.3125,
+            "p75": 24.0,
+            "p95": 29.41875,
+            "max": 31.875
+          },
+          "nonspike": {
+            "min": 5.25,
+            "p25": 17.625,
+            "median": 20.625,
+            "p75": 23.875,
+            "p95": 28.625,
+            "max": 38.875
+          },
+          "post20percent_spike": {
+            "min": 8.625,
+            "p25": 18.25,
+            "median": 21.3125,
+            "p75": 24.0,
+            "p95": 29.41875,
+            "max": 31.875
+          },
+          "post20percent_nonspike": {
+            "min": 5.25,
+            "p25": 17.625,
+            "median": 20.625,
+            "p75": 23.875,
+            "p95": 28.5,
+            "max": 38.875
+          }
+        },
+        "answer_tokens_max": {
+          "spike": {
+            "min": 20.0,
+            "p25": 36.0,
+            "median": 40.0,
+            "p75": 47.0,
+            "p95": 60.0,
+            "max": 103.0
+          },
+          "nonspike": {
+            "min": 15.0,
+            "p25": 33.0,
+            "median": 39.0,
+            "p75": 45.0,
+            "p95": 58.0,
+            "max": 120.0
+          },
+          "post20percent_spike": {
+            "min": 20.0,
+            "p25": 36.0,
+            "median": 40.0,
+            "p75": 47.0,
+            "p95": 60.0,
+            "max": 103.0
+          },
+          "post20percent_nonspike": {
+            "min": 15.0,
+            "p25": 33.0,
+            "median": 39.0,
+            "p75": 45.0,
+            "p95": 57.0,
+            "max": 99.0
+          }
+        },
+        "answer_characters_mean": {
+          "spike": {
+            "min": 36.375,
+            "p25": 76.34375,
+            "median": 88.0,
+            "p75": 101.15625,
+            "p95": 119.88125,
+            "max": 134.375
+          },
+          "nonspike": {
+            "min": 14.75,
+            "p25": 71.15625,
+            "median": 85.75,
+            "p75": 100.21875,
+            "p95": 122.25,
+            "max": 167.25
+          },
+          "post20percent_spike": {
+            "min": 36.375,
+            "p25": 76.34375,
+            "median": 88.0,
+            "p75": 101.15625,
+            "p95": 119.88125,
+            "max": 134.375
+          },
+          "post20percent_nonspike": {
+            "min": 14.75,
+            "p25": 70.875,
+            "median": 85.5625,
+            "p75": 100.09375,
+            "p95": 122.09375,
+            "max": 167.25
+          }
+        }
+      },
+      "families": {
+        "code": {
+          "mean_count_spike": 2.5172413793103448,
+          "mean_count_nonspike": 2.388828039430449,
+          "post20percent_mean_count_spike": 2.5172413793103448,
+          "post20percent_mean_count_nonspike": 2.394109396914446,
+          "present_batches": 1866,
+          "absent_batches": 134,
+          "spikes_when_present": 165,
+          "spikes_when_absent": 9,
+          "spike_rate_present": 0.08842443729903537,
+          "spike_rate_absent": 0.06716417910447761
+        },
+        "documents": {
+          "mean_count_spike": 0.7471264367816092,
+          "mean_count_nonspike": 0.6297918948521358,
+          "post20percent_mean_count_spike": 0.7471264367816092,
+          "post20percent_mean_count_nonspike": 0.6079943899018233,
+          "present_batches": 986,
+          "absent_batches": 1014,
+          "spikes_when_present": 98,
+          "spikes_when_absent": 76,
+          "spike_rate_present": 0.09939148073022312,
+          "spike_rate_absent": 0.07495069033530571
+        },
+        "financial": {
+          "mean_count_spike": 0.3793103448275862,
+          "mean_count_nonspike": 0.4019715224534502,
+          "post20percent_mean_count_spike": 0.3793103448275862,
+          "post20percent_mean_count_nonspike": 0.39901823281907434,
+          "present_batches": 683,
+          "absent_batches": 1317,
+          "spikes_when_present": 54,
+          "spikes_when_absent": 120,
+          "spike_rate_present": 0.07906295754026355,
+          "spike_rate_absent": 0.09111617312072894
+        },
+        "legal": {
+          "mean_count_spike": 0.5057471264367817,
+          "mean_count_nonspike": 0.47754654983570644,
+          "post20percent_mean_count_spike": 0.5057471264367817,
+          "post20percent_mean_count_nonspike": 0.4894810659186536,
+          "present_batches": 785,
+          "absent_batches": 1215,
+          "spikes_when_present": 71,
+          "spikes_when_absent": 103,
+          "spike_rate_present": 0.09044585987261146,
+          "spike_rate_absent": 0.08477366255144032
+        },
+        "math_arxiv": {
+          "mean_count_spike": 0.9195402298850575,
+          "mean_count_nonspike": 0.963855421686747,
+          "post20percent_mean_count_spike": 0.9195402298850575,
+          "post20percent_mean_count_nonspike": 0.9481065918653576,
+          "present_batches": 1285,
+          "absent_batches": 715,
+          "spikes_when_present": 111,
+          "spikes_when_absent": 63,
+          "spike_rate_present": 0.08638132295719844,
+          "spike_rate_absent": 0.08811188811188811
+        },
+        "math_textbook": {
+          "mean_count_spike": 0.6206896551724138,
+          "mean_count_nonspike": 0.6418400876232202,
+          "post20percent_mean_count_spike": 0.6206896551724138,
+          "post20percent_mean_count_nonspike": 0.6500701262272089,
+          "present_batches": 975,
+          "absent_batches": 1025,
+          "spikes_when_present": 77,
+          "spikes_when_absent": 97,
+          "spike_rate_present": 0.07897435897435898,
+          "spike_rate_absent": 0.09463414634146342
+        },
+        "office": {
+          "mean_count_spike": 0.5574712643678161,
+          "mean_count_nonspike": 0.47261774370208104,
+          "post20percent_mean_count_spike": 0.5574712643678161,
+          "post20percent_mean_count_nonspike": 0.48246844319775595,
+          "present_batches": 773,
+          "absent_batches": 1227,
+          "spikes_when_present": 76,
+          "spikes_when_absent": 98,
+          "spike_rate_present": 0.09831824062095731,
+          "spike_rate_absent": 0.07986960065199673
+        },
+        "technical_web": {
+          "mean_count_spike": 0.3448275862068966,
+          "mean_count_nonspike": 0.40525739320920046,
+          "post20percent_mean_count_spike": 0.3448275862068966,
+          "post20percent_mean_count_nonspike": 0.4060308555399719,
+          "present_batches": 657,
+          "absent_batches": 1343,
+          "spikes_when_present": 50,
+          "spikes_when_absent": 124,
+          "spike_rate_present": 0.076103500761035,
+          "spike_rate_absent": 0.09233060312732688
+        },
+        "web": {
+          "mean_count_spike": 1.4080459770114941,
+          "mean_count_nonspike": 1.61829134720701,
+          "post20percent_mean_count_spike": 1.4080459770114941,
+          "post20percent_mean_count_nonspike": 1.6227208976157084,
+          "present_batches": 1651,
+          "absent_batches": 349,
+          "spikes_when_present": 139,
+          "spikes_when_absent": 35,
+          "spike_rate_present": 0.08419139915202907,
+          "spike_rate_absent": 0.10028653295128939
+        }
+      },
+      "correlations": {
+        "source_tokens_mean": {
+          "spearman_ac_norm": 0.0651567727060472,
+          "within10percent_window_rank_correlation": 0.06794905478436293
+        },
+        "source_tokens_max": {
+          "spearman_ac_norm": 0.026099306226547783,
+          "within10percent_window_rank_correlation": 0.02102943771799696
+        },
+        "answer_tokens_mean": {
+          "spearman_ac_norm": 0.07917307423287934,
+          "within10percent_window_rank_correlation": 0.09120319638549795
+        },
+        "answer_tokens_max": {
+          "spearman_ac_norm": 0.05792968133617526,
+          "within10percent_window_rank_correlation": 0.05100547867867552
+        },
+        "answer_characters_mean": {
+          "spearman_ac_norm": 0.08231688245896106,
+          "within10percent_window_rank_correlation": 0.10497254518305685
+        },
+        "family_count_code": {
+          "spearman_ac_norm": 0.06740798443040891,
+          "within10percent_window_rank_correlation": 0.08179174311617828
+        },
+        "family_count_documents": {
+          "spearman_ac_norm": 0.016438667137514205,
+          "within10percent_window_rank_correlation": 0.04724848271666499
+        },
+        "family_count_financial": {
+          "spearman_ac_norm": -0.004106836756463069,
+          "within10percent_window_rank_correlation": -0.013215082437443626
+        },
+        "family_count_legal": {
+          "spearman_ac_norm": 0.06532350140637429,
+          "within10percent_window_rank_correlation": 0.05360939640578586
+        },
+        "family_count_math_arxiv": {
+          "spearman_ac_norm": -0.027966474896129495,
+          "within10percent_window_rank_correlation": -0.025704379557384787
+        },
+        "family_count_math_textbook": {
+          "spearman_ac_norm": -0.03713323130942759,
+          "within10percent_window_rank_correlation": -0.055628852273666235
+        },
+        "family_count_office": {
+          "spearman_ac_norm": 0.01632178418500718,
+          "within10percent_window_rank_correlation": 0.0104371517290732
+        },
+        "family_count_technical_web": {
+          "spearman_ac_norm": -0.01749797404652312,
+          "within10percent_window_rank_correlation": -0.028381322991347185
+        },
+        "family_count_web": {
+          "spearman_ac_norm": -0.0664310112119677,
+          "within10percent_window_rank_correlation": -0.07875093483583619
+        }
+      },
+      "quartiles": {
+        "source_tokens_mean": [
+          {
+            "quartile": 1,
+            "low": 334.75,
+            "high": 1253.0,
+            "batches": 500,
+            "spike_count": 44,
+            "spike_rate": 0.088,
+            "median_ac_norm": 10.26409387588501
+          },
+          {
+            "quartile": 2,
+            "low": 1253.0,
+            "high": 1504.1875,
+            "batches": 500,
+            "spike_count": 22,
+            "spike_rate": 0.044,
+            "median_ac_norm": 11.093936920166016
+          },
+          {
+            "quartile": 3,
+            "low": 1504.1875,
+            "high": 1766.21875,
+            "batches": 500,
+            "spike_count": 60,
+            "spike_rate": 0.12,
+            "median_ac_norm": 12.368849277496338
+          },
+          {
+            "quartile": 4,
+            "low": 1766.21875,
+            "high": 2705.0,
+            "batches": 500,
+            "spike_count": 48,
+            "spike_rate": 0.096,
+            "median_ac_norm": 13.10923957824707
+          }
+        ],
+        "source_tokens_max": [
+          {
+            "quartile": 1,
+            "low": 1008.0,
+            "high": 2561.75,
+            "batches": 500,
+            "spike_count": 43,
+            "spike_rate": 0.086,
+            "median_ac_norm": 11.086348533630371
+          },
+          {
+            "quartile": 2,
+            "low": 2561.75,
+            "high": 2956.5,
+            "batches": 500,
+            "spike_count": 46,
+            "spike_rate": 0.092,
+            "median_ac_norm": 12.235933780670166
+          },
+          {
+            "quartile": 3,
+            "low": 2956.5,
+            "high": 3406.0,
+            "batches": 497,
+            "spike_count": 42,
+            "spike_rate": 0.08450704225352113,
+            "median_ac_norm": 11.371630668640137
+          },
+          {
+            "quartile": 4,
+            "low": 3406.0,
+            "high": 6114.0,
+            "batches": 503,
+            "spike_count": 43,
+            "spike_rate": 0.08548707753479125,
+            "median_ac_norm": 11.62351131439209
+          }
+        ],
+        "answer_tokens_mean": [
+          {
+            "quartile": 1,
+            "low": 5.25,
+            "high": 17.625,
+            "batches": 483,
+            "spike_count": 28,
+            "spike_rate": 0.057971014492753624,
+            "median_ac_norm": 9.172908782958984
+          },
+          {
+            "quartile": 2,
+            "low": 17.625,
+            "high": 20.625,
+            "batches": 490,
+            "spike_count": 47,
+            "spike_rate": 0.09591836734693877,
+            "median_ac_norm": 12.784285545349121
+          },
+          {
+            "quartile": 3,
+            "low": 20.625,
+            "high": 24.0,
+            "batches": 526,
+            "spike_count": 54,
+            "spike_rate": 0.10266159695817491,
+            "median_ac_norm": 12.451411247253418
+          },
+          {
+            "quartile": 4,
+            "low": 24.0,
+            "high": 38.875,
+            "batches": 501,
+            "spike_count": 45,
+            "spike_rate": 0.08982035928143713,
+            "median_ac_norm": 12.338647842407227
+          }
+        ],
+        "answer_tokens_max": [
+          {
+            "quartile": 1,
+            "low": 15.0,
+            "high": 33.0,
+            "batches": 415,
+            "spike_count": 29,
+            "spike_rate": 0.06987951807228916,
+            "median_ac_norm": 9.713111877441406
+          },
+          {
+            "quartile": 2,
+            "low": 33.0,
+            "high": 39.0,
+            "batches": 559,
+            "spike_count": 42,
+            "spike_rate": 0.07513416815742398,
+            "median_ac_norm": 11.20899486541748
+          },
+          {
+            "quartile": 3,
+            "low": 39.0,
+            "high": 46.0,
+            "batches": 518,
+            "spike_count": 50,
+            "spike_rate": 0.09652509652509653,
+            "median_ac_norm": 13.23755693435669
+          },
+          {
+            "quartile": 4,
+            "low": 46.0,
+            "high": 120.0,
+            "batches": 508,
+            "spike_count": 53,
+            "spike_rate": 0.10433070866141732,
+            "median_ac_norm": 11.240311622619629
+          }
+        ],
+        "answer_characters_mean": [
+          {
+            "quartile": 1,
+            "low": 14.75,
+            "high": 71.84375,
+            "batches": 500,
+            "spike_count": 33,
+            "spike_rate": 0.066,
+            "median_ac_norm": 10.162970066070557
+          },
+          {
+            "quartile": 2,
+            "low": 71.84375,
+            "high": 86.0,
+            "batches": 497,
+            "spike_count": 45,
+            "spike_rate": 0.09054325955734406,
+            "median_ac_norm": 11.0394868850708
+          },
+          {
+            "quartile": 3,
+            "low": 86.0,
+            "high": 100.375,
+            "batches": 501,
+            "spike_count": 49,
+            "spike_rate": 0.09780439121756487,
+            "median_ac_norm": 12.205916404724121
+          },
+          {
+            "quartile": 4,
+            "low": 100.375,
+            "high": 167.25,
+            "batches": 502,
+            "spike_count": 47,
+            "spike_rate": 0.09362549800796813,
+            "median_ac_norm": 13.3908371925354
+          }
+        ]
+      },
+      "windows": [
+        {
+          "questions_seen": [
+            1,
+            1600
+          ],
+          "spikes": 0,
+          "ac_norm_median": 5.510353088378906,
+          "source_tokens_mean_median": 1476.8125,
+          "source_tokens_max_median": 2933.5,
+          "answer_tokens_mean_median": 20.875,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.1875
+        },
+        {
+          "questions_seen": [
+            1601,
+            3200
+          ],
+          "spikes": 0,
+          "ac_norm_median": 4.884804725646973,
+          "source_tokens_mean_median": 1543.0625,
+          "source_tokens_max_median": 3065.5,
+          "answer_tokens_mean_median": 20.9375,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.8125
+        },
+        {
+          "questions_seen": [
+            3201,
+            4800
+          ],
+          "spikes": 9,
+          "ac_norm_median": 9.11024808883667,
+          "source_tokens_mean_median": 1423.5625,
+          "source_tokens_max_median": 2922.5,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.625
+        },
+        {
+          "questions_seen": [
+            4801,
+            6400
+          ],
+          "spikes": 18,
+          "ac_norm_median": 10.257389545440674,
+          "source_tokens_mean_median": 1511.75,
+          "source_tokens_max_median": 2955.0,
+          "answer_tokens_mean_median": 20.4375,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.6875
+        },
+        {
+          "questions_seen": [
+            6401,
+            8000
+          ],
+          "spikes": 28,
+          "ac_norm_median": 19.072546005249023,
+          "source_tokens_mean_median": 1512.75,
+          "source_tokens_max_median": 2929.0,
+          "answer_tokens_mean_median": 21.125,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 89.1875
+        },
+        {
+          "questions_seen": [
+            8001,
+            9600
+          ],
+          "spikes": 23,
+          "ac_norm_median": 17.565279006958008,
+          "source_tokens_mean_median": 1512.25,
+          "source_tokens_max_median": 2935.0,
+          "answer_tokens_mean_median": 20.6875,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 85.9375
+        },
+        {
+          "questions_seen": [
+            9601,
+            11200
+          ],
+          "spikes": 13,
+          "ac_norm_median": 9.446582317352295,
+          "source_tokens_mean_median": 1467.4375,
+          "source_tokens_max_median": 2959.0,
+          "answer_tokens_mean_median": 20.5,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.3125
+        },
+        {
+          "questions_seen": [
+            11201,
+            12800
+          ],
+          "spikes": 29,
+          "ac_norm_median": 19.75105571746826,
+          "source_tokens_mean_median": 1497.8125,
+          "source_tokens_max_median": 3019.0,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.5625
+        },
+        {
+          "questions_seen": [
+            12801,
+            14400
+          ],
+          "spikes": 31,
+          "ac_norm_median": 26.61366081237793,
+          "source_tokens_mean_median": 1523.1875,
+          "source_tokens_max_median": 2916.0,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 84.875
+        },
+        {
+          "questions_seen": [
+            14401,
+            16000
+          ],
+          "spikes": 23,
+          "ac_norm_median": 20.56937885284424,
+          "source_tokens_mean_median": 1512.0625,
+          "source_tokens_max_median": 2962.5,
+          "answer_tokens_mean_median": 20.3125,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 83.1875
+        }
+      ]
+    },
+    "r16": {
+      "spikes": 2,
+      "source_answer_comparison": {
+        "source_tokens_mean": {
+          "spike": {
+            "min": 1567.25,
+            "p25": 1694.6875,
+            "median": 1822.125,
+            "p75": 1949.5625,
+            "p95": 2051.5125,
+            "max": 2077.0
+          },
+          "nonspike": {
+            "min": 334.75,
+            "p25": 1252.25,
+            "median": 1503.75,
+            "p75": 1766.0625,
+            "p95": 2145.35,
+            "max": 2705.0
+          },
+          "post20percent_spike": {
+            "min": 2077.0,
+            "p25": 2077.0,
+            "median": 2077.0,
+            "p75": 2077.0,
+            "p95": 2077.0,
+            "max": 2077.0
+          },
+          "post20percent_nonspike": {
+            "min": 334.75,
+            "p25": 1253.6875,
+            "median": 1501.625,
+            "p75": 1759.875,
+            "p95": 2146.75,
+            "max": 2705.0
+          }
+        },
+        "source_tokens_max": {
+          "spike": {
+            "min": 2718.0,
+            "p25": 2797.75,
+            "median": 2877.5,
+            "p75": 2957.25,
+            "p95": 3021.05,
+            "max": 3037.0
+          },
+          "nonspike": {
+            "min": 1008.0,
+            "p25": 2561.25,
+            "median": 2956.5,
+            "p75": 3406.0,
+            "p95": 4134.599999999999,
+            "max": 6114.0
+          },
+          "post20percent_spike": {
+            "min": 3037.0,
+            "p25": 3037.0,
+            "median": 3037.0,
+            "p75": 3037.0,
+            "p95": 3037.0,
+            "max": 3037.0
+          },
+          "post20percent_nonspike": {
+            "min": 1008.0,
+            "p25": 2569.5,
+            "median": 2948.0,
+            "p75": 3399.0,
+            "p95": 4138.4,
+            "max": 6114.0
+          }
+        },
+        "answer_tokens_mean": {
+          "spike": {
+            "min": 21.75,
+            "p25": 22.6875,
+            "median": 23.625,
+            "p75": 24.5625,
+            "p95": 25.3125,
+            "max": 25.5
+          },
+          "nonspike": {
+            "min": 5.25,
+            "p25": 17.625,
+            "median": 20.625,
+            "p75": 23.96875,
+            "p95": 28.643749999999983,
+            "max": 38.875
+          },
+          "post20percent_spike": {
+            "min": 21.75,
+            "p25": 21.75,
+            "median": 21.75,
+            "p75": 21.75,
+            "p95": 21.75,
+            "max": 21.75
+          },
+          "post20percent_nonspike": {
+            "min": 5.25,
+            "p25": 17.75,
+            "median": 20.625,
+            "p75": 23.875,
+            "p95": 28.625,
+            "max": 38.875
+          }
+        },
+        "answer_tokens_max": {
+          "spike": {
+            "min": 38.0,
+            "p25": 38.0,
+            "median": 38.0,
+            "p75": 38.0,
+            "p95": 38.0,
+            "max": 38.0
+          },
+          "nonspike": {
+            "min": 15.0,
+            "p25": 33.0,
+            "median": 39.0,
+            "p75": 46.0,
+            "p95": 58.0,
+            "max": 120.0
+          },
+          "post20percent_spike": {
+            "min": 38.0,
+            "p25": 38.0,
+            "median": 38.0,
+            "p75": 38.0,
+            "p95": 38.0,
+            "max": 38.0
+          },
+          "post20percent_nonspike": {
+            "min": 15.0,
+            "p25": 34.0,
+            "median": 39.0,
+            "p75": 46.0,
+            "p95": 57.09999999999991,
+            "max": 103.0
+          }
+        },
+        "answer_characters_mean": {
+          "spike": {
+            "min": 100.25,
+            "p25": 102.96875,
+            "median": 105.6875,
+            "p75": 108.40625,
+            "p95": 110.58125,
+            "max": 111.125
+          },
+          "nonspike": {
+            "min": 14.75,
+            "p25": 71.78125,
+            "median": 86.0,
+            "p75": 100.375,
+            "p95": 122.125,
+            "max": 167.25
+          },
+          "post20percent_spike": {
+            "min": 100.25,
+            "p25": 100.25,
+            "median": 100.25,
+            "p75": 100.25,
+            "p95": 100.25,
+            "max": 100.25
+          },
+          "post20percent_nonspike": {
+            "min": 14.75,
+            "p25": 71.5,
+            "median": 85.875,
+            "p75": 100.25,
+            "p95": 121.5,
+            "max": 167.25
+          }
+        }
+      },
+      "families": {
+        "code": {
+          "mean_count_spike": 2.0,
+          "mean_count_nonspike": 2.4004004004004003,
+          "post20percent_mean_count_spike": 3.0,
+          "post20percent_mean_count_nonspike": 2.407129455909944,
+          "present_batches": 1866,
+          "absent_batches": 134,
+          "spikes_when_present": 2,
+          "spikes_when_absent": 0,
+          "spike_rate_present": 0.0010718113612004287,
+          "spike_rate_absent": 0.0
+        },
+        "documents": {
+          "mean_count_spike": 1.0,
+          "mean_count_nonspike": 0.6396396396396397,
+          "post20percent_mean_count_spike": 2.0,
+          "post20percent_mean_count_nonspike": 0.6222639149468417,
+          "present_batches": 986,
+          "absent_batches": 1014,
+          "spikes_when_present": 1,
+          "spikes_when_absent": 1,
+          "spike_rate_present": 0.0010141987829614604,
+          "spike_rate_absent": 0.0009861932938856016
+        },
+        "financial": {
+          "mean_count_spike": 1.0,
+          "mean_count_nonspike": 0.3993993993993994,
+          "post20percent_mean_count_spike": 1.0,
+          "post20percent_mean_count_nonspike": 0.3964978111319575,
+          "present_batches": 683,
+          "absent_batches": 1317,
+          "spikes_when_present": 2,
+          "spikes_when_absent": 0,
+          "spike_rate_present": 0.0029282576866764276,
+          "spike_rate_absent": 0.0
+        },
+        "legal": {
+          "mean_count_spike": 1.0,
+          "mean_count_nonspike": 0.4794794794794795,
+          "post20percent_mean_count_spike": 0.0,
+          "post20percent_mean_count_nonspike": 0.4915572232645403,
+          "present_batches": 785,
+          "absent_batches": 1215,
+          "spikes_when_present": 1,
+          "spikes_when_absent": 1,
+          "spike_rate_present": 0.0012738853503184713,
+          "spike_rate_absent": 0.0008230452674897119
+        },
+        "math_arxiv": {
+          "mean_count_spike": 0.0,
+          "mean_count_nonspike": 0.960960960960961,
+          "post20percent_mean_count_spike": 0.0,
+          "post20percent_mean_count_nonspike": 0.9455909943714822,
+          "present_batches": 1285,
+          "absent_batches": 715,
+          "spikes_when_present": 0,
+          "spikes_when_absent": 2,
+          "spike_rate_present": 0.0,
+          "spike_rate_absent": 0.002797202797202797
+        },
+        "math_textbook": {
+          "mean_count_spike": 0.5,
+          "mean_count_nonspike": 0.6401401401401401,
+          "post20percent_mean_count_spike": 0.0,
+          "post20percent_mean_count_nonspike": 0.6472795497185742,
+          "present_batches": 975,
+          "absent_batches": 1025,
+          "spikes_when_present": 1,
+          "spikes_when_absent": 1,
+          "spike_rate_present": 0.0010256410256410256,
+          "spike_rate_absent": 0.000975609756097561
+        },
+        "office": {
+          "mean_count_spike": 1.0,
+          "mean_count_nonspike": 0.4794794794794795,
+          "post20percent_mean_count_spike": 1.0,
+          "post20percent_mean_count_nonspike": 0.4903064415259537,
+          "present_batches": 773,
+          "absent_batches": 1227,
+          "spikes_when_present": 2,
+          "spikes_when_absent": 0,
+          "spike_rate_present": 0.00258732212160414,
+          "spike_rate_absent": 0.0
+        },
+        "technical_web": {
+          "mean_count_spike": 1.0,
+          "mean_count_nonspike": 0.3993993993993994,
+          "post20percent_mean_count_spike": 1.0,
+          "post20percent_mean_count_nonspike": 0.3989993746091307,
+          "present_batches": 657,
+          "absent_batches": 1343,
+          "spikes_when_present": 2,
+          "spikes_when_absent": 0,
+          "spike_rate_present": 0.0030441400304414,
+          "spike_rate_absent": 0.0
+        },
+        "web": {
+          "mean_count_spike": 0.5,
+          "mean_count_nonspike": 1.6011011011011012,
+          "post20percent_mean_count_spike": 0.0,
+          "post20percent_mean_count_nonspike": 1.600375234521576,
+          "present_batches": 1651,
+          "absent_batches": 349,
+          "spikes_when_present": 1,
+          "spikes_when_absent": 1,
+          "spike_rate_present": 0.0006056935190793458,
+          "spike_rate_absent": 0.0028653295128939827
+        }
+      },
+      "correlations": {
+        "source_tokens_mean": {
+          "spearman_ac_norm": 0.07101042483872808,
+          "within10percent_window_rank_correlation": 0.07544159827930125
+        },
+        "source_tokens_max": {
+          "spearman_ac_norm": 0.05946597650589008,
+          "within10percent_window_rank_correlation": 0.04364082340858861
+        },
+        "answer_tokens_mean": {
+          "spearman_ac_norm": 0.1131261360069983,
+          "within10percent_window_rank_correlation": 0.13723894406758103
+        },
+        "answer_tokens_max": {
+          "spearman_ac_norm": 0.07405079420736019,
+          "within10percent_window_rank_correlation": 0.08525680973349962
+        },
+        "answer_characters_mean": {
+          "spearman_ac_norm": 0.12763089632985525,
+          "within10percent_window_rank_correlation": 0.1631731045609218
+        },
+        "family_count_code": {
+          "spearman_ac_norm": 0.032423847502844896,
+          "within10percent_window_rank_correlation": 0.05613917417627943
+        },
+        "family_count_documents": {
+          "spearman_ac_norm": 0.01075102201107815,
+          "within10percent_window_rank_correlation": 0.025417998256694774
+        },
+        "family_count_financial": {
+          "spearman_ac_norm": 0.0382446883373313,
+          "within10percent_window_rank_correlation": 0.03587705170176079
+        },
+        "family_count_legal": {
+          "spearman_ac_norm": 0.08314937798658882,
+          "within10percent_window_rank_correlation": 0.08938879091641697
+        },
+        "family_count_math_arxiv": {
+          "spearman_ac_norm": -0.03579678699521314,
+          "within10percent_window_rank_correlation": -0.041634890872509905
+        },
+        "family_count_math_textbook": {
+          "spearman_ac_norm": -0.03599719272346465,
+          "within10percent_window_rank_correlation": -0.05781751834666381
+        },
+        "family_count_office": {
+          "spearman_ac_norm": 0.023904050082793928,
+          "within10percent_window_rank_correlation": 0.002314206682249774
+        },
+        "family_count_technical_web": {
+          "spearman_ac_norm": 0.014767196941284233,
+          "within10percent_window_rank_correlation": 0.004620702988331846
+        },
+        "family_count_web": {
+          "spearman_ac_norm": -0.07536103050743387,
+          "within10percent_window_rank_correlation": -0.08829569421571797
+        }
+      },
+      "quartiles": {
+        "source_tokens_mean": [
+          {
+            "quartile": 1,
+            "low": 334.75,
+            "high": 1253.0,
+            "batches": 500,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.527125597000122
+          },
+          {
+            "quartile": 2,
+            "low": 1253.0,
+            "high": 1504.1875,
+            "batches": 500,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 6.055774211883545
+          },
+          {
+            "quartile": 3,
+            "low": 1504.1875,
+            "high": 1766.21875,
+            "batches": 500,
+            "spike_count": 1,
+            "spike_rate": 0.002,
+            "median_ac_norm": 6.4149346351623535
+          },
+          {
+            "quartile": 4,
+            "low": 1766.21875,
+            "high": 2705.0,
+            "batches": 500,
+            "spike_count": 1,
+            "spike_rate": 0.002,
+            "median_ac_norm": 6.591280221939087
+          }
+        ],
+        "source_tokens_max": [
+          {
+            "quartile": 1,
+            "low": 1008.0,
+            "high": 2561.75,
+            "batches": 500,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.930131196975708
+          },
+          {
+            "quartile": 2,
+            "low": 2561.75,
+            "high": 2956.5,
+            "batches": 500,
+            "spike_count": 1,
+            "spike_rate": 0.002,
+            "median_ac_norm": 5.8623833656311035
+          },
+          {
+            "quartile": 3,
+            "low": 2956.5,
+            "high": 3406.0,
+            "batches": 497,
+            "spike_count": 1,
+            "spike_rate": 0.002012072434607646,
+            "median_ac_norm": 5.914503574371338
+          },
+          {
+            "quartile": 4,
+            "low": 3406.0,
+            "high": 6114.0,
+            "batches": 503,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 6.7379326820373535
+          }
+        ],
+        "answer_tokens_mean": [
+          {
+            "quartile": 1,
+            "low": 5.25,
+            "high": 17.625,
+            "batches": 483,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.445611000061035
+          },
+          {
+            "quartile": 2,
+            "low": 17.625,
+            "high": 20.625,
+            "batches": 490,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.732962131500244
+          },
+          {
+            "quartile": 3,
+            "low": 20.625,
+            "high": 24.0,
+            "batches": 526,
+            "spike_count": 1,
+            "spike_rate": 0.0019011406844106464,
+            "median_ac_norm": 6.578259468078613
+          },
+          {
+            "quartile": 4,
+            "low": 24.0,
+            "high": 38.875,
+            "batches": 501,
+            "spike_count": 1,
+            "spike_rate": 0.001996007984031936,
+            "median_ac_norm": 6.642398834228516
+          }
+        ],
+        "answer_tokens_max": [
+          {
+            "quartile": 1,
+            "low": 15.0,
+            "high": 33.0,
+            "batches": 415,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.425230503082275
+          },
+          {
+            "quartile": 2,
+            "low": 33.0,
+            "high": 39.0,
+            "batches": 559,
+            "spike_count": 2,
+            "spike_rate": 0.0035778175313059034,
+            "median_ac_norm": 6.059764385223389
+          },
+          {
+            "quartile": 3,
+            "low": 39.0,
+            "high": 46.0,
+            "batches": 518,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 6.192120790481567
+          },
+          {
+            "quartile": 4,
+            "low": 46.0,
+            "high": 120.0,
+            "batches": 508,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 6.390371799468994
+          }
+        ],
+        "answer_characters_mean": [
+          {
+            "quartile": 1,
+            "low": 14.75,
+            "high": 71.84375,
+            "batches": 500,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.4196343421936035
+          },
+          {
+            "quartile": 2,
+            "low": 71.84375,
+            "high": 86.0,
+            "batches": 497,
+            "spike_count": 0,
+            "spike_rate": 0.0,
+            "median_ac_norm": 5.832043170928955
+          },
+          {
+            "quartile": 3,
+            "low": 86.0,
+            "high": 100.375,
+            "batches": 501,
+            "spike_count": 1,
+            "spike_rate": 0.001996007984031936,
+            "median_ac_norm": 6.0939860343933105
+          },
+          {
+            "quartile": 4,
+            "low": 100.375,
+            "high": 167.25,
+            "batches": 502,
+            "spike_count": 1,
+            "spike_rate": 0.00199203187250996,
+            "median_ac_norm": 6.8592751026153564
+          }
+        ]
+      },
+      "windows": [
+        {
+          "questions_seen": [
+            1,
+            1600
+          ],
+          "spikes": 1,
+          "ac_norm_median": 4.296117782592773,
+          "source_tokens_mean_median": 1476.8125,
+          "source_tokens_max_median": 2933.5,
+          "answer_tokens_mean_median": 20.875,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.1875
+        },
+        {
+          "questions_seen": [
+            1601,
+            3200
+          ],
+          "spikes": 0,
+          "ac_norm_median": 3.4360986948013306,
+          "source_tokens_mean_median": 1543.0625,
+          "source_tokens_max_median": 3065.5,
+          "answer_tokens_mean_median": 20.9375,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.8125
+        },
+        {
+          "questions_seen": [
+            3201,
+            4800
+          ],
+          "spikes": 1,
+          "ac_norm_median": 4.072915554046631,
+          "source_tokens_mean_median": 1423.5625,
+          "source_tokens_max_median": 2922.5,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.625
+        },
+        {
+          "questions_seen": [
+            4801,
+            6400
+          ],
+          "spikes": 0,
+          "ac_norm_median": 5.716001749038696,
+          "source_tokens_mean_median": 1511.75,
+          "source_tokens_max_median": 2955.0,
+          "answer_tokens_mean_median": 20.4375,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.6875
+        },
+        {
+          "questions_seen": [
+            6401,
+            8000
+          ],
+          "spikes": 0,
+          "ac_norm_median": 6.242562294006348,
+          "source_tokens_mean_median": 1512.75,
+          "source_tokens_max_median": 2929.0,
+          "answer_tokens_mean_median": 21.125,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 89.1875
+        },
+        {
+          "questions_seen": [
+            8001,
+            9600
+          ],
+          "spikes": 0,
+          "ac_norm_median": 7.26463508605957,
+          "source_tokens_mean_median": 1512.25,
+          "source_tokens_max_median": 2935.0,
+          "answer_tokens_mean_median": 20.6875,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 85.9375
+        },
+        {
+          "questions_seen": [
+            9601,
+            11200
+          ],
+          "spikes": 0,
+          "ac_norm_median": 7.434342384338379,
+          "source_tokens_mean_median": 1467.4375,
+          "source_tokens_max_median": 2959.0,
+          "answer_tokens_mean_median": 20.5,
+          "answer_tokens_max_median": 39.0,
+          "answer_characters_mean_median": 86.3125
+        },
+        {
+          "questions_seen": [
+            11201,
+            12800
+          ],
+          "spikes": 0,
+          "ac_norm_median": 8.010600566864014,
+          "source_tokens_mean_median": 1497.8125,
+          "source_tokens_max_median": 3019.0,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 38.0,
+          "answer_characters_mean_median": 85.5625
+        },
+        {
+          "questions_seen": [
+            12801,
+            14400
+          ],
+          "spikes": 0,
+          "ac_norm_median": 7.258241891860962,
+          "source_tokens_mean_median": 1523.1875,
+          "source_tokens_max_median": 2916.0,
+          "answer_tokens_mean_median": 20.625,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 84.875
+        },
+        {
+          "questions_seen": [
+            14401,
+            16000
+          ],
+          "spikes": 0,
+          "ac_norm_median": 6.8564841747283936,
+          "source_tokens_mean_median": 1512.0625,
+          "source_tokens_max_median": 2962.5,
+          "answer_tokens_mean_median": 20.3125,
+          "answer_tokens_max_median": 40.0,
+          "answer_characters_mean_median": 83.1875
+        }
+      ]
+    }
+  },
+  "cross_arm": {
+    "spikes_in_both": 1,
+    "spearman_ac_norm": 0.2966988336747084,
+    "within10percent_window_rank_correlation": 0.13500127503187578,
+    "r16_ac_on_r8_spike_batches": {
+      "min": 2.2507152557373047,
+      "p25": 5.326111078262329,
+      "median": 7.428503036499023,
+      "p75": 9.702364683151245,
+      "p95": 17.3074743270874,
+      "max": 234.0973358154297
+    },
+    "r16_ac_on_other_batches": {
+      "min": 0.4567742645740509,
+      "p25": 3.9662601351737976,
+      "median": 5.920640468597412,
+      "p75": 8.591945171356201,
+      "p95": 15.075156688690186,
+      "max": 323.02178955078125
+    },
+    "r8_ac_on_r16_spike_batches": {
+      "min": 14.63039779663086,
+      "p25": 37.292983055114746,
+      "median": 59.95556831359863,
+      "p75": 82.61815357208252,
+      "p95": 100.74822177886962,
+      "max": 105.2807388305664
+    },
+    "metadata_vs_log_ac_norm_ratio": {
+      "source_tokens_mean": 0.032209581812461266,
+      "source_tokens_max": -0.002806585109733245,
+      "answer_tokens_mean": 0.02225586197819687,
+      "answer_tokens_max": 0.014002310496376595,
+      "answer_characters_mean": 0.02060998394396244,
+      "family_count_code": 0.054889404200683556,
+      "family_count_documents": 0.027953563698594044,
+      "family_count_financial": -0.0395616241431025,
+      "family_count_legal": 0.004793058115101375,
+      "family_count_math_arxiv": -0.001110023464164535,
+      "family_count_math_textbook": -0.02096714672079994,
+      "family_count_office": 0.005580195257853117,
+      "family_count_technical_web": -0.03001141394613474,
+      "family_count_web": -0.03435923584542636
+    }
+  },
+  "examples": [
+    {
+      "update": 1,
+      "questions_seen": 8,
+      "pass_fraction": 0.0005,
+      "window": 0,
+      "item_ids": [
+        "c85c4cc392c138e8282a655c4b0682c1c262bff5f0b440ed66129b581ad04ce1",
+        "a306a3bf8d12a858bf2f1686d9675b9bd3b0c1d24f41d3176db30f0362da7b7c",
+        "e7b1fd81a483be458dcdcff9ddda256f604e470158b5192ef0b750382468f68e",
+        "e0e3b53f89d1f82a47b721d8501340ad15b2e4e8c36f4ebb0f1eef98657ba7d1",
+        "42837874f7f70e6ec9bbc07b52763ce709bf2f36e1298e35ee6c0e10fbd90cca",
+        "3ba6fd9fde71b0ab92edf45a00ee292c04ab8a13895b962cf94c0198cf0b6525",
+        "8de37ab9606d00ccbb49f62f54f6a5196a472d16e0cba96683f61c3762f25533",
+        "5a2e91315fc5ea38ef390b83dc1c45dcdea291fab67e2875c67cc0326a6e4936"
+      ],
+      "family_counts": {
+        "financial": 1,
+        "math_textbook": 1,
+        "legal": 2,
+        "code": 1,
+        "web": 1,
+        "office": 1,
+        "technical_web": 1
+      },
+      "source_tokens_mean": 1567.25,
+      "source_tokens_max": 2718,
+      "answer_tokens_mean": 25.5,
+      "answer_tokens_max": 38,
+      "answer_characters_mean": 111.125,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 14.63039779663086,
+        "reader_norm": 15.30078411102295,
+        "joint_norm": 21.169849647548123,
+        "spike": false,
+        "penalty_count": 4
+      },
+      "r16": {
+        "ac_norm": 323.02178955078125,
+        "reader_norm": 14.331074714660645,
+        "joint_norm": 323.3395370613782,
+        "spike": true,
+        "penalty_count": 4
+      },
+      "examples": [
+        {
+          "id": "c85c4cc392c138e8282a655c4b0682c1c262bff5f0b440ed66129b581ad04ce1",
+          "family": "financial",
+          "domain": "numeric",
+          "source_tokens": 1994,
+          "answer_tokens": 38,
+          "answer_characters": 95,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261690:9:d4bcfbad70e0b9bc"
+        },
+        {
+          "id": "a306a3bf8d12a858bf2f1686d9675b9bd3b0c1d24f41d3176db30f0362da7b7c",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 2718,
+          "answer_tokens": 17,
+          "answer_characters": 45,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261626:36:500d6058ab621a57"
+        },
+        {
+          "id": "e7b1fd81a483be458dcdcff9ddda256f604e470158b5192ef0b750382468f68e",
+          "family": "legal",
+          "domain": "legal",
+          "source_tokens": 2210,
+          "answer_tokens": 24,
+          "answer_characters": 145,
+          "source_units": 1,
+          "source_request_id": "ae86c56d1f43eec7:20261498:5:6557319c622e4f4f"
+        },
+        {
+          "id": "e0e3b53f89d1f82a47b721d8501340ad15b2e4e8c36f4ebb0f1eef98657ba7d1",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1187,
+          "answer_tokens": 37,
+          "answer_characters": 153,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20264826:3:40e8b1d0f6bb0dde"
+        },
+        {
+          "id": "42837874f7f70e6ec9bbc07b52763ce709bf2f36e1298e35ee6c0e10fbd90cca",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 107,
+          "answer_tokens": 37,
+          "answer_characters": 163,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20267642:55:4b9c9f5e62441587"
+        },
+        {
+          "id": "3ba6fd9fde71b0ab92edf45a00ee292c04ab8a13895b962cf94c0198cf0b6525",
+          "family": "office",
+          "domain": "office",
+          "source_tokens": 340,
+          "answer_tokens": 2,
+          "answer_characters": 12,
+          "source_units": 1,
+          "source_request_id": "914282b0b67f0a9b:20261722:13:985521cab402b44c"
+        },
+        {
+          "id": "8de37ab9606d00ccbb49f62f54f6a5196a472d16e0cba96683f61c3762f25533",
+          "family": "technical_web",
+          "domain": "web",
+          "source_tokens": 2034,
+          "answer_tokens": 18,
+          "answer_characters": 90,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20263162:2:c78ee0aa771965d5"
+        },
+        {
+          "id": "5a2e91315fc5ea38ef390b83dc1c45dcdea291fab67e2875c67cc0326a6e4936",
+          "family": "legal",
+          "domain": "legal",
+          "source_tokens": 1948,
+          "answer_tokens": 31,
+          "answer_characters": 186,
+          "source_units": 1,
+          "source_request_id": "ae86c56d1f43eec7:20261434:23:b014e83543f0a21c"
+        }
+      ]
+    },
+    {
+      "update": 586,
+      "questions_seen": 4688,
+      "pass_fraction": 0.293,
+      "window": 2,
+      "item_ids": [
+        "07fd38614da8ed915a305b96c29d34f5bfb1f48d9eb38e64c96d13e7e1611c2e",
+        "05d3da92cf62ab9e308e374e88e171f0da7447ba3cd899311bdc13badf9968ee",
+        "1a284bf856129239b8f458dcf0e3bcaaa93087442695cbb49e6b58dedad00f7e",
+        "7d78034c993c89b87f2b2c1380985411bfa97a2ee1ea3cd10ac9373ad700d9e1",
+        "1a4c94027c1850b62aef7a84263123bde3aeaff3a82e7f39b622b116b4aca65e",
+        "7516cae5173866b8d2928ab67a7b189625af79feadb903ffef61d61d71c2cd87",
+        "d4df2241eba5de92f6a9bcffbec52c79b79f3c407cb3457d77ff1d7f647cd08e",
+        "8f26a2309c00d1b29a35c46570d048ffc1e7c83ebc3656531971e103bf8670dd"
+      ],
+      "family_counts": {
+        "documents": 2,
+        "code": 3,
+        "technical_web": 1,
+        "financial": 1,
+        "office": 1
+      },
+      "source_tokens_mean": 2077.0,
+      "source_tokens_max": 3037,
+      "answer_tokens_mean": 21.75,
+      "answer_tokens_max": 38,
+      "answer_characters_mean": 100.25,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 105.2807388305664,
+        "reader_norm": 1.8073400259017944,
+        "joint_norm": 105.29625086715652,
+        "spike": true,
+        "penalty_count": 4
+      },
+      "r16": {
+        "ac_norm": 234.0973358154297,
+        "reader_norm": 1.8352426290512085,
+        "joint_norm": 234.10452954052286,
+        "spike": true,
+        "penalty_count": 4
+      },
+      "examples": [
+        {
+          "id": "07fd38614da8ed915a305b96c29d34f5bfb1f48d9eb38e64c96d13e7e1611c2e",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 2205,
+          "answer_tokens": 5,
+          "answer_characters": 23,
+          "source_units": 1,
+          "source_request_id": "00ebc8a279cb0604:20261882:3:c9609b4998f4838b"
+        },
+        {
+          "id": "05d3da92cf62ab9e308e374e88e171f0da7447ba3cd899311bdc13badf9968ee",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2315,
+          "answer_tokens": 38,
+          "answer_characters": 156,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20268858:55:971346c08e26d881"
+        },
+        {
+          "id": "1a284bf856129239b8f458dcf0e3bcaaa93087442695cbb49e6b58dedad00f7e",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 1931,
+          "answer_tokens": 32,
+          "answer_characters": 121,
+          "source_units": 1,
+          "source_request_id": "00ebc8a279cb0604:20261018:9:07ffed3f3aa57aac"
+        },
+        {
+          "id": "7d78034c993c89b87f2b2c1380985411bfa97a2ee1ea3cd10ac9373ad700d9e1",
+          "family": "technical_web",
+          "domain": "web",
+          "source_tokens": 1445,
+          "answer_tokens": 32,
+          "answer_characters": 196,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20261338:7:17ec5d2759e39df7"
+        },
+        {
+          "id": "1a4c94027c1850b62aef7a84263123bde3aeaff3a82e7f39b622b116b4aca65e",
+          "family": "financial",
+          "domain": "numeric",
+          "source_tokens": 3037,
+          "answer_tokens": 15,
+          "answer_characters": 27,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20260986:5:a5e11084587f6d5c"
+        },
+        {
+          "id": "7516cae5173866b8d2928ab67a7b189625af79feadb903ffef61d61d71c2cd87",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1526,
+          "answer_tokens": 20,
+          "answer_characters": 97,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20269114:37:a0ee188115f7bd07"
+        },
+        {
+          "id": "d4df2241eba5de92f6a9bcffbec52c79b79f3c407cb3457d77ff1d7f647cd08e",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1835,
+          "answer_tokens": 16,
+          "answer_characters": 92,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20266298:61:8bc02610ccfa9e63"
+        },
+        {
+          "id": "8f26a2309c00d1b29a35c46570d048ffc1e7c83ebc3656531971e103bf8670dd",
+          "family": "office",
+          "domain": "office",
+          "source_tokens": 2322,
+          "answer_tokens": 16,
+          "answer_characters": 90,
+          "source_units": 1,
+          "source_request_id": "ae86c56d1f43eec7:20261722:1:94be3cb5e1e17e29"
+        }
+      ]
+    },
+    {
+      "update": 752,
+      "questions_seen": 6016,
+      "pass_fraction": 0.376,
+      "window": 3,
+      "item_ids": [
+        "80a5a7d100aa3f0e875a569b43262824e4ddf45f535afbc04e6febc938969220",
+        "e57d878fbd6593bf6a576eef9aecdb2068f5aa4c9641b5a1d885fc30cb837d4b",
+        "d9e8e60ad241f97855ae7d4a425a3f20854dd2db033edb0172d355d33973b900",
+        "dc313340c1f37d2aed3aa0046085f52a79cab90f3fa579ddc39aa580aa0e5027",
+        "70c1e9a1878512a04ce38db0a43a1e7636e120bfc45401128765e7adfede91b5",
+        "b550d187e7e588efcd28451e91b93890698f70289fbb8789a0cfde73b8f0eaa3",
+        "1a642047988b0b4c07514f6bfbbe0e085288be20f2cf277356b9618ab7c4f527",
+        "151f92423192a16a78e4cff4d8932e5f4485fce636270527be24f8b8549cfe89"
+      ],
+      "family_counts": {
+        "math_textbook": 1,
+        "math_arxiv": 3,
+        "code": 3,
+        "web": 1
+      },
+      "source_tokens_mean": 1715.125,
+      "source_tokens_max": 2601,
+      "answer_tokens_mean": 21.75,
+      "answer_tokens_max": 43,
+      "answer_characters_mean": 84.25,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 3788.918212890625,
+        "reader_norm": 1.5513452291488647,
+        "joint_norm": 3788.918530484168,
+        "spike": true,
+        "penalty_count": 1
+      },
+      "r16": {
+        "ac_norm": 3.561406373977661,
+        "reader_norm": 1.071130394935608,
+        "joint_norm": 3.718996596336655,
+        "spike": false,
+        "penalty_count": 1
+      },
+      "examples": [
+        {
+          "id": "80a5a7d100aa3f0e875a569b43262824e4ddf45f535afbc04e6febc938969220",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 2017,
+          "answer_tokens": 15,
+          "answer_characters": 59,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261882:25:4435914bde5cc585"
+        },
+        {
+          "id": "e57d878fbd6593bf6a576eef9aecdb2068f5aa4c9641b5a1d885fc30cb837d4b",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 1096,
+          "answer_tokens": 43,
+          "answer_characters": 124,
+          "source_units": 1,
+          "source_request_id": "4080532c225b1156:20260986:1:0e00520f4734265c"
+        },
+        {
+          "id": "d9e8e60ad241f97855ae7d4a425a3f20854dd2db033edb0172d355d33973b900",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1113,
+          "answer_tokens": 26,
+          "answer_characters": 112,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20264378:9:d6f837e59b99a623"
+        },
+        {
+          "id": "dc313340c1f37d2aed3aa0046085f52a79cab90f3fa579ddc39aa580aa0e5027",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 375,
+          "answer_tokens": 24,
+          "answer_characters": 105,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20270970:33:0ec1087d257993ea"
+        },
+        {
+          "id": "70c1e9a1878512a04ce38db0a43a1e7636e120bfc45401128765e7adfede91b5",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2601,
+          "answer_tokens": 3,
+          "answer_characters": 18,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20263930:20:dfd541176fcdda4e"
+        },
+        {
+          "id": "b550d187e7e588efcd28451e91b93890698f70289fbb8789a0cfde73b8f0eaa3",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 2183,
+          "answer_tokens": 29,
+          "answer_characters": 101,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20262682:7:a8accac319172648"
+        },
+        {
+          "id": "1a642047988b0b4c07514f6bfbbe0e085288be20f2cf277356b9618ab7c4f527",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2267,
+          "answer_tokens": 23,
+          "answer_characters": 124,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20267898:8:ef5fa57d530293fe"
+        },
+        {
+          "id": "151f92423192a16a78e4cff4d8932e5f4485fce636270527be24f8b8549cfe89",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 2069,
+          "answer_tokens": 11,
+          "answer_characters": 31,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20262170:57:8e5f369b2ad6b410"
+        }
+      ]
+    },
+    {
+      "update": 1042,
+      "questions_seen": 8336,
+      "pass_fraction": 0.521,
+      "window": 5,
+      "item_ids": [
+        "439d9f12d76cf7c462390cf2d4bb61eba13472c7a9c89e6ae2ef86fcb8c7f2ef",
+        "15d9e850b8d8ac7947f08b41de891b6240b8f5808fb09c90b953befa0e9a4917",
+        "d5b641da4c32ff2268af98700414e06b4574a5f4ef27572f9230e6619a07d742",
+        "bffda3100820e29739bd0a4ec1f45984f2c803cf2bcb391a90c6adcbcefb4f0d",
+        "4be9452f4871e45507dc11461cf3f0288e390754847c7731e742a6ad76e3bab3",
+        "de897781c99716e0077f32eff716f8e1a94177c086e3cf9e69d36d5950ce06f9",
+        "76c397ec1241074753988e09ba8617ed9c9bb53486e85e761caba1fab9568a24",
+        "a2f18e1f882d612c802eb8d8183705886681ee5849bebfc51db0461aae6e69f0"
+      ],
+      "family_counts": {
+        "math_arxiv": 1,
+        "code": 2,
+        "web": 3,
+        "documents": 1,
+        "legal": 1
+      },
+      "source_tokens_mean": 1232.875,
+      "source_tokens_max": 2606,
+      "answer_tokens_mean": 18.25,
+      "answer_tokens_max": 36,
+      "answer_characters_mean": 89.875,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 6006.2021484375,
+        "reader_norm": 1.7251924276351929,
+        "joint_norm": 6006.202396205455,
+        "spike": true,
+        "penalty_count": 2
+      },
+      "r16": {
+        "ac_norm": 4.7591962814331055,
+        "reader_norm": 1.3557966947555542,
+        "joint_norm": 4.948548668318498,
+        "spike": false,
+        "penalty_count": 2
+      },
+      "examples": [
+        {
+          "id": "439d9f12d76cf7c462390cf2d4bb61eba13472c7a9c89e6ae2ef86fcb8c7f2ef",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 2025,
+          "answer_tokens": 29,
+          "answer_characters": 171,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261530:8:e53e9a1d1da4a3e2"
+        },
+        {
+          "id": "15d9e850b8d8ac7947f08b41de891b6240b8f5808fb09c90b953befa0e9a4917",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1258,
+          "answer_tokens": 12,
+          "answer_characters": 37,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20263546:8:43e4736eca695277"
+        },
+        {
+          "id": "d5b641da4c32ff2268af98700414e06b4574a5f4ef27572f9230e6619a07d742",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 304,
+          "answer_tokens": 21,
+          "answer_characters": 113,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20266490:35:a1abd05e1cf469ce"
+        },
+        {
+          "id": "bffda3100820e29739bd0a4ec1f45984f2c803cf2bcb391a90c6adcbcefb4f0d",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 2154,
+          "answer_tokens": 3,
+          "answer_characters": 18,
+          "source_units": 1,
+          "source_request_id": "00ebc8a279cb0604:20261818:26:71e03db8f79a61e7"
+        },
+        {
+          "id": "4be9452f4871e45507dc11461cf3f0288e390754847c7731e742a6ad76e3bab3",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 145,
+          "answer_tokens": 6,
+          "answer_characters": 20,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20273978:15:1232f931cfb3bb46"
+        },
+        {
+          "id": "de897781c99716e0077f32eff716f8e1a94177c086e3cf9e69d36d5950ce06f9",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2606,
+          "answer_tokens": 34,
+          "answer_characters": 140,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20266362:9:387ad8d3ec2fd184"
+        },
+        {
+          "id": "76c397ec1241074753988e09ba8617ed9c9bb53486e85e761caba1fab9568a24",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 382,
+          "answer_tokens": 5,
+          "answer_characters": 24,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20271482:22:33fe519fb14d8c0e"
+        },
+        {
+          "id": "a2f18e1f882d612c802eb8d8183705886681ee5849bebfc51db0461aae6e69f0",
+          "family": "legal",
+          "domain": "legal",
+          "source_tokens": 989,
+          "answer_tokens": 36,
+          "answer_characters": 196,
+          "source_units": 1,
+          "source_request_id": "914282b0b67f0a9b:20260954:6:7410bff8fc9916b6"
+        }
+      ]
+    },
+    {
+      "update": 1460,
+      "questions_seen": 11680,
+      "pass_fraction": 0.73,
+      "window": 7,
+      "item_ids": [
+        "fa255ceff07b87fa2c4dd01e140cfd9b1107ada2a03fac3a46f13ecfc361621f",
+        "fa6d7de293ff173a0de28079bc3396f581f53458fd8f666b685f6d0dafa1ded1",
+        "83f8543eea18b537e8cf362bdba624174c5ca4e73e630b263085625e86ba9bc2",
+        "5ac9a53bc614c6db85f622e97037b0a5ba4c0a8a00c57a99ed77e8b7a18b0857",
+        "80adef202498606e4219080befc872274fec0aff2444dc242534528d421ef48e",
+        "a91561cd2ac10bcc6c0cf6069b5ebfcacf25159d816bd26bb675d73947b073b6",
+        "c5ab3c767b1926b88a69a4929a7032e9705caaaf8257e1c8cf48c1e20bf519e3",
+        "86e6ce732b19ddae10c8c90080297b03772d9635633f0651008d462b3738f841"
+      ],
+      "family_counts": {
+        "math_textbook": 1,
+        "code": 2,
+        "office": 2,
+        "documents": 2,
+        "math_arxiv": 1
+      },
+      "source_tokens_mean": 1668.375,
+      "source_tokens_max": 3377,
+      "answer_tokens_mean": 11.0,
+      "answer_tokens_max": 20,
+      "answer_characters_mean": 49.625,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 5228.82666015625,
+        "reader_norm": 1.0976279973983765,
+        "joint_norm": 5228.826775362518,
+        "spike": true,
+        "penalty_count": 0
+      },
+      "r16": {
+        "ac_norm": 7.868302345275879,
+        "reader_norm": 1.1601721048355103,
+        "joint_norm": 7.953375453825398,
+        "spike": false,
+        "penalty_count": 0
+      },
+      "examples": [
+        {
+          "id": "fa255ceff07b87fa2c4dd01e140cfd9b1107ada2a03fac3a46f13ecfc361621f",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 3377,
+          "answer_tokens": 1,
+          "answer_characters": 1,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261178:18:d1b9b9b97aba83e1"
+        },
+        {
+          "id": "fa6d7de293ff173a0de28079bc3396f581f53458fd8f666b685f6d0dafa1ded1",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 1106,
+          "answer_tokens": 20,
+          "answer_characters": 101,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20269626:22:6c423eef27ba1d3b"
+        },
+        {
+          "id": "83f8543eea18b537e8cf362bdba624174c5ca4e73e630b263085625e86ba9bc2",
+          "family": "office",
+          "domain": "office",
+          "source_tokens": 1505,
+          "answer_tokens": 18,
+          "answer_characters": 113,
+          "source_units": 1,
+          "source_request_id": "914282b0b67f0a9b:20261082:15:3626fbf8237da87e"
+        },
+        {
+          "id": "5ac9a53bc614c6db85f622e97037b0a5ba4c0a8a00c57a99ed77e8b7a18b0857",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 360,
+          "answer_tokens": 4,
+          "answer_characters": 20,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20261690:17:bc93a8ce00ebca8f"
+        },
+        {
+          "id": "80adef202498606e4219080befc872274fec0aff2444dc242534528d421ef48e",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2949,
+          "answer_tokens": 1,
+          "answer_characters": 1,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20265530:56:1296e46e32f6e8c3"
+        },
+        {
+          "id": "a91561cd2ac10bcc6c0cf6069b5ebfcacf25159d816bd26bb675d73947b073b6",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 3157,
+          "answer_tokens": 9,
+          "answer_characters": 15,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261274:43:3bab1cf1568c4a2a"
+        },
+        {
+          "id": "c5ab3c767b1926b88a69a4929a7032e9705caaaf8257e1c8cf48c1e20bf519e3",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 760,
+          "answer_tokens": 20,
+          "answer_characters": 82,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20261946:34:1fed30593608b432"
+        },
+        {
+          "id": "86e6ce732b19ddae10c8c90080297b03772d9635633f0651008d462b3738f841",
+          "family": "office",
+          "domain": "office",
+          "source_tokens": 133,
+          "answer_tokens": 15,
+          "answer_characters": 64,
+          "source_units": 1,
+          "source_request_id": "914282b0b67f0a9b:20262362:52:a7b3d0e82d341f3d"
+        }
+      ]
+    },
+    {
+      "update": 1533,
+      "questions_seen": 12264,
+      "pass_fraction": 0.7665,
+      "window": 7,
+      "item_ids": [
+        "6690067d935020a07d80ecd228d832d5eb6f81c615e81e27954913fab508631d",
+        "2c4d35bc6cb8c05ea5d8ff0ad6df3cdf160443e20f223a407434497e3f290977",
+        "ec24645f5c6bca36d678df4762a280cc2249eb2122a7bdc176e2d5b57061c7f2",
+        "db57cde3b00963d6ce6045586e14050c0c106075280aab4eb19ac973f69734f8",
+        "cc0efe030977b9e3ba7f740f2490261f0c4568ac34bb08c7c7e825f7f8eb9d07",
+        "76d7b7c869b4472d7cbb19e5ae84cb9058238ca59e648ba23eb088ee73dd6090",
+        "94aaa226853db4247146d6cab4a636427bd2373f0fee6dabf818678f059e5418",
+        "086d4c11cd141d137dede19635bedb072e4536399be9c11340d537ed39cf2db5"
+      ],
+      "family_counts": {
+        "code": 3,
+        "financial": 2,
+        "legal": 1,
+        "math_textbook": 1,
+        "web": 1
+      },
+      "source_tokens_mean": 1669.375,
+      "source_tokens_max": 2819,
+      "answer_tokens_mean": 23.875,
+      "answer_tokens_max": 68,
+      "answer_characters_mean": 77.625,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 6601.8603515625,
+        "reader_norm": 1.9190819263458252,
+        "joint_norm": 6601.8606304895875,
+        "spike": true,
+        "penalty_count": 1
+      },
+      "r16": {
+        "ac_norm": 6.830300331115723,
+        "reader_norm": 1.6175882816314697,
+        "joint_norm": 7.01923033260136,
+        "spike": false,
+        "penalty_count": 1
+      },
+      "examples": [
+        {
+          "id": "6690067d935020a07d80ecd228d832d5eb6f81c615e81e27954913fab508631d",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 447,
+          "answer_tokens": 19,
+          "answer_characters": 75,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20269754:3:f87b39447be47da6"
+        },
+        {
+          "id": "2c4d35bc6cb8c05ea5d8ff0ad6df3cdf160443e20f223a407434497e3f290977",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2336,
+          "answer_tokens": 2,
+          "answer_characters": 2,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20265146:63:554455a5a4480cd1"
+        },
+        {
+          "id": "ec24645f5c6bca36d678df4762a280cc2249eb2122a7bdc176e2d5b57061c7f2",
+          "family": "financial",
+          "domain": "numeric",
+          "source_tokens": 2378,
+          "answer_tokens": 68,
+          "answer_characters": 83,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261562:39:87a5ea7e17ddb544"
+        },
+        {
+          "id": "db57cde3b00963d6ce6045586e14050c0c106075280aab4eb19ac973f69734f8",
+          "family": "legal",
+          "domain": "legal",
+          "source_tokens": 2025,
+          "answer_tokens": 41,
+          "answer_characters": 230,
+          "source_units": 1,
+          "source_request_id": "ae86c56d1f43eec7:20261306:29:f8c8e2af81dbb721"
+        },
+        {
+          "id": "cc0efe030977b9e3ba7f740f2490261f0c4568ac34bb08c7c7e825f7f8eb9d07",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 762,
+          "answer_tokens": 26,
+          "answer_characters": 116,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20264506:26:45eda743640697a6"
+        },
+        {
+          "id": "76d7b7c869b4472d7cbb19e5ae84cb9058238ca59e648ba23eb088ee73dd6090",
+          "family": "financial",
+          "domain": "numeric",
+          "source_tokens": 2156,
+          "answer_tokens": 10,
+          "answer_characters": 10,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261562:9:60bb3ca7ae5c8f6b"
+        },
+        {
+          "id": "94aaa226853db4247146d6cab4a636427bd2373f0fee6dabf818678f059e5418",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 2819,
+          "answer_tokens": 8,
+          "answer_characters": 17,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261882:30:3e6b5c0adad1fb03"
+        },
+        {
+          "id": "086d4c11cd141d137dede19635bedb072e4536399be9c11340d537ed39cf2db5",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 432,
+          "answer_tokens": 17,
+          "answer_characters": 88,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20276346:37:6b62e9aa61e6dd80"
+        }
+      ]
+    },
+    {
+      "update": 1963,
+      "questions_seen": 15704,
+      "pass_fraction": 0.9815,
+      "window": 9,
+      "item_ids": [
+        "27ecf4f975c2e76783c805bcd38aa2e39208d847137f6fd8702e7ce989500c92",
+        "229da0c81cc45fab9d93a0f30c84f20752792fae99da5e687cd822dd0756b737",
+        "c34633b02e41264cbe8b8315ec0f8e7b5ba0969c8e9047904116c21a25e739bc",
+        "64135468087e1b25ce86d7ad7bd656f1408bffc3a9d221de0bcac36b506b9b2b",
+        "3ad855e5ba11a083688db4f72c65e68cc842bcdc52623453749f3f761e4743c9",
+        "ed06fa379d8a4af43dd400fc6f36fcbb8f4cb6799ebba36b09ac871e88c677bd",
+        "55a3bada98eb2494c3f3ffaa6b01328c21448f9808e4fd7ecbb70c62403867bc",
+        "8339b17a00db46dadb1848ae5744d86b4e1ef822a314f697bc2bf6d8e00f0483"
+      ],
+      "family_counts": {
+        "math_textbook": 2,
+        "web": 2,
+        "math_arxiv": 1,
+        "documents": 2,
+        "code": 1
+      },
+      "source_tokens_mean": 1698.0,
+      "source_tokens_max": 3211,
+      "answer_tokens_mean": 26.125,
+      "answer_tokens_max": 42,
+      "answer_characters_mean": 122.125,
+      "source_units_max": 1,
+      "r8": {
+        "ac_norm": 2896.161376953125,
+        "reader_norm": 1.215097427368164,
+        "joint_norm": 2896.1616318528872,
+        "spike": true,
+        "penalty_count": 0
+      },
+      "r16": {
+        "ac_norm": 7.415558338165283,
+        "reader_norm": 1.068880558013916,
+        "joint_norm": 7.492196681483528,
+        "spike": false,
+        "penalty_count": 0
+      },
+      "examples": [
+        {
+          "id": "27ecf4f975c2e76783c805bcd38aa2e39208d847137f6fd8702e7ce989500c92",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 3211,
+          "answer_tokens": 1,
+          "answer_characters": 1,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20261946:2:f79aae52a19872e1"
+        },
+        {
+          "id": "229da0c81cc45fab9d93a0f30c84f20752792fae99da5e687cd822dd0756b737",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 245,
+          "answer_tokens": 28,
+          "answer_characters": 150,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20272122:55:d6dabbd497274c86"
+        },
+        {
+          "id": "c34633b02e41264cbe8b8315ec0f8e7b5ba0969c8e9047904116c21a25e739bc",
+          "family": "math_arxiv",
+          "domain": "numeric",
+          "source_tokens": 2072,
+          "answer_tokens": 33,
+          "answer_characters": 171,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20262682:12:c9c3ce904e29acd3"
+        },
+        {
+          "id": "64135468087e1b25ce86d7ad7bd656f1408bffc3a9d221de0bcac36b506b9b2b",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 2007,
+          "answer_tokens": 25,
+          "answer_characters": 128,
+          "source_units": 1,
+          "source_request_id": "00ebc8a279cb0604:20261370:10:09e115053f7af501"
+        },
+        {
+          "id": "3ad855e5ba11a083688db4f72c65e68cc842bcdc52623453749f3f761e4743c9",
+          "family": "web",
+          "domain": "web",
+          "source_tokens": 105,
+          "answer_tokens": 30,
+          "answer_characters": 125,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20271290:39:d76b40b71c32162f"
+        },
+        {
+          "id": "ed06fa379d8a4af43dd400fc6f36fcbb8f4cb6799ebba36b09ac871e88c677bd",
+          "family": "documents",
+          "domain": "documents",
+          "source_tokens": 1096,
+          "answer_tokens": 25,
+          "answer_characters": 156,
+          "source_units": 1,
+          "source_request_id": "65d3e5d9221e9e17:20261242:14:30b28c80be029080"
+        },
+        {
+          "id": "55a3bada98eb2494c3f3ffaa6b01328c21448f9808e4fd7ecbb70c62403867bc",
+          "family": "code",
+          "domain": "code",
+          "source_tokens": 2198,
+          "answer_tokens": 25,
+          "answer_characters": 115,
+          "source_units": 1,
+          "source_request_id": "5a6eccb50686c6c9:20262426:25:c1a032e7db1a6d2f"
+        },
+        {
+          "id": "8339b17a00db46dadb1848ae5744d86b4e1ef822a314f697bc2bf6d8e00f0483",
+          "family": "math_textbook",
+          "domain": "numeric",
+          "source_tokens": 2650,
+          "answer_tokens": 42,
+          "answer_characters": 131,
+          "source_units": 1,
+          "source_request_id": "9f3f706fc3777749:20262202:27:0f69b7ed736edbb9"
+        }
+      ]
+    }
+  ]
+}

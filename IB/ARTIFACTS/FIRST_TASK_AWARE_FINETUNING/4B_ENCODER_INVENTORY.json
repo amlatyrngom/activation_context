@@ -1,0 +1,367 @@
+{
+  "utc": "2026-09-22T00:06:11.392922+00:00",
+  "scope": "Actual 4B encoder into 9B reader only; no tensor payload read or GPU training",
+  "candidates": [
+    {
+      "name": "P4",
+      "initialization_recommendation": true,
+      "root": "/home/ngom/orcd/scratch/activation/KEEP/P4",
+      "checkpoint_metadata": {
+        "config": {
+          "ac_model_name": "rag_poc",
+          "base_side_model_name": "side_base",
+          "base_side_model_lora_name": "rag_side",
+          "target_model_name": "qwen4b",
+          "target_model_lora_name": "rag_reader",
+          "default_compression_ratio": 0.0625,
+          "mixer_layers": 2,
+          "mixer_window": 256,
+          "mixer_heads": 8,
+          "min_view_rows": 2,
+          "max_view_rows": 4096,
+          "side_lora_rank": 128,
+          "encode_batch_max_tokens": 65536,
+          "side_gradient_checkpointing": true,
+          "checkpoint_path": null,
+          "intervention_frequency": -1,
+          "intervention_layers": null,
+          "add_last_layer_intervention": true,
+          "row_head_skip": false
+        },
+        "version": 9696,
+        "d_side": 2560,
+        "d_target": 4096,
+        "architecture_version": 2,
+        "model_ids": [
+          "Qwen/Qwen3.5-4B",
+          "Qwen/Qwen3.5-9B"
+        ],
+        "side_lora_targets": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ],
+        "epoch_number": 1,
+        "interventions": {
+          "layers": [
+            3,
+            7,
+            11,
+            15,
+            19,
+            23,
+            27,
+            31
+          ],
+          "source": "passage_attention",
+          "attention_depth": "final",
+          "target": "residual",
+          "head_style": "lora",
+          "head_parameters": 34116608,
+          "attention_parameters": 52505600
+        }
+      },
+      "adapter_ids_and_ranks": {
+        "encoder": [
+          "Qwen/Qwen3.5-4B",
+          128
+        ],
+        "reader": [
+          "Qwen/Qwen3.5-9B",
+          128
+        ]
+      },
+      "train_items": 77568,
+      "training_epochs": 1,
+      "approx_reconstruction_tokens": 48000000,
+      "encoder_lr": 0.0001,
+      "reader_lr": 2e-05,
+      "held_novel": {
+        "items": 420,
+        "gold_nll": 0.32318348463416346,
+        "token_accuracy": 0.9019042603088262,
+        "loss": 0.32318348463416346
+      },
+      "held_items": 420,
+      "seen_training_gold_nll": 0.27994349380696804,
+      "no_context_gold_nll": 1.6705232828855514,
+      "resumed": null,
+      "pair_payload_bytes": 3383798341,
+      "files_present": {
+        "AC_MODELS/rag_poc/epoch_001/ac_modules.pt": 1773108789,
+        "AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors": 679515592,
+        "LORAS/rag_reader/epoch_001/adapter_model.safetensors": 931173960
+      },
+      "readout_migration": "row_readout and recursive_readout entirely absent; current loader initializes them as identity while retaining trained deep heads",
+      "checkpoint_metadata_bytes_read": 26146,
+      "gpu_restore_tested_now": false,
+      "local_result_sha256": "df1d3f5fc996edc1ea1f37717234fe44f95aa1c10f99d454bd6d2be709974759"
+    },
+    {
+      "name": "P4s1",
+      "initialization_recommendation": false,
+      "root": "/home/ngom/orcd/scratch/activation/KEEP/P4s1",
+      "checkpoint_metadata": {
+        "config": {
+          "ac_model_name": "rag_poc",
+          "base_side_model_name": "side_base",
+          "base_side_model_lora_name": "rag_side",
+          "target_model_name": "qwen4b",
+          "target_model_lora_name": "rag_reader",
+          "default_compression_ratio": 0.0625,
+          "mixer_layers": 2,
+          "mixer_window": 256,
+          "mixer_heads": 8,
+          "min_view_rows": 2,
+          "max_view_rows": 4096,
+          "side_lora_rank": 128,
+          "encode_batch_max_tokens": 65536,
+          "side_gradient_checkpointing": true,
+          "checkpoint_path": "/home/ngom/activation_artifacts/SYNC_RUNS/P4s1/AC_MODELS/rag_poc/epoch_001_step_01500",
+          "intervention_frequency": -1,
+          "intervention_layers": null,
+          "add_last_layer_intervention": true,
+          "row_head_skip": false
+        },
+        "version": 4257,
+        "d_side": 2560,
+        "d_target": 4096,
+        "architecture_version": 2,
+        "model_ids": [
+          "Qwen/Qwen3.5-4B",
+          "Qwen/Qwen3.5-9B"
+        ],
+        "side_lora_targets": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ],
+        "epoch_number": 1,
+        "interventions": {
+          "layers": [
+            3,
+            7,
+            11,
+            15,
+            19,
+            23,
+            27,
+            31
+          ],
+          "source": "passage_attention",
+          "attention_depth": "final",
+          "target": "residual",
+          "head_style": "lora",
+          "head_parameters": 34116608,
+          "attention_parameters": 52505600
+        }
+      },
+      "adapter_ids_and_ranks": {
+        "encoder": [
+          "Qwen/Qwen3.5-4B",
+          128
+        ],
+        "reader": [
+          "Qwen/Qwen3.5-9B",
+          128
+        ]
+      },
+      "train_items": 34048,
+      "training_epochs": 1,
+      "approx_reconstruction_tokens": 21000000,
+      "encoder_lr": 0.0001,
+      "reader_lr": 2e-05,
+      "held_novel": {
+        "items": 420,
+        "gold_nll": 0.5224351283857087,
+        "token_accuracy": 0.8504993178004107,
+        "loss": 0.5224351283857087
+      },
+      "held_items": 420,
+      "seen_training_gold_nll": 0.5117944297580834,
+      "no_context_gold_nll": 1.6689346684586435,
+      "resumed": {
+        "epochs_done": 0,
+        "attempt": 2
+      },
+      "pair_payload_bytes": 3383798469,
+      "files_present": {
+        "AC_MODELS/rag_poc/epoch_001/ac_modules.pt": 1773108917,
+        "AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors": 679515592,
+        "LORAS/rag_reader/epoch_001/adapter_model.safetensors": 931173960
+      },
+      "readout_migration": "row_readout and recursive_readout entirely absent; current loader initializes them as identity while retaining trained deep heads",
+      "checkpoint_metadata_bytes_read": 26240,
+      "gpu_restore_tested_now": false,
+      "local_result_sha256": "9470d6969278c42e32357d336673af8b2e025086213a3e3149cdf47ab6eb34f1"
+    },
+    {
+      "name": "P4s5",
+      "initialization_recommendation": false,
+      "root": "/home/ngom/orcd/scratch/activation/KEEP/P4s5",
+      "checkpoint_metadata": {
+        "config": {
+          "ac_model_name": "rag_poc",
+          "base_side_model_name": "side_base",
+          "base_side_model_lora_name": "rag_side",
+          "target_model_name": "qwen4b",
+          "target_model_lora_name": "rag_reader",
+          "default_compression_ratio": 0.0625,
+          "mixer_layers": 2,
+          "mixer_window": 256,
+          "mixer_heads": 8,
+          "min_view_rows": 2,
+          "max_view_rows": 4096,
+          "side_lora_rank": 128,
+          "encode_batch_max_tokens": 65536,
+          "side_gradient_checkpointing": true,
+          "checkpoint_path": "/home/ngom/activation_artifacts/SYNC_RUNS/P4s5/AC_MODELS/rag_poc/epoch_001_step_02700",
+          "intervention_frequency": -1,
+          "intervention_layers": null,
+          "add_last_layer_intervention": true,
+          "row_head_skip": false
+        },
+        "version": 4258,
+        "d_side": 2560,
+        "d_target": 4096,
+        "architecture_version": 2,
+        "model_ids": [
+          "Qwen/Qwen3.5-4B",
+          "Qwen/Qwen3.5-9B"
+        ],
+        "side_lora_targets": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ],
+        "epoch_number": 1,
+        "interventions": {
+          "layers": [
+            3,
+            7,
+            11,
+            15,
+            19,
+            23,
+            27,
+            31
+          ],
+          "source": "passage_attention",
+          "attention_depth": "final",
+          "target": "residual",
+          "head_style": "lora",
+          "head_parameters": 34116608,
+          "attention_parameters": 52505600
+        }
+      },
+      "adapter_ids_and_ranks": {
+        "encoder": [
+          "Qwen/Qwen3.5-4B",
+          128
+        ],
+        "reader": [
+          "Qwen/Qwen3.5-9B",
+          128
+        ]
+      },
+      "train_items": 34048,
+      "training_epochs": 1,
+      "approx_reconstruction_tokens": 21000000,
+      "encoder_lr": 5e-05,
+      "reader_lr": 2e-05,
+      "held_novel": {
+        "items": 420,
+        "gold_nll": 0.37510878176465845,
+        "token_accuracy": 0.8858768784386584,
+        "loss": 0.37510878176465845
+      },
+      "held_items": 420,
+      "seen_training_gold_nll": 0.34602751866077597,
+      "no_context_gold_nll": 1.6702173365723518,
+      "resumed": {
+        "epochs_done": 0,
+        "attempt": 3
+      },
+      "pair_payload_bytes": 3383798469,
+      "files_present": {
+        "AC_MODELS/rag_poc/epoch_001/ac_modules.pt": 1773108917,
+        "AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors": 679515592,
+        "LORAS/rag_reader/epoch_001/adapter_model.safetensors": 931173960
+      },
+      "readout_migration": "row_readout and recursive_readout entirely absent; current loader initializes them as identity while retaining trained deep heads",
+      "checkpoint_metadata_bytes_read": 26240,
+      "gpu_restore_tested_now": false,
+      "local_result_sha256": "a016263876aac96386d9835537849190e86b17340910c40897974fb1e30dbe4f"
+    }
+  ],
+  "s3": {
+    "bucket": "general-bucket-aln",
+    "prefix": "activation-context-data/checkpoints/",
+    "truncated": false,
+    "objects": 52,
+    "p4_keys": [],
+    "manifest_keys": [
+      "activation-context-data/checkpoints/reconstruction-20260921/manifest.json",
+      "activation-context-data/checkpoints/taskaware-20260921/data_8k_1ep/epoch_001/manifest.json",
+      "activation-context-data/checkpoints/taskaware-20260921/hill_control/update_00900/manifest.json"
+    ]
+  },
+  "private_runner_cpu_check": {
+    "status": "pass",
+    "candidates": [
+      "P4",
+      "P4s1",
+      "P4s5"
+    ],
+    "adapter_negative_cases": 3,
+    "legacy_resume_rejected": true,
+    "scope": "CPU config wiring and saved metadata only; no tensor restore or GPU execution",
+    "runner_sha256": "0ad6de83153f9250db026056c4af8f097fc2a8ef7e985430ee9f8db56a6d2257"
+  },
+  "proposed_run": {
+    "run_name": "encoder4b_oracle27b_16k_r16",
+    "runner": "bench/run_qa_encoder4b_v1.py",
+    "initial_pair": "P4",
+    "train_items": 16000,
+    "epochs": 1,
+    "oracle": "27B",
+    "ratio": 0.0625,
+    "evidence_tokens": 2048,
+    "max_passages": 4,
+    "examples_per_update": 8,
+    "micro_batch_examples": 2,
+    "encoder_lr": 5e-05,
+    "reader_lr": 2e-05,
+    "material": "Exact frozen material and held questions of matching P2 27B-oracle 16k arm",
+    "deployment": "Prepared locally only; root owns GPU restoration and scheduling",
+    "comparison_scope": "Whole pretrained pairs; not an isolated encoder-capacity comparison",
+    "post_0800_EDT": "Unset or extend old Sep22 12:00UTC campaign deadline"
+  },
+  "subsequent_validation": {
+    "utc": "2026-09-22T01:02:26.882944+00:00",
+    "candidate": "P4",
+    "gpu_restore_train_eval_save_job": 23436039,
+    "status": "passed",
+    "peak_memory_gb": 63.26,
+    "scope": "Mechanics only; large-run fit and quality not established. Initial candidate inventory predates this check."
+  },
+  "subsequent_archive": {
+    "manifest": "CHECKPOINT_ARCHIVE_P4.json",
+    "s3_uri": "s3://general-bucket-aln/activation-context-data/checkpoints/reconstruction-20260922/P4/",
+    "payload_bytes": 3383849998,
+    "payload_objects": 11,
+    "verified": true
+  }
+}

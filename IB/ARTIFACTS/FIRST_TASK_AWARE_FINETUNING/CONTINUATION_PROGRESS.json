@@ -1,0 +1,567 @@
+{
+  "checked_utc": "2026-09-23T03:43:23.784471+00:00",
+  "status": "both_training_complete_rewarm_answers_pending",
+  "parent_replay": {
+    "continue32k_10k_final_lr": {
+      "parent_answer_nll": 0.5688311093481019,
+      "stage_initial_answer_nll": 0.5688311093481019,
+      "mean_delta": 0.0,
+      "mean_absolute_delta": 0.0,
+      "max_absolute_delta": 0.0,
+      "hardware": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "input_checks": {
+        "shared_input_fingerprint": "200626d81e8720151c112f5a86d175275895928ecf0d44d19cae2ce2b6df4dcc",
+        "ac_input_fingerprint": "0f0076aaba1b7d20edefaf9abab445e23f18a5bd9d90811faedf97949f9e8302"
+      },
+      "note": "Same frozen inputs and parent payloads; cross-GPU numerical differences are reported, not assumed zero."
+    },
+    "continue32k_10k_rewarm": {
+      "parent_answer_nll": 0.5688311093481019,
+      "stage_initial_answer_nll": 0.5688311093481019,
+      "mean_delta": 0.0,
+      "mean_absolute_delta": 0.0,
+      "max_absolute_delta": 0.0,
+      "hardware": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "input_checks": {
+        "shared_input_fingerprint": "200626d81e8720151c112f5a86d175275895928ecf0d44d19cae2ce2b6df4dcc",
+        "ac_input_fingerprint": "0f0076aaba1b7d20edefaf9abab445e23f18a5bd9d90811faedf97949f9e8302"
+      },
+      "note": "Same frozen inputs and parent payloads; cross-GPU numerical differences are reported, not assumed zero."
+    }
+  },
+  "panels": {
+    "continue32k_10k_final_lr": [
+      {
+        "update": 0,
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 0.5688311093481019,
+        "full answer NLL": 0.6548811837319469,
+        "no-context answer NLL": 1.81059039357462,
+        "fixed training panel NLL (32 questions)": 0.5969980733501056,
+        "panel seconds": 109.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.605943026827936,
+            "held full context": 0.7395754927463054,
+            "held no context": 1.9836575158820624,
+            "AC \u00b7 32 fixed training questions": 0.5969980733501056
+          },
+          "27b": {
+            "held AC": 0.5317191918682677,
+            "held full context": 0.5701868747175883,
+            "held no context": 1.6375232712671768,
+            "AC \u00b7 32 fixed training questions": 0.5969980733501056
+          }
+        }
+      },
+      {
+        "update": 125,
+        "percent": 10.0,
+        "held items": 400,
+        "AC answer NLL": 0.5520449480896175,
+        "full answer NLL": 0.642872002329725,
+        "no-context answer NLL": 1.8107522850629452,
+        "fixed training panel NLL (32 questions)": 0.5999907185038574,
+        "panel seconds": 110.0,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5920114845550445,
+            "held full context": 0.7277838099635394,
+            "held no context": 1.9854300210574412,
+            "AC \u00b7 32 fixed training questions": 0.5999907185038574
+          },
+          "27b": {
+            "held AC": 0.5120784116241903,
+            "held full context": 0.5579601946959104,
+            "held no context": 1.6360745490684492,
+            "AC \u00b7 32 fixed training questions": 0.5999907185038574
+          }
+        }
+      },
+      {
+        "update": 250,
+        "percent": 20.0,
+        "held items": 400,
+        "AC answer NLL": 0.5385113881084953,
+        "full answer NLL": 0.6435828004791064,
+        "no-context answer NLL": 1.8134826919457203,
+        "fixed training panel NLL (32 questions)": 0.5891557622912101,
+        "panel seconds": 109.8,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5782611671886397,
+            "held full context": 0.7275954161474693,
+            "held no context": 1.9882884102350433,
+            "AC \u00b7 32 fixed training questions": 0.5891557622912101
+          },
+          "27b": {
+            "held AC": 0.4987616090283508,
+            "held full context": 0.5595701848107435,
+            "held no context": 1.638676973656397,
+            "AC \u00b7 32 fixed training questions": 0.5891557622912101
+          }
+        }
+      },
+      {
+        "update": 375,
+        "percent": 30.0,
+        "held items": 400,
+        "AC answer NLL": 0.5509218995429329,
+        "full answer NLL": 0.6521962003992664,
+        "no-context answer NLL": 1.8145996145280145,
+        "fixed training panel NLL (32 questions)": 0.5858858981036243,
+        "panel seconds": 110.1,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5898659652290352,
+            "held full context": 0.7366765975746375,
+            "held no context": 1.9892305611098764,
+            "AC \u00b7 32 fixed training questions": 0.5858858981036243
+          },
+          "27b": {
+            "held AC": 0.5119778338568306,
+            "held full context": 0.5677158032238954,
+            "held no context": 1.6399686679461525,
+            "AC \u00b7 32 fixed training questions": 0.5858858981036243
+          }
+        }
+      },
+      {
+        "update": 500,
+        "percent": 40.0,
+        "held items": 400,
+        "AC answer NLL": 0.5366679392261626,
+        "full answer NLL": 0.6434159782110893,
+        "no-context answer NLL": 1.8123418391537571,
+        "fixed training panel NLL (32 questions)": 0.5521124323527673,
+        "panel seconds": 109.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5697414477232351,
+            "held full context": 0.7271726497753441,
+            "held no context": 1.9868383835552381,
+            "AC \u00b7 32 fixed training questions": 0.5521124323527673
+          },
+          "27b": {
+            "held AC": 0.5035944307290903,
+            "held full context": 0.5596593066468346,
+            "held no context": 1.637845294752276,
+            "AC \u00b7 32 fixed training questions": 0.5521124323527673
+          }
+        }
+      },
+      {
+        "update": 625,
+        "percent": 50.0,
+        "held items": 400,
+        "AC answer NLL": 0.5321386721832682,
+        "full answer NLL": 0.6439714749806745,
+        "no-context answer NLL": 1.8148653689375995,
+        "fixed training panel NLL (32 questions)": 0.4984893748090447,
+        "panel seconds": 109.9,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5701292123798294,
+            "held full context": 0.7287790560273771,
+            "held no context": 1.9897683887926316,
+            "AC \u00b7 32 fixed training questions": 0.4984893748090447
+          },
+          "27b": {
+            "held AC": 0.49414813198670676,
+            "held full context": 0.559163893933972,
+            "held no context": 1.6399623490825674,
+            "AC \u00b7 32 fixed training questions": 0.4984893748090447
+          }
+        }
+      },
+      {
+        "update": 750,
+        "percent": 60.0,
+        "held items": 400,
+        "AC answer NLL": 0.5424231266554322,
+        "full answer NLL": 0.6368035527084634,
+        "no-context answer NLL": 1.8047093651791395,
+        "fixed training panel NLL (32 questions)": 0.48813014049999487,
+        "panel seconds": 110.1,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.575104123304985,
+            "held full context": 0.7203856011984526,
+            "held no context": 1.9793448912528566,
+            "AC \u00b7 32 fixed training questions": 0.48813014049999487
+          },
+          "27b": {
+            "held AC": 0.5097421300058796,
+            "held full context": 0.5532215042184743,
+            "held no context": 1.6300738391054224,
+            "AC \u00b7 32 fixed training questions": 0.48813014049999487
+          }
+        }
+      },
+      {
+        "update": 875,
+        "percent": 70.0,
+        "held items": 400,
+        "AC answer NLL": 0.5302032667946078,
+        "full answer NLL": 0.6513671396488442,
+        "no-context answer NLL": 1.8131062239280207,
+        "fixed training panel NLL (32 questions)": 0.47698198665801894,
+        "panel seconds": 110.3,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5721931207720109,
+            "held full context": 0.7352700922638736,
+            "held no context": 1.9863541856830365,
+            "AC \u00b7 32 fixed training questions": 0.47698198665801894
+          },
+          "27b": {
+            "held AC": 0.48821341281720465,
+            "held full context": 0.5674641870338148,
+            "held no context": 1.6398582621730051,
+            "AC \u00b7 32 fixed training questions": 0.47698198665801894
+          }
+        }
+      },
+      {
+        "update": 1000,
+        "percent": 80.0,
+        "held items": 400,
+        "AC answer NLL": 0.5290024530748654,
+        "full answer NLL": 0.6564406055077864,
+        "no-context answer NLL": 1.8164497045925105,
+        "fixed training panel NLL (32 questions)": 0.48206344037337645,
+        "panel seconds": 110.3,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5733110004556908,
+            "held full context": 0.7404196099813966,
+            "held no context": 1.9907286379870206,
+            "AC \u00b7 32 fixed training questions": 0.48206344037337645
+          },
+          "27b": {
+            "held AC": 0.4846939056940399,
+            "held full context": 0.5724616010341761,
+            "held no context": 1.6421707711980007,
+            "AC \u00b7 32 fixed training questions": 0.48206344037337645
+          }
+        }
+      },
+      {
+        "update": 1125,
+        "percent": 90.0,
+        "held items": 400,
+        "AC answer NLL": 0.5290286395108617,
+        "full answer NLL": 0.6394906014430157,
+        "no-context answer NLL": 1.804254465813561,
+        "fixed training panel NLL (32 questions)": 0.4694212580276456,
+        "panel seconds": 110.3,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5763973791483308,
+            "held full context": 0.7225786751928189,
+            "held no context": 1.9783586122142685,
+            "AC \u00b7 32 fixed training questions": 0.4694212580276456
+          },
+          "27b": {
+            "held AC": 0.4816598998733925,
+            "held full context": 0.5564025276932125,
+            "held no context": 1.630150319412854,
+            "AC \u00b7 32 fixed training questions": 0.4694212580276456
+          }
+        }
+      },
+      {
+        "update": 1250,
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.5326864100103368,
+        "full answer NLL": 0.649674833643876,
+        "no-context answer NLL": 1.8143435965538575,
+        "fixed training panel NLL (32 questions)": 0.5186346885452096,
+        "panel seconds": 110.0,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5794905717715764,
+            "held full context": 0.7343936831953015,
+            "held no context": 1.9902291497093139,
+            "AC \u00b7 32 fixed training questions": 0.5186346885452096
+          },
+          "27b": {
+            "held AC": 0.4858822482490972,
+            "held full context": 0.5649559840924507,
+            "held no context": 1.638458043398401,
+            "AC \u00b7 32 fixed training questions": 0.5186346885452096
+          }
+        }
+      }
+    ],
+    "continue32k_10k_rewarm": [
+      {
+        "update": 0,
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 0.5688311093481019,
+        "full answer NLL": 0.6548811837319469,
+        "no-context answer NLL": 1.81059039357462,
+        "fixed training panel NLL (32 questions)": 0.5969980733501056,
+        "panel seconds": 108.6,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.605943026827936,
+            "held full context": 0.7395754927463054,
+            "held no context": 1.9836575158820624,
+            "AC \u00b7 32 fixed training questions": 0.5969980733501056
+          },
+          "27b": {
+            "held AC": 0.5317191918682677,
+            "held full context": 0.5701868747175883,
+            "held no context": 1.6375232712671768,
+            "AC \u00b7 32 fixed training questions": 0.5969980733501056
+          }
+        }
+      },
+      {
+        "update": 125,
+        "percent": 10.0,
+        "held items": 400,
+        "AC answer NLL": 0.5598477909625239,
+        "full answer NLL": 0.6480479189154726,
+        "no-context answer NLL": 1.824902579117916,
+        "fixed training panel NLL (32 questions)": 0.6217367695916732,
+        "panel seconds": 110.1,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5991422454163033,
+            "held full context": 0.7314477266852326,
+            "held no context": 2.0016111510033103,
+            "AC \u00b7 32 fixed training questions": 0.6217367695916732
+          },
+          "27b": {
+            "held AC": 0.5205533365087445,
+            "held full context": 0.5646481111457127,
+            "held no context": 1.6481940072325219,
+            "AC \u00b7 32 fixed training questions": 0.6217367695916732
+          }
+        }
+      },
+      {
+        "update": 250,
+        "percent": 20.0,
+        "held items": 400,
+        "AC answer NLL": 0.5724811950084964,
+        "full answer NLL": 0.6311923777254881,
+        "no-context answer NLL": 1.8077970654184836,
+        "fixed training panel NLL (32 questions)": 0.5962298409684812,
+        "panel seconds": 110.9,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5998334561005053,
+            "held full context": 0.7136968770019847,
+            "held no context": 1.984399563208685,
+            "AC \u00b7 32 fixed training questions": 0.5962298409684812
+          },
+          "27b": {
+            "held AC": 0.5451289339164874,
+            "held full context": 0.5486878784489914,
+            "held no context": 1.631194567628282,
+            "AC \u00b7 32 fixed training questions": 0.5962298409684812
+          }
+        }
+      },
+      {
+        "update": 375,
+        "percent": 30.0,
+        "held items": 400,
+        "AC answer NLL": 0.5726085440154652,
+        "full answer NLL": 0.645677331847637,
+        "no-context answer NLL": 1.8143130195777504,
+        "fixed training panel NLL (32 questions)": 0.6485688874523969,
+        "panel seconds": 108.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.6176685799517717,
+            "held full context": 0.7284109950089076,
+            "held no context": 1.992493090584527,
+            "AC \u00b7 32 fixed training questions": 0.6485688874523969
+          },
+          "27b": {
+            "held AC": 0.5275485080791588,
+            "held full context": 0.5629436686863665,
+            "held no context": 1.636132948570974,
+            "AC \u00b7 32 fixed training questions": 0.6485688874523969
+          }
+        }
+      },
+      {
+        "update": 500,
+        "percent": 40.0,
+        "held items": 400,
+        "AC answer NLL": 0.568429536374284,
+        "full answer NLL": 0.6413344012774657,
+        "no-context answer NLL": 1.8184071422710977,
+        "fixed training panel NLL (32 questions)": 0.6190480047495844,
+        "panel seconds": 108.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.6076241772823778,
+            "held full context": 0.7238270917915678,
+            "held no context": 1.9889294925513474,
+            "AC \u00b7 32 fixed training questions": 0.6190480047495844
+          },
+          "27b": {
+            "held AC": 0.52923489546619,
+            "held full context": 0.5588417107633636,
+            "held no context": 1.6478847919908481,
+            "AC \u00b7 32 fixed training questions": 0.6190480047495844
+          }
+        }
+      },
+      {
+        "update": 625,
+        "percent": 50.0,
+        "held items": 400,
+        "AC answer NLL": 0.5608494945985515,
+        "full answer NLL": 0.6408750108152829,
+        "no-context answer NLL": 1.8135247621533932,
+        "fixed training panel NLL (32 questions)": 0.563841601545861,
+        "panel seconds": 108.8,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.605148578294286,
+            "held full context": 0.7232281639655505,
+            "held no context": 1.9835366951522537,
+            "AC \u00b7 32 fixed training questions": 0.563841601545861
+          },
+          "27b": {
+            "held AC": 0.516550410902817,
+            "held full context": 0.5585218576650152,
+            "held no context": 1.643512829154533,
+            "AC \u00b7 32 fixed training questions": 0.563841601545861
+          }
+        }
+      },
+      {
+        "update": 750,
+        "percent": 60.0,
+        "held items": 400,
+        "AC answer NLL": 0.557342944582367,
+        "full answer NLL": 0.6284470146441099,
+        "no-context answer NLL": 1.8069840891093927,
+        "fixed training panel NLL (32 questions)": 0.5212712088856065,
+        "panel seconds": 108.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5995520942613556,
+            "held full context": 0.711224902176713,
+            "held no context": 1.9780827322141823,
+            "AC \u00b7 32 fixed training questions": 0.5212712088856065
+          },
+          "27b": {
+            "held AC": 0.5151337949033786,
+            "held full context": 0.545669127111507,
+            "held no context": 1.6358854460046033,
+            "AC \u00b7 32 fixed training questions": 0.5212712088856065
+          }
+        }
+      },
+      {
+        "update": 875,
+        "percent": 70.0,
+        "held items": 400,
+        "AC answer NLL": 0.546460483105611,
+        "full answer NLL": 0.643676730641475,
+        "no-context answer NLL": 1.8184062526672726,
+        "fixed training panel NLL (32 questions)": 0.4823415906992051,
+        "panel seconds": 108.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5818755458061616,
+            "held full context": 0.7258811065189473,
+            "held no context": 1.988654265187765,
+            "AC \u00b7 32 fixed training questions": 0.4823415906992051
+          },
+          "27b": {
+            "held AC": 0.5110454204050605,
+            "held full context": 0.5614723547640026,
+            "held no context": 1.6481582401467805,
+            "AC \u00b7 32 fixed training questions": 0.4823415906992051
+          }
+        }
+      },
+      {
+        "update": 1000,
+        "percent": 80.0,
+        "held items": 400,
+        "AC answer NLL": 0.5335584129898642,
+        "full answer NLL": 0.6526849325705996,
+        "no-context answer NLL": 1.8207183070334256,
+        "fixed training panel NLL (32 questions)": 0.4458608470228302,
+        "panel seconds": 108.7,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5801871909319375,
+            "held full context": 0.7364309043996502,
+            "held no context": 1.9907294240403195,
+            "AC \u00b7 32 fixed training questions": 0.4458608470228302
+          },
+          "27b": {
+            "held AC": 0.4869296350477908,
+            "held full context": 0.5689389607415489,
+            "held no context": 1.650707190026532,
+            "AC \u00b7 32 fixed training questions": 0.4458608470228302
+          }
+        }
+      },
+      {
+        "update": 1125,
+        "percent": 90.0,
+        "held items": 400,
+        "AC answer NLL": 0.5394980468424458,
+        "full answer NLL": 0.6327050471987647,
+        "no-context answer NLL": 1.8081080065506416,
+        "fixed training panel NLL (32 questions)": 0.47828485334905724,
+        "panel seconds": 108.6,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5835110412407997,
+            "held full context": 0.7156377717315345,
+            "held no context": 1.9778738650624579,
+            "AC \u00b7 32 fixed training questions": 0.47828485334905724
+          },
+          "27b": {
+            "held AC": 0.49548505244409197,
+            "held full context": 0.5497723226659951,
+            "held no context": 1.638342148038825,
+            "AC \u00b7 32 fixed training questions": 0.47828485334905724
+          }
+        }
+      },
+      {
+        "update": 1250,
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.5248436237374497,
+        "full answer NLL": 0.6457702095815715,
+        "no-context answer NLL": 1.8186770491108977,
+        "fixed training panel NLL (32 questions)": 0.44071761649462693,
+        "panel seconds": 108.5,
+        "cohorts": {
+          "9b": {
+            "held AC": 0.5772541169780037,
+            "held full context": 0.7300313198564236,
+            "held no context": 1.989467267749299,
+            "AC \u00b7 32 fixed training questions": 0.44071761649462693
+          },
+          "27b": {
+            "held AC": 0.4724331304968959,
+            "held full context": 0.5615090993067193,
+            "held no context": 1.6478868304724958,
+            "AC \u00b7 32 fixed training questions": 0.44071761649462693
+          }
+        }
+      }
+    ]
+  },
+  "caveat": "One training seed and repeatedly inspected development questions; intermediate panels do not determine the final LR choice or semantic-quality result."
+}

@@ -1,0 +1,99 @@
+{
+  "checked_utc": "2026-09-23T03:39:35.794219+00:00",
+  "scope": "Both preselected500-update finals; same P2 reconstruction pair,4,000 unique questions once,8k evidence including distractors,1/16equal total rows,65536encoder packing,LR/config/order. passage_parts is the layout difference.",
+  "matched_identity": {
+    "arm": "joint",
+    "epochs": 1,
+    "planned_updates": 500,
+    "steps_per_epoch": 500,
+    "material_sha256": "9eff31670c2206dd9bb1eeda841461c324e75068ea2b5afaacd7f74ed49c05a5",
+    "material_ids_sha256": "eb9cbaf282c8698872d6d1891825ca988135642821a3d74a704039edd0f67e1e",
+    "evidence_tokens": 8192,
+    "max_passages": 16,
+    "ratio": 0.0625,
+    "encode_batch_max_tokens": 65536,
+    "initial_pair_sha256": null
+  },
+  "arms": {
+    "piecewise_27b_4k_8k": {
+      "initial": {
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 3.1728804654430274,
+        "full answer NLL": 0.7738224639919301,
+        "no-context answer NLL": 1.7922518564882832,
+        "training answer NLL": 2.8339111806767345,
+        "panel seconds": 359.7,
+        "training seen": "4,000 unique questions \u00d7 0 epochs"
+      },
+      "final": {
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 0.9164916510316956,
+        "full answer NLL": 0.5899494037727551,
+        "no-context answer NLL": 1.805666303379744,
+        "training answer NLL": 0.5528649640527552,
+        "panel seconds": 359.6,
+        "training seen": "4,000 unique questions \u00d7 1 epoch"
+      },
+      "published_pair": {
+        "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/AC_MODELS/rag_poc/epoch_001",
+        "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/piecewise_27b_4k_8k/LORAS/rag_reader/epoch_001"
+      },
+      "completed_questions": 4000,
+      "completed_epochs": 1,
+      "dropped_questions": 0,
+      "runtime_summary_scope": "whole run",
+      "peak_memory_gb": 53.57
+    },
+    "merged_27b_4k_8k": {
+      "initial": {
+        "percent": 0.0,
+        "held items": 400,
+        "AC answer NLL": 2.107899064166723,
+        "full answer NLL": 0.7738224639919301,
+        "no-context answer NLL": 1.7922518564882832,
+        "training answer NLL": 1.855949029192667,
+        "panel seconds": 335.4,
+        "training seen": "4,000 unique questions \u00d7 0 epochs"
+      },
+      "final": {
+        "percent": 100.0,
+        "held items": 400,
+        "AC answer NLL": 1.3029472152453634,
+        "full answer NLL": 0.5914531816484774,
+        "no-context answer NLL": 1.8042017800684096,
+        "training answer NLL": 0.9796974264333762,
+        "panel seconds": 354.6,
+        "training seen": "4,000 unique questions \u00d7 1 epoch"
+      },
+      "published_pair": {
+        "checkpoint": "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/AC_MODELS/rag_poc/epoch_001",
+        "target_lora_checkpoint": "/home/ngom/orcd/pool/activation/taskaware/merged_27b_4k_8k/LORAS/rag_reader/epoch_001"
+      },
+      "completed_questions": 4000,
+      "completed_epochs": 1,
+      "dropped_questions": 0,
+      "runtime_summary_scope": "latest resume attempt",
+      "peak_memory_gb": 37.62
+    }
+  },
+  "nll_gap_merged_minus_piecewise": 0.3864555642136678,
+  "source_sha256": {
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/result.json": "269fade356901e124d5a13896f93faa14b4153565def9ac442bd8c7b79be365a",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/run_identity.json": "918894b551a562d09ae7b692a15356f88249390641baff30d8f5705ec63e09c1",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/training_config.json": "87577b88a003270375092b21cf3dd75fbe5156ea96157ed00f3863d7cfc9b752",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/source_receipt.json": "7de4be66f4c3208fb05ee75e2210c7467d33a32ddd0f3c7a781bac8f04f1a9ef",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/panel_00000.json": "3afef93b858fd4d8cc6af1af98faa8fe8b327213953b4ae03611e90774bf7043",
+    "IB/TMP/SYNC/TASK_AWARE_QA/piecewise_27b_4k_8k/panel_00500.json": "5d1dd60349e3721873083e11a62b3dc910b98be45aff4a736827b5cef6510511",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/result.json": "6616ad442c9c359135d6793c2480b8bcadaa0e229f8089f2710de39ab043c1a3",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/run_identity.json": "1c98654a7652f7e3cd8a93785c4895669f797eef8c1c2f065974d321ae6b86f9",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/training_config.json": "87577b88a003270375092b21cf3dd75fbe5156ea96157ed00f3863d7cfc9b752",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/material_ids.json": "f2dfe00cc5a86adf8feabc9afdd025d1469431e008bb14c946fcb2b1c4f4db32",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/source_receipt.json": "7de4be66f4c3208fb05ee75e2210c7467d33a32ddd0f3c7a781bac8f04f1a9ef",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/panel_00000.json": "8a40fad886ca521f35a8218cd4d3dfcbcc1489ad621296f28978475f837cadb7",
+    "IB/TMP/SYNC/TASK_AWARE_QA/merged_27b_4k_8k/panel_00500.json": "9a6168f469432b8c238e02146a3aff068a013e8b499eed3db4f8df5482367cf9"
+  },
+  "limitations": "One run each; repeated development. Merged preempted and resumed with original optimizer/schedule; production is not bitwise identical. Its duration/token counters summarize latest resume attempt and cannot compare total runtime. Merged own400-replay/100answers/32kreadout pending."
+}

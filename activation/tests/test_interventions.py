@@ -17,11 +17,13 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")
 sys.modules.setdefault("fla", None)          # the kernels are GPU-only; the models fall back to torch
 import pytest
 import torch
+import torch.nn.functional as F
 
 from activation.ac_model import (ActivationContextModelConfig, ActivationContextStudyGenerator, ActivationContextTrainer,
                                  ActivationContextTrainingConfig)
 from activation.ac_model.ac_model_training import ActivationContextTrainingProgress
-from activation.ac_model.ac_model_utils import ACOutput, PassageAttention, resolve_intervention_layers
+from activation.ac_model.ac_model import READOUT_MODULE_PREFIXES
+from activation.ac_model.ac_model_utils import ACOutput, EncodeRequest, PassageAttention, resolve_intervention_layers
 from activation.harness import HarnessRuntime, HarnessRuntimeConfig, ModelConfig
 from activation.harness.hf_utils import (INTERVENTIONS_KWARG, BoundInterventions, decoder_layers, generate_with_interventions,
                                          install_intervention_hooks, text_decoder)
@@ -56,9 +58,11 @@ def tiny_hybrid(folder: Path, hidden: int = 32, seed: int = 111) -> Path:
 
 
 def build(tmp_path: Path, model_dir: Path, *, frequency: int = 0, add_last: bool = True, seed: int = 1234,
-          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None, layers: list[int] | None = None, side_dir: Path | None = None):
+          ac_checkpoint: str | None = None, reader_checkpoint: str | None = None, layers: list[int] | None = None, side_dir: Path | None = None,
+          **config_overrides):
     """The shared/reader base with a rank-4 adapter and a tiny AC model on top, in the same construction order every time
-    (seeded: the AC modules draw first, the adapters draw at injection). `side_dir`: a separate (narrower) encoder base."""
+    (seeded: the AC modules draw first, the adapters draw at injection). `side_dir`: a separate (narrower) encoder base;
+    `config_overrides`: further ActivationContextModelConfig fields (recursive_keys, input_pooling_stride, ...)."""
     os.environ["ACTIVATION_SYNC_ROOT"] = str(tmp_path)
     torch.manual_seed(seed)
     models = {"reader": ModelConfig("reader", str(model_dir))}
@@ -69,7 +73,7 @@ def build(tmp_path: Path, model_dir: Path, *, frequency: int = 0, add_last: bool
     ac = h.module_manager.register_ac_model(ActivationContextModelConfig(
         "ac_private", "side" if side_dir is not None else "reader", "side_lora", "reader", "reader_lora", mixer_heads=4, mixer_window=4, side_lora_rank=4, max_view_rows=8,
         encode_batch_max_tokens=2048, checkpoint_path=ac_checkpoint, intervention_frequency=frequency, add_last_layer_intervention=add_last,
-        intervention_layers=layers))
+        intervention_layers=layers, **config_overrides))
     h.module_manager.ensure_lora("reader_lora")
     ac.prepare()
     for loaded in h.loaded_models.values():
@@ -199,13 +203,18 @@ def test_text_decoder_locator(hybrid_dir):
 def test_zero_mode_is_the_previous_model(tmp_path):
     h, ac = build(tmp_path, TINY_QWEN3)
     assert not ac.is_deep and ac.modules.delta_heads is None and ac.modules.passage_attention is None and ac.intervention_layers == []
-    assert list(ac.modules.state_dict().keys()) == json.loads((DATA / "legacy_keys.json").read_text())
+    keys = list(ac.modules.state_dict().keys())
+    readout_keys = [name for name in keys if name.startswith(READOUT_MODULE_PREFIXES)]
+    assert [name for name in keys if name not in readout_keys] == json.loads((DATA / "legacy_keys.json").read_text())
+    assert readout_keys and all(name.startswith(("row_readout.", "recursive_readout.")) for name in readout_keys)
     legacy = torch.load(DATA / "legacy_ac_modules.pt", map_location="cpu", weights_only=False)
-    ac.modules.load_state_dict(legacy["modules"], strict=True)                    # the pre-change checkpoint loads strictly
+    loaded = ac.modules.load_state_dict(legacy["modules"], strict=False)          # the pre-change checkpoint: only the read-outs (identity at init) are new
+    assert sorted(loaded.missing_keys) == sorted(readout_keys) and not loaded.unexpected_keys
     ac.modules.target_head.skip = False                                           # the reference fixture predates the identity-skip row head (same keys, plain FFN)
     assert "interventions" not in legacy
     reference = torch.load(DATA / "legacy_outputs.pt", map_location="cpu", weights_only=False)
-    ac.modules.load_state_dict(reference["modules"], strict=True)
+    loaded = ac.modules.load_state_dict(reference["modules"], strict=False)
+    assert sorted(loaded.missing_keys) == sorted(readout_keys) and not loaded.unexpected_keys
     rows = ac.encode_batch([fixed_request(ac)])[0]
     assert torch.equal(rows, reference["rows"]), "zero-mode rows differ from the previous code's"
     ac.modules.target_head.skip = True                                            # back to the product's head (equal widths: identity skip)
@@ -608,3 +617,322 @@ def test_unequal_widths_separate_encoder_base(tmp_path):
     h3, shared = build(tmp_path / "shared", reader_dir, frequency=-1)
     with pytest.raises(ValueError, match="identities or widths"):
         shared.load(folder)
+
+
+def test_linear_skip_row_head(tmp_path, capsys):
+    """`row_head_linear_skip`: with unequal widths the row head adds W·state to its zero-started FFN, W the least-squares map from the
+    side base's input embeddings to the reader's over the shared vocabulary, filled at the first placement. A fresh row is then the
+    normalized mapped state at the reader's embedding scale; the map trains and round-trips; a checkpoint without the skip refuses
+    to load into a model with it and the reverse; equal widths refuse the option."""
+    reader_dir = tiny_hybrid(tmp_path / "reader_model"); side_dir = tiny_hybrid(tmp_path / "side_model", hidden=16, seed=222)
+    h, ac = build(tmp_path / "run", reader_dir, frequency=-1, side_dir=side_dir, row_head_linear_skip=True)
+    head = ac.modules.target_head
+    assert not head.skip and head.linear is not None and head.linear.weight.shape == (32, 16)
+    assert "embedding map" in capsys.readouterr().out
+    weight = head.linear.weight.detach().clone()
+    assert torch.isfinite(weight).all() and float(weight.abs().max()) > 0
+    side_embeddings = ac.side.model.get_input_embeddings().weight.detach().float()
+    reader_embeddings = ac.target.model.get_input_embeddings().weight
+    assert side_embeddings.shape[0] == reader_embeddings.shape[0]
+    # The tiny bases' random tables share no structure (the fit is whatever 16 directions explain); a reader table that is a linear
+    # image of the side's is recovered: the map is that image, the fit cosine ~1.
+    torch.manual_seed(7); image = torch.randn(16, 32) * 0.05
+    with torch.no_grad():
+        reader_embeddings.copy_(side_embeddings @ image)
+        ac.modules.scales_initialized.fill_(False)
+    ac._ensure_scales()
+    fit = float(capsys.readouterr().out.split("mean cosine of the fit ")[1].split(")")[0])
+    weight = head.linear.weight.detach().clone()
+    assert fit > 0.98 and torch.allclose(weight.T, image, atol=1e-3, rtol=1e-2), fit
+    states = torch.randn(5, 16)
+    mapped = states @ weight.T                                                                        # the FFN starts at zero: the row is the mapped state, RMS-normalized
+    expected = mapped / mapped.pow(2).mean(dim=-1, keepdim=True).add(1e-6).sqrt() * head.scale
+    torch.testing.assert_close(head(states), expected, atol=1e-5, rtol=1e-4)
+    plain_h, plain = build(tmp_path / "plain", reader_dir, frequency=-1, side_dir=side_dir)
+    assert plain.modules.target_head.linear is None and "linear.weight" not in dict(plain.modules.named_parameters())
+    assert torch.equal(plain.modules.summary_marker, ac.modules.summary_marker)                     # the skip's Linear draws under a fork: the twin draws as before
+    assert torch.equal(plain.modules.target_head.ffn.up.weight, head.ffn.up.weight)
+    assert not torch.allclose(plain.encode_batch([fixed_request(plain)], with_layers=True)[0].input_embeds, ac.encode_batch([fixed_request(ac)], with_layers=True)[0].input_embeds)
+    trainer, items, examples, device = trainer_and_examples(h, ac)
+    open_heads(ac)
+    stats = trainer.train("ac_private", items, reporting_data=items[:1])
+    assert stats.epochs and all(math.isfinite(value) for value in stats.loss)
+    assert not torch.equal(head.linear.weight.detach(), weight), "the map trains"
+    folder = ac.save(str(tmp_path / "ckpt"))
+    twin_h, twin = build(tmp_path / "twin", reader_dir, frequency=-1, side_dir=side_dir, seed=99, row_head_linear_skip=True)
+    twin.load(folder)
+    assert torch.equal(twin.modules.target_head.linear.weight, head.linear.weight)
+    assert torch.allclose(twin.encode_batch([fixed_request(twin)], with_layers=True)[0].input_embeds, ac.encode_batch([fixed_request(ac)], with_layers=True)[0].input_embeds, atol=1e-5)
+    with pytest.raises(ValueError, match="row_head_linear_skip"):
+        plain.load(folder)
+    plain_folder = plain.save(str(tmp_path / "plain_ckpt"))
+    with pytest.raises(ValueError, match="row_head_linear_skip"):
+        twin.load(plain_folder)
+    with pytest.raises(ValueError, match="unequal"):
+        build(tmp_path / "equal", reader_dir, frequency=-1, row_head_linear_skip=True)
+
+
+# --------------------------------------------------------------------------------------------------- 12. read-outs everywhere, nested parts
+def nested_request(child_text: str, ratio: float = 0.25) -> EncodeRequest:
+    """A two-level part: parent text around one activation_context child (its own messages, its own compression target)."""
+    return EncodeRequest([{"role": "user", "content": [{"type": "text", "text": "parent begins here"},
+                                                       {"type": "activation_context", "compression_target": ratio, "messages": [{"role": "user", "content": child_text}]},
+                                                       {"type": "text", "text": "parent ends here"}]}], ratio, False, None)
+
+
+def open_readouts(ac, seed: int = 5, std: float = 0.05) -> None:
+    """Every read-out's zero output projection and every delta head's zero down projection moved off zero (the same values for the same seed)."""
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(seed)
+        with torch.no_grad():
+            blocks = [ac.modules.row_readout, ac.modules.recursive_readout, *(ac.modules.passage_attention.values() if ac.modules.passage_attention is not None else [])]
+            for block in blocks:
+                block.out.weight.normal_(std=std)
+            for head in (ac.modules.delta_heads.values() if ac.modules.delta_heads is not None else []):
+                head.down.weight.normal_(std=std)
+
+
+def test_nested_child_keys(tmp_path, hybrid_dir):
+    h_off, off = build(tmp_path / "off", hybrid_dir, frequency=1, seed=61)
+    h_on, on = build(tmp_path / "on", hybrid_dir, frequency=1, seed=61, recursive_keys=True)
+    assert not off.config.recursive_keys and on.config.recursive_keys and on.intervention_summary()["recursive_keys"] is True
+    off.set_mode("training"); on.set_mode("training")                              # no rollout cache: every encode below sees the current weights
+    for block in (on.modules.row_readout, on.modules.recursive_readout):
+        assert torch.equal(block.out.weight, torch.zeros_like(block.out.weight)), "read-outs are the identity at init"
+    # Closed read-outs: the key set is irrelevant, both models agree on a nested request (and the child result carries its states).
+    child = on.encode_batch([EncodeRequest([{"role": "user", "content": PASSAGES[1]["text"]}], 0.25, True, None)], with_layers=True)[0]
+    assert child.states is not None and child.states.shape == (child.input_embeds.shape[0], on.d_side) and child.layer_inputs == {}
+    a, b = off.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0], on.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0]
+    torch.testing.assert_close(a.input_embeds, b.input_embeds); torch.testing.assert_close(a.layer_inputs[2], b.layer_inputs[2])
+    # Closed read-outs are trainable: the zero output projections receive gradient from the outputs they gate.
+    out0 = on.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0]
+    (out0.input_embeds.square().sum() + sum(delta.square().sum() for delta in out0.layer_inputs.values())).backward()
+    for block in (on.modules.row_readout, on.modules.recursive_readout):
+        assert block.out.weight.grad is not None and block.out.weight.grad.abs().sum() > 0, "a closed read-out must still receive gradient"
+    on.modules.zero_grad(set_to_none=True)
+    # Opened read-outs (the same values in both): the child keys change the parent's rows and deltas; a flat request stays identical.
+    open_readouts(off); open_readouts(on)
+    a, b = off.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0], on.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0]
+    assert not torch.allclose(a.input_embeds, b.input_embeds) and not torch.allclose(a.layer_inputs[2], b.layer_inputs[2])
+    fa, fb = off.encode_batch([fixed_request(off)], with_layers=True)[0], on.encode_batch([fixed_request(on)], with_layers=True)[0]
+    torch.testing.assert_close(fa.input_embeds, fb.input_embeds); torch.testing.assert_close(fa.layer_inputs[5], fb.layer_inputs[5])
+    # The parent text fixed, the child text changed: the parent's rows and deltas change.
+    c = on.encode_batch([nested_request(PASSAGES[0]["text"])], with_layers=True)[0]
+    assert not torch.allclose(b.input_embeds, c.input_embeds) and not torch.allclose(b.layer_inputs[5], c.layer_inputs[5])
+    # Gradients reach the child level: the recursive read-out and the child's side states feed the parent's outputs.
+    out = on.encode_batch([nested_request(PASSAGES[1]["text"])], with_layers=True)[0]
+    (out.input_embeds.square().sum() + sum(delta.square().sum() for delta in out.layer_inputs.values())).backward()
+    assert on.modules.recursive_readout.query.weight.grad is not None and on.modules.recursive_readout.query.weight.grad.abs().sum() > 0
+    assert on.modules.row_readout.query.weight.grad is not None and on.modules.row_readout.query.weight.grad.abs().sum() > 0
+    assert on.modules.recursive_adapter.ffn.up.weight.grad is not None
+
+
+def test_readout_migration(tmp_path, hybrid_dir, capsys):
+    """A checkpoint written before the row read-outs existed loads with them fresh (identity) and reproduces its outputs."""
+    h, ac = build(tmp_path, hybrid_dir, frequency=1, seed=8)
+    before = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
+    folder = Path(ac.save(str(tmp_path / "saved")))
+    state = torch.load(folder / "ac_modules.pt", map_location="cpu", weights_only=False)
+    removed = {name: tensor for name, tensor in state["modules"].items() if name.startswith(READOUT_MODULE_PREFIXES)}
+    assert removed
+    state["modules"] = {name: tensor for name, tensor in state["modules"].items() if name not in removed}
+    torch.save(state, folder / "ac_modules.pt")
+    h2, ac2 = build(tmp_path / "second", hybrid_dir, frequency=1, seed=9)
+    ac2.load(str(folder))
+    assert "Row read-outs fresh" in capsys.readouterr().out
+    after = ac2.encode_batch([fixed_request(ac2)], with_layers=True)[0]
+    torch.testing.assert_close(after.input_embeds, before.input_embeds); torch.testing.assert_close(after.layer_inputs[2], before.layer_inputs[2])
+    # A partial set of read-out weights is not a migration.
+    name, tensor = next(iter(removed.items()))
+    state["modules"][name] = tensor
+    torch.save(state, folder / "ac_modules.pt")
+    with pytest.raises(ValueError, match="do not match"):
+        ac2.load(str(folder))
+
+
+def test_content_pooling(tmp_path, hybrid_dir, capsys):
+    with pytest.raises(ValueError, match="stride"):
+        ActivationContextModelConfig("x", "s", "sl", "t", "tl", input_pooling_stride=5, input_pooling_window=4)
+    h0, plain = build(tmp_path / "plain", hybrid_dir, frequency=1, seed=12)
+    h, ac = build(tmp_path / "pooled", hybrid_dir, frequency=1, seed=12, input_pooling_stride=2, input_pooling_window=4)
+    assert plain.modules.pooling is None and ac.modules.pooling is not None and ac.modules.pooling.stride == 2
+    plain.profile_phases = ac.profile_phases = True
+    out = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
+    plain.encode_batch([fixed_request(plain)], with_layers=True)
+    (pooled_len,), (plain_len,) = ac.stats.decoder_sequences, plain.stats.decoder_sequences
+    assert pooled_len < plain_len, (pooled_len, plain_len)
+    assert "pooling" in ac.stats.phase_seconds
+    # Round trip into a model of the same shape; a stride-0 checkpoint is refused by a stride-2 model and vice versa.
+    folder = ac.save(str(tmp_path / "saved"))
+    h2, again = build(tmp_path / "again", hybrid_dir, frequency=1, seed=99, input_pooling_stride=2, input_pooling_window=4)
+    again.load(folder)
+    back = again.encode_batch([fixed_request(again)], with_layers=True)[0]
+    torch.testing.assert_close(back.input_embeds, out.input_embeds); torch.testing.assert_close(back.layer_inputs[5], out.layer_inputs[5])
+    # An unpooled checkpoint migrates into a pooled model (the strided arms warm-start this way): the pooler is fresh, everything else loads.
+    plain_folder = plain.save(str(tmp_path / "plain_saved"))
+    h3, warm = build(tmp_path / "warm", hybrid_dir, frequency=1, seed=77, input_pooling_stride=2, input_pooling_window=4)
+    pooler_before = warm.modules.pooling.ffn.up.weight.clone()
+    warm.load(plain_folder)
+    assert "Content pooling fresh" in capsys.readouterr().out
+    torch.testing.assert_close(warm.modules.pooling.ffn.up.weight, pooler_before)                      # fresh: the pooler keeps its init
+    torch.testing.assert_close(warm.modules.target_head.ffn.up.weight, plain.modules.target_head.ffn.up.weight)   # the rest is the checkpoint's
+    # A pooled checkpoint into an unpooled model, and a stride change, stay refused.
+    with pytest.raises(ValueError, match="input_pooling_stride"):
+        plain.load(folder)
+    h4, other = build(tmp_path / "other", hybrid_dir, frequency=1, seed=78, input_pooling_stride=4, input_pooling_window=4)
+    with pytest.raises(ValueError, match="input_pooling_stride"):
+        other.load(folder)
+    # The pooler's parameters receive gradient.
+    ac.set_mode("training")
+    graded = ac.encode_batch([fixed_request(ac)], with_layers=True)[0]
+    (graded.input_embeds.square().sum() + sum(delta.square().sum() for delta in graded.layer_inputs.values())).backward()
+    pooling_params = [(name, p) for name, p in ac.modules.named_parameters() if name.startswith("pooling.") and p.requires_grad]
+    assert pooling_params and all(p.grad is not None and p.grad.abs().sum() > 0 for _, p in pooling_params), [n for n, p in pooling_params if p.grad is None]
+    ac.modules.zero_grad(set_to_none=True)
+    # Batch padding does not change a request's result: alone or beside a longer request, the same outputs.
+    short, long = fixed_request(ac), EncodeRequest([{"role": "user", "content": PASSAGES[1]["text"] + " " + PASSAGES[0]["text"]}], 0.25, True, None)
+    with torch.no_grad():
+        alone = ac.encode_batch([short], with_layers=True)[0]
+        padded = ac.encode_batch([short, long], with_layers=True)[0]
+    torch.testing.assert_close(padded.input_embeds, alone.input_embeds, atol=1e-5, rtol=1e-4)
+    torch.testing.assert_close(padded.layer_inputs[5], alone.layer_inputs[5], atol=1e-5, rtol=1e-4)
+    # Training runs end to end with the pooler in the graph.
+    stats = ActivationContextTrainer(h, config()).train(ac.name, items_for(h, ac))
+    assert stats.intervention_trace
+
+
+def test_interleaved_summaries(tmp_path, hybrid_dir, capsys):
+    """`summary_layout="interleaved"`: each summary sits in the causal side pass right after its pooling bin, so a summary's row
+    depends on its own bin and the bins before it only (the appended layout's rows see the whole content). Same modules: an
+    appended checkpoint migrates into an interleaved model, the reverse is refused."""
+    from activation.ac_model.ac_model_utils import interleaved_positions, summary_bins
+    cpu = torch.device("cpu")
+    for length, num_rows in ((10, 3), (2, 3), (1, 1), (17, 5), (64, 8)):
+        tokens, summaries = interleaved_positions(length, num_rows, cpu)
+        assert sorted(torch.cat([tokens, summaries]).tolist()) == list(range(length + num_rows))       # a permutation of the decoder positions
+        _, ends = summary_bins(length, num_rows, cpu)
+        for k in range(num_rows):                                                                       # after its bin's last token, before the next token
+            assert summaries[k] > tokens[ends[k] - 1] and (ends[k] == length or summaries[k] < tokens[ends[k]])
+        assert torch.all(summaries[1:] > summaries[:-1]) and torch.all(tokens[1:] > tokens[:-1])
+    with pytest.raises(ValueError, match="summary_layout"):
+        ActivationContextModelConfig("x", "s", "sl", "t", "tl", summary_layout="sideways")
+    with pytest.raises(ValueError, match="content pooling"):
+        ActivationContextModelConfig("x", "s", "sl", "t", "tl", summary_layout="interleaved", input_pooling_stride=2)
+    h0, appended = build(tmp_path / "appended", hybrid_dir, frequency=1, seed=12)
+    h, ac = build(tmp_path / "interleaved", hybrid_dir, frequency=1, seed=12, summary_layout="interleaved")
+    assert torch.equal(ac.modules.summary_marker, appended.modules.summary_marker)                     # the layout draws nothing
+    words = (PASSAGES[0]["text"] + " " + PASSAGES[1]["text"] + " " + PASSAGES[2]["text"]).split()
+    text = " ".join(words * 4)
+    changed = " ".join((words * 4)[:-4] + ["one", "two", "three", "alpha"])                          # the last bin's tokens differ, the token count does not
+    tokenizer = ac.side.tokenizer
+    assert len(tokenizer(text, add_special_tokens=False).input_ids) == len(tokenizer(changed, add_special_tokens=False).input_ids) > 100
+    requests = [EncodeRequest([{"role": "user", "content": body}], 0.25, False, None) for body in (text, changed)]
+    appended.profile_phases = ac.profile_phases = True
+    with torch.no_grad():
+        ours = [ac.encode_batch([request], with_layers=True)[0] for request in requests]
+        theirs = [appended.encode_batch([request], with_layers=True)[0] for request in requests]
+    assert ac.stats.decoder_sequences == appended.stats.decoder_sequences                             # the same content and summaries, differently placed
+    assert ours[0].input_embeds.shape == theirs[0].input_embeds.shape == (8, appended.d_target)
+    assert not torch.allclose(ours[0].input_embeds, theirs[0].input_embeds)
+    # At init the read-outs are identity, so a row is its summary's final state: interleaved, the first summary cannot see the last bin.
+    torch.testing.assert_close(ours[0].input_embeds[0], ours[1].input_embeds[0])
+    assert not torch.allclose(ours[0].input_embeds[-1], ours[1].input_embeds[-1])
+    assert not torch.allclose(theirs[0].input_embeds[0], theirs[1].input_embeds[0])
+    # Batch padding does not change a request's result (beside a 130-token request the tiny hybrid's padded pass drifts by ~1e-4 on
+    # rows of RMS 0.02 in either layout: the reference is the appended model's own drift).
+    short = fixed_request(ac)
+    with torch.no_grad():
+        alone = ac.encode_batch([short], with_layers=True)[0]
+        padded = ac.encode_batch([short, requests[0]], with_layers=True)[0]
+        alone_appended = appended.encode_batch([short], with_layers=True)[0]
+        padded_appended = appended.encode_batch([short, requests[0]], with_layers=True)[0]
+    drift = (padded_appended.input_embeds - alone_appended.input_embeds).abs().max().item()
+    torch.testing.assert_close(padded.input_embeds, alone.input_embeds, atol=max(2 * drift, 1e-6), rtol=0)
+    torch.testing.assert_close(padded.layer_inputs[5], alone.layer_inputs[5], atol=1e-5, rtol=1e-4)
+    # Checkpoints: the layout is saved; a round trip reproduces the outputs; an appended checkpoint migrates in; the reverse is refused.
+    folder = ac.save(str(tmp_path / "saved"))
+    assert torch.load(Path(folder) / "ac_modules.pt", map_location="cpu", weights_only=False)["config"]["summary_layout"] == "interleaved"
+    h2, again = build(tmp_path / "again", hybrid_dir, frequency=1, seed=99, summary_layout="interleaved")
+    again.load(folder)
+    with torch.no_grad():
+        back = again.encode_batch([requests[0]], with_layers=True)[0]
+    torch.testing.assert_close(back.input_embeds, ours[0].input_embeds); torch.testing.assert_close(back.layer_inputs[5], ours[0].layer_inputs[5])
+    appended_folder = appended.save(str(tmp_path / "appended_saved"))
+    h3, warm = build(tmp_path / "warm", hybrid_dir, frequency=1, seed=77, summary_layout="interleaved")
+    warm.load(appended_folder)
+    assert "Summaries interleaved" in capsys.readouterr().out
+    torch.testing.assert_close(warm.modules.summary_marker, appended.modules.summary_marker)
+    with pytest.raises(ValueError, match="summary_layout"):
+        appended.load(folder)
+    # Gradient reaches the marker and the summary pooling through the interleaved sequence; training runs end to end.
+    ac.set_mode("training")
+    graded = ac.encode_batch([requests[0]], with_layers=True)[0]
+    (graded.input_embeds.square().sum() + sum(delta.square().sum() for delta in graded.layer_inputs.values())).backward()
+    assert ac.modules.summary_marker.grad is not None and ac.modules.summary_marker.grad.abs().sum() > 0
+    assert ac.modules.summary_pooling.ffn.up.weight.grad is not None and ac.modules.summary_pooling.ffn.up.weight.grad.abs().sum() > 0
+    ac.modules.zero_grad(set_to_none=True)
+    stats = ActivationContextTrainer(h, config()).train(ac.name, items_for(h, ac))
+    assert stats.intervention_trace
+
+
+def test_density_weighted_bins(tmp_path, hybrid_dir, capsys):
+    """`bin_density_weight` w > 0: the summary bins hold equal cumulative token weight 1 + w·dense (digits, code/math symbols,
+    ac_model_utils.is_dense_piece) instead of equal token counts, so notation gets finer rows at the same V; w = 0 is the
+    equal-token model unchanged, prose without dense tokens pools the same bins at any w, and a checkpoint moves between weights
+    with a note (same modules)."""
+    from activation.ac_model.ac_model_utils import interleaved_positions, is_dense_piece, summary_bins
+    assert [is_dense_piece(p) for p in (" the", " 12", " x=", "—", "é", " α", " (", "�", " →")] == [False, True, True, False, False, False, False, False, True]
+    cpu = torch.device("cpu")
+    for length, num_rows in ((10, 3), (17, 5), (64, 8), (2, 3), (1, 1)):
+        plain = summary_bins(length, num_rows, cpu)
+        uniform = summary_bins(length, num_rows, cpu, torch.ones(length))
+        assert torch.equal(plain[0], uniform[0]) and torch.equal(plain[1], uniform[1])             # uniform weights: the equal-token bins
+        heavy = torch.ones(length)
+        heavy[: length // 2] = 3.
+        starts, ends = summary_bins(length, num_rows, cpu, heavy)
+        assert starts[0] == 0 and ends[-1] == length and torch.all(ends > starts)                  # cover the input, nonempty
+        assert torch.all(starts[1:] >= starts[:-1]) and torch.all(ends[1:] >= ends[:-1]) and torch.all(starts[1:] <= ends[:-1])
+        if num_rows < length:
+            widths = (ends - starts).float()
+            assert widths[: num_rows // 2].mean() <= widths[num_rows // 2:].mean()                  # the heavier first half gets the narrower bins
+        tokens, summaries = interleaved_positions(length, num_rows, cpu, heavy)
+        assert sorted(torch.cat([tokens, summaries]).tolist()) == list(range(length + num_rows))
+        for k in range(num_rows):
+            assert summaries[k] > tokens[ends[k] - 1] and (ends[k] == length or summaries[k] < tokens[ends[k]])
+    with pytest.raises(ValueError, match="bin_density_weight"):
+        ActivationContextModelConfig("x", "s", "sl", "t", "tl", bin_density_weight=-1.)
+    with pytest.raises(ValueError, match="one weight per content token"):
+        summary_bins(10, 3, cpu, torch.ones(9))
+    h0, plain_model = build(tmp_path / "plain", hybrid_dir, frequency=1, seed=12, summary_layout="interleaved")
+    h, dense = build(tmp_path / "dense", hybrid_dir, frequency=1, seed=12, summary_layout="interleaved", bin_density_weight=1.)
+    assert torch.equal(dense.modules.summary_marker, plain_model.modules.summary_marker)             # the weight draws nothing
+    tokenizer = dense.side.tokenizer                                                               # the tiny vocabulary: a few words and the numbers 0-63
+    prose = " ".join(["alpha beta gamma delta evidence question answer first second third one two three four five six seven eight nine zero"
+                      " yes no tool result beginning middle end context reasoning code search solver useful wrong"] * 4)
+    ids = tokenizer(prose, add_special_tokens=False).input_ids
+    assert len(ids) > 100 and not any(i in tokenizer.all_special_ids or is_dense_piece(tokenizer.decode([i])) for i in ids)
+    numbers = " ".join(str(i * 37 % 64) for i in range(48)) + " " + " ".join(prose.split()[:64])   # dense tokens concentrated in the first half
+    requests = [EncodeRequest([{"role": "user", "content": body}], 0.25, False, None) for body in (prose, numbers)]
+    with torch.no_grad():
+        ours = [dense.encode_batch([request], with_layers=True)[0] for request in requests]
+        theirs = [plain_model.encode_batch([request], with_layers=True)[0] for request in requests]
+    assert dense._dense_vocab is not None and dense._dense_vocab.sum() > 0
+    torch.testing.assert_close(ours[0].input_embeds, theirs[0].input_embeds)                        # no dense token: the same bins
+    assert ours[1].input_embeds.shape == theirs[1].input_embeds.shape and not torch.allclose(ours[1].input_embeds, theirs[1].input_embeds)   # digits: the bins move
+    folder = dense.save(str(tmp_path / "saved"))
+    assert torch.load(Path(folder) / "ac_modules.pt", map_location="cpu", weights_only=False)["config"]["bin_density_weight"] == 1.
+    h2, again = build(tmp_path / "again", hybrid_dir, frequency=1, seed=99, summary_layout="interleaved", bin_density_weight=1.)
+    again.load(folder)
+    with torch.no_grad():
+        back = again.encode_batch([requests[1]], with_layers=True)[0]
+    torch.testing.assert_close(back.input_embeds, ours[1].input_embeds)
+    torch.testing.assert_close(back.layer_inputs[5], ours[1].layer_inputs[5])
+    plain_model.load(folder)                                                                        # a weighted checkpoint into an equal-token model: noted, not refused
+    assert "density weight 0.0" in capsys.readouterr().out
+    dense.set_mode("training")
+    graded = dense.encode_batch([requests[1]], with_layers=True)[0]
+    (graded.input_embeds.square().sum() + sum(delta.square().sum() for delta in graded.layer_inputs.values())).backward()
+    assert dense.modules.summary_pooling.ffn.up.weight.grad is not None and dense.modules.summary_pooling.ffn.up.weight.grad.abs().sum() > 0
+    dense.modules.zero_grad(set_to_none=True)
+    stats = ActivationContextTrainer(h, config()).train(dense.name, items_for(h, dense))
+    assert stats.intervention_trace

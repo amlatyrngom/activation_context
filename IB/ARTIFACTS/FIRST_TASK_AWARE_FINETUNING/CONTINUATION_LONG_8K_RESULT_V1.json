@@ -1,0 +1,237 @@
+{
+  "checked_utc": "2026-09-23T03:48:02.262141+00:00",
+  "job": 23523743,
+  "status": "complete",
+  "scheduler": "COMPLETED0:0,14m56",
+  "identity": {
+    "condition": "continue32k_10k_final_lr",
+    "context": "8k",
+    "update": 1250,
+    "lifetime_questions": 42000,
+    "parent_questions": 32000,
+    "stage_questions": 10000,
+    "paired_checkpoint": {
+      "ac_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/AC_MODELS/rag_poc/epoch_001",
+      "reader_checkpoint": "/orcd/pool/007/ngom/activation/taskaware/continue32k_10k_final_lr/LORAS/rag_reader/epoch_001",
+      "parent_questions": 32000,
+      "stage_unique_questions": 10000,
+      "stage_epochs": 1,
+      "continuation_schedule": "final_lr",
+      "optimizer_policy": "inherited Adam, stage-only schedule reset",
+      "continuation_design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+      "continuation_evaluator_sha256": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+      "result_sha256": "a7fa5afce4160cb5e3ff15eb3611fc58655f4d51dd915925368a9dee3c52ab77",
+      "marker_sha256": "eb19472afbfbd6d310cba852f51e318906161f2734dd4b4596160599758ee75d",
+      "training_identity_sha256": "b2fd63869b8786c77197eb77141f9c504a9249c636f5c0f7d63b9733501bbc5c",
+      "training_config_sha256": "22474d21b581ceb2a53a0e76c8184222dd1c562a2c7bcabb076b8e47ab57e98a",
+      "source_receipt_sha256": "eefd6c729a15608254e070ac186507eba32c318e2297bd6c6c237b1ae75ea77a",
+      "inherited_optimizer_check_sha256": "ec037e9226734342f9fbf1607a81373a5b264bf3ababd07271a7ae50ccf67929",
+      "parent_input_check_sha256": "adefb93b67890c5b148c6d465b5be27b673c7f3dbe5834641dbbe63904981d2d",
+      "final_panel_sha256": "b1dd53830ea76e966ec405239b1fd28cef5c69dd18f1d1f02cef541b93cf46d4",
+      "initial_pair_sha256": "5657ba1f86969c9da8c00444a48c122b37ddd405b9ba7576ede1088511716630",
+      "inherited_optimizer": {
+        "parent_files": {
+          "ac/PRESERVE": {
+            "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+            "bytes": 101
+          },
+          "ac/ac_modules.pt": {
+            "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+            "bytes": 1208881673
+          },
+          "ac/optimizer.pt": {
+            "sha256": "475e99170d7dd8c1bb09e7cafca7891e18f04815252a9f4fa1e444325f709a9c",
+            "bytes": 4676641912
+          },
+          "ac/side_lora/README.md": {
+            "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+            "bytes": 5184
+          },
+          "ac/side_lora/adapter_config.json": {
+            "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+            "bytes": 1150
+          },
+          "ac/side_lora/adapter_model.safetensors": {
+            "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+            "bytes": 349204488
+          },
+          "reader/PRESERVE": {
+            "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+            "bytes": 101
+          },
+          "reader/README.md": {
+            "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+            "bytes": 5184
+          },
+          "reader/adapter_config.json": {
+            "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+            "bytes": 1147
+          },
+          "reader/adapter_model.safetensors": {
+            "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+            "bytes": 931173960
+          }
+        },
+        "derived_files": {
+          "ac/PRESERVE": {
+            "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+            "bytes": 101
+          },
+          "ac/ac_modules.pt": {
+            "sha256": "a1b31b4a3ee726a9011c8ad62801b0831eebc5aaf084a278d69feb2d7d66ebdd",
+            "bytes": 1208881673
+          },
+          "ac/optimizer.pt": {
+            "sha256": "1eeb5c60f7cb2aa3b213c7cf970bfd5ec10b1295412ad9891f6dd915086dc661",
+            "bytes": 4676633951
+          },
+          "ac/side_lora/README.md": {
+            "sha256": "31e163f522d840ca105c797014f8d203410f5c6f61c94c6b987aa806df0a9956",
+            "bytes": 5184
+          },
+          "ac/side_lora/adapter_config.json": {
+            "sha256": "8f4d572e40e41f8ed1291fc61953298e007e4a9609c5abe15c5d7f87b9b9a6d1",
+            "bytes": 1150
+          },
+          "ac/side_lora/adapter_model.safetensors": {
+            "sha256": "fcede005b9549551fc59e1b492b464b59d07e251b3f84311d6eec428fa161ade",
+            "bytes": 349204488
+          },
+          "reader/PRESERVE": {
+            "sha256": "675bddb69012dca79fefd7bfae1b23c33c0efab28c3977d5989dc857224fa65f",
+            "bytes": 101
+          },
+          "reader/README.md": {
+            "sha256": "152fcb11282f5418d54ac7cd69c55ac13312dceb41460c5e067ccd21437d599c",
+            "bytes": 5184
+          },
+          "reader/adapter_config.json": {
+            "sha256": "11bab3984622c99898b6e175c5bf8fdfc0e779f0aa52ee230cd7a97107cad3c4",
+            "bytes": 1147
+          },
+          "reader/adapter_model.safetensors": {
+            "sha256": "cc99974d74db9feac1524b15e06d0f7fc0f2ca96b181d6ac65c4882616209a4b",
+            "bytes": 931173960
+          }
+        },
+        "parent_training_questions": 32000,
+        "parent_updates_done": 4000,
+        "parent_epoch_number": 1,
+        "stage_updates_done": 0,
+        "stage_epoch_number": 0,
+        "adam_state_preserved_byte_exact": true,
+        "param_groups_preserved_exact": true,
+        "adam_parameter_step_histogram": {
+          "4000.0": 615
+        },
+        "optimizer_parameter_states": 615,
+        "parameter_groups": [
+          374,
+          256
+        ],
+        "weight_bytes_unchanged": true,
+        "independent_files_not_hardlinks": true,
+        "ac_modules_saved_epoch_number": 1,
+        "runner_requirement": "Set loaded ac.epoch_number=0 for this stage; resume_optimizer=True and exact group-layout validation. Preserve Adam state and per-parameter steps. Stage schedule overrides group LRs at runtime."
+      }
+    },
+    "checkpoint_sha256": {
+      "ac_modules": "e9a537f515e2324fb0756613b762cf9fe7b2ccdc1f32a98a74325c8d5eeb9d93",
+      "encoder_config": "76dd1dfd4d33dff680a39d3f0077b05b7cbfca9967c86354c0cfc4b343537342",
+      "encoder_weights": "4fbe93d8a4b9c18abfbcb248a45a20bed5043b96ad5e691cc37c29b1199008e5",
+      "reader_config": "24e655575fa34b147af83d0277dc9199453dbfe6a6b76bb541c04cac408436b0",
+      "reader_weights": "294aaada7f21aadf523df64d0a07ebcd6d1aa90864b442f7e9dbbbafc3e19de3"
+    },
+    "design_sha256": "1e6e1f64b2ea50e70f4ba6afc430ebdd7828b72405c591857a6be5649852e506",
+    "continuation_design_sha256": "a2b69b489ea2a7d7165ad47fb1ea8d6c88657a6f31429452edb0463ac57d8512",
+    "selection_sha256": "469320c02db9347d4d93b99c94003f9eb40d738d03ee272ff83a0129fda92051",
+    "material_sha256": "9a9bb6c1a8e96931983eb606a8b793ae5867ba75b07635fbf4fc213319c9fdad",
+    "builder_sha256": "ee791342b4b21ca22d3be810e34ce1c6c3337cf3921d60bf6b8cfa8cde983054",
+    "source_sha256": {
+      "ac_model": "aaeb3c68225d3092a024d44552b84480dc37cc8319d68c2ab1701fce70980bfd",
+      "trainer": "38ca9885bfe35e47432352aa716381e53c18aa57748428eedf5f5f6b7fc6b5aa",
+      "utils": "1b464ee4e8cafc6e7582c1c04e27bc95432cb8616b90f5bd90ad8b6c6fd5096c"
+    },
+    "evaluator_sha256": "c84649afa4743f3dda7126620116d78e1aaaca4c48521ee24d21597749b4be7b",
+    "long_helper_sha256": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "continuation_helper_sha256": "7275f69c0f0ca2ce6fd6a74705f0a05cb596d14054790a5bce86e408a217ef1f",
+    "native2k_readout_sha256": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6",
+    "initial32k_8k_readout_sha256": "59e5d55aae0fe39e992db57fcceb77a78dea5cea17e65da5c69cf9ab5d296af4",
+    "passage_parts": true,
+    "encode_batch_max_tokens": 65536,
+    "ratio": 0.0625,
+    "evidence_tokens": 8192,
+    "max_passages": 16,
+    "micro_batch_examples": 2,
+    "reader": "Completed42k constant-LR continuation paired reader, including its own full/no-context controls",
+    "scope": "One8k development cell, original400 scored then fixed100 AC decoded; no confirmation,32k cell or training.",
+    "nll_replay": "No42k 8k training panel exists; exact input binding is to the completed initial32k 8k readout, not a same-weight NLL replay.",
+    "decoding": "Greedy160, thinking off, inherited EOS union chat EOT; actual generated IDs retained"
+  },
+  "scores": {
+    "AC": {
+      "parent400": 0.6759865545418197,
+      "continued400": 0.6218535951792562,
+      "parent_selected100": 0.7352496575853942,
+      "continued_selected100": 0.6567473712572234,
+      "mean_delta": -0.05413295936256339,
+      "median_delta": -0.009160648148148074,
+      "questions_lower_nll": 223,
+      "questions_higher_nll": 177
+    },
+    "full context": {
+      "parent400": 0.613513236000216,
+      "continued400": 0.6083641510656369,
+      "parent_selected100": 0.6031717553207395,
+      "continued_selected100": 0.5997215048727235,
+      "mean_delta": -0.005149084934579139,
+      "median_delta": -0.0035653846153846126,
+      "questions_lower_nll": 267,
+      "questions_higher_nll": 128
+    },
+    "no context": {
+      "parent400": 1.8105903935746197,
+      "continued400": 1.8143435965538575,
+      "parent_selected100": 1.839110465102392,
+      "continued_selected100": 1.8422449608264715,
+      "mean_delta": 0.0037532029792377245,
+      "median_delta": 0.001015521978021905,
+      "questions_lower_nll": 183,
+      "questions_higher_nll": 217
+    }
+  },
+  "answer_count": 100,
+  "ended_at_eos": 100,
+  "token_caps": 0,
+  "matched_inputs": true,
+  "source_sha256": {
+    "IB/TMP/SYNC/TASK_AWARE_QA/continuation_long_cohort100/continue32k_10k_final_lr__8k/result.json": "3a689635e419edcb2aea2708f5321e1561300c4ded9cc75690bfae76c66b2cbd",
+    "IB/TMP/SYNC/TASK_AWARE_QA/strong_long_cohort100/initial32k__8k/result.json": "59e5d55aae0fe39e992db57fcceb77a78dea5cea17e65da5c69cf9ab5d296af4"
+  },
+  "semantic_review": {
+    "artifact": "STRONG_LONG_COHORT100.tressoir.html",
+    "supported87": {
+      "correct": 61,
+      "partial": 13,
+      "incorrect": 12,
+      "ambiguous": 1
+    },
+    "gains_vs_parent": 9,
+    "losses_vs_parent": 6,
+    "all100": {
+      "correct": 64,
+      "partial": 18,
+      "incorrect": 16,
+      "ambiguous": 2
+    },
+    "root_source_spotchecks": [
+      71,
+      80,
+      96,
+      89
+    ],
+    "browser_check": "Focused500card/count/filter/render-persistence/mobile/desktopcheckPASS;actualVSCodeintegrationuntested.",
+    "prior400_reviews_unchanged": true
+  },
+  "caveat": "Repeated development and one training realization. Both8k cells use independentpassage layout; extra retrieveddistractors do not test distributed-required-evidence reasoning. Native2k usesmergedlayout, so a2k\u21928k comparison also changeslayout."
+}

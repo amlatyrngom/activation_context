@@ -1,0 +1,94 @@
+{
+  "status": "candidate_prepared_not_staged",
+  "scope": {
+    "questions": 100,
+    "cohorts": {
+      "9b": 50,
+      "27b": 50
+    },
+    "evidence_tokens": 32768,
+    "max_passages": 64,
+    "passage_parts": true,
+    "ratio": 0.0625,
+    "encode_batch_max_tokens": 65536,
+    "microbatch": 1,
+    "scored_views": [
+      "AC",
+      "full context",
+      "no context"
+    ],
+    "decoded_views": [
+      "AC"
+    ],
+    "generation_tokens": 160,
+    "parent_qa_questions": 42000,
+    "training": false,
+    "confirmation": false
+  },
+  "check_count": 26,
+  "checks": [
+    "Actual readout, builder and frozen-helper hashes match",
+    "Actual own42k pair identity and initial32k selected100 reference accepted",
+    "Actual shared/AC inputs, row spans and complete100 source/gold metadata bind",
+    "Selected100 preserve original400 indices and50/50 generator cohorts",
+    "Filtered-cohort score means reproduce saved initial32k means",
+    "Partial native readout rejected",
+    "Wrong parent stage rejected",
+    "Rewarm parent rejected",
+    "Missing native response rejected",
+    "Wrong8k context rejected",
+    "Merged layout rejected",
+    "Reduced packing rejected",
+    "Microbatch2 rejected",
+    "Incomplete100 rejected",
+    "Wrong source rejected",
+    "Foreign parent payloads rejected",
+    "Partial parent path rejected",
+    "Changed AC fingerprint rejected",
+    "Changed actual compressed rows rejected",
+    "Changed gold rejected",
+    "Changed full_evidence rejected",
+    "Changed required_source rejected",
+    "Changed answer_positions rejected",
+    "Changed original_400_index rejected",
+    "Initial32k scores are not treated as a42k same-weight replay target",
+    "Whole-attempt1650s bound,30min wall, unchanged-source decode and final payload rehash retained"
+  ],
+  "native2k_readout_sha256": "1897fcf5b2c75a7fb72638cd658a75e4f7d5f92fce62276dfeb270c2174a06d6",
+  "initial32k32k_readout_sha256": "b1f55b40bd7c789370c604b1e14145a3266e60dcdb1f85ae8cf04224b11d02b9",
+  "worker_sha256": "1714f76c71d709a216b671f490b54062879225ae46cf30849d3e15547b62977c",
+  "launcher_sha256": "283c569ffb361c6fa8c87f86b88e618ebba7fed793e6d00099fb51687a65893c",
+  "fixture_sha256": "cfb887386e1e4d47a2833455fe525aaf9274576508bb94bb2c8ef087362dce51",
+  "runtime_pending": "Actual tokenizer/request rebuilding and own parent payload checks run fail-closed on allocated GPU",
+  "gpu_status": "not staged or submitted",
+  "utc": "2026-09-23T05:14:07.165805+00:00",
+  "syntax": {
+    "python": "passed",
+    "shell": "passed"
+  },
+  "condition": "continue32k_10k_final_lr__32k",
+  "output": "reports/continuation_long_cohort100/continue32k_10k_final_lr__32k/result.json",
+  "allocation": {
+    "partition": "mit_preemptable",
+    "gpu": "rtx_pro_6000:1",
+    "host_memory_gib": 64,
+    "wall_minutes": 30,
+    "whole_attempt_seconds": 1650
+  },
+  "prior_observed_runtime": {
+    "source": "strong_long_cohort100/initial32k__32k/result.json",
+    "ac_nll_seconds": 235.47754589375108,
+    "full_nll_seconds": 313.13353548385203,
+    "no_context_nll_seconds": 9.323344819247723,
+    "whole_nll_readout_seconds": 710.2,
+    "peak_allocated_gib": 31.908292770385742
+  },
+  "forecast": {
+    "minutes": [
+      20,
+      25
+    ],
+    "limit": "100 AC decoding runtime is an estimate; time-limited partial output requires identical-identity resume before qualitative use."
+  },
+  "review_note": "Small sibling of completed8k continuation worker. Requires original selected100 input/target/request/span/row identity, not original32k numerical scores. Uses own completed42k weights/reader controls. Rehashes parent payloads after generation. Existing8k worker and outputs unchanged."
+}

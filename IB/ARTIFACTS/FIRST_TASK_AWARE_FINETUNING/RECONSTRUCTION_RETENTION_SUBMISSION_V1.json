@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-23T19:20:45.732274Z",
+  "status": "released",
+  "files": {
+    "evaluate_reconstruction_retention_v1.py": "6dba8bda52a13834068921debf37bff2b453b7c11f5219b59a191071a40adb53",
+    "evaluate_reconstruction_retention_v1.sbatch": "ed122e4428cd0e68e5f34a07370889b9e9d7de6050b9786e53d631e56a6ccfc2",
+    "RECONSTRUCTION_RETENTION_V1.json": "2e9a321b6a72dbee316c5e18ab6cc92ab5aeb197ca9ba73f75b77d0a9d992fb4",
+    "reconstruction_retention_held420_v1.json": "7b7ba95365a50162f1b20f9c76d3baf122d0a95828467e77ba6b5732f3999781"
+  },
+  "scope": "User requested pure reconstruction retention: P2,42k,50k cosine,42960 monolithic32k; original420 held, matched1/16/L40S; no training.",
+  "review": "Focused independent scoring/data comparison review passed; root syntax, aggregation arithmetic, shell and payload/paired completion checks.",
+  "job_id": 23572105,
+  "released_utc": "2026-09-23T19:20:46.222268Z",
+  "queue": "23572105|PENDING|(None)"
+}

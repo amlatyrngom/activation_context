@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-23T02:20:54.141249Z",
+  "status": "released",
+  "hashes": {
+    "probe_piecewise_attention_operators_v1.py": "01152f8f977931b6091d9c76e1ff28254bac83a9d6c408a08d3426caf139189c",
+    "probe_piecewise_attention_operators_v1.sbatch": "478c17d92ad4583a46ab897d7cddc66457b67bd7feede5cae2c8746b43cd5503",
+    "probe_piecewise_forward_localization_v1.py": "c1b41225d6dfe51667615442005c80ff41f55f9239d7c18df450d729933194fa"
+  },
+  "job": 23521114,
+  "review": "Root source review accepted. Real tiny-model CPU38stage checks and mask/reference guards passed. Read-only first-full-attention attribution, not equivalence or speedproof.",
+  "scope": "Original/repeat/32768 on same113valid positions; no reader/backward/update; parent rehash. No active jobs, readout dependencies, source or tolerances changed."
+}

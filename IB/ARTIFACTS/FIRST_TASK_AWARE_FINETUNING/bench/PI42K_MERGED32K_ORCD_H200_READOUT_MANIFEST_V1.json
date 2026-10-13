@@ -1,0 +1,26 @@
+{
+  "kind": "pi42k_merged32k_readout_v2",
+  "helper_sha256": {
+    "evaluate_pi42k_merged32k_v1.py": "75ed0d3c94033f8d9bfa5e71c123bbc32b1ba77c50767c34e816a0824be9a91a",
+    "evaluate_pi42k_merged32k_v1.sbatch": "d7554632a7b2049781a24459b42f6a81d93fbaa30491f97c19e559bca8b83000",
+    "evaluate_strong_long_cohort_v1.py": "a49dec5dc2aab1791b3e2afd746d4f6127ff70a00aa3385c6bedba348578e585",
+    "evaluate_qualitative_cohort.py": "e0e96dd9ba7b29d46eaa30a120cd35da828f201e1949a0e38a87217f08af09ae",
+    "evaluate_long_cross.py": "5a1ba0ca737959478b9e10c8ad419ce7ec8404b6b25367986042adfa8abb2c58",
+    "evaluate_model_confirmation.py": "a02962ff7678bc11a5bd50e4e84865753c93aa0c0821a7e0df008c1901517986",
+    "evaluate_model_comparison_cohort.py": "167aa74528eeb642f3b0318dc43194ebd2b2ad30d30cb6a07cacab192b003f90",
+    "evaluate_pi42k_merged32k_orcd_h200_v1.sbatch": "39757549a250c9f375c41e407666994640aae12cba1386464b60ed5a9b9ef60c",
+    "evaluate_pi42k_merged32k_v2.py": "211ab983df6c3db6df2b0a230ff20708a4166f8f5abeec2b04fb3485d3d8b5fc"
+  },
+  "scope": "Own completed960\u00d71/120-stage Adam5370 final32k100 actualAC plus fresh three-view NLL; same-allocation parent42k/final2k retention NLL. No confirmation.",
+  "training_design": "External frozen design is checked by training source receipt; this readout manifest does not mutate that design.",
+  "numeric_replay": "Final32k every gold-token logp and answerNLL versus own saved100 panel, unchanged1e-3 absolute gate. Allthree cells explicitly retain the actual saved training logits_chunk_tokens; missing/invalid/resolved-different values fail.",
+  "runtime": "45min allocation;1850s final32k then300s each parent2k andfinal2k; fresh process percell, partial output stops sequence for explicit resume.",
+  "deployment": {
+    "host": "ORCD H200",
+    "training_job_dependency": 23558386,
+    "run_root": "/home/ngom/orcd/pool/activation/taskaware/pi960_h200_v1",
+    "output": "reports/pi42k_merged32k_orcd_h200_cohort100",
+    "shared_source": "/home/ngom/orcd/pool/activation/taskaware/train_ws_night_v1",
+    "science": "Same final/initial/input/optimizer guards, scoring, decoder and tolerances; V2 explicitly binds allthree cells to recorded training head-chunk policy. OriginalV1 worker/CSAIL launcher/manifest and training designs remain unchanged."
+  }
+}

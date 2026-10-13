@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A calm, linear Tressoir artifact">
+  <title>Mixed channel training</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.css">
+</head>
+<body>
+  <main class="tressoir-document">
+<header class="document-header"><p class="eyebrow">Training · live report</p><h1 id="run-title" data-morph-skip>Mixed channel training</h1>
+<p>One pass through the frozen available data. Questions, compaction histories, agent trajectories and reconstruction passages are counted separately.</p></header>
+<section class="section"><h2>Progress</h2><p id="phase" data-morph-skip>Waiting for training data.</p><p id="prior-training" data-morph-skip></p><p id="progress" data-morph-skip></p><progress id="completion" max="1" value="0" style="width:100%" data-morph-skip></progress><p id="freshness" data-morph-skip></p></section>
+<section class="section"><h2>Data in this run</h2><table><thead><tr><th>Task</th><th>Unique training items</th><th>Target tokens / epoch</th></tr></thead><tbody id="data" data-morph-skip></tbody></table></section>
+<section class="section"><h2>Held-out loss</h2><p>Gold negative log likelihood, nats per target token; lower is better. Lines show the held panel for each task. Full-context and no-context controls use the frozen initial reader throughout.</p><canvas id="plot" width="900" height="280" role="img" aria-label="Held gold NLL by completed training examples" style="width:100%;height:280px" data-morph-skip></canvas><p id="plot-message" data-morph-skip>No held panel yet.</p>
+<table><thead><tr><th>Task</th><th>Held AC</th><th>Learning panel</th><th>Frozen full context</th><th>Frozen no context</th></tr></thead><tbody id="metrics" data-morph-skip></tbody></table>
+<p>Multi-input rows are reported separately from single-input rows. Learning panels revisit a fixed subset of training examples. They are separate from the recent training loss. Ordinary agent SFT has no latent context; its two frozen controls are the same recorded text history.</p></section>
+<section class="section"><h2>Task panel</h2><p>Gold NLL (nats per target token) of a fixed evaluation-only item set per task group. Questions are the same across Q/A views; passages are the same across reconstruction layouts. The same panel file is shared by the reconstruction and mixed phases. Recent training is the mean per-example objective of the last ≤100 training examples in that group (not token-weighted). Groups prefixed held/ are this run's own held items; the headline curve above uses only those.</p>
+<canvas id="group-plot" width="900" height="300" role="img" aria-label="Task-panel NLL by group" style="width:100%;height:300px" data-morph-skip></canvas>
+<table><thead><tr><th>Group</th><th>Items</th><th>First panel</th><th>Latest panel</th><th>Change</th><th>Latest, no reconstruction-text overlap (items)</th><th>Learning panel</th><th>Recent training</th><th>Frozen full context</th><th>Frozen no context</th></tr></thead><tbody id="groups" data-morph-skip></tbody></table></section>
+<section class="section"><h2>Recent training</h2><p id="training" data-morph-skip>Waiting for an optimizer update.</p><p>The weighted training objective and the per-task panel losses have different averages. Compare learning and held losses within each task.</p></section>
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-tsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-rust.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-sql.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/meta.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.js"></script>
+
+<script>
+(function(){
+ if(window.channelMixtureReport)return;window.channelMixtureReport=true;
+ const names={rag_qa:'RAG Q/A',trajectory_qa:'Trajectory Q/A',compaction:'Compaction summaries',agent_teacher:'Ordinary agent SFT',agent_regular:'Regular agent SFT',reconstruction:'Reconstruction'};
+ const kinds={rag_qa:'rag_qa',trajectory_qa:'traj_qa',compaction:'compaction_summary',agent_teacher:'agent_sft',agent_regular:'agent_sft',reconstruction:'reconstruct'};
+ const colors=['#3484df','#c564b5','#279c80','#d28b25','#b04a8f','#8b77d9'];
+ const n=x=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+ const loss=x=>x==null?'—':Number(x).toFixed(3);
+ function txt(id,value){const e=document.getElementById(id);if(e&&e.textContent!==value)e.textContent=value;}
+ function table(id,rows){const b=document.getElementById(id);rows.forEach((values,i)=>{let r=b.rows[i];if(!r)r=b.insertRow();values.forEach((v,j)=>{let c=r.cells[j];if(!c)c=r.insertCell();if(c.textContent!==String(v))c.textContent=v;});});while(b.rows.length>rows.length)b.deleteRow(-1);}
+ function update(d){
+  txt('run-title',d.title||'Mixed channel training');
+  txt('prior-training',d.prior_training?.source_items?'Already trained in the earlier phase: '+n(d.prior_training.source_items)+' passages / '+n(d.prior_training.target_tokens)+' target tokens. Progress below covers the remaining data.':'');
+  const families=Object.keys(names).filter(k=>d.counts[k]>0);
+  txt('phase',d.phase);const completed=(d.epoch-1)*d.examples_per_epoch+d.examples_completed,total=d.epochs*d.examples_per_epoch;
+  txt('progress',n(d.sources_per_epoch)+' unique source items × '+d.epochs+' epoch'+(d.epochs===1?'':'s')+' · '+n((d.epoch-1)*d.sources_per_epoch+d.sources_completed)+' source items presented · '+n(completed)+' / '+n(total)+' training examples ('+(100*completed/total).toFixed(1)+'%)');
+  document.getElementById('completion').value=completed/total;txt('freshness','Last update: '+d.updated_utc);
+  table('data',families.map(k=>[names[k],n(d.counts[k]),n(d.target_tokens[k])]));
+  const panels=d.panels||[],last=panels.at(-1),held=last?.['held by kind']||{},learning=last?.['learning by kind']||{};
+  const known=new Set([...Object.keys(held),...Object.keys(d.fixed?.full_context?.by_kind||{})]);
+  const diagnostics={mixed:'recursive rows + fresh text',transport:'recursive transport',balanced:'balanced recursive encoding'};
+  table('metrics',families.flatMap(k=>[kinds[k],...(known.has(kinds[k]+':multi')?[kinds[k]+':multi']:[]),...Object.keys(diagnostics).map(x=>kinds[k]+':diagnostic:'+x).filter(x=>known.has(x))].map(kind=>[names[k]+(kind.endsWith(':multi')?' · 2–3 inputs':kind.includes(':diagnostic:')?' · '+diagnostics[kind.split(':').at(-1)]+' (held only)':''),loss(held[kind]?.loss),loss(learning[kind]?.loss),loss(d.fixed?.full_context?.by_kind?.[kind]?.loss),loss(d.fixed?.no_context?.by_kind?.[kind]?.loss)])));
+  txt('training',d.train_nll==null?'Waiting for an optimizer update.':'Most recent weighted training NLL: '+loss(d.train_nll));
+  txt('plot-message',panels.length?families.map(k=>names[k]).join(' · '):'No held panel yet; initial references or preparation are still running.');
+  const canvas=document.getElementById('plot'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);
+  const series=families.map(k=>({color:colors[Object.keys(names).indexOf(k)],name:names[k],pts:panels.map(p=>[(p.epoch-1)*d.examples_per_epoch+p['examples presented'],p['held by kind']?.[kinds[k]]?.loss]).filter(p=>Number.isFinite(p[1]))}));
+  const first=panels[0]?.['held by group']||{},latest=last?.['held by group']||{},lg=last?.['learning by group']||{},tg=d.training_nll_by_group||{};
+  const gnames=Object.keys(latest).length?Object.keys(latest):Object.keys(d.fixed?.full_context?.by_group||{});
+  table('groups',gnames.map(g=>[g,n(latest[g]?.items??d.fixed?.full_context?.by_group?.[g]?.items),loss(first[g]?.nll_token),loss(latest[g]?.nll_token),
+   latest[g]&&first[g]?(latest[g].nll_token-first[g].nll_token>=0?'+':'')+(latest[g].nll_token-first[g].nll_token).toFixed(3):'—',
+   latest[g]?.clean_items?loss(latest[g].clean_nll_token)+' ('+latest[g].clean_items+')':'—',loss(lg[g]?.nll_token),loss(tg[g]?.loss),loss(d.fixed?.full_context?.by_group?.[g]?.nll_token),loss(d.fixed?.no_context?.by_group?.[g]?.nll_token)]));
+  drawGroups(panels,gnames,total,d.examples_per_epoch);
+  const ymax=Math.max(.1,...series.flatMap(s=>s.pts.map(p=>p[1])))*1.1;ctx.font='12px sans-serif';ctx.strokeStyle='#888';ctx.fillStyle='#888';
+  ctx.beginPath();ctx.moveTo(45,10);ctx.lineTo(45,h-40);ctx.lineTo(w-15,h-40);ctx.stroke();ctx.fillText('0',22,h-36);ctx.fillText(ymax.toFixed(2),2,17);ctx.fillText(n(total)+' presented examples',w-180,h-10);
+  for(const s of series){ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.beginPath();s.pts.forEach(([x,y],i)=>{x=45+x/total*(w-65);y=h-40-y/ymax*(h-55);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();s.pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(45+x/total*(w-65),h-40-y/ymax*(h-55),3,0,7);ctx.fill();});}
+ }
+ function drawGroups(panels,gnames,total,perEpoch){
+  const canvas=document.getElementById('group-plot'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);
+  const palette=['#3484df','#c564b5','#279c80','#d28b25','#8b77d9','#d9534f','#5a9e3a','#a0782c','#2f7f9f','#b04a8f','#6c6c6c','#e07b39','#4f63c2','#7aa33b','#c43e6e','#399e9e','#8a5a44','#9b59b6','#1f8a5b','#b8860b'];
+  const series=gnames.map((g,i)=>({color:palette[i%palette.length],name:g,pts:panels.map(p=>[(p.epoch-1)*perEpoch+p['examples presented'],p['held by group']?.[g]?.nll_token]).filter(p=>Number.isFinite(p[1]))}));
+  if(!series.some(s=>s.pts.length))return;
+  const ymax=Math.max(.1,...series.flatMap(s=>s.pts.map(p=>p[1])))*1.1,left=45,right=190;ctx.font='11px sans-serif';ctx.strokeStyle='#888';ctx.fillStyle='#888';
+  ctx.beginPath();ctx.moveTo(left,10);ctx.lineTo(left,h-30);ctx.lineTo(w-right,h-30);ctx.stroke();ctx.fillText('0',22,h-26);ctx.fillText(ymax.toFixed(2),2,17);
+  series.forEach((s,i)=>{ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.beginPath();s.pts.forEach(([x,y],j)=>{x=left+x/total*(w-left-right);y=h-30-y/ymax*(h-45);j?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+   ctx.fillText(s.name,w-right+8,14+i*14);});
+ }
+ let active=false;async function poll(){if(active)return;active=true;try{const r=await fetch('report_data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);update(await r.json());}catch(e){txt('freshness','Live data unavailable; retaining the last panel and retrying. '+e.message);}finally{active=false;}}
+ poll();setInterval(poll,15000);document.addEventListener('tressoir:render',poll);window.addEventListener('tressoir:render',poll);
+})();
+</script>
+</body>
+</html>
