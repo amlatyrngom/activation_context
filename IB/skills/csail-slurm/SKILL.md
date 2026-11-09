@@ -49,7 +49,7 @@ Host csail slurm-login.csail.mit.edu
 
 ## Agent rules (carried over from ORCD, adapted)
 
-- **Every remote call goes through `IB/TMP/AGENT_AC_PRETRAINING/ac_recon/csail_ssh.sh`**: `ssh -O check csail` first (local socket only), then `ssh -o ControlMaster=no -o ProxyJump=none -o ProxyCommand=false -o BatchMode=yes csail …`. With the master gone the call fails locally in milliseconds with no network contact (verified 09-18): no script ever starts a Duo flow or a password prompt on the jump host. Exit 97 = channel down; loops print one "channel down" line and stay quiet.
+- **Every remote call goes through `IB/CANON/CANON_ARTIFACTS/cluster_access/csail_ssh.sh`**: `ssh -O check csail` first (local socket only), then `ssh -o ControlMaster=no -o ProxyJump=none -o ProxyCommand=false -o BatchMode=yes csail …`. With the master gone the call fails locally in milliseconds with no network contact (verified 09-18): no script ever starts a Duo flow or a password prompt on the jump host. Exit 97 = channel down; loops print one "channel down" line and stay quiet.
 - **Nothing heavy on the login node** (ORCD lesson 09-18: a hung `du`/`quota` got the whole session killed): `squeue`, `sacct`, `sbatch`, `scancel`, `sinfo`, small file reads, short python over small JSON. Sizes and disk checks run inside jobs.
 - One call per monitor cycle, cycles ≥ 50 min for unattended loops.
 - Cancel jobs by id only; kill by PID with bracketed patterns; never `pkill -f` a pattern that matches the calling shell.

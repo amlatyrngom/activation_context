@@ -1,0 +1,54 @@
+# Added by SkyPilot for ssh config of all clusters
+Include ~/.sky/generated/ssh/*
+
+
+# ORCD Engaging (see IB/skills/orcd-access/SKILL.md); Kerberos id ngom
+# 09-26: orcd-login.mit.edu load-balances by source address and sends this container to login009, where every new ngom
+# shell hangs after auth (TCP forwards still work, slowly). So `orcd` = login010's internal address through that balancer hop.
+# Untested fallback if the hop breaks: HostName orcd-login.mit.edu + ProxyJump jump.csail.mit.edu (another source address).
+Host orcd-hop
+  HostName orcd-login.mit.edu
+  User ngom
+  IdentityFile ~/.ssh/id_ed25519_orcd
+  IdentitiesOnly yes
+  ControlMaster no
+  ControlPath none
+Host orcd
+  HostName 10.1.221.10
+  HostKeyAlias login010
+  ProxyJump orcd-hop
+  User ngom
+  IdentityFile ~/.ssh/id_ed25519_orcd
+  IdentitiesOnly yes
+  ControlMaster auto
+  ControlPath ~/.ssh/cm/%r@%h:%p
+  ControlPersist 168h
+  ServerAliveInterval 60
+  ServerAliveCountMax 10
+  TCPKeepAlive yes
+
+# CSAIL (09-18): slurm-login is reachable only through jump.csail.mit.edu; CSAIL Duo (duo.csail.mit.edu) is asked once on the jump
+# master, internal hosts trust proxied connections. Use: ssh csail 'cmd' (first time interactive: Duo push).
+Host jump.csail.mit.edu
+  User ngom
+  IdentityFile ~/.ssh/id_ed25519_orcd
+  IdentitiesOnly yes
+  ControlMaster auto
+  ControlPath ~/.ssh/cm/%r@%h:%p
+  ControlPersist 168h
+  ServerAliveInterval 60
+  ServerAliveCountMax 10
+  TCPKeepAlive yes
+  ForwardAgent no
+Host csail slurm-login.csail.mit.edu
+  HostName slurm-login.csail.mit.edu
+  User ngom
+  IdentityFile ~/.ssh/id_ed25519_orcd
+  IdentitiesOnly yes
+  ProxyJump jump.csail.mit.edu
+  ControlMaster auto
+  ControlPath ~/.ssh/cm/%r@%h:%p
+  ControlPersist 168h
+  ServerAliveInterval 60
+  ServerAliveCountMax 10
+
