@@ -92,7 +92,7 @@ def main():
     if needed > len(pool):
         raise SystemExit(f"--steps {a.steps} x --epu {a.epu} = {needed} items, the pool holds {len(pool)} (rebuild the data larger)")
     if a.longest_first:                                    # probe: peak memory on the longest items (reader / encoder lengths grow with these)
-        size = (lambda r: r["tokens"]) if a.kind == "recon" else (lambda r: len(r["question"]) + sum(len(corpus[i][0]) + len(corpus[i][1]) for i in r["top20"]))
+        size = (lambda r: r["tokens"]) if a.kind == "recon" else (lambda r: len(r["question"]) + sum(len(corpus[i][0]) + len(corpus[i][1]) for i in S.row_passages(r)))
         ranked = sorted(range(len(pool)), key=lambda i: -size(pool[i]))
         head = set(ranked[:a.longest_first * a.epu])
         train_rows = [pool[i] for i in ranked[:a.longest_first * a.epu]] + [r for i, r in enumerate(pool) if i not in head][:needed - len(head)]

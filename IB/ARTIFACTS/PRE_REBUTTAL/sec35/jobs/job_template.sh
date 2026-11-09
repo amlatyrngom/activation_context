@@ -37,11 +37,12 @@ ENC_LR=@ENC_LR@; READER_LR=@READER_LR@; EPU=8; WARMUP=50   # pre-rebuttal (2026-
 PENALTY=@PENALTY@; SEED=@SEED@                          # no-context penalty weight (applies only while the reader trains); data order / sampling seed
 EVAL_SPLIT=${SEC45_EVAL_SPLIT:-@EVAL_SPLIT@}; EVAL_MAX_NEW=256      # pre-rebuttal: one scorer for every arm (dev1000 for choices, test1000 for reported numbers), cap 256
 #   (user 10-27: a truly frozen reader, never a tiny rate like 1e-12; the trainer then skips its gradients and the no-context penalty)
-READER_ID=${SEC45_READER_ID:-Qwen/Qwen3-4B-Instruct-2507}   # override only for the CPU job test (a local tiny model folder)
+READER_ID=${SEC45_READER_ID:-@READER@}   # §3.5: Qwen/Qwen3-4B-Instruct-2507; retrieval: Qwen/Qwen3.5-9B
+RES_LAYERS="@RES_LAYERS@"; TASK_K="@K@"; EVAL_K="@EVAL_K@"; LINEAR_SKIP="@LINEAR_SKIP@"   # retrieval (2026-11-09): reader layers of the res mode (all = every full-attention layer), passages per item (k or a mix), eval k, least-squares row head for a fresh pair
 ENCODER_ID=@ENCODER@                                    # v6: empty = the encoder is a copy of the reader; else a smaller encoder (SEC45_ENCODER; in/res only)
 S3=${SEC45_S3:-@S3@}
 BUNDLE=${SEC45_BUNDLE:-@BUNDLE@}                        # code bundle under $W/code/ (jobs/make_bundle.py; staged by jobs/stage.sh)
-RECON_DATA=fineweb_recon_v1; TASK_DATA=hotpot_tasks_v2  # under $W/data/ (v2 = v1 + dev1000 + test1000)
+RECON_DATA=fineweb_recon_v1; TASK_DATA=@TASK_DATA@  # under $W/data/ (hotpot_tasks_v2 = v1 + dev1000 + test1000; rq_tasks_v1 = retrieval rows with top200)
 # ========================================================================================================================
 no() { echo "$(date -u +%FT%TZ) REFUSED: $*" >&2; exit 2; }
 for v in "$STEPS" "$TRAIN_SECONDS" "$CKPT_EVERY" "$MICRO" "$GPU_MATCH" "$PAIR_GB" "$OPT_GB"; do case "$v" in *__P0*|'') no "a P0 value is not filled in ($v): run the P0 probes, then python jobs/make_jobs.py --probes .../probe_summary_*.json";; esac; done
@@ -140,6 +141,9 @@ fi
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
 export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit RQ_THINKING=0 QA4B_READER=$READER_ID QA4B_SIDE=${ENCODER_ID:-$READER_ID} QA4B_RANK=128
 if [ -n "$ENCODER_ID" ]; then export SEC45_ENCODER=$ENCODER_ID; else unset SEC45_ENCODER; fi
+if [ -n "$RES_LAYERS" ]; then export SEC45_RES_LAYERS=$RES_LAYERS; else unset SEC45_RES_LAYERS; fi
+if [ -n "$TASK_K" ]; then export SEC45_K=$TASK_K; else unset SEC45_K; fi
+if [ "$LINEAR_SKIP" = 1 ]; then export SEC45_LINEAR_SKIP=1; else unset SEC45_LINEAR_SKIP; fi
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 case $MODE in in) export QA4B_LAYERS=none QA4B_KV=0;; res) export QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0;; kv) export QA4B_LAYERS=none QA4B_KV=1;; *) no "MODE $MODE";; esac
 for MID in $READER_ID $ENCODER_ID; do        # v6: the encoder's weights too (unauthenticated downloads can stall: 3 tries of 15 min)
@@ -154,7 +158,7 @@ UPLOADER=
 [ "$USE_S3" = 1 ] && { ( while sleep 900; do upload > /dev/null 2>&1; done ) & UPLOADER=$!; }
 trap '[ -n "$UPLOADER" ] && kill $UPLOADER 2>/dev/null; [ "$USE_S3" = 1 ] && { say "final upload"; upload; }' EXIT
 TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --penalty-weight $PENALTY --seed $SEED)
-EVAL=("${PYC[@]}" $C/kit/sec45_eval.py --mode $MODE --data $TD --split $EVAL_SPLIT --batch 32 --max-new $EVAL_MAX_NEW)
+EVAL=("${PYC[@]}" $C/kit/sec45_eval.py --mode $MODE --data $TD --split $EVAL_SPLIT --batch 32 --max-new $EVAL_MAX_NEW ${EVAL_K:+--k $EVAL_K})
 FAILED=0
 # ---- run ----
 case $KIND in

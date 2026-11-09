@@ -130,13 +130,39 @@ def recon_items(study, passages: list[dict], seed: int = 0):
     return items
 
 
+def row_k(row: dict) -> int:
+    """Passages read for one row. §3.5 rows (top20): 20. Retrieval rows (top200, pre-rebuttal 2026-11-09): SEC45_K, one k or a
+    comma list (a mix: each row draws k = ks[crc32(id) % len(ks)], fixed per question, so every arm and every seed sees the same k)."""
+    if "top20" in row:
+        return PER_CALL
+    import zlib
+    ks = [int(x) for x in os.environ.get("SEC45_K", "20").split(",")]
+    assert all(k % PER_CALL == 0 and 0 < k <= len(row["top200"]) for k in ks), ks
+    return ks[zlib.crc32(row["id"].encode()) % len(ks)]
+
+
+def row_passages(row: dict) -> list[int]:
+    """The passage ids a row's reader sees: §3.5 top20 (golds injected), retrieval top200[:k] (plain BM25)."""
+    return [int(x) for x in (row["top20"] if "top20" in row else row["top200"][:row_k(row)])]
+
+
 def task_items(study, corpus, rows: list[dict], ac_name: str):
-    """HotpotQA items: question first, then ONE encoder call over the 20 passages (golds injected), target 'Final answer: <answer>'."""
+    """HotpotQA items: question first, then the row's k passages as k/20 question-first encoder calls of 20 (§3.5: ONE call over
+    the 20 with golds injected), target 'Final answer: <answer>'. Items come back in the order of `rows`."""
     import rq_common as C
     assert not C.THINK, "RQ_THINKING=0 must be set before rq_common is imported (setup_environment)"
-    top = {r["id"]: [int(x) for x in r["top20"]] for r in rows}
-    return C.build_items(study, corpus, rows, top, ac_name, RATIO, replies=C.answer_replies(rows), calls=1, per_call=PER_CALL,
-                         question_first=True)
+    top = {r["id"]: row_passages(r) for r in rows}
+    replies = C.answer_replies(rows)
+    ks = [len(top[r["id"]]) for r in rows]
+    out = [None] * len(rows)
+    for k in sorted(set(ks)):
+        idx = [i for i, x in enumerate(ks) if x == k]
+        group = C.build_items(study, corpus, [rows[i] for i in idx], top, ac_name, RATIO, replies=replies, calls=k // PER_CALL,
+                              per_call=PER_CALL, question_first=True)
+        assert len(group) == len(idx), (k, len(group), len(idx))
+        for i, item in zip(idx, group):
+            out[i] = item
+    return out
 
 
 def link_pair(ac_folder, reader_folder, destination: Path) -> bool:

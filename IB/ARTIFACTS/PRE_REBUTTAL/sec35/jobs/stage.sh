@@ -11,7 +11,7 @@
 set -euo pipefail
 source "$(dirname "$0")/cluster_lib.sh"
 [ $# -ge 1 ] || { sed -n 2,11p "$0"; exit 2; }
-BUNDLE=${SEC45_BUNDLE:-sec35_code_v1.tar.gz}
+BUNDLE=${SEC45_BUNDLE:-sec35_code_v2.tar.gz}
 cluster $1
 stage_jobs() {
   echo "== $H: job scripts"
@@ -24,7 +24,7 @@ if [ "${2:-}" = --jobs-only ]; then stage_jobs; exit 0; fi
 CACHE=$REPO/IB/TMP/PRE_REBUTTAL/stage_cache; mkdir -p $CACHE
 for f in $BUNDLE $BUNDLE.sha256; do [ -f $CACHE/$f ] || aws s3 cp --quiet $S3/code/$f $CACHE/$f; done
 (cd $CACHE && sha256sum -c $BUNDLE.sha256)
-for d in fineweb_recon_v1/material.json.gz hotpot_tasks_v2/train.jsonl hotpot_tasks_v2/dev200.jsonl hotpot_tasks_v2/dev1000.jsonl hotpot_tasks_v2/test1000.jsonl hotpot_tasks_v2/hotpotqa.corpus.jsonl.gz; do
+for d in fineweb_recon_v1/material.json.gz hotpot_tasks_v2/train.jsonl hotpot_tasks_v2/dev200.jsonl hotpot_tasks_v2/dev1000.jsonl hotpot_tasks_v2/test1000.jsonl hotpot_tasks_v2/hotpotqa.corpus.jsonl.gz rq_tasks_v1/train.jsonl rq_tasks_v1/dev200.jsonl rq_tasks_v1/eval500.jsonl rq_tasks_v1/hotpotqa.corpus.jsonl.gz; do
   [ -f $DATA_ROOT/$d ] || { echo "local data $DATA_ROOT/$d is missing (s3x getdir $S3/data/... first)" >&2; exit 2; }
 done
 echo "== $H: folders"
@@ -33,7 +33,7 @@ echo "== $H: code bundle"
 xfer -a --no-owner --no-group $CACHE/$BUNDLE $CACHE/$BUNDLE.sha256 $H:$W/code/
 remote 60 "cd $W/code && sha256sum -c $BUNDLE.sha256"
 echo "== $H: data"
-for d in fineweb_recon_v1 hotpot_tasks_v2; do
+for d in fineweb_recon_v1 hotpot_tasks_v2 rq_tasks_v1; do
   xfer -aL --no-owner --no-group --exclude '*.tmp' --exclude '*.part' $DATA_ROOT/$d/ $H:$W/data/$d/
 done
 remote 60 "ls -l $W/data/fineweb_recon_v1 $W/data/hotpot_tasks_v2"

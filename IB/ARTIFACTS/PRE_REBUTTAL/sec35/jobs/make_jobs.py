@@ -53,13 +53,20 @@ def from_probes(paths: list[Path]) -> tuple[str, dict]:
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--values", type=Path); p.add_argument("--gpu"); p.add_argument("--probes", type=Path, nargs="+")
-    p.add_argument("--out", type=Path); p.add_argument("--bundle", default="sec35_code_v1.tar.gz")
+    p.add_argument("--out", type=Path); p.add_argument("--bundle", default="sec35_code_v2.tar.gz")
     p.add_argument("--values-out", type=Path, help="with --probes: where the merged values go (default jobs/values_<gpu>.json)")
     p.add_argument("--tag", default="", help="run-name suffix (v4: '_v4' -> R_in_v4, S_in_v4, T_in_v4 starting from R_in_v4); keeps new runs apart from old folders")
     p.add_argument("--reader-lr", default="2e-5", help="reader LoRA learning rate; 0 = frozen reader (exactly 0, never a tiny rate)")
     p.add_argument("--encoder-lr", default="2e-5", help="encoder (AC modules + encoder LoRA) learning rate")
     p.add_argument("--penalty", default="1.0", help="no-context penalty weight (only while the reader trains)")
     p.add_argument("--seed", default="0", help="data order seed")
+    p.add_argument("--reader", default="Qwen/Qwen3-4B-Instruct-2507", help="reader Hub id (retrieval: Qwen/Qwen3.5-9B)")
+    p.add_argument("--res-layers", default="", help="res mode reader layers (SEC45_RES_LAYERS; retrieval 9B: all)")
+    p.add_argument("--k", default="", help="retrieval rows: passages per item, one k or a mix (SEC45_K, e.g. 20,100,200)")
+    p.add_argument("--eval-k", default="", help="retrieval rows: k of the accuracy evals during training")
+    p.add_argument("--linear-skip", action="store_true", help="fresh smaller-encoder pair: least-squares row head (SEC45_LINEAR_SKIP=1)")
+    p.add_argument("--task-data", default="hotpot_tasks_v2", help="task data folder under W/data")
+    p.add_argument("--p0-gpu", default="H200", help="P0 probe: a text the GPU name must contain")
     p.add_argument("--eval-split", default="dev1000", help="accuracy evals during training: dev1000 (choices) or test1000 (reported)")
     p.add_argument("--steps", type=int, help="override S/T steps (items = steps x 8; the train pool holds 90,447 = 11,305 updates)")
     p.add_argument("--ckpt-every", type=int, help="override S/T ckpt_every (multiple of 8; also the eval points)")
@@ -72,7 +79,7 @@ def main():
     modes_wanted = a.modes.split(",")
     if set(modes_wanted) - set(MODES):
         raise SystemExit(f"--modes {a.modes}: one of {MODES}")
-    if a.encoder and ("kv" in modes_wanted or "P0" in a.runs.split(",")):
+    if a.encoder and "kv" in modes_wanted:
         raise SystemExit("--encoder: modes in/res and runs R,S,T only (All-Layer KVs need the reader's own base)")
     if a.encoder and a.bundle in ("sec45_code_v3.tar.gz", "sec45_code_v4.tar.gz", "sec45_code_v5.tar.gz"):
         raise SystemExit(f"--encoder needs bundle v6 or later (got {a.bundle})")
@@ -106,7 +113,7 @@ def main():
                 entry |= ({"steps": a.steps} if a.steps else {}) | ({"ckpt_every": a.ckpt_every} if a.ckpt_every else {})
             if run == "P0":
                 fill = {"STEPS": "23", "SECONDS": "1500", "CKPT_EVERY": "0", "MICRO": "1", "KIND": "probe", "HOURS": "3", "INIT": "fresh",
-                        "GPU": "contains:H200", "PAIR_GB": "3", "OPT_GB": "0"}
+                        "GPU": f"contains:{a.p0_gpu}", "PAIR_GB": "3", "OPT_GB": "0"}
             else:
                 key = "R" if run == "R" else "ST"
                 fill = {"STEPS": str(entry.get("steps", f"__P0_{key}_STEPS__")), "SECONDS": str(entry.get("seconds", f"__P0_{key}_SECONDS__")),
@@ -120,7 +127,8 @@ def main():
                     raise SystemExit(f"{mode} {run} steps {entry['steps']} is not a multiple of ckpt_every {entry.get('ckpt_every')} (evals / slots on exact updates)")
             if float(a.reader_lr) != 0 and float(a.reader_lr) < 1e-7:
                 raise SystemExit(f"--reader-lr {a.reader_lr}: a tiny rate is not a frozen reader; pass 0")
-            fill |= {"RUN": f"{run}_{mode}{a.tag}", "MODE": mode, "READER_LR": a.reader_lr, "WHAT": f"{WHAT[run]}; write mode {NAMES[mode]}" + (f"; encoder {a.encoder}" if a.encoder else ""), "S3": S3, "BUNDLE": a.bundle, "ENC_LR": a.encoder_lr, "PENALTY": a.penalty, "SEED": a.seed, "EVAL_SPLIT": a.eval_split,
+            fill |= {"RUN": f"{run}_{mode}{a.tag}", "MODE": mode, "READER_LR": a.reader_lr, "WHAT": f"{WHAT[run]}; write mode {NAMES[mode]}" + (f"; encoder {a.encoder}" if a.encoder else ""), "S3": S3, "BUNDLE": a.bundle, "ENC_LR": a.encoder_lr, "PENALTY": a.penalty, "SEED": a.seed, "EVAL_SPLIT": a.eval_split, "READER": a.reader, "RES_LAYERS": a.res_layers,
+                     "K": a.k, "EVAL_K": a.eval_k, "LINEAR_SKIP": "1" if a.linear_skip else "", "TASK_DATA": a.task_data,
                      "ENCODER": a.encoder}
             text = template
             for key, value in fill.items():

@@ -33,7 +33,11 @@ def main():
     p.add_argument("--pair", nargs=2, metavar=("AC_DIR", "READER_DIR")); p.add_argument("--out", type=Path); p.add_argument("--score", type=Path)
     p.add_argument("--label", default=""); p.add_argument("--limit", type=int); p.add_argument("--batch", type=int, default=32)
     p.add_argument("--max-new", type=int, default=128, help="new-token cap (a trained reply is ~10 tokens; a cut reply scores wrong)")
+    p.add_argument("--k", help="retrieval rows: passages read (SEC45_K; one value for an eval)")
     a = p.parse_args()
+    if a.k:
+        import os
+        os.environ["SEC45_K"] = a.k
     started = time.monotonic()                     # the whole process after argument parsing (the planner scales load + decode from it)
     S.setup_environment(a.mode or "in")
     import rq_common as C

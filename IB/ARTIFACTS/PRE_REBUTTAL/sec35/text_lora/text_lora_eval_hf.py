@@ -21,7 +21,19 @@ os.environ.setdefault("RQ_THINKING", "0")
 sys.path.insert(0, os.environ.get("RQ_KIT", str(Path(__file__).resolve().parent)))
 import rq_common as C  # noqa: E402
 
-MODEL_ID = "Qwen/Qwen3-4B-Instruct-2507"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "kit"))
+from sec45_common import row_passages  # noqa: E402  (§3.5 top20; retrieval top200[:k] with SEC45_K)
+
+MODEL_ID = os.environ.get("TEXT_MODEL_ID", "Qwen/Qwen3-4B-Instruct-2507")   # retrieval: Qwen/Qwen3.5-9B
+
+
+def load_model(torch):
+    """The reader base: a causal LM, or (Qwen3.5) the multimodal class whose text model is used alone, as the harness loads it."""
+    import transformers
+    config = transformers.AutoConfig.from_pretrained(MODEL_ID)
+    multimodal = hasattr(config, "vision_config")
+    cls = transformers.AutoModelForMultimodalLM if multimodal else transformers.AutoModelForCausalLM   # as activation/harness/runtime.py
+    return cls.from_pretrained(MODEL_ID, dtype=torch.bfloat16).to("cuda")
 
 
 def summarize(rows, by_id):
@@ -37,8 +49,10 @@ def main():
     p.add_argument("--data", type=Path, required=True); p.add_argument("--split", default="dev1000"); p.add_argument("--out", type=Path, required=True)
     g = p.add_mutually_exclusive_group(required=True); g.add_argument("--adapter", type=Path); g.add_argument("--base", action="store_true")
     p.add_argument("--label", default=""); p.add_argument("--limit", type=int); p.add_argument("--batch", type=int, default=32)
-    p.add_argument("--max-new", type=int, default=256)
+    p.add_argument("--max-new", type=int, default=256); p.add_argument("--k", help="retrieval rows: passages read (SEC45_K)")
     a = p.parse_args()
+    if a.k:
+        os.environ["SEC45_K"] = a.k
     assert not C.THINK, "RQ_THINKING=0"
     started = time.monotonic()
     rows = [json.loads(line) for line in open(a.data / f"{a.split}.jsonl")]
@@ -48,9 +62,9 @@ def main():
     todo = [r for r in rows if r["id"] not in done]
     if todo:
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoTokenizer
         tok = AutoTokenizer.from_pretrained(MODEL_ID); tok.padding_side = "left"
-        model = AutoModelForCausalLM.from_pretrained(MODEL_ID, dtype=torch.bfloat16).to("cuda")
+        model = load_model(torch)
         if a.adapter:
             from peft import PeftModel
             model = PeftModel.from_pretrained(model, str(a.adapter)).merge_and_unload()     # merged: the same weights, plain decode speed
@@ -59,7 +73,7 @@ def main():
         stop = [tok.convert_tokens_to_ids("<|im_end|>"), tok.eos_token_id]
         prompts = []
         for r in todo:
-            user = C.READ.format(passages=C.passages_block(corpus, [int(x) for x in r["top20"]]), question=r["question"])
+            user = C.READ.format(passages=C.passages_block(corpus, row_passages(r)), question=r["question"])
             prompts.append(tok.apply_chat_template([{"role": "user", "content": user}], tokenize=False, add_generation_prompt=True, enable_thinking=False))
         order = sorted(range(len(todo)), key=lambda i: len(prompts[i]))                # similar lengths per batch (less padding)
         a.out.parent.mkdir(parents=True, exist_ok=True)
