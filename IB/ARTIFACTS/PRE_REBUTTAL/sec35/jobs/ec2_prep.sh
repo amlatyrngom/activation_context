@@ -7,8 +7,10 @@ S3=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/sec35
 W=/root/sec35; PY=/opt/activation/.venv/bin/python; BUNDLE=${1:-sec35_code_v3.tar.gz}
 mkdir -p $W/code $W/data $W/jobs $W/runs
 (cd /root/sky_workdir && UV_PROJECT_ENVIRONMENT=/opt/activation/.venv /usr/local/bin/uv sync --frozen -q)
-X() { $PY $W/s3x.py "$@"; }
-[ -f $W/s3x.py ] || $PY - <<PYEOF
+[ -x /root/s3venv/bin/python ] || { /usr/local/bin/uv venv -q /root/s3venv && /usr/local/bin/uv pip install -q --python /root/s3venv/bin/python boto3; }   # boto3 is not in the project lock
+S3PY=/root/s3venv/bin/python
+X() { $S3PY $W/s3x.py "$@"; }
+[ -f $W/s3x.py ] || $S3PY - <<PYEOF
 import boto3; boto3.client("s3").download_file("general-bucket-aln", "activation-context-data/pre_rebuttal_20261109/sec35/jobs/s3x.py", "$W/s3x.py")
 PYEOF
 X getdir $S3/jobs/ $W/jobs/
