@@ -1,0 +1,39 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/tqa_r2_keep.py
+# lines: 1-16,119-134 (of 171 total)
+# extracted: nl -ba | sed -n per range; keep rule: correct (math-verify), closed with Final answer line, grounded (0 unsupported items)
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: f6e9a7bd874d70042f46cc7b5e8be964ec95bda183b5875eb50e89ba3de337c8
+# ---- lines 1-16
+     1	"""
+     2	Round-2 synthesis SFT material, stage 3 (CPU): score, ground and keep the 27B's completions (tqa_r2_generate.py) of a triples plan.
+     3	
+     4	A sample passes when (1) its final answer is correct (Musique token F1 = 1, DeepMath math-verify; run_synth1call.parse_answer),
+     5	(2) generation ended on its own with the reasoning closed (</think>) and a `Final answer:` last line, and (3) it is grounded: in
+     6	every sentence that names agents ("Agent 2", "Agents 1 and 3"), each double-quoted string, multi-word capitalized name (not
+     7	an agent label or a sentence's first word) and number of two or more digits appears (normalized) in what the reader is given: any agent's run, any final answer or the question (numbers are not
+     8	checked on DeepMath, where the 27B computes its own). Every passing sample is
+     9	kept (no per-triple cap). --tolerance allows that many unsupported items per sample (default 0).
+    10	
+    11	Fallback (--hint-out): mixed triples with no passing sample whose gold answer appears in some agent's run text get a hint
+    12	triples file (the prompt plus the gold answer, for the 27B only; the reader never sees it). Kept hint completions are marked
+    13	"hint": true; --hint-cap limits them to that share of the kept rows (shortest first).
+    14	
+    15	    python tqa_r2_keep.py --triples plan/triples.jsonl --gen out/pilot_r1 [--gen out/hint_r1 --hint-triples hint.jsonl] --out keep_r1
+    16	"""
+# ---- lines 119-134
+   119	        passing = []
+   120	        for sample in gen["samples"]:
+   121	            text = sample["text"]
+   122	            stats[label]["samples"] += 1
+   123	            answer, how = parse_answer(t["benchmark"], text)
+   124	            correct = score(t["dataset_task"], answer) >= 1.0
+   125	            closed = sample["finish"] == "stop" and "</think>" in text and how == "final_answer_line"
+   126	            checked, unsupported = grounding(text, t["run_texts"], t["solver_results"], t["dataset_task"]["agent_prompt"], numbers=t["benchmark"] != "deepmath")
+   127	            grounded = unsupported <= args.tolerance
+   128	            stats[label]["correct"] += correct
+   129	            stats[label]["correct_closed"] += correct and closed
+   130	            stats[label]["pass"] += correct and closed and grounded
+   131	            stats[label]["items_checked"] += checked
+   132	            stats[label]["items_unsupported"] += unsupported
+   133	            if correct and closed and grounded:
+   134	                passing.append((sample["generated_tokens"], sample, answer))

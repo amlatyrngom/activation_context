@@ -1,0 +1,11 @@
+{"update": 0, "held_nll": 6.055384324550628, "held_nll_token": 6.1411089467001885, "token_accuracy": 0.17578603782132268, "items": 500, "wall_seconds": 238}
+{"update": 200, "held_nll": 2.264122833609581, "held_nll_token": 2.266438646394365, "token_accuracy": 0.5002790613174438, "items": 500, "wall_seconds": 2207}
+{"update": 400, "held_nll": 0.3772210417687893, "held_nll_token": 0.37898658750711656, "token_accuracy": 0.881189176082611, "items": 500, "wall_seconds": 4182}
+{"update": 600, "held_nll": 0.18821224207431078, "held_nll_token": 0.18951008207334707, "token_accuracy": 0.9388286170959472, "items": 500, "wall_seconds": 6172}
+{"update": 800, "held_nll": 0.12379994566738606, "held_nll_token": 0.12474178032154211, "token_accuracy": 0.9598469043970108, "items": 500, "wall_seconds": 8166}
+{"update": 1000, "held_nll": 0.0958294831365347, "held_nll_token": 0.09662239786176006, "token_accuracy": 0.9689590705633163, "items": 500, "wall_seconds": 10180}
+{"update": 1200, "held_nll": 0.0779754398688674, "held_nll_token": 0.07862313407832489, "token_accuracy": 0.9745271064043045, "items": 500, "wall_seconds": 12211}
+{"update": 1400, "held_nll": 0.06461600168049335, "held_nll_token": 0.06515582158997586, "token_accuracy": 0.9789974235296249, "items": 500, "wall_seconds": 14255}
+{"update": 1600, "held_nll": 0.05598895138129592, "held_nll_token": 0.056573756933913075, "token_accuracy": 0.9819665549993515, "items": 500, "wall_seconds": 16308}
+{"update": 1800, "held_nll": 0.05178366186283529, "held_nll_token": 0.05234557337981973, "token_accuracy": 0.9833145334720611, "items": 500, "wall_seconds": 18389}
+{"update": 2000, "held_nll": 0.04871163765154779, "held_nll_token": 0.04922480035872451, "token_accuracy": 0.9843490916490555, "items": 500, "wall_seconds": 20464}

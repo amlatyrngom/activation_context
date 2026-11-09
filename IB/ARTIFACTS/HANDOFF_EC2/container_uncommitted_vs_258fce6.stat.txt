@@ -1,0 +1,11 @@
+ .gitmodules                              |   3 +
+ activation/ac_model/ac_model.py          |  65 ++++-
+ activation/ac_model/ac_model_training.py | 103 ++++++--
+ activation/ac_model/ac_model_utils.py    |  60 ++++-
+ activation/harness/hf_utils.py           |   9 +-
+ activation/harness/kv_transfer.py        | 421 ++++++++++++++++++++++++++++---
+ activation/harness/loaded_model.py       |   8 +
+ activation/tests/test_batched_decode.py  |   8 +-
+ activation/tests/test_interventions.py   |  28 ++
+ activation/tests/test_nested_material.py |  20 ++
+ 10 files changed, 651 insertions(+), 74 deletions(-)

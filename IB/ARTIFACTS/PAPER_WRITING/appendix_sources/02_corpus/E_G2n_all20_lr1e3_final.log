@@ -1,0 +1,58 @@
+harness: reader Qwen/Qwen3-4B-Instruct-2507 (LoRA rank 128), side Qwen/Qwen3-4B-Instruct-2507, AC {"default_compression_ratio": 0.0625, "input_pooling_stride": 0, "intervention_frequency": 0, "kv_transfer": true, "min_view_rows": 2, "mixer_layers": 2}, layout interleaved; from environment (QA4B_KV=1: key/value transfer, encoder base = reader base)
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+qwen4b - Initializing model.
+qwen4b - Initialized model in 0.51s.
+Loading LongHealth data from: /root/am_v1/compaction/data/longhealth_benchmark_v5.json
+Loaded 4 grouped articles (5 patients per article)
+Loading LongHealth data from: /root/am_v1/compaction/data/longhealth_benchmark_v5.json
+Loaded 20 grouped articles (1 patients per article)
+qwen4b - Moving model to cuda.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 8843.68it/s]
+qwen4b - Moved model in 1.44s
+am_eval: reader adapter in bf16 (504 tensors)
+rag_poc - Head scales initialized: side 0.0220, target 0.0220
+am context 0 pass 0: 10/100 done, 9 correct, 138s
+am context 0 pass 0: 20/100 done, 17 correct, 231s
+am context 0 pass 0: 30/100 done, 26 correct, 326s
+am context 0 pass 0: 40/100 done, 35 correct, 362s
+am context 0 pass 0: 50/100 done, 44 correct, 446s
+am context 0 pass 0: 60/100 done, 54 correct, 485s
+am context 0 pass 0: 70/100 done, 63 correct, 560s
+am context 0 pass 0: 80/100 done, 71 correct, 602s
+am context 0 pass 0: 90/100 done, 79 correct, 683s
+am context 0 pass 0: 100/100 done, 86 correct, 864s
+am context 0: accuracy 0.8600 over 100
+am context 1 pass 0: 10/100 done, 8 correct, 916s
+am context 1 pass 0: 20/100 done, 16 correct, 987s
+am context 1 pass 0: 30/100 done, 24 correct, 1020s
+am context 1 pass 0: 40/100 done, 33 correct, 1080s
+am context 1 pass 0: 50/100 done, 40 correct, 1174s
+am context 1 pass 0: 60/100 done, 49 correct, 1299s
+am context 1 pass 0: 70/100 done, 59 correct, 1325s
+am context 1 pass 0: 80/100 done, 68 correct, 1358s
+am context 1 pass 0: 90/100 done, 77 correct, 1377s
+am context 1 pass 0: 100/100 done, 84 correct, 1434s
+am context 1: accuracy 0.8400 over 100
+am context 2 pass 0: 10/100 done, 8 correct, 1548s
+am context 2 pass 0: 20/100 done, 16 correct, 1658s
+am context 2 pass 0: 30/100 done, 26 correct, 1686s
+am context 2 pass 0: 40/100 done, 34 correct, 1730s
+am context 2 pass 0: 50/100 done, 41 correct, 1805s
+am context 2 pass 0: 60/100 done, 48 correct, 1915s
+am context 2 pass 0: 70/100 done, 55 correct, 2016s
+am context 2 pass 0: 80/100 done, 63 correct, 2104s
+am context 2 pass 0: 90/100 done, 73 correct, 2132s
+am context 2 pass 0: 100/100 done, 80 correct, 2177s
+am context 2: accuracy 0.8000 over 100
+am context 3 pass 0: 10/100 done, 10 correct, 2204s
+am context 3 pass 0: 20/100 done, 17 correct, 2316s
+am context 3 pass 0: 30/100 done, 26 correct, 2372s
+am context 3 pass 0: 40/100 done, 35 correct, 2457s
+am context 3 pass 0: 50/100 done, 43 correct, 2491s
+am context 3 pass 0: 60/100 done, 50 correct, 2581s
+am context 3 pass 0: 70/100 done, 58 correct, 2610s
+am context 3 pass 0: 80/100 done, 63 correct, 2671s
+am context 3 pass 0: 90/100 done, 72 correct, 2698s
+am context 3 pass 0: 100/100 done, 77 correct, 2803s
+am context 3: accuracy 0.7700 over 100
+am {"n": 400, "accuracy": 0.8175, "parsed": 0.9925, "per_context": {"0": 0.86, "1": 0.84, "2": 0.8, "3": 0.77}, "choices": {"4": 64, "1": 54, "2": 102, "3": 121, "5": 56, "None": 3}, "mean_chars": 868.835, "seconds": 2802.9}

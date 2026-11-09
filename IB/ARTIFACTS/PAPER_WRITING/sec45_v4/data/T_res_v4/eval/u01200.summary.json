@@ -1,0 +1,24 @@
+{
+ "acc": 63.5,
+ "em": 56.0,
+ "f1": 73.84,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.8,
+ "label": "T_res_v4_u1200",
+ "pair": [
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_01200/ac",
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_01200/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1567,
+  "decode_seconds": 92.0
+ },
+ "seconds": 107
+}

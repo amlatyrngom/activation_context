@@ -1,0 +1,24 @@
+{
+ "acc": 56.0,
+ "em": 51.5,
+ "f1": 64.78,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.9,
+ "label": "T_in_e17ls_u2400",
+ "pair": [
+  "/root/sec45/runs/T_in_e17ls/sync/ckpt/step_02400/ac",
+  "/root/sec45/runs/T_in_e17ls/sync/ckpt/step_02400/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1582,
+  "decode_seconds": 49.7
+ },
+ "seconds": 64
+}

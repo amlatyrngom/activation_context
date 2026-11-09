@@ -1,0 +1,76 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/run_synth1call_v2.py
+# lines: 1-18,26-48,98-115,153-160 (of 189 total)
+# extracted: nl -ba | sed -n per range; Results-Only / Results+Summary single call: untuned 9B, sampling, max_tokens 64000, thinking on
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: d2018af1d6a8271e04aa148c9a4519fa825f4a17dcbe0099bd4a3d1005d184d1
+# ---- lines 1-18
+     1	"""
+     2	run_synth1call_v2.py (Oct 15, round 2): run_synth1call.py plus --conditions (default synth_result only: the results-only
+     3	baseline on new sets that have no summaries). Otherwise unchanged.
+     4	
+     5	Non-agentic synthesis: one chat completion per task and condition (no tools, no agent loop), over the same three @3
+     6	solver runs and the summaries run_synth.py already wrote (ROLLOUTS/<summaries-tag>_summaries; nothing is rewritten).
+     7	
+     8	The prompt is one user message (no system message): the task text with its tool sentences replaced (TASK_EDITS), the
+     9	synthesis block (INSTRUCTION, results under the --cap rule of run_synth.py, summaries for synth_summary_result), and the
+    10	answer rule (FINAL_RULE). Untuned Qwen 3.5 9B through vLLM directly, the model's own chat template with thinking on
+    11	(enable_thinking=True, as the agentic runs), the agentic runs' thinking sampling with max_tokens --max-tokens, seed 0.
+    12	Answer: the last line starting "Final answer:" after the reasoning (DeepMath also: the last \\boxed{...}); none -> unparsed.
+    13	One process per GPU (--shard i --shards n); every output goes to <out>/gen_<shard>.jsonl as it finishes. --deadline stops
+    14	the engine loop cleanly (unfinished requests are written as "deadline").
+    15	
+    16	    python run_synth1call.py --out SYNC/PAPER_TRAJ_QA/tqa_synth1call_v1 --dry 2                       # print prompts, CPU
+    17	    CUDA_VISIBLE_DEVICES=0 python run_synth1call.py --out ... --shard 0 --shards 2 --deadline 2026-10-14T12:12Z
+    18	"""
+# ---- lines 26-48
+    26	from run_synth import NO_SUMMARY, load_solvers, read_summaries, solver_result
+    27	
+    28	MODEL_ID = "Qwen/Qwen3.5-9B"
+    29	CONDITIONS = ("synth_result", "synth_summary_result")
+    30	INSTRUCTION = {
+    31	    "synth_result": ("Three independent agents attempted this task. Their final answers are below. They may be wrong or disagree. "
+    32	                     "No tools are available to you: reason about the task and their answers, then give the single best answer."),
+    33	    "synth_summary_result": ("Three independent agents attempted this task. Their summaries and final answers are below. They may be wrong "
+    34	                             "or disagree. No tools are available to you: reason about the task, their summaries and their answers, then give "
+    35	                             "the single best answer."),
+    36	}
+    37	TASK_EDITS = {      # the solvers' task text, minus what only makes sense with tools (exact replacements)
+    38	    "musique": [("Answer the question using the corpus behind semantic_search (Wikipedia paragraphs; some are unrelated distractors). ", ""),
+    39	                ("When you are done, call submit_answer with the answer only: a short phrase, no explanation.", "")],
+    40	    "deepmath": [("When you are done, call submit_answer with the final answer only, in the form the problem asks for: a number, "
+    41	                  "a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No. No explanation.", "")],
+    42	}
+    43	FINAL_RULE = {
+    44	    "musique": "End your reply with one last line of the form `Final answer: <answer>`, with the answer only: a short phrase, no explanation.",
+    45	    "deepmath": ("End your reply with one last line of the form `Final answer: <answer>`, with the final answer only, in the form the problem "
+    46	                 "asks for: a number, a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No."),
+    47	}
+    48	SAMPLING = {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}   # THINKING_SAMPLING of the agentic runs
+# ---- lines 98-115
+    98	def main() -> int:
+    99	    parser = argparse.ArgumentParser()
+   100	    parser.add_argument("--sync-root", default=os.environ.get("ACTIVATION_SYNC_ROOT", "/root/activation_artifacts/SYNC"))
+   101	    parser.add_argument("--at3-id", default="tqa_at3_v1")
+   102	    parser.add_argument("--summaries-tag", default="tqa_synth_v1")
+   103	    parser.add_argument("--out", required=True)
+   104	    parser.add_argument("--cap", type=int, default=40_000)
+   105	    parser.add_argument("--max-tokens", type=int, default=64_000)
+   106	    parser.add_argument("--max-model-len", type=int, default=72_000)
+   107	    parser.add_argument("--seeds", type=int, default=3)
+   108	    parser.add_argument("--limit", type=int, default=None)
+   109	    parser.add_argument("--shard", type=int, default=0)
+   110	    parser.add_argument("--shards", type=int, default=1)
+   111	    parser.add_argument("--seed", type=int, default=0)
+   112	    parser.add_argument("--deadline", default=None, help="UTC, e.g. 2026-10-14T12:12Z")
+   113	    parser.add_argument("--dry", type=int, default=0, help="print the first N prompts of each benchmark and condition; no engine")
+   114	    parser.add_argument("--conditions", default="synth_result")
+   115	    args = parser.parse_args()
+# ---- lines 153-160
+   153	    from vllm import LLM, SamplingParams
+   154	    llm = LLM(model=MODEL_ID, max_model_len=args.max_model_len, kv_cache_dtype="fp8", gpu_memory_utilization=0.9,
+   155	              limit_mm_per_prompt={"image": 0, "video": 0}, seed=args.seed)
+   156	    params = SamplingParams(**SAMPLING, max_tokens=args.max_tokens, seed=args.seed)
+   157	    engine = llm.llm_engine
+   158	    by_id = {}
+   159	    for job in jobs:
+   160	        text = tokenizer.apply_chat_template([{"role": "user", "content": job["prompt"]}], tokenize=False, add_generation_prompt=True, enable_thinking=True)

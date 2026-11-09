@@ -1,0 +1,71 @@
+{
+ "_source": "/home/node/.claude/jobs/6f1c1373/tmp/ec2_fresh/rq/pair/ac/ac_modules.pt",
+ "_extraction": "torch.load(map_location='cpu', weights_only=False); tensors replaced by shape strings; read-only",
+ "content": {
+  "config": {
+   "ac_model_name": "rag_poc",
+   "base_side_model_name": "side_base",
+   "base_side_model_lora_name": "rag_side",
+   "target_model_name": "qwen4b",
+   "target_model_lora_name": "rag_reader",
+   "default_compression_ratio": 0.0625,
+   "mixer_layers": 2,
+   "mixer_window": 256,
+   "mixer_heads": 8,
+   "min_view_rows": 2,
+   "max_view_rows": 4096,
+   "side_lora_rank": 128,
+   "encode_batch_max_tokens": 65536,
+   "side_gradient_checkpointing": true,
+   "checkpoint_path": "/data/scratch/ngom/activation/long_recon_csail/pairs/lc3i/ac",
+   "intervention_frequency": -1,
+   "intervention_layers": null,
+   "add_last_layer_intervention": true,
+   "recursive_keys": false,
+   "input_pooling_stride": 0,
+   "input_pooling_window": 8,
+   "summary_layout": "interleaved",
+   "row_head_linear_skip": false,
+   "row_head_skip": false
+  },
+  "version": 44738,
+  "d_side": 2048,
+  "d_target": 4096,
+  "architecture_version": 2,
+  "model_ids": [
+   "Qwen/Qwen3.5-2B",
+   "Qwen/Qwen3.5-9B"
+  ],
+  "side_lora_targets": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "epoch_number": 1,
+  "interventions": {
+   "layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31
+   ],
+   "source": "passage_attention",
+   "attention_depth": "final",
+   "target": "residual",
+   "head_style": "lora",
+   "readouts": "rows,recursive,deltas",
+   "recursive_keys": false,
+   "head_parameters": 25202688,
+   "attention_parameters": 33615872
+  },
+  "modules": {}
+ }
+}

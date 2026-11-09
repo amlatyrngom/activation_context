@@ -1,0 +1,114 @@
+{
+ "_source": "/workspace/IB/ARTIFACTS/PAPER_WRITING/sec45_v4/data/S_res_v4/sync/S_res_v4.stats.json",
+ "_extracted": "scalar keys + timing dict + list lengths; learning_rates sampled at updates 1,25,50,51,1000,mid,last (list index = update-1; each entry = per-param-group rates); penalty: count of updates with nonzero penalty; last held entry",
+ "_note": "full file not copied (size); see _source",
+ "name": "S_res_v4",
+ "kind": "task",
+ "mode": "res",
+ "timing": {
+  "updates": 4000,
+  "seconds_per_update_median": 9.85,
+  "effective_seconds_per_update": 10.48,
+  "startup_seconds": 14.1,
+  "item_seconds_per_item": 0.00014,
+  "example_seconds_per_item": 0.0064,
+  "train_call_seconds": 41990.9,
+  "longest_first_updates": 0,
+  "pair_gb": 3.618,
+  "gpu_total_gb": 95.0,
+  "seconds_per_update_mean": 10.0,
+  "first_updates_seconds": [
+   9.2,
+   9.0,
+   7.6
+  ],
+  "baseline_panel_seconds": 49.3,
+  "placement_seconds": 6.2,
+  "reporting_seconds": 1131.0,
+  "checkpoint_seconds": 14.5,
+  "peak_gb": 32.4,
+  "wall_seconds": 42010,
+  "held_items": 200,
+  "micro_batch": 4,
+  "epu": 8,
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+ },
+ "held__len": 21,
+ "loss__len": 4000,
+ "step_seconds__len": 4000,
+ "grad_norm_ac__len": 4000,
+ "grad_norm_reader__len": 4000,
+ "penalty__len": 4000,
+ "learning_rates__len": 4000,
+ "stop_reason": "complete",
+ "valid": true,
+ "saved_updates__len": 9,
+ "final": "/root/sec45/runs/S_res_v4/sync/ckpt/final",
+ "order_trained__first_sha256": "c0a5726ed3470bdac76c362a831f020cb213a090a20f59f115bb4444ff329fca",
+ "order_predicted__first_sha256": "c0a5726ed3470bdac76c362a831f020cb213a090a20f59f115bb4444ff329fca",
+ "order_matches": true,
+ "order_full__first_sha256": "c0a5726ed3470bdac76c362a831f020cb213a090a20f59f115bb4444ff329fca",
+ "resumed_from_update": 0,
+ "resumed_optimizer": null,
+ "learning_rates_sampled": {
+  "update_1": [
+   4.0000000000000003e-07,
+   4.0000000000000003e-07
+  ],
+  "update_25": [
+   1e-05,
+   1e-05
+  ],
+  "update_50": [
+   2e-05,
+   2e-05
+  ],
+  "update_51": [
+   2e-05,
+   2e-05
+  ],
+  "update_1000": [
+   1.7555815543550587e-05,
+   1.7555815543550587e-05
+  ],
+  "update_2001": [
+   1.1178939688985633e-05,
+   1.1178939688985633e-05
+  ],
+  "update_4000": [
+   2.000002846544943e-06,
+   2.000002846544943e-06
+  ]
+ },
+ "learning_rates_peak_per_group": [
+  2e-05,
+  2e-05
+ ],
+ "learning_rates_last_over_peak": [
+  0.10000014232724715,
+  0.10000014232724715
+ ],
+ "penalty_nonzero_updates": 3997,
+ "penalty_nonzero_fraction": 0.9992,
+ "grad_norm_ac_max": 105.9982681274414,
+ "grad_norm_ac_last": 0.7023147940635681,
+ "grad_norm_reader_max": 83.37213897705078,
+ "grad_norm_reader_last": 3.236380100250244,
+ "held_last": {
+  "update": 4000,
+  "held_nll": 0.9980444066936616,
+  "held_nll_token": 1.0743279666070362,
+  "token_accuracy": 0.800871434956789,
+  "items": 200,
+  "wall_seconds": 41983,
+  "answer_nll": 2.114905455329612,
+  "p_exact": 0.14378742352367577,
+  "prefix_nll": 1.6833333333333334e-05,
+  "end_nll": 0.22467749999999997,
+  "answer_items": 200
+ },
+ "loss_first_last": [
+  12.530402779579163,
+  0.8948394870385528
+ ]
+}

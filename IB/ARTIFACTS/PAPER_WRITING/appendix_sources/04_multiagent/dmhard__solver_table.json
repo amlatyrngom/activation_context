@@ -1,0 +1,29 @@
+{
+ "at3_id": "tqa_dmhard",
+ "benchmarks": {
+  "deepmath": {
+   "n": 300,
+   "of": 300,
+   "majority_vote": 237,
+   "solver_single_run_per_seed": [
+    220,
+    219,
+    231
+   ],
+   "solver_single_run": "223.3 \u00b1 6.7",
+   "any@3": 265,
+   "k_histogram": {
+    "0": 35,
+    "1": 29,
+    "2": 67,
+    "3": 169
+   },
+   "finish": {
+    "submitted": 883,
+    "no_tool_call": 15,
+    "max_tool_errors": 1,
+    "trajectory_cap": 1
+   }
+  }
+ }
+}

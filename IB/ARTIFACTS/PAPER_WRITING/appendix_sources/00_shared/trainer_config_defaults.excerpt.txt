@@ -1,0 +1,74 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 77-141 229-231
+# extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: working tree (uncommitted modifications on top of HEAD: ' M activation/ac_model/ac_model_training.py')
+--- lines 77-141 ---
+    77	@dataclass
+    78	class ActivationContextTrainingConfig:
+    79	    """
+    80	    The training recipe. The defaults are the ones the reconstruction bench settled on: SFT on the gold target tokens, cosine
+    81	    decay with a linear warm-up, one joint gradient-norm clip over the encoder and the reader adapter, the no-context penalty
+    82	    (λ x KL(base || adapted reader) on the same history with its AC parts removed, at the target positions, on a random
+    83	    quarter of the examples per update and scaled by 1 / fraction) whenever the reader adapter trains, and stored teacher /
+    84	    reference targets that always hold the gold token. `learning_rate_target_lora = 0` freezes the reader adapter (it neither
+    85	    steps nor carries the penalty): the regime that adapts the encoder alone to a dataset or task.
+    86	    """
+    87	    loss_kind: t.Literal["kl", "sft"] = "sft"   # "sft": cross-entropy on the target tokens; "kl": the coarsened KL to the stored teacher (the reader as it is at the
+    88	                                               # call's start, on the in-context history; its top-k log-probs + the remainder mass are stored before the first update)
+    89	    learning_rate_ac: float = 1e-4             # AC modules and the side LoRA
+    90	    learning_rate_target_lora: float = 2e-5    # the target adapter (0 = frozen: no steps, no penalty)
+    91	    learning_rate_special_inputs: float = 0.0  # a third group: the attached special-input handler's parameters (ActivationContextModel.special_input_handler)
+    92	    weight_decay: float = 0.0
+    93	    adam_betas: tuple[float, float] = (0.9, 0.95)
+    94	    adam_eps: float = 1e-8
+    95	    max_grad_norm: float = 1.0
+    96	    lr_schedule: str = "cosine"                # "constant" (warm-up only), "cosine": decay to lr_final_fraction of the base rate over the planned updates, or "cooldown" (warm-up → constant → decay over the last cooldown_updates), or "cyclical" (that, repeated every cycle_updates)
+    97	    lr_final_fraction: float = 0.1
+    98	    warmup_updates: int = 50                   # linear warm-up of both learning rates over this many updates (counted across calls)
+    99	    schedule_total_updates: int | None = None  # planned updates the cosine spans (default: updates done at the call's start + steps x num_epochs, so a resume stays on the curve)
+   100	    schedule_anchor_update: int | None = None   # a phase continuing an earlier schedule: from this update the cosine runs from
+   101	    schedule_anchor_factor: float | None = None # this factor (the earlier schedule's value there) down to lr_final_fraction, with no jump
+   102	    cooldown_updates: int | None = None        # lr_schedule "cooldown": the decay (to lr_final_fraction) spans the last cooldown_updates of the planned updates; constant before
+   103	    cooldown_shape: str = "linear"             # the cooldown's decay shape: "linear" (the usual) or "cosine"
+   104	    cycle_updates: int | None = None           # lr_schedule "cyclical": the planned updates are cut into cycles of this many (a cycle starts at each multiple; the last one runs to the plan's end and takes the
+   105	                                               # remainder). Each cycle: linear warm-up from lr_final_fraction to 1 over warmup_updates, constant, then the cooldown_updates decay back to lr_final_fraction
+   106	    cycle_reset_optimizer: bool = False        # lr_schedule "cyclical": the Adam moments and step counts start fresh at every cycle start after the first, so a cycle is a restart from the pair the cycle before ended on
+   107	    resume_optimizer: bool = False             # load `optimizer.pt` next to the AC checkpoint the model was loaded from (moments + updates done), once per model
+   108	    resume_skip_steps: int = 0                 # steps of the first epoch of this call already trained by a previous attempt (resume from a mid-epoch checkpoint)
+   109	    checkpoint_every_updates: int | None = None  # mid-epoch checkpoint (AC_MODELS/<name>/epoch_<n>_step_<s> + optimizer.pt + partial_epoch.json) every this many steps
+   110	    checkpoint_every_epoch: bool = True        # AC_MODELS/<name>/epoch_<n> (+ latest) and LORAS/<target lora>/epoch_<n>
+   111	    no_context_penalty_weight: float = 1.0     # λ of the no-context penalty (0 = off); applied only while the reader adapter trains
+   112	    no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
+   113	    teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
+   114	                                               # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)
+   115	    teacher_targets_file: str | None = None    # precomputed KL teacher targets (save_teacher_targets format, same top-k) loaded at the start of train(): valid only while the teacher is the reader as it is at that start (e.g. a frozen or fresh reader adapter)
+   116	    teacher_cache_block_examples: int | None = None  # opt-in bounded preparation; KL uses a persisted frozen reader adapter, references are kept for one block + fixed panels
+   117	    full_context_match_weight: float = 0.0     # > 0 (SFT only; 0 = off, nothing below is read): each training example with an in-context view also pulls the reader-with-rows towards
+   118	                                               # the reader WITHOUT its adapter on that in-context history (the whole text in context), at the target positions of the last layer:
+   119	                                               # weight x [exact KL(teacher || student) over the vocabulary + (1 - cosine) of the hidden states]. The teacher runs live, without gradient.
+   120	    full_context_match_cosine: bool = True     # the (1 - cosine) part of the match term
+   121	    full_context_match_skip_first: int = 0     # leading target positions left out of the match (a target that opens with text the untrained reader would not start with)
+   122	    full_context_match_kinds: tuple[str, ...] = ("rag_qa",)   # item kinds that carry the term (reconstruction items have an in-context view too and stay out unless named)
+   123	    full_context_match_teacher_adapter: bool = False   # which reader the teacher is. False: the reader WITHOUT its adapter (the untrained reader), as described above. True: the reader WITH its
+   124	                                               # current adapter (the weights the student uses at that update; still one live pass without gradient, its Dropout modules in eval for the pass)
+   125	                                               # on the same in-context history: the term then pulls "this reader with the rows" towards "this reader with the whole text".
+   126	    full_context_match_kl: bool = True         # the KL part of the match term. False: the term is weight x (1 - cosine) alone (needs full_context_match_cosine); the KL is still measured, without gradient, and logged
+   127	    full_context_match_text_loss: bool = True  # False: an example that carries the match term is trained by the term (and its no-context penalty) alone: its text cross-entropy is computed and logged
+   128	                                               # as always but not backpropagated. Examples without the term keep their text loss.
+   129	    deltas_off_panel: bool = False             # deep models: evaluate the reporting items a second time at every panel with the rows kept and the deltas removed ("deltas_off"): held minus deltas_off is the deltas' contribution
+   130	    updates_per_epoch: int = 4                 # maximum gradient steps per epoch when examples_per_update is unset
+   131	    examples_per_update: int | None = None     # when set, overrides updates_per_epoch: ceil(items / examples_per_update) steps
+   132	    micro_batch_examples: int = 1              # SFT / KL: examples per right-padded reader forward (1 = one example at a time)
+   133	    execution_policy: dict | None = None       # measured training-only batching/residency policy from tune_ac_execution
+   134	    distributed: bool = False                 # torchrun: same global logical batch, one existing model pair per GPU
+   135	    deterministic: bool = False               # strict scoped kernels; CUDA also needs CUBLAS_WORKSPACE_CONFIG at process startup
+   136	    max_example_tokens: int = 72_000           # explicit error; no dropping or truncation
+   137	    logits_chunk_tokens: int | None = None     # completion positions per lm_head chunk
+   138	    fp32_head_matmul: bool = False
+   139	    gradient_checkpointing: bool = True        # on both bases
+   140	    gradient_checkpointing_min_tokens: int | None = None
+   141	    seed: int = 0
+--- lines 229-231 ---
+   229	    def penalty_active(self) -> bool:
+   230	        """The no-context penalty trains the reader adapter only: it is on when λ > 0 and the adapter has a learning rate."""
+   231	        return self.no_context_penalty_weight > 0 and self.learning_rate_target_lora > 0

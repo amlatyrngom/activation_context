@@ -1,0 +1,72 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_COMPACTION/split.json",
+ "_extraction": "python: split.json is 1.08 MB; kept the scalar metadata keys verbatim and summarised 'tasks' (3,686 entries) and 'repositories' by counts. Cross-check with prefixes_eval9c_200__index.json: evaluation_order of the 200 kept prefixes.",
+ "seed": 20261013,
+ "eval_tasks_target": 1000,
+ "loader": "LcaBugLocalizationDataset.load default filters, split dev, lazy checkouts",
+ "summary": {
+  "evaluation": {
+   "py": 488,
+   "java": 357,
+   "kt": 165
+  },
+  "training": {
+   "py": 1883,
+   "java": 715,
+   "kt": 78
+  }
+ },
+ "official_test_tasks_kept": 99,
+ "repositories_keys": [
+  "evaluation",
+  "training"
+ ],
+ "repositories_sizes": {
+  "evaluation": 189,
+  "training": 615
+ },
+ "tasks_count": 3686,
+ "tasks_by_side": {
+  "evaluation": 1010,
+  "training": 2676
+ },
+ "task_fields": [
+  "benchmark",
+  "dataset_id",
+  "evaluation_order",
+  "language",
+  "official_test",
+  "repo",
+  "side",
+  "task_id"
+ ],
+ "evaluation_order_range": [
+  0,
+  1009
+ ],
+ "repos_shared_by_training_and_evaluation": 0,
+ "eval9c_200_kept_prefixes_evaluation_order": {
+  "min": 1,
+  "max": 436,
+  "count": 200,
+  "sorted_ascending": true
+ },
+ "eval9c_200_prefix_tokens": {
+  "min": 20007,
+  "max": 25983,
+  "mean": 20659.165
+ },
+ "eval9c_200_by_benchmark": {
+  "lca_bug_localization": 89,
+  "lca_bug_localization_kt": 34,
+  "lca_bug_localization_java": 77
+ },
+ "eval9c_200_teacher_total_tokens": {
+  "min": 20528,
+  "max": 49976
+ },
+ "eval9c_200_continuation_tokens_after_cut": {
+  "min": 224,
+  "max": 29690
+ }
+}

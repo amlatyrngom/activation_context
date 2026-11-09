@@ -1,0 +1,21 @@
+# source: /workspace/IB/ARTIFACTS/PAPER_TRAJ_QA/PLAN.md
+# lines: 196-204,320-324 (of 441 total)
+# extracted: nl -ba | sed -n per range; PLAN.md: the question-answering-over-trajectories phase (own-question packet tqa_own_ro_v1, pair tqa_own_ro_final) and M1 difficulty-8.5 targeting
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 98cc46fb250022837608800286111dc9521ee8f79c8bade378abd656663d8273
+# ---- lines 196-204
+   196	- **Questions (27B on CSAIL):** train single 8,657 (Musique 4,937, DeepMath 3,720), train multi 1,180 (708, 472); reserve single 1,706 (994, 712), reserve multi 239 (144, 95). **Multi-trajectory rows are not in this packet**: the builder reads single-trajectory rows only; using them needs a builder change (next packet).
+   197	- **SFT material (27B on pc-a):** summaries 2,994 of 3,000 (844 recovered from a plain reply); completions kept 1,364 of 2,000 (Musique 511 over 263 tasks, DeepMath 853 over 432 tasks; correct, finished, thinking kept); pc-a `SYNC/PAPER_TRAJ_QA/tqa_sft27_v1/sft_kept.jsonl`.
+   198	- **Packet** `paper_traj_qa_v1/tqa_own_v1/packets/tqa_own_ro_v1`: from the T1 pair `tqa_blind_ro_final`, blind encoder, sizes log-uniform 1/20–1/5, rows only, 2e-5 / 2e-5; 8,000 items = 1,000 updates (Musique 4,556, DeepMath 3,444). Held panel `task_panel_own_v1`: 64 reserve questions × 4 sizes (256 items); held scores are not comparable to T1's panel. Reserve questions outside the panel are excluded from training.
+   199	- **Training:** job 2665289, 2 H200 data-parallel (torchrun; single node only, so GH200 nodes cannot pair). Verified running 17:43Z (models loading). Estimate ≈20:45–21:30Z (T1 took 5 h 32 min on one GH200).
+   200	- **Next:** AC synthesizer eval with the new pair (`synth_ac_node.sh`, one GPU) against summaries + results (.40 / .51 / .83) and single call; last-mile SFT on the kept completions if still below; multi-trajectory rows in the next packet.
+   201	
+   202	## Result: the new pair on the reserve set (Oct 14 21:08Z)
+   203	- Training job 2665289 completed (2 h 48 min on 2 H200, 1,000 updates). Pair `tqa_own_ro_final`.
+   204	- Task set: the 200 reserve tasks (100 Musique, 100 DeepMath; 3 solver runs each). The earlier baseline task set was lost with a node, so results-only was rerun here for a like-for-like baseline; summaries + results, the agentic synthesizer and the T1 pair were not rerun on this set.
+# ---- lines 320-324
+   320	
+   321	  - u245 beats majority vote (34 tasks won, 14 lost; p .006) but not results-only (13 won, 21 lost; p .23).
+   322	  - The math-targeted round M1 trains at difficulty 8.5 and up. It is read on a new frozen set of 300 at that difficulty.
+   323	  - On this set M1 ties results-only (15 tasks won, 18 lost). Below difficulty 8.5 there is little room: at 7.5–8 results-only already matches the ceiling.
+   324	  - **Difficulty figure (Oct 17 11:30Z):** `IB/TMP/PAPER_TRAJ_QA/figs/fig_tqa_difficulty_m1.png`, built by `kit/make_fig_tqa_difficulty.py`. Buckets 6 to 8 come from this set and 8.5 and ≥9 from the hard set. M1 minus results-only by bucket: 0, −0.4, −2.2, +1.0, +5.4 points. The gain appears only at the top.

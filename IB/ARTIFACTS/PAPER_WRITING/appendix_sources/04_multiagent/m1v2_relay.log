@@ -1,0 +1,14 @@
+2026-10-17T02:36:06Z m1v2_relay: first CSAIL call at 2026-10-17T07:35Z
+2026-10-17T07:35:46Z m1v2_relay: call rc 0, state 'COMPLETED'
+2026-10-17T07:36:24Z m1v2_relay: pair laid out: 7 files, 2.4G
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+2026-10-17T07:37:02Z m1v2_relay: pc-a: md5 ok, READY
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+2026-10-17T07:37:38Z m1v2_relay: pc-b: md5 ok, READY
+2026-10-17T07:37:38Z m1v2_relay: done

@@ -1,0 +1,45 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/kit/make_fig_compaction.py
+# lines: 40-60,105-121
+# extracted: nl -ba | sed -n (how compact_seconds and ac_encode_seconds in frozen100_h0_fig.json are computed)
+# git commit: not tracked by git (IB/TMP is outside version control); file as on disk 2026-10-28
+
+    40	            if not line.strip():
+    41	                continue
+    42	            row = json.loads(line)
+    43	            task = row["agent_config"].get("dataset_task") or {}
+    44	            task_id = task.get("task_id") if isinstance(task, dict) else None
+    45	            if task_id is None or row.get("finish_reason") in ("error", "task_unavailable"):
+    46	                continue
+    47	            steps = row["trajectory"]
+    48	            tokens = sum(len(step["token_ids"]) for step in steps)
+    49	            answered = row.get("finish_reason") == "submitted"
+    50	            note_path = notes_folder / f"{task_id}.json".replace("/", "__")
+    51	            note = json.loads(note_path.read_text()) if note_path.exists() else {}
+    52	            turns = [step for step in steps if step["role"] == "assistant"]
+    53	            last_timing = (turns[-1].get("timing") or {}) if turns else {}
+    54	            runs[task_id] = {
+    55	                "solved": bool(row.get("score") and row["score"] >= 1.0), "answered": answered, "tokens": min(tokens, budget) if answered else budget,
+    56	                "size": note.get("replacement_tokens"), "seconds": row.get("duration"), "finish_reason": row.get("finish_reason"),
+    57	                "last_turn_seconds": last_timing.get("turn_seconds"), "last_turn_output_tokens": last_timing.get("output_tokens"),
+    58	                "answer_chars": len(row["answer"]) if isinstance(row.get("answer"), str) else None,
+    59	                "ac_compact_seconds": note.get("ac_compact_seconds"),
+    60	            }
+    ...
+   105	    if args.timing_tag:
+   106	        timed_labels = sorted(path.name[len(args.timing_tag) + 1:] for path in (sync_root / "ROLLOUTS").glob(f"{args.timing_tag}_*") if (path / "rollouts.jsonl").exists())
+   107	        timed = {label: load_variant(sync_root, args.timing_tag, label, args.budget) for label in timed_labels}
+   108	        writers = {label: runs for label, runs in timed.items() if label.startswith("summary_write")}
+   109	    numbers["timing_tag"] = args.timing_tag or args.tag
+   110	    for label, runs in writers.items():
+   111	        rows = [row for task, row in runs.items() if (args.timing_tag or task in common) and row["answered"] and row["last_turn_seconds"] is not None]
+   112	        if rows:
+   113	            numbers["variants"][label] = {"family": "summary_write", "written": len(rows), "of": len(runs) if args.timing_tag else len(common),
+   114	                                          "compact_seconds": interval([float(row["last_turn_seconds"]) for row in rows], rng),
+   115	                                          "compact_output_tokens": sum(row["last_turn_output_tokens"] or 0 for row in rows) / len(rows)}
+   116	    encodes = [float(row["ac_compact_seconds"]) for label, runs in timed.items() if family_of(label) == "ac"
+   117	               for task, row in runs.items() if (args.timing_tag or task in common) and row["ac_compact_seconds"] is not None]
+   118	    if encodes:
+   119	        numbers["ac_encode_seconds"] = interval(encodes, rng)
+   120	        numbers["ac_encode_runs"] = len(encodes)
+   121	        print(f"AC encoder pass: {numbers['ac_encode_seconds'][0]:.2f} s over {len(encodes)} runs (tag {numbers['timing_tag']})")
+    ...

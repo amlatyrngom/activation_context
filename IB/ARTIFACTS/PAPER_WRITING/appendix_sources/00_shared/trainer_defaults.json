@@ -1,0 +1,180 @@
+{
+ "_note": "Code defaults; per-run values in each run.json override these. Line numbers 'line' are of the working-tree file (uncommitted modifications exist on top of HEAD for ac_model_training.py); 'line_at_HEAD' is the same field in the committed file.",
+ "git_commit": "258fce6adf6e59ad54594b82863d7cb6169404fa",
+ "ActivationContextTrainingConfig": {
+  "file": "/workspace/activation/ac_model/ac_model_training.py",
+  "class_lines": "77-160 (working tree)",
+  "file_state": "M activation/ac_model/ac_model_training.py",
+  "defaults": {
+   "loss_kind": {
+    "default": "\"sft\"",
+    "type": "t.Literal[\"kl\", \"sft\"]",
+    "line": 87,
+    "line_at_HEAD": 87,
+    "default_at_HEAD": "\"sft\""
+   },
+   "learning_rate_ac": {
+    "default": "1e-4",
+    "type": "float",
+    "line": 89,
+    "line_at_HEAD": 89,
+    "default_at_HEAD": "1e-4"
+   },
+   "learning_rate_target_lora": {
+    "default": "2e-5",
+    "type": "float",
+    "line": 90,
+    "line_at_HEAD": 90,
+    "default_at_HEAD": "2e-5"
+   },
+   "weight_decay": {
+    "default": "0.0",
+    "type": "float",
+    "line": 92,
+    "line_at_HEAD": 91,
+    "default_at_HEAD": "0.0"
+   },
+   "adam_betas": {
+    "default": "(0.9, 0.95)",
+    "type": "tuple[float, float]",
+    "line": 93,
+    "line_at_HEAD": 92,
+    "default_at_HEAD": "(0.9, 0.95)"
+   },
+   "adam_eps": {
+    "default": "1e-8",
+    "type": "float",
+    "line": 94,
+    "line_at_HEAD": 93,
+    "default_at_HEAD": "1e-8"
+   },
+   "max_grad_norm": {
+    "default": "1.0",
+    "type": "float",
+    "line": 95,
+    "line_at_HEAD": 94,
+    "default_at_HEAD": "1.0"
+   },
+   "lr_schedule": {
+    "default": "\"cosine\"",
+    "type": "str",
+    "line": 96,
+    "line_at_HEAD": 95,
+    "default_at_HEAD": "\"cosine\""
+   },
+   "lr_final_fraction": {
+    "default": "0.1",
+    "type": "float",
+    "line": 97,
+    "line_at_HEAD": 96,
+    "default_at_HEAD": "0.1"
+   },
+   "warmup_updates": {
+    "default": "50",
+    "type": "int",
+    "line": 98,
+    "line_at_HEAD": 97,
+    "default_at_HEAD": "50"
+   },
+   "cooldown_shape": {
+    "default": "\"linear\"",
+    "type": "str",
+    "line": 103,
+    "line_at_HEAD": 102,
+    "default_at_HEAD": "\"linear\""
+   },
+   "no_context_penalty_weight": {
+    "default": "1.0",
+    "type": "float",
+    "line": 111,
+    "line_at_HEAD": 110,
+    "default_at_HEAD": "1.0"
+   },
+   "no_context_penalty_fraction": {
+    "default": "0.25",
+    "type": "float",
+    "line": 112,
+    "line_at_HEAD": 111,
+    "default_at_HEAD": "0.25"
+   },
+   "teacher_cache_top_k": {
+    "default": "32",
+    "type": "int",
+    "line": 113,
+    "line_at_HEAD": 112,
+    "default_at_HEAD": "32"
+   },
+   "gradient_checkpointing": {
+    "default": "True",
+    "type": "bool",
+    "line": 139,
+    "line_at_HEAD": 137,
+    "default_at_HEAD": "True"
+   },
+   "seed": {
+    "default": "0",
+    "type": "int",
+    "line": 141,
+    "line_at_HEAD": 139,
+    "default_at_HEAD": "0"
+   }
+  },
+  "penalty_active": {
+   "line": "229-231",
+   "code": "return self.no_context_penalty_weight > 0 and self.learning_rate_target_lora > 0",
+   "meaning": "no-context penalty applies only when weight>0 and the reader adapter LR>0"
+  }
+ },
+ "register_lora": {
+  "file": "/workspace/activation/harness/module_manager.py",
+  "file_state": "clean",
+  "signature_lines": "85-94",
+  "defaults": {
+   "rank": {
+    "default": 128,
+    "line": 89
+   },
+   "alpha": {
+    "default": "None -> 2 x rank",
+    "line": "90, 109"
+   },
+   "dropout": {
+    "default": 0.05,
+    "line": 91
+   },
+   "target_modules": {
+    "default": "None -> DEFAULT_LORA_TARGET_MODULES",
+    "line": "92, 111"
+   }
+  },
+  "DEFAULT_LORA_TARGET_MODULES": {
+   "line": 39,
+   "value": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+   ]
+  }
+ },
+ "grad_clip": {
+  "file": "/workspace/activation/ac_model/ac_model_training.py",
+  "line": 921,
+  "excerpt_file": "trainer_clip.excerpt.txt",
+  "meaning": "one clip_grad_norm_ over encoder (AC) params + reader adapter params (frozen sides excluded), max_norm=config.max_grad_norm"
+ },
+ "dropout_in_training": {
+  "file": "/workspace/activation/ac_model/ac_model_training.py",
+  "lines": "667-670",
+  "excerpt_file": "trainer_dropout_eval_mode.excerpt.txt",
+  "meaning": "bases set to train() for checkpointing, then disable_dropout() puts every Dropout module in eval: the LoRA dropout 0.05 is inactive during AC training"
+ },
+ "optimizer_and_schedule": {
+  "file": "/workspace/activation/agent_training/agent_training_utils.py",
+  "lines": "448-465 (AdamW), 484-545 (lr_factor: linear warm-up, cosine to final_fraction)",
+  "excerpt_file": "lr_schedule_optimizer.excerpt.txt"
+ }
+}

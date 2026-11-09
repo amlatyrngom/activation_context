@@ -1,0 +1,24 @@
+{
+ "acc": 0.5,
+ "em": 0.5,
+ "f1": 0.75,
+ "answered": 3.5,
+ "n": 200,
+ "length_stops": 178,
+ "new_tokens_mean": 117.5,
+ "label": "T_res_v4_u0",
+ "pair": [
+  "/root/sec45/init/R_res_v4_final/ac",
+  "/root/sec45/init/R_res_v4_final/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 23520,
+  "decode_seconds": 78.8
+ },
+ "seconds": 97
+}

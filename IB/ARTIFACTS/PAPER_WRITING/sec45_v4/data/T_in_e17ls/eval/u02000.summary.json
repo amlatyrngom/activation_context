@@ -1,0 +1,24 @@
+{
+ "acc": 55.5,
+ "em": 48.5,
+ "f1": 64.43,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.8,
+ "label": "T_in_e17ls_u2000",
+ "pair": [
+  "/root/sec45/runs/T_in_e17ls/sync/ckpt/step_02000/ac",
+  "/root/sec45/runs/T_in_e17ls/sync/ckpt/step_02000/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1564,
+  "decode_seconds": 50.1
+ },
+ "seconds": 64
+}

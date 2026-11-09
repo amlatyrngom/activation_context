@@ -1,0 +1,24 @@
+{
+ "acc": 0.0,
+ "em": 0.0,
+ "f1": 0.0,
+ "answered": 0.0,
+ "n": 200,
+ "length_stops": 200,
+ "new_tokens_mean": 128.0,
+ "label": "T_res_v4fr_u0",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/init/R_res_v4fr_final/ac",
+  "/data/scratch-fast/ngom/sec45/init/R_res_v4fr_final/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 25600,
+  "decode_seconds": 67.6
+ },
+ "seconds": 91
+}

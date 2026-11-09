@@ -1,0 +1,52 @@
+# source: /workspace/IB/ARTIFACTS/PAPER_WRITING/sec45_v4/make_sec45_v4.py
+# lines: 1-9 26-47 209-212 285-291
+# extracted: nl -ba | sed -n (which runs feed Fig 7: docstring, TEXT=53.0, acc() reads eval/*.summary.json with final=4000, p_bars arms S_v4/T_v4fr/T_v4, SIZES e06ls/e17ls/v4)
+# git commit: untracked (git status ??) in /workspace at HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: c8c1b91fd5837fc7
+
+----- lines 1-9 -----
+     1	"""Section 4.5 figures from the v4 runs (Oct 28). Qwen3-4B-Instruct-2507 reader (+ LoRA r128 unless frozen); encoder = 4B copy with
+     2	its own LoRA (or a Qwen3 0.6B / 1.7B with the linear-skip row head). R = FineWeb-Edu reconstruction, 2,000 updates; S = HotpotQA task
+     3	from scratch, T = task from R's final pair; 4,000 updates x 8 each. Gold documents among the top-20 BM25 (ideal recall@20). Dev200.
+     4	  fig7_<v>     training recipe: (a) R held NLL, (b) task held NLL, (c) dev200 accuracy; T solid, S dashed
+     5	  abl_<v>      ablations: (a) R held NLL with the reader trained vs frozen, (b) final accuracy trained vs frozen, (c) encoder size
+     6	Variants differ only in how the text + reader-LoRA baseline (T_text_lora: same 32,000 items, no no-context penalty) is shown.
+     7	Text references (untuned 4B reading the same tasks as text, greedy, lenient parse): top-20 53.0, gold 67.5, no context 19.0.
+     8	Data: data/<run>/ (small files from S3 sec45_20261026/runs/<run>/). Style from mocks_r2/make_r2.py.
+     9	Run: uv run --no-project --python 3.13 --with matplotlib --with numpy python make_sec45_v4.py
+----- lines 26-47 -----
+    26	MODES = [("in", "Input Embeddings", OURS_LIGHT, "o"), ("res", "Hidden Residuals", OURS, "s"), ("kv", "All-Layer KVs", OURS_DARK, "D")]
+    27	DASH, DOT = (0, (4, 2)), (0, (1, 1.4))
+    28	TEXT, TEXT_LORA = 53.0, "#555555"
+    29	LS_TEXT = (0, (3, 1.2, 1, 1.2, 1, 1.2))
+    30	STEPS = 4000
+    31	
+    32	
+    33	def held(run):
+    34	    f = next(p for p in (DATA / run / "sync" / f"{run}.held.jsonl", DATA / run / f"{run}.held.jsonl") if p.exists())
+    35	    rows = [json.loads(line) for line in open(f)]
+    36	    return [r["update"] for r in rows], [r["held_nll"] for r in rows]
+    37	
+    38	
+    39	def acc(run):
+    40	    if run == "T_text_lora":
+    41	        d = json.loads((DATA / run / "T_text_lora.dev200.scores.json").read_text())
+    42	        return [int(k[1:]) for k in sorted(d)], [d[k]["acc_lenient"] for k in sorted(d)]
+    43	    pts = []
+    44	    for f in (DATA / run / "eval").glob("*.summary.json"):
+    45	        u = f.name.removesuffix(".summary.json")
+    46	        pts.append((STEPS if u == "final" else int(u[1:]), json.loads(f.read_text())["acc"]))
+    47	    return [list(t) for t in zip(*sorted(pts))]
+----- lines 209-212 -----
+   209	LS_FULL = dict(ls="-", lw=1.4)                                   # full recipe: reconstruction first, reader trained
+   210	LS_SCRATCH = dict(ls=(0, (5, 2.2)), lw=1.0, mfc="white")         # task from scratch
+   211	LS_FROZEN = dict(ls=(0, (1, 1.3)), lw=1.6, mfc="white")          # reader frozen
+   212	SIZES = [("T_in_e06ls", "0.6B", "#F9C2AE", "v"), ("T_in_e17ls", "1.7B", "#EB6B4F", "^"), ("T_in_v4", "4B", "#A50F15", "o")]
+----- lines 285-291 -----
+   285	def p_bars(ax):
+   286	    """Final accuracy per write mode: from scratch | reader frozen | full recipe."""
+   287	    arms = [("S", "v4", LS_SCRATCH, "...."), ("T", "v4fr", LS_FROZEN, "////"), ("T", "v4", LS_FULL, "")]
+   288	    w = 0.27
+   289	    for i, (m, _, c, _) in enumerate(MODES):
+   290	        for j, (kind, tag, _, hatch) in enumerate(arms):
+   291	            v = acc(f"{kind}_{m}_{tag}")[1][-1]; x = i + (j - 1) * w

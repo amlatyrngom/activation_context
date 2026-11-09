@@ -1,0 +1,59 @@
+{
+ "reader_tokenizer": "Qwen/Qwen3-4B-Instruct-2507",
+ "top": 20,
+ "rule": "question-only BM25 top 20, both golds injected (rq_common.inject_golds)",
+ "train": {
+  "questions": 90447,
+  "both_golds_in_bm25_top20_before_injection": 0.5892,
+  "types": {
+   "bridge": 72991,
+   "comparison": 17456
+  },
+  "length_sample": 2000,
+  "encoder_tokens": {
+   "count": 2000,
+   "mean": 2303.2,
+   "median": 2279.0,
+   "p10": 1820,
+   "p90": 2828,
+   "min": 779,
+   "max": 4252
+  },
+  "target_tokens": {
+   "count": 2000,
+   "mean": 6.9,
+   "median": 6.0,
+   "p10": 4,
+   "p90": 10,
+   "min": 4,
+   "max": 65
+  }
+ },
+ "dev200": {
+  "questions": 200,
+  "both_golds_in_bm25_top20_before_injection": 0.565,
+  "types": {
+   "bridge": 160,
+   "comparison": 40
+  },
+  "length_sample": 200,
+  "encoder_tokens": {
+   "count": 200,
+   "mean": 2327.5,
+   "median": 2315.0,
+   "p10": 1797,
+   "p90": 2863,
+   "min": 1340,
+   "max": 3436
+  },
+  "target_tokens": {
+   "count": 200,
+   "mean": 7.4,
+   "median": 7.0,
+   "p10": 4,
+   "p90": 11,
+   "min": 4,
+   "max": 22
+  }
+ }
+}

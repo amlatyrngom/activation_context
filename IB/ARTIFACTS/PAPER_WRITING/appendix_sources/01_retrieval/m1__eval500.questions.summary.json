@@ -1,0 +1,13 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_RETRIEVAL_QA/m1/eval500.questions.jsonl",
+ "_extraction": "python json read; counts only (file not copied)",
+ "n_questions": 500,
+ "types": {
+  "bridge": 424,
+  "comparison": 76
+ },
+ "golds_per_question": {
+  "2": 500
+ },
+ "built_by": "m1__build_questions.py (validation split, minus the probe's questions, random.Random(2) shuffle, first 500)"
+}

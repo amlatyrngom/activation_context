@@ -1,0 +1,42 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/data/build_hotpot_tasks.py
+# lines: 1-15 52-70
+# extracted: nl -ba | sed -n (docstring: BM25 top 20, both golds injected, dev200 = 200 HotpotQA validation questions; injection code)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 9e1467ce6b423261
+
+----- lines 1-15 -----
+     1	"""
+     2	Section 4.5 task material: HotpotQA questions, each with its top-20 question-only BM25 passages over the pooled HotpotQA corpus
+     3	(509,315 paragraphs) and BOTH gold passages present: a gold missing from the 20 replaces a non-gold passage at a seeded position
+     4	(rq_common.inject_golds, the retrieval experiments' rule), so the order carries no gold signal.
+     5	
+     6	  train   every HotpotQA train question (m1/hotpot_train_native.questions.jsonl, 90,447) with m1/train_native_top100.npy
+     7	  dev200  the 200 dev questions of the retrieval experiments (kit/dev200.questions.jsonl, HotpotQA validation) with
+     8	          m1/out/dev200_top1000_q.npy (question-only BM25, rows in dev200 order)
+     9	
+    10	Writes (new files only; OUT must not exist):
+    11	  OUT/train.jsonl, OUT/dev200.jsonl   {id, question, answer, aliases, golds, type, top20}   (top20: corpus indexes, reader order)
+    12	  OUT/hotpotqa.corpus.jsonl.gz        a copy of the pooled corpus ([title, text] per line; rq_common.load_corpus reads it)
+    13	  OUT/stats.json                      counts, gold recall before injection, encoder/reader token lengths (reader tokenizer)
+    14	
+    15	  python build_hotpot_tasks.py --out OUT
+----- lines 52-70 -----
+    52	    dev = C.load_questions(RQ / "kit", "dev200")
+    53	    dev_top = dict(zip([q["id"] for q in dev], np.load(RQ / "m1/out/dev200_top1000_q.npy")))
+    54	    assert not {q["id"] for q in train} & {q["id"] for q in dev}, "dev200 overlaps the train questions"
+    55	    stats = {"reader_tokenizer": READER, "top": TOP, "rule": "question-only BM25 top 20, both golds injected (rq_common.inject_golds)"}
+    56	    temporary = a.out.with_name(a.out.name + ".tmp")
+    57	    temporary.mkdir(parents=True, exist_ok=False)
+    58	    rows_by_split = {}
+    59	    for name, questions, top in (("train", train, train_top), ("dev200", dev, dev_top)):
+    60	        recall = sum(set(q["golds"]) <= {int(x) for x in top[q["id"]][:TOP]} for q in questions)
+    61	        injected = C.inject_golds(top, questions, TOP)
+    62	        rows = [{"id": q["id"], "question": q["question"], "answer": q["answer"], "aliases": q.get("aliases") or [], "golds": q["golds"],
+    63	                 "type": q.get("type"), "top20": injected[q["id"]]} for q in questions]
+    64	        with open(temporary / f"{name}.jsonl", "w") as f:
+    65	            for row in rows:
+    66	                f.write(json.dumps(row) + "\n")
+    67	        rows_by_split[name] = rows
+    68	        stats[name] = {"questions": len(rows), "both_golds_in_bm25_top20_before_injection": round(recall / len(rows), 4),
+    69	                       "types": {t: sum(r["type"] == t for r in rows) for t in sorted({r["type"] for r in rows})}}
+    70	    shutil.copyfile(RQ / "ship/hotpotqa.corpus.jsonl.gz", temporary / "hotpotqa.corpus.jsonl.gz")

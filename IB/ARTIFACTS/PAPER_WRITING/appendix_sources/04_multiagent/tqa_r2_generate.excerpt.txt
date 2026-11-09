@@ -1,0 +1,38 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/tqa_r2_generate.py
+# lines: 1-19,28-33,52-53,64-65 (of 90 total)
+# extracted: nl -ba | sed -n per range; 27B target-writing sampling and limits (m1v2_gen.sh overrides --samples-unanimous 3, --chunk 32, model unsloth/Qwen3.8-27B-NVFP4)
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 73dacef47107f2d4ea6859cbb6ca07c2ea91f0f4eb11015a77645270775fb1b2
+# ---- lines 1-19
+     1	"""
+     2	Round-2 synthesis SFT material, stage 2 (one GPU, vLLM directly): the 27B's completions over tqa_r2_plan.py triples. No scoring
+     3	here (tqa_r2_keep.py scores and filters on CPU); this process only needs vllm and transformers.
+     4	
+     5	Each triple's prompt is one user message; thinking on at --reasoning effort, the agentic runs' thinking sampling, n samples per
+     6	triple from one prefill (--samples-mixed for minority/majority triples, --samples-unanimous otherwise), generation up to
+     7	--max-new-tokens within --max-model-len. Triples are taken by index modulo --shards, shortest prompt first, --chunk per engine
+     8	call; every finished chunk is appended to <out>/gen_<shard>.jsonl (resumable by triple id). The gold-hint fallback is just
+     9	another triples file (tqa_r2_keep.py writes it with the hint in the prompt).
+    10	
+    11	    CUDA_VISIBLE_DEVICES=0 python tqa_r2_generate.py --triples triples.jsonl --out OUT --model MODEL --shard 0 --shards 2
+    12	"""
+    13	import argparse
+    14	import json
+    15	import time
+    16	from datetime import datetime, timezone
+    17	from pathlib import Path
+    18	
+    19	THINKING_SAMPLING = {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}   # as tqa_sft_prep.py
+# ---- lines 28-33
+    28	    parser.add_argument("--samples-mixed", type=int, default=4)
+    29	    parser.add_argument("--samples-unanimous", type=int, default=1)
+    30	    parser.add_argument("--max-model-len", type=int, default=131_072)
+    31	    parser.add_argument("--max-new-tokens", type=int, default=32_768)
+    32	    parser.add_argument("--reasoning", default="medium")
+    33	    parser.add_argument("--chunk", type=int, default=64)
+# ---- lines 52-53
+    52	        text = tokenizer.apply_chat_template([{"role": "user", "content": triple["prompt"]}], tokenize=False, add_generation_prompt=True,
+    53	                                             enable_thinking=True, reasoning_effort=args.reasoning)
+# ---- lines 64-65
+    64	    llm = LLM(model=args.model, tokenizer=args.tokenizer or args.model, max_model_len=args.max_model_len, kv_cache_dtype="fp8",
+    65	              gpu_memory_utilization=args.gpu_memory_utilization, limit_mm_per_prompt={"image": 0, "video": 0}, enable_prefix_caching=True, seed=0)

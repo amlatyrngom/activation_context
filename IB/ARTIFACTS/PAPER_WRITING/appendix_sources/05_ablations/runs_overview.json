@@ -1,0 +1,1665 @@
+{
+ "_what": "Quick view of the Section 3.5 runs: values pulled from each run's <RUN>.run.json (args/models/ac_fields), stats summary (learning-rate schedule actually applied), final.summary.json (eval), ckpt adapter configs. Paths are relative to 05_ablations/.",
+ "_notes": [
+  "lr group order in stats learning_rates: [encoder(ac), reader]; lr_last_over_peak 0.1 = cosine to 0.1x.",
+  "penalty_weight/penalty_fraction come from run.json; the trainer applies the penalty only when reader lr > 0 (excerpts/ac_model_training.penalty.excerpt.txt), so frozen-reader runs (*_v4fr, R_in_v4fre4) have an empty penalty log (stats penalty__len 0).",
+  "eval max_new_tokens: AC arms 128 = sec45_eval.py --max-new default and job_template.sh line 155 (not recorded inside final.summary.json); greedy = completion_sampling None (excerpts/sec45_eval.excerpt.txt).",
+  "write mode -> ac_fields: in = no layers, no kv; res = intervention_layers 3..35 step 4; kv = kv_transfer true.",
+  "ac_modules.pt config default_compression_ratio is 0.0625 but every item is built with sec45_common.RATIO = 0.1 (excerpts/sec45_common.excerpt.txt lines 36,126,137); ttft extract sweep_phases ac_rows/side_tokens = 229.5/2288 confirms 0.1.",
+  "R_in_v4fre4: two valid executions with identical args (node l copy in runs/R_in_v4fre4/, CSAIL copy in runs/R_in_v4fre4/csail_copy/); its task run T_in_v4fre4 was cancelled (~u400; only u0 eval) and no Fig. 7 panel reads either run (excerpts/make_sec45_v4.excerpt.txt)."
+ ],
+ "runs": {
+  "R_in_e06ls": {
+   "_source": "runs/R_in_e06ls/R_in_e06ls.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-0.6B",
+   "linear_skip_least_squares": "1",
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_in_e06ls/R_in_e06ls.stats.summary.json",
+    "peak_per_group": [
+     0.0001,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.1000005840001341,
+     0.10000058400013409
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 2000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   }
+  },
+  "R_in_e17ls": {
+   "_source": "runs/R_in_e17ls/R_in_e17ls.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-1.7B",
+   "linear_skip_least_squares": "1",
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_in_e17ls/R_in_e17ls.stats.summary.json",
+    "peak_per_group": [
+     0.0001,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.1000005840001341,
+     0.10000058400013409
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 2000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   }
+  },
+  "R_in_v4": {
+   "_source": "runs/R_in_v4/R_in_v4.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_in_v4/R_in_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     0.10000058400013409
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 2000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_in_v4/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_in_v4/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_in_v4fr": {
+   "_source": "runs/R_in_v4fr/R_in_v4fr.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_in_v4fr/R_in_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     null
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_in_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_in_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_in_v4fre4": {
+   "_source": "runs/R_in_v4fre4/R_in_v4fre4.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_in_v4fre4/R_in_v4fre4.stats.summary.json",
+    "peak_per_group": [
+     0.0001,
+     0.0
+    ],
+    "last_over_peak": [
+     0.1000005840001341,
+     null
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_in_v4fre4/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_in_v4fre4/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_kv_v4": {
+   "_source": "runs/R_kv_v4/R_kv_v4.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_kv_v4/R_kv_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     0.10000058400013409
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 2000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_kv_v4/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_kv_v4/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_kv_v4fr": {
+   "_source": "runs/R_kv_v4fr/R_kv_v4fr.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_kv_v4fr/R_kv_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     null
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_kv_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_kv_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_res_v4": {
+   "_source": "runs/R_res_v4/R_res_v4.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_res_v4/R_res_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     0.10000058400013409
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 2000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_res_v4/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_res_v4/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "R_res_v4fr": {
+   "_source": "runs/R_res_v4fr/R_res_v4fr.run.json",
+   "kind": "recon",
+   "init": "fresh",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 2000,
+   "batch": 8,
+   "train_items": 16000,
+   "micro_batch": 2,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "fineweb_recon_v1",
+   "applied_lr": {
+    "_source": "runs/R_res_v4fr/R_res_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000058400013409,
+     null
+    ],
+    "updates_logged": 2000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/R_res_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/R_res_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   }
+  },
+  "S_in_v4": {
+   "_source": "runs/S_in_v4/S_in_v4.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_in_v4/S_in_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/S_in_v4/final.summary.json",
+    "acc": 21.0,
+    "em": 20.5,
+    "f1": 29.03,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.5,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "S_in_v4fr": {
+   "_source": "runs/S_in_v4fr/S_in_v4fr.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_in_v4fr/S_in_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/S_in_v4fr/final.summary.json",
+    "acc": 18.5,
+    "em": 17.0,
+    "f1": 24.95,
+    "n": 200,
+    "length_stops": 1,
+    "new_tokens_mean": 7.5,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "S_kv_v4": {
+   "_source": "runs/S_kv_v4/S_kv_v4.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_kv_v4/S_kv_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/S_kv_v4/final.summary.json",
+    "acc": 67.0,
+    "em": 59.0,
+    "f1": 73.83,
+    "n": 200,
+    "length_stops": 3,
+    "new_tokens_mean": 8.6,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "S_kv_v4fr": {
+   "_source": "runs/S_kv_v4fr/S_kv_v4fr.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_kv_v4fr/S_kv_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/S_kv_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/S_kv_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "eval_final": {
+    "_source": "runs/S_kv_v4fr/final.summary.json",
+    "acc": 71.5,
+    "em": 64.5,
+    "f1": 77.47,
+    "n": 200,
+    "length_stops": 2,
+    "new_tokens_mean": 8.0,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "S_res_v4": {
+   "_source": "runs/S_res_v4/S_res_v4.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_res_v4/S_res_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/S_res_v4/final.summary.json",
+    "acc": 21.5,
+    "em": 20.0,
+    "f1": 28.83,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.6,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "S_res_v4fr": {
+   "_source": "runs/S_res_v4fr/S_res_v4fr.run.json",
+   "kind": "task",
+   "init": "fresh",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/S_res_v4fr/S_res_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/S_res_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/S_res_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "eval_final": {
+    "_source": "runs/S_res_v4fr/final.summary.json",
+    "acc": 22.0,
+    "em": 21.0,
+    "f1": 28.55,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.9,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_in_e06ls": {
+   "_source": "runs/T_in_e06ls/T_in_e06ls.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_in_e06ls_final/ac', '/root/sec45/init/R_in_e06ls_final/reader']",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-0.6B",
+   "linear_skip_least_squares": "1",
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_in_e06ls/T_in_e06ls.stats.summary.json",
+    "peak_per_group": [
+     0.0001,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/T_in_e06ls/final.summary.json",
+    "acc": 60.0,
+    "em": 55.0,
+    "f1": 68.39,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.9,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_in_e17ls": {
+   "_source": "runs/T_in_e17ls/T_in_e17ls.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_in_e17ls_final/ac', '/root/sec45/init/R_in_e17ls_final/reader']",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-1.7B",
+   "linear_skip_least_squares": "1",
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_in_e17ls/T_in_e17ls.stats.summary.json",
+    "peak_per_group": [
+     0.0001,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/T_in_e17ls/final.summary.json",
+    "acc": 66.0,
+    "em": 60.0,
+    "f1": 73.4,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.9,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_in_v4": {
+   "_source": "runs/T_in_v4/T_in_v4.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_in_v4_final/ac', '/root/sec45/init/R_in_v4_final/reader']",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_in_v4/T_in_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/T_in_v4/final.summary.json",
+    "acc": 68.5,
+    "em": 61.0,
+    "f1": 76.12,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.9,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_in_v4fr": {
+   "_source": "runs/T_in_v4fr/T_in_v4fr.run.json",
+   "kind": "task",
+   "init": "['/data/scratch-fast/ngom/sec45/init/R_in_v4fr_final/ac', '/data/scratch-fast/ngom/sec45/init/R_in_v4fr_final/reader']",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_in_v4fr/T_in_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/T_in_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/T_in_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "eval_final": {
+    "_source": "runs/T_in_v4fr/final.summary.json",
+    "acc": 19.5,
+    "em": 18.5,
+    "f1": 25.66,
+    "n": 200,
+    "length_stops": 1,
+    "new_tokens_mean": 7.3,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_in_v4fre4": {
+   "_source": "runs/T_in_v4fre4/T_in_v4fre4.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_in_v4fre4_final/ac', '/root/sec45/init/R_in_v4fre4_final/reader']",
+   "mode": "in (Input Embeddings)",
+   "lr_encoder": 0.0001,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1"
+  },
+  "T_kv_v4": {
+   "_source": "runs/T_kv_v4/T_kv_v4.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_kv_v4_final/ac', '/root/sec45/init/R_kv_v4_final/reader']",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_kv_v4/T_kv_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/T_kv_v4/final.summary.json",
+    "acc": 68.5,
+    "em": 62.0,
+    "f1": 74.73,
+    "n": 200,
+    "length_stops": 1,
+    "new_tokens_mean": 7.5,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_kv_v4fr": {
+   "_source": "runs/T_kv_v4fr/T_kv_v4fr.run.json",
+   "kind": "task",
+   "init": "['/data/scratch-fast/ngom/sec45/init/R_kv_v4fr_final/ac', '/data/scratch-fast/ngom/sec45/init/R_kv_v4fr_final/reader']",
+   "mode": "kv (All-Layer KVs)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": null,
+   "kv_transfer": true,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_kv_v4fr/T_kv_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/T_kv_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/T_kv_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "eval_final": {
+    "_source": "runs/T_kv_v4fr/final.summary.json",
+    "acc": 66.0,
+    "em": 60.5,
+    "f1": 74.31,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.9,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_res_v4": {
+   "_source": "runs/T_res_v4/T_res_v4.run.json",
+   "kind": "task",
+   "init": "['/root/sec45/init/R_res_v4_final/ac', '/root/sec45/init/R_res_v4_final/reader']",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_res_v4/T_res_v4.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     2e-05
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     0.10000014232724715
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 4000,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+   },
+   "eval_final": {
+    "_source": "runs/T_res_v4/final.summary.json",
+    "acc": 68.5,
+    "em": 63.0,
+    "f1": 76.63,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 7.0,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_res_v4fr": {
+   "_source": "runs/T_res_v4fr/T_res_v4fr.run.json",
+   "kind": "task",
+   "init": "['/data/scratch-fast/ngom/sec45/init/R_res_v4fr_final/ac', '/data/scratch-fast/ngom/sec45/init/R_res_v4fr_final/reader']",
+   "mode": "res (Hidden Residuals)",
+   "lr_encoder": 2e-05,
+   "lr_reader": 0.0,
+   "warmup": 50,
+   "schedule": "cosine",
+   "steps": 4000,
+   "batch": 8,
+   "train_items": 32000,
+   "micro_batch": 4,
+   "seed": 0,
+   "no_context_penalty_weight": 1.0,
+   "no_context_penalty_fraction": 0.25,
+   "reader_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "encoder_model": "Qwen/Qwen3-4B-Instruct-2507",
+   "linear_skip_least_squares": null,
+   "reader_lora_rank_env": "128",
+   "encoder_lora_rank": 128,
+   "intervention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35
+   ],
+   "kv_transfer": false,
+   "summary_layout": "interleaved",
+   "thinking": "0",
+   "data": "hotpot_tasks_v1",
+   "applied_lr": {
+    "_source": "runs/T_res_v4fr/T_res_v4fr.stats.summary.json",
+    "peak_per_group": [
+     2e-05,
+     0.0
+    ],
+    "last_over_peak": [
+     0.10000014232724715,
+     null
+    ],
+    "updates_logged": 4000,
+    "penalty_entries": 0,
+    "stop_reason": "complete",
+    "valid": true,
+    "device": "NVIDIA H200"
+   },
+   "reader_adapter": {
+    "_source": "runs/T_res_v4fr/reader__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "encoder_adapter": {
+    "_source": "runs/T_res_v4fr/side_lora__adapter_config.json",
+    "r": 128,
+    "lora_alpha": 256,
+    "lora_dropout": 0.05,
+    "target_modules": [
+     "down_proj",
+     "gate_proj",
+     "k_proj",
+     "o_proj",
+     "q_proj",
+     "up_proj",
+     "v_proj"
+    ],
+    "base": "Qwen/Qwen3-4B-Instruct-2507"
+   },
+   "eval_final": {
+    "_source": "runs/T_res_v4fr/final.summary.json",
+    "acc": 62.0,
+    "em": 55.5,
+    "f1": 72.13,
+    "n": 200,
+    "length_stops": 0,
+    "new_tokens_mean": 6.7,
+    "max_new_tokens": "128 (sec45_eval.py default; job_template.sh:155)",
+    "decode": "greedy"
+   }
+  },
+  "T_text_lora": {
+   "_source": "runs/T_text_lora/T_text_lora.run.json",
+   "kind": "text+reader LoRA (no encoder)",
+   "model": "Qwen/Qwen3-4B-Instruct-2507",
+   "lr_reader": 2e-05,
+   "warmup": 50,
+   "schedule": "cosine to final_fraction 0.1 (text_lora_train.py)",
+   "steps": 4000,
+   "batch": 8,
+   "items": 32000,
+   "lora_r": 128,
+   "lora_alpha": 256,
+   "lora_targets": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+   ],
+   "seed": 0,
+   "no_context_penalty": null,
+   "eval": {
+    "_source": "runs/T_text_lora/T_text_lora.dev200.scores.json",
+    "final_u04000": {
+     "acc_lenient": 70.5,
+     "acc_strict": 70.5,
+     "em": 63.5,
+     "f1": 76.46,
+     "answered_strict": 100.0,
+     "new_tokens_mean": 8.1,
+     "n": 200
+    },
+    "max_new_tokens": "2048 (excerpts/text_lora_eval.excerpt.txt line 33)",
+    "decode": "greedy temperature 0.0"
+   }
+  }
+ }
+}

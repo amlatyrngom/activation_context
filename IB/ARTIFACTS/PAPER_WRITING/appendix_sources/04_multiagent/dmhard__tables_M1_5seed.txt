@@ -1,0 +1,21 @@
+tqa_dmhard (DeepMath, 300 of 300 tasks); conditions: results seeds 5, M1 seeds 5, M1_RR seeds 5
+solved count, mean ± sd over seeds (share)
+
+bucket    n             single run       majority                results                     M1                  M1_RR          any@3  k0/k1/k2/k3
+8.5     226    169.7 ± 5.7 (0.751)    181 (0.801)    183.6 ± 1.5 (0.812)    184.8 ± 2.2 (0.818)    184.8 ± 1.5 (0.818)    198 (0.876)  [28, 18, 49, 131]
+>=9      74     53.7 ± 1.5 (0.725)     56 (0.757)     61.0 ± 0.7 (0.824)     63.4 ± 1.9 (0.857)     61.6 ± 0.9 (0.832)     67 (0.905)  [7, 11, 18, 38]
+all     300    223.3 ± 6.7 (0.744)    237 (0.790)    244.6 ± 1.9 (0.815)    248.2 ± 2.8 (0.827)    246.4 ± 1.7 (0.821)    265 (0.883)  [35, 29, 67, 169]
+
+paired, task x seed pooled over seeds: wins / losses (two-sided sign test p)
+  results    8.5     n 226  vs majority +60/-47 (p 0.246)
+  results    >=9     n  74  vs majority +32/-7 (p 0.000)
+  results    all     n 300  vs majority +92/-54 (p 0.002)
+  M1         8.5     n 226  vs results +42/-36 (p 0.572)   vs majority +45/-26 (p 0.032)
+  M1         >=9     n  74  vs results +22/-10 (p 0.050)   vs majority +41/-4 (p 0.000)
+  M1         all     n 300  vs results +64/-46 (p 0.105)   vs majority +86/-30 (p 0.000)
+  M1_RR      8.5     n 226  vs results +29/-23 (p 0.488)   vs majority +58/-39 (p 0.067)
+  M1_RR      >=9     n  74  vs results +15/-12 (p 0.701)   vs majority +33/-5 (p 0.000)
+  M1_RR      all     n 300  vs results +44/-35 (p 0.368)   vs majority +91/-44 (p 0.000)
+  M1_RR      8.5     n 226  vs M1 +29/-29 (p 1.000)   vs majority +58/-39 (p 0.067)
+  M1_RR      >=9     n  74  vs M1 +9/-18 (p 0.122)   vs majority +33/-5 (p 0.000)
+  M1_RR      all     n 300  vs M1 +38/-47 (p 0.386)   vs majority +91/-44 (p 0.000)

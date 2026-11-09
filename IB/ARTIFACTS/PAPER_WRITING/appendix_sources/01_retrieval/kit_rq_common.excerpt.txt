@@ -1,0 +1,80 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_common.py
+# lines: 29-39,51-53,91-107,163-178,180-181,190-210
+# extracted: nl -ba | sed -n (SAMPLING / SAMPLING_NO_THINK, corpus, inject_golds = ideal recall, question-first student parts, gold teacher view, build_items); identical to the run copy /home/node/.claude/jobs/6f1c1373/tmp/pr/code/kit_pr/rq_common.py (diff empty)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 29-39
+    29	# RQ_THINKING=0 (user, Oct 20 15:40Z: try native thinking off for us and the baselines): the template closes an empty think block,
+    30	# replies are plain text (free-form reasoning may precede the answer line), teacher replies come from teacher_reads_nothink.jsonl,
+    31	# targets carry no reasoning_content, and the HF eval samples with Qwen's non-thinking setting.
+    32	THINK = os.environ.get("RQ_THINKING", "1") != "0"
+    33	THINKING = {"enable_thinking": THINK}
+    34	READS = "teacher_reads.jsonl" if THINK else "teacher_reads_nothink.jsonl"
+    35	# Qwen3.5 thinking sampling, as the probe and the teacher reads
+    36	SAMPLING = {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}
+    37	# thinking off (enable_thinking False: the template closes an empty think block): Qwen's non-thinking sampling
+    38	SAMPLING_NO_THINK = {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}
+    39	READ_SAMPLING = SAMPLING if THINK else SAMPLING_NO_THINK      # the reader's sampling in this mode (rq_eval.py)
+# --- lines 51-53
+    51	def load_corpus(data: Path) -> list:
+    52	    return [tuple(json.loads(line)) for line in gzip.open(data / "hotpotqa.corpus.jsonl.gz", "rt")]
+    53	
+# --- lines 91-107
+    91	def inject_golds(top: dict, questions: list[dict], n: int) -> dict:
+    92	    """id -> the first `n` of the BM25 ranking with every gold present (user, Oct 21: "Yes on injecting the golds"): each gold
+    93	    missing from the first n replaces a non-gold passage at a position drawn from crc32(id/gold), so a gold sits at a seeded
+    94	    rank among the retrieved ones (the order seen by the reader carries no gold signal); retrieved golds keep their rank."""
+    95	    import zlib
+    96	    out = {}
+    97	    for q in questions:
+    98	        ranking = [int(x) for x in top[q["id"]][:n]]
+    99	        golds = [int(g) for g in q["golds"]]
+   100	        for gold in golds:
+   101	            if gold in ranking:
+   102	                continue
+   103	            free = [i for i, x in enumerate(ranking) if x not in golds]
+   104	            ranking[free[zlib.crc32(f"{q['id']}/{gold}".encode()) % len(free)]] = gold
+   105	        assert set(golds) <= set(ranking) and len(ranking) == len(set(ranking)) == min(n, len(top[q["id"]]))
+   106	        out[q["id"]] = ranking
+   107	    return out
+# --- lines 163-178
+   163	def student_messages(corpus, question: str, ranking, ac_name: str, ratio: float, calls: int = 20, per_call: int = 20,
+   164	                     question_first: bool = False) -> list[dict]:
+   165	    """The student's user turn: READ_HEAD, `calls` contextual parts, READ_TAIL. Passages keep their global rank numbers.
+   166	    `question_first` (user, Oct 20 ≈20:00Z, with the interleaved summary layout): each encoder call reads the "Question:" turn
+   167	    BEFORE its passages, so every interleaved summary sees the question under the causal side pass (default: after them)."""
+   168	    from activation.ac_model.ac_model_utils import qa_encoder_messages
+   169	    from activation.common.ac_parts import ac_part
+   170	    parts = []
+   171	    for call in range(calls):
+   172	        indexes = [int(x) for x in ranking[call * per_call:(call + 1) * per_call]]
+   173	        block = passages_block(corpus, indexes, call * per_call + 1).rstrip("\n")
+   174	        encoder = ([{"role": "user", "content": f"Question: {question}"}, {"role": "user", "content": block}] if question_first
+   175	                   else qa_encoder_messages([{"role": "user", "content": block}], question, ac_name, ratio))
+   176	        parts.append(ac_part(encoder, ac_name, ratio, kind="search"))
+   177	    return [{"role": "user", "content": [{"type": "text", "text": READ_HEAD}, *parts, {"type": "text", "text": READ_TAIL.format(question=question)}]}]
+   178	
+# --- lines 180-181
+   180	def teacher_messages(corpus, q: dict) -> list[dict]:
+   181	    return [{"role": "user", "content": READ.format(passages=passages_block(corpus, q["golds"]), question=q["question"])}]
+# --- lines 190-210
+   190	def build_items(study, corpus, questions: list[dict], top: dict, ac_name: str, ratio: float, *, replies: dict | None = None,
+   191	                calls: int = 20, per_call: int = 20, kind: str = "rag_qa", question_first: bool = False, same_context: bool = False):
+   192	    """ActivationContextTrainingItems. With `replies` (id -> thinking reply text), the target is that reply and the teacher view
+   193	    is the gold-passage prompt (KL); without, the target is a placeholder (generation only: the decode reads the prefix)."""
+   194	    from activation.ac_model.ac_model_training import ActivationContextTrainingItem
+   195	    from activation.ac_model.ac_model_utils import assistant_target_ids
+   196	    items = []
+   197	    for q in questions:
+   198	        reply = split_reply(replies[q["id"]]) if replies is not None else ("", "Final answer: ?")
+   199	        if reply is None:
+   200	            continue
+   201	        output = {"role": "assistant", "content": reply[1], **({"reasoning_content": reply[0]} if reply[0] else {})}
+   202	        ids = assistant_target_ids(study.tokenizer, output, None, THINKING)
+   203	        student = student_messages(corpus, q["question"], top[q["id"]], ac_name, ratio, calls, per_call, question_first) + [dict(output)]
+   204	        teacher = (same_context_messages(corpus, q, top[q["id"]][:calls * per_call]) if same_context else teacher_messages(corpus, q)) + [dict(output)]
+   205	        items.append(ActivationContextTrainingItem(item_id=q["id"], kind=kind, in_context_messages=teacher, ac_messages=student,
+   206	            in_context_start=1, ac_start=1, assistant_token_ids=[ids], dataset_id="hotpotqa",
+   207	            info={"question": q["question"], "answer": q["answer"], "ratio": ratio, "calls": calls, "per_call": per_call, "question_first": question_first,
+   208	                  "teacher_view": "same_context" if same_context else "gold",
+   209	                  "chat_template_kwargs": dict(THINKING)}))
+   210	    return items

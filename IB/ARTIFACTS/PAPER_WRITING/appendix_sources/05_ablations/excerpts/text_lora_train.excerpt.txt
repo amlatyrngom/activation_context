@@ -1,0 +1,42 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/text_lora/text_lora_train.py
+# lines: 1-18 58-61 88-96 125-125
+# extracted: nl -ba | sed -n (docstring: items, LoRA r128/alpha256, AdamW, warm-up 50 + cosine to 0.1, no penalty; argparse defaults; LoRA/optimizer/schedule/clip code)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 91607116beba44dd
+
+----- lines 1-18 -----
+     1	"""Text + reader-LoRA baseline for section 4.5 / Fig. 7b-c (user, Oct 27 ~20:00Z): "a pure reader LoRA ... trained on the same pairs as
+     2	the task tuning runs", WITHOUT the no-context penalty ("more what people will do in the wild"). The 4B reader reads the 20 passages
+     3	AS TEXT and learns the answer with a plain LoRA; no encoder, no AC.
+     4	
+     5	Matched to the T runs (jobs/generated_v4/T_<mode>_v4.sh -> kit/sec45_train.py, ActivationContextTrainingConfig defaults):
+     6	  items     the HotpotQA train pool shuffled with random.Random(seed) (seed 0), the first steps x epu = 4,000 x 8 = 32,000 rows,
+     7	            trained in the trainer's epoch order random.Random(seed + 1).shuffle(range(n)) -> the same questions in the same order
+     8	  prompt    rq_common.READ with the row's top20 (both golds injected) as text, thinking off = the user turn the AC student sees with
+     9	            its parts replaced by text, and the prompt the 53.0 text line (text4b_sec45.py) was scored with
+    10	  target    "Final answer: <answer>" + the end-of-turn token (rq_common.answer_replies; SFT on the target tokens only)
+    11	  loss      per example: mean cross-entropy over its target tokens; per update: the mean over the epu examples
+    12	  LoRA      rank 128, alpha 256, dropout 0, q/k/v/o/gate/up/down (= the AC runs' reader adapter_config.json)
+    13	  optimizer AdamW lr 2e-5, betas (0.9, 0.95), eps 1e-8, weight decay 0, grad-norm clip 1.0; 50 linear warm-up updates, then
+    14	            cosine to 0.1 x the rate over all updates
+    15	  held      dev200 target NLL every 250 updates and before the first (mean over items of the per-item mean NLL = sec45 held_nll;
+    16	            the token-weighted mean as held_nll_token)
+    17	  saves     the adapter at 25/50/75/100% of the updates (ckpt/step_NNNNN), evaluated afterwards by text_lora_eval.py
+    18	
+----- lines 58-61 -----
+    58	    p.add_argument("--steps", type=int, default=4000); p.add_argument("--epu", type=int, default=8); p.add_argument("--lr", type=float, default=2e-5)
+    59	    p.add_argument("--warmup", type=int, default=50); p.add_argument("--final-fraction", type=float, default=0.1)
+    60	    p.add_argument("--report-every", type=int, default=250); p.add_argument("--held", type=int, default=200)
+    61	    p.add_argument("--seed", type=int, default=0); p.add_argument("--rank", type=int, default=128); p.add_argument("--alpha", type=int, default=256)
+----- lines 88-96 -----
+    88	    model = get_peft_model(model, LoraConfig(r=a.rank, lora_alpha=a.alpha, lora_dropout=0.0, target_modules=TARGETS, task_type="CAUSAL_LM"))
+    89	    params = [q for q in model.parameters() if q.requires_grad]
+    90	    opt = torch.optim.AdamW(params, lr=a.lr, betas=(0.9, 0.95), eps=1e-8, weight_decay=0.0)
+    91	
+    92	    def rate(update):                                              # warm-up, then cosine to final_fraction (ac_model_training "cosine")
+    93	        if update < a.warmup:
+    94	            return a.lr * (update + 1) / a.warmup
+    95	        progress = min(1.0, (update - a.warmup) / max(1, a.steps - a.warmup))
+    96	        return a.lr * (a.final_fraction + (1 - a.final_fraction) * 0.5 * (1 + math.cos(math.pi * progress)))
+----- lines 125-125 -----
+   125	        gn = float(torch.nn.utils.clip_grad_norm_(params, 1.0))

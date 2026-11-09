@@ -1,0 +1,14 @@
+{
+ "top400": {
+  "acc": 53.47,
+  "em": 48.8,
+  "f1": 62.26,
+  "answered": 96.87,
+  "n": 1500,
+  "passes": 3,
+  "length_stops": 11,
+  "prompt_tokens_mean": 49407,
+  "new_tokens_mean": 401,
+  "seconds": 2540
+ }
+}

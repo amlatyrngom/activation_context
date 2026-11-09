@@ -1,0 +1,16 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/jobs/job_template.sh
+# lines: 137-142 154-155
+# extracted: nl -ba | sed -n (environment: QA4B_RANK=128, mode -> layers/KV; TRAIN/EVAL command lines incl. --max-new 128)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 29470184e8fa2bbe
+
+----- lines 137-142 -----
+   137	# ---- environment ----
+   138	export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
+   139	export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit RQ_THINKING=0 QA4B_READER=$READER_ID QA4B_SIDE=${ENCODER_ID:-$READER_ID} QA4B_RANK=128
+   140	if [ -n "$ENCODER_ID" ]; then export SEC45_ENCODER=$ENCODER_ID; else unset SEC45_ENCODER; fi
+   141	unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
+   142	case $MODE in in) export QA4B_LAYERS=none QA4B_KV=0;; res) export QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0;; kv) export QA4B_LAYERS=none QA4B_KV=1;; *) no "MODE $MODE";; esac
+----- lines 154-155 -----
+   154	TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR)
+   155	EVAL=("${PYC[@]}" $C/kit/sec45_eval.py --mode $MODE --data $TD --batch 32 --max-new 128)

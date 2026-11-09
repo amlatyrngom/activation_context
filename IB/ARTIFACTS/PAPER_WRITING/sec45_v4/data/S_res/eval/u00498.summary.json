@@ -1,0 +1,24 @@
+{
+ "acc": 16.0,
+ "em": 15.5,
+ "f1": 22.65,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 1,
+ "new_tokens_mean": 7.2,
+ "label": "S_res_u498",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/S_res/sync/ckpt/step_00498/ac",
+  "/data/scratch-fast/ngom/sec45/runs/S_res/sync/ckpt/step_00498/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1632,
+  "decode_seconds": 44.2
+ },
+ "seconds": 87
+}

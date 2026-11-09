@@ -1,0 +1,3 @@
+{
+  "PLAN-free_form_feedback": "The key problem is going to be how to the get a baseline number for the corpus q/a.\nThey have single-corpus numbers for Llama-3-8B AFAIK.\nCan we reuse those, and switch to LLama-3-8B instead?\nThis paper has a 4B baseline, but it's multi-cartridge, and it shorts the context.https://arxiv.org/html/2602.16284v1#S4\nI am actually also fine with training on 4 distinct inputs like they do, we need to give ourselves some kind of edge there\n\nAlso see this:\nFor long-context benchmarks (LongHealth), we use the Qwen3-4B-Instruct-2507 variant instead of Qwen3-4B because it has a longer native sequence length.\n\n\n\n(note: if one research finishes early, I may be back early to give a green light for the runs)."
+}

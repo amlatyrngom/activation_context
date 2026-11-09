@@ -1,0 +1,51 @@
+{
+ "caches": [
+  "c16:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_C4_c16_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_C4_c16_full/notes:/root/activation_artifacts/pc/prefixes_h7b_C4_c16",
+  "c20:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_C4_c20_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_C4_c20_full/notes:/root/activation_artifacts/pc/prefixes_h7b_C4_c20",
+  "c24:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_C4_c24_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_C4_c24_full/notes:/root/activation_artifacts/pc/prefixes_h7b_C4_c24",
+  "c28:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_C4_c28_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_C4_c28_full/notes:/root/activation_artifacts/pc/prefixes_h7b_C4_c28",
+  "c16:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_trB_c16_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_trB_c16_full/notes:/root/activation_artifacts/pc/prefixes_h7b_trB_c16",
+  "c20:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_trB_c20_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_trB_c20_full/notes:/root/activation_artifacts/pc/prefixes_h7b_trB_c20",
+  "c24:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_trB_c24_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_trB_c24_full/notes:/root/activation_artifacts/pc/prefixes_h7b_trB_c24",
+  "c16:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_v3_c16_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_v3_c16_full/notes:/root/activation_artifacts/pc/prefixes_h7b_v3_c16",
+  "c20:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h7b_v3_c20_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h7b_v3_c20_full/notes:/root/activation_artifacts/pc/prefixes_h7b_v3_c20",
+  "c16:/root/activation_artifacts/pc/h8_material/snap_h8a_material_pca/h7k3_prefixes_h8_D2_c16_full.jsonl:/root/activation_artifacts/SYNC/PAPER_COMPACTION/h7k3_prefixes_h8_D2_c16_full/notes:/root/activation_artifacts/pc/prefixes_h8_D2_c16"
+ ],
+ "runs_read": {
+  "c16": 2679,
+  "c20": 2091,
+  "c24": 1305,
+  "c28": 636
+ },
+ "prefixes_read": 2237,
+ "samples_per_prefix": {
+  "3": 2237
+ },
+ "unusable_runs": {},
+ "prefixes_with_a_kept_run": {
+  "c16": 653,
+  "c20": 486,
+  "c24": 300,
+  "c28": 149
+ },
+ "keep": {
+  "line: shortest": 1588,
+  "line: near": 713,
+  "prefix: no solved run": 649
+ },
+ "lines_by_cut": {
+  "c16": 956,
+  "c20": 711,
+  "c24": 425,
+  "c28": 209
+ },
+ "items": 3276,
+ "mean_continuation_kept": 15412.4,
+ "mean_continuation_written_kept": 8497.2,
+ "mean_continuation_median_runs": 18070.0,
+ "repositories": 371,
+ "by_side": {
+  "evaluation": 187,
+  "training": 2114
+ }
+}

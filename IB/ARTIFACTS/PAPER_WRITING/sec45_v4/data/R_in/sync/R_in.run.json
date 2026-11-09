@@ -1,0 +1,101 @@
+{
+ "name": "R_in",
+ "args": {
+  "kind": "recon",
+  "mode": "in",
+  "data": "/data/scratch-fast/ngom/sec45/data/fineweb_recon_v1",
+  "fresh": "True",
+  "pair": "None",
+  "name": "R_in",
+  "steps": "1524",
+  "epu": "8",
+  "seconds": "20382.0",
+  "encoder_lr": "2e-05",
+  "reader_lr": "2e-05",
+  "warmup": "50",
+  "schedule": "cosine",
+  "ckpt_every": "381",
+  "no_save": "False",
+  "report_every": "250",
+  "held_panel": "None",
+  "micro_batch": "2",
+  "block_examples": "64",
+  "penalty_weight": "1.0",
+  "longest_first": "0",
+  "seed": "0",
+  "offset": "0",
+  "keep_optimizer": "False"
+ },
+ "train_items": 12192,
+ "held_items": 500,
+ "planned_updates": 1524,
+ "models": {
+  "QA4B_READER": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_SIDE": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_RANK": "128",
+  "QA4B_LAYERS": "none",
+  "QA4B_KV": "0",
+  "RQ_THINKING": "0"
+ },
+ "ac_fields": {
+  "kv_transfer": false,
+  "intervention_frequency": 0,
+  "intervention_layers": null,
+  "summary_layout": "interleaved",
+  "side_lora_rank": 128,
+  "max_view_rows": 4096
+ },
+ "train_target_tokens_mean": 1586.3,
+ "penalty_weight": 1.0,
+ "penalty_fraction": 0.25,
+ "order": {
+  "loaded_epoch_number": 0,
+  "start_epoch": 1,
+  "shuffle": true,
+  "shuffle_seed": 1,
+  "torch_seed": 1,
+  "first_updates": [
+   [
+    "reconstruct:fineweb_edu:20e55bbd461107095026",
+    "reconstruct:fineweb_edu:3c2b239b7100d2b36367",
+    "reconstruct:fineweb_edu:5682db0cc597698114eb",
+    "reconstruct:fineweb_edu:632054f673b6230e7d76",
+    "reconstruct:fineweb_edu:660283240467df88f709",
+    "reconstruct:fineweb_edu:9288e16d8735bbcadb5c",
+    "reconstruct:fineweb_edu:ac60541a40761d095deb",
+    "reconstruct:fineweb_edu:bb5a62f7fbba43867e66"
+   ],
+   [
+    "reconstruct:fineweb_edu:342b14bc713400fd078d",
+    "reconstruct:fineweb_edu:41980ae7542b482fc77e",
+    "reconstruct:fineweb_edu:456aecd371d2351283ab",
+    "reconstruct:fineweb_edu:78e00845e337324ef634",
+    "reconstruct:fineweb_edu:b082dddafa648b8869ec",
+    "reconstruct:fineweb_edu:dc404755300d11c231e1",
+    "reconstruct:fineweb_edu:e9f454b07fb01584c439",
+    "reconstruct:fineweb_edu:f28796c14cb294608cf3"
+   ],
+   [
+    "reconstruct:fineweb_edu:1f9d3ebbdece7f7ee712",
+    "reconstruct:fineweb_edu:2d1925b7492dbd3388c1",
+    "reconstruct:fineweb_edu:899c11d9f5d217dab4c8",
+    "reconstruct:fineweb_edu:8adfc17d234256b6f474",
+    "reconstruct:fineweb_edu:9dd6df38057f0e9a4b7d",
+    "reconstruct:fineweb_edu:b75ae371f4664d35a48b",
+    "reconstruct:fineweb_edu:d7a6b70818df34ae3b09",
+    "reconstruct:fineweb_edu:fa1442b14e3ab8c5b011"
+   ],
+   [
+    "reconstruct:fineweb_edu:417888cfe9305e0a5ccd",
+    "reconstruct:fineweb_edu:47129009cc64c5ade92c",
+    "reconstruct:fineweb_edu:7dced39aaa4b8652340b",
+    "reconstruct:fineweb_edu:a8f9469d26474f04abfd",
+    "reconstruct:fineweb_edu:aa0d2822f1799c61a2d0",
+    "reconstruct:fineweb_edu:b7100eeeb3e8e6f9b806",
+    "reconstruct:fineweb_edu:c71892cc0aa76fed56a6",
+    "reconstruct:fineweb_edu:f7c5cd682ab846ffba1e"
+   ]
+  ],
+  "first_sha256": "09d510cac98e6cd2a0cd035edee7d8e7dda1a65b12932ed8fc5491a15d20a1da"
+ }
+}

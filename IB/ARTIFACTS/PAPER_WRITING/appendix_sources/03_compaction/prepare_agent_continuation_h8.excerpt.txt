@@ -1,0 +1,118 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/kit/prepare_agent_continuation_h8.py
+# lines: 1-49,141-141,153-158,210-232,334-345,440-455
+# extracted: nl -ba | sed -n (docstring incl. schedule defaults; batch 8; lr defaults 2e-5/2e-5; r-range; training-config kwargs)
+# git commit: not tracked by git (IB/TMP is outside version control); file as on disk 2026-10-28
+
+     1	"""
+     2	prepare_agent_continuation_h7.py (Oct 15 ≈12:35Z): prepare_agent_continuation.py for the H7 material (export_h7_material.py).
+     3	Changes: a line with `item_slices` trains one item per listed slice of --slices log-uniform slices of --r-range, the size
+     4	drawn by the line's `prefix_id`; --median-below R builds a training item at r <= R from the line's `median_alt` continuation
+     5	(the H7M arm); exact-task exclusion reads `base_task_id`; a held repository's panel takes each prefix's shortest line only.
+     6	H8 (Oct 16): a held run over the 72,000-token reader guard is dropped from the panel (all three sizes) instead of failing the
+     7	build; any other panel failure still fails it.
+     8	
+     9	Stage 2 of the continuation training data: material.jsonl (export_continuation_material.py) -> trainer packet(s) that
+    10	`run_channel_mixture.py train --output PACKET` loads unchanged. CPU only (CUDA_VISIBLE_DEVICES= ).
+    11	
+    12	What one training example teaches. The encoder compresses a task's prefix into AC rows; the reader sees only the task head
+    13	and those rows and must write what the untuned reader wrote with the whole prefix in view:
+    14	
+    15	    student view   head + [user: <AC part: head + prefix, tool definitions> + "\\n\\n" + COMPACTION_INSTRUCTIONS] + continuation
+    16	    teacher view   head + prefix + continuation                          (the raw text; read by the KL / match losses only)
+    17	    targets        the reader's recorded sampled tokens, one list per continuation assistant turn
+    18	
+    19	The student view up to the first target is the prompt `Agent.compact("")` builds in a live run (activation/agent/agent.py):
+    20	system message(s) + first user message(s) + one user message [part, text], the part being
+    21	`activation_part("compaction", flattened view, tool definitions)` resolved with a compression target. The flattened view is
+    22	head + prefix with content lists joined to text (`strip_ac_parts`) and a head user message past AC_FLAT_HEAD_CHARS cut to
+    23	its head and tail (`head_message`), as `Agent.flattened_view` does. Tool results and nudges between the targets are
+    24	context, never targets. Messages after the last continuation assistant turn are dropped (nothing is predicted after them).
+    25	
+    26	Sizes are fractions r of the PREFIX (ac_sizes.py): rows_wanted = round(prefix_tokens x r), and the part's compression
+    27	target is the one that gives exactly that many rows for this part's encoder-side length. Per item `info` records r,
+    28	rows_wanted, rows (after the encoder's own limits), side_tokens, prefix_tokens and `ratio` (= the part's compression
+    29	target, the meaning `ratio` has in the other packets of the bench).
+    30	  training   r drawn per item in [--r-range] from a generator seeded by (--seed, task id, item number). Default
+    31	             log-uniform: the evaluated sizes 1/20, 1/10, 1/5 are equally spaced in log, so each octave gets the same
+    32	             number of examples (uniform would put two thirds of them between 1/10 and 1/5). With --ratios-per-prefix K the
+    33	             range is cut into K equal slices and item k draws inside slice k, so the K items of a prefix differ in size.
+    34	  held       the runs of --held-repos repositories (seeded sample; no held repository trains), each present three times
+    35	             at r = 1/20, 1/10, 1/5 in panel groups continuation/r20, continuation/r10, continuation/r5.
+    36	
+    37	Limits (the trainer's): reader history 72,000 tokens (both views), encoder input 65,536 positions, and the encoder's
+    38	max_view_rows (4,096). rows_wanted past max_view_rows is clamped by the encoder (a prefix longer than 20,480 tokens at
+    39	r = 1/5): the item is kept, marked `clamped`, and counted. An item past the token limits is dropped and counted with the
+    40	reason; a held item past them stops the build.
+    41	
+    42	Recipes: --loss sft | kl | sft_match (several allowed). One loss writes the packet into --output; several write
+    43	--output/<loss>/, the same items in each (hard links), one recipe per folder.
+    44	  sft         loss_kind "sft": cross-entropy on the recorded tokens
+    45	  kl          loss_kind "kl": top-k KL to the starting reader reading the teacher view
+    46	  sft_match   sft + full_context_match_weight (--match-weight) with full_context_match_kinds ["compaction"]
+    47	Updates: 8 examples per update. A pass has ceil(training items / 8) updates; --epochs passes (default 1), or --updates U
+    48	to take the fewest whole passes that reach U. Schedule fields keep the trainer's defaults (cosine to 10 %, 50 warm-up
+    49	updates) unless set with --train KEY=JSON.
+    ...
+   141	EXAMPLES_PER_UPDATE = 8                                                # the trainer's fixed global batch (train() resumes by it)
+    ...
+   153	def draw_r(seed: int, task_id: str, number: int, count: int, low: float, high: float, how: str) -> float:
+   154	    """Item `number` of `count` for one prefix: a seeded draw inside its slice of [low, high] (log-uniform or uniform)."""
+   155	    position = (number + random.Random(f"{seed}:r:{task_id}:{number}").random()) / count
+   156	    return low * (high / low) ** position if how == "log_uniform" else low + (high - low) * position
+   157	
+   158	
+    ...
+   210	    p.add_argument("--initial-reader", required=True, help="reader adapter checkpoint the run starts from, as the training machine will find it")
+   211	    p.add_argument("--fresh-harness", action="store_true", help="the starting checkpoints are not on THIS machine: prepare with fresh modules "
+   212	                   "(only the tokenizers and the row limits are used here, and they do not depend on the checkpoint)")
+   213	    p.add_argument("--lr-ac", type=float, default=2e-5)
+   214	    p.add_argument("--lr-reader", type=float, default=2e-5)
+   215	    p.add_argument("--epochs", type=int, default=None, help="passes over the training items (default 1)")
+   216	    p.add_argument("--updates", type=int, default=None, help="instead of --epochs: the fewest whole passes that give at least this many updates")
+   217	    p.add_argument("--match-weight", type=float, default=1.0, help="sft_match: full_context_match_weight")
+   218	    p.add_argument("--train", action="append", default=[], metavar="KEY=JSON", help="set another training-config field in every recipe (lr_schedule=\"constant\")")
+   219	    p.add_argument("--ratios-per-prefix", type=int, default=1, help="training items per prefix, each at its own size")
+   220	    p.add_argument("--r-range", type=float, nargs=2, default=(1 / 20, 1 / 5), metavar=("LOW", "HIGH"), help="training sizes, as fractions of the prefix")
+   221	    p.add_argument("--r-draw", choices=("log_uniform", "uniform"), default="log_uniform")
+   222	    p.add_argument("--nominal-prefix-tokens", type=int, default=20_000, help="sizes are fractions of this length, as in the benchmark (rows = 20,000 x r); 0: of each prefix's own length")
+   223	    p.add_argument("--held-repos", type=int, required=True, help="repositories whose runs form the held panel (never trained)")
+   224	    p.add_argument("--sides", nargs="+", default=["training"], help="split sides whose runs may be used (other runs are left out and counted)")
+   225	    p.add_argument("--evaluation-index", type=Path, default=None, help="index.json of the frozen evaluation prefixes: runs from its repositories are left out")
+   226	    p.add_argument("--exclude-tasks", type=Path, nargs="+", default=[], help="index.json file(s) of evaluation/development prefixes: runs of those exact tasks are left out (task-level; other tasks of the same repositories may train)")
+   227	    p.add_argument("--seed", type=int, default=20261013, help="held repositories and size draws")
+   228	    p.add_argument("--checkpoint-every", type=int, default=200)
+   229	    p.add_argument("--reporting-interval", type=float, default=.125, help="panel spacing, a fraction of each pass")
+   230	    p.add_argument("--slices", type=int, default=3, help="H7 lines: size slices of --r-range")
+   231	    p.add_argument("--median-below", type=float, default=None, help="H7M: training items at r <= this use the line's median_alt continuation")
+   232	    p.add_argument("--workers", type=int, default=0, help="fork workers (0: every CPU of the allocation; 1: one process)")
+    ...
+   334	    steps_guess = math.ceil(max(1, len(items) - panel_count) / EXAMPLES_PER_UPDATE)
+   335	
+   336	    def config_of(loss: str, steps: int, epochs: int) -> ActivationContextTrainingConfig:
+   337	        kwargs = dict(loss_kind="kl" if loss == "kl" else "sft", learning_rate_ac=a.lr_ac, learning_rate_target_lora=a.lr_reader,
+   338	                      examples_per_update=EXAMPLES_PER_UPDATE, num_epochs=epochs, completion_samples=0, teacher_cache_block_examples=32,
+   339	                      logits_chunk_tokens=64, gradient_checkpointing_min_tokens=0, seed=mix.SEED, deterministic=False,
+   340	                      schedule_total_updates=steps * epochs, checkpoint_every_updates=a.checkpoint_every,
+   341	                      reporting_interval=a.reporting_interval, shuffle_examples=True)
+   342	        if loss == "sft_match":
+   343	            kwargs.update(full_context_match_weight=a.match_weight, full_context_match_kinds=("compaction",))
+   344	        kwargs.update(overrides)
+   345	        return ActivationContextTrainingConfig(**kwargs)
+    ...
+   440	        else:
+   441	            for name in ("task_panel/held.json", "task_panel/panel.pkl", "task_panel/panel.json", "items.pkl", "prepared_examples.pkl"):
+   442	                link_or_copy(first / name, out / name)
+   443	        config = config_of(loss, steps, epochs)
+   444	        arm = {"task": "agent continuation after a compacted prefix", "loss": loss, "lr_ac": config.learning_rate_ac, "lr_reader": config.learning_rate_target_lora,
+   445	               "r_range": [low, high], "r_draw": a.r_draw, "ratios_per_prefix": a.ratios_per_prefix, "held_sizes": [r for _, r in HELD_SIZES],
+   446	               "h7": {"slices": a.slices, "median_below": a.median_below, "median_items": median_items[0]},
+   447	               **({"match_weight": a.match_weight} if loss == "sft_match" else {}), **({"train_overrides": overrides} if overrides else {})}
+   448	        recipe = {"seed": a.seed, "epochs": epochs, "phase": "Agent continuation after a compacted prefix (%s): %s" % (loss, json.dumps(arm, sort_keys=True)),
+   449	                  "arm": arm, "counts": {"wanted": {group: len(train_runs) * a.ratios_per_prefix}}, "actual_train": {group: len(train_items)},
+   450	                  "unique_sources": {group: len(train_items)}, "target_tokens": {group: target_tokens}, "excluded": dict(excluded), "failures": failures,
+   451	                  "loss_shares": "natural: every example weighs 1", "global_batch": EXAMPLES_PER_UPDATE, "material": sources, "sides": a.sides,
+   452	                  "held": {"rule": "task_panel/held.json", "panel": str(panel_dir.resolve()), "panel_sha256": file_sha(panel_dir / "panel.pkl"),
+   453	                           "held_sha256": file_sha(panel_dir / "held.json")},
+   454	                  "headline_note": "the headline held loss averages the three sizes: read the groups",
+   455	                  "sizes": {key: report[key] for key in ("training", "held", "dropped", "max_view_rows")},
+    ...

@@ -71,3 +71,10 @@ pnpm-debug.log*
 # Agent worktrees and reference clones
 .claude/worktrees/
 IB/REPOS/
+
+# Scratch at the repo root (profile caches etc.)
+/TMP/
+
+# IB artifacts over 5 MB live on S3 (see IB/ARTIFACTS/HANDOFF_EC2/S3_INDEX.md)
+IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/*_COHORT100.evidence.json
+IB/ARTIFACTS/FIRST_TASK_AWARE_FINETUNING/*_COHORT100.tressoir.html

@@ -1,0 +1,82 @@
+# source: /workspace/IB/TMP/PAPER_AM/kit/am_train.py
+# lines: 1-12 105-125 135-160 183-197
+# extracted: nl -ba | sed -n: docstring (what is trained, teacher view), argparse defaults, truncated-record filter, trainer config, frozen reader, run.json writer
+# git commit: untracked in /workspace git (HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa); file mtime Oct 19 23:07 (run launched ~22:43 Oct 19)
+# ---- lines 1-12
+     1	"""
+     2	Step 2a of AM_COMPACTION_PLAN: start from Attention Matching's cache (AMKVTable over am_export.py's files) and train its keys,
+     3	biases β and values end-to-end with the trainer's existing KL (top-k + remainder, teacher = the reader at the start) on synthetic
+     4	data, the teacher reading ONLY the sample's own patient. The encoder never runs (every part is a patient the table answers; the
+     5	AC learning rate is 0); the reader adapter is frozen unless --lr-reader > 0.
+     6	
+     7	Student view: [system, user: the patient's context of five (AMKVTable parts, back to back), user: prompt, assistant: response]
+     8	Teacher view: [system, user: that patient's notes as text,                                         user: prompt, assistant: response]
+     9	
+    10	  python am_train.py --exports EXPORT_DIR --data selfstudy.jsonl --name RUN --lr-special 1e-3 [--lr-reader 0] [--per-patient 200]
+    11	Checkpoints (AC_MODELS/<ac>/epoch_*_step_*/special_inputs.pt: the trained table) under ACTIVATION_SYNC_ROOT; am_eval.py --handler-state
+    12	evaluates one. Environment as am_eval.py.
+# ---- lines 105-125
+   105	    parser.add_argument("--exports", type=Path, help="AM's exported caches (--table kv)"); parser.add_argument("--data", type=Path, required=True)
+   106	    parser.add_argument("--table", choices=("kv", "rows"), default="kv",
+   107	                        help="kv: AMKVTable over --exports; rows: am_rows.EncodedTable from --init (input rows, + residual deltas if it has them)")
+   108	    parser.add_argument("--init", type=Path, help="--table rows: the encoder outputs (am_rows.py encode)")
+   109	    parser.add_argument("--reader-lora", type=Path, help="a reader LoRA checkpoint (the encoder pair's) loaded as the frozen reader adapter")
+   110	    parser.add_argument("--name", required=True); parser.add_argument("--per-patient", type=int, default=0)
+   111	    parser.add_argument("--evalshape-share", type=float, default=0.25)
+   112	    parser.add_argument("--lr-special", type=float, default=1e-3); parser.add_argument("--lr-reader", type=float, default=0.0)
+   113	    parser.add_argument("--epu", type=int, default=8); parser.add_argument("--epochs", type=int, default=1)
+   114	    parser.add_argument("--warmup", type=int, default=10); parser.add_argument("--schedule", default="cosine")
+   115	    parser.add_argument("--ckpt-every", type=int, default=50); parser.add_argument("--seconds", type=float, default=None)
+   116	    parser.add_argument("--seed", type=int, default=0)
+   117	    parser.add_argument("--handler-state", type=Path, help="start from a trained table (special_inputs.pt of a checkpoint) instead of the export / init")
+   118	    parser.add_argument("--keep-truncated", action="store_true",
+   119	                        help="train on records whose answer hit the generator's length cap too (KL on the cut answer is still the teacher's)")
+   120	    parser.add_argument("--teacher-targets", type=Path, help="precomputed teacher targets (am_teacher.py) for this data and reader start")
+   121	    parser.add_argument("--profile", action="store_true", help="torch.profiler over the run (use with --seconds); prints the top GPU operators")
+   122	    parser.add_argument("--keep-placeholders", action="store_true", help="carry the inert placeholder rows (slower; same result)")
+   123	    parser.add_argument("--no-checkpointing", action="store_true", help="no gradient checkpointing (frozen reader: memory allows; no recompute)")
+   124	    parser.add_argument("--masked", action="store_true", help="attention with the boolean mask (slower; same result) instead of the maskless fused kernel")
+   125	    args = parser.parse_args()
+# ---- lines 135-160
+   135	    rng = random.Random(args.seed)
+   136	    records = [json.loads(line) for line in args.data.read_text().splitlines() if line.strip()]
+   137	    truncated = sum(bool(record.get("truncated")) for record in records)
+   138	    if not args.keep_truncated:
+   139	        records = [record for record in records if not record.get("truncated")]
+   140	    for number, record in enumerate(records):
+   141	        record.setdefault("id", f"{record['patient_id']}_{record.get('kind', 'selfstudy')}_{number:06d}")
+   142	    by_patient = defaultdict(lambda: defaultdict(list))
+   143	    for record in records:
+   144	        by_patient[record["patient_id"]][record.get("kind", "selfstudy")].append(record)
+   145	    chosen = []
+   146	    for patient, kinds in sorted(by_patient.items()):
+   147	        for pool in kinds.values():
+   148	            rng.shuffle(pool)
+   149	        if args.per_patient:
+   150	            evalshape = min(len(kinds.get("evalshape", [])), round(args.per_patient * args.evalshape_share))
+   151	            chosen += kinds.get("evalshape", [])[:evalshape] + kinds.get("selfstudy", [])[:args.per_patient - evalshape]
+   152	        else:
+   153	            chosen += [record for pool in kinds.values() for record in pool]
+   154	    rng.shuffle(chosen)
+   155	    print(f"am_train: {len(chosen)} samples over {len(by_patient)} patients ({truncated} truncated records {'kept' if args.keep_truncated else 'dropped'}); kinds {dict(Counter(r.get('kind') for r in chosen))}", flush=True)
+   156	    h = harness(None, args.reader_lora)
+   157	    study = ActivationContextStudyGenerator(h, AC)
+   158	    ac = study.ac_model
+   159	    if args.table == "kv":
+   160	        exports = sorted(args.exports.glob("ctx_*.pt"), key=lambda path: int(path.stem.split("_")[1]))
+# ---- lines 183-197
+   183	    config = ActivationContextTrainingConfig(
+   184	        loss_kind="kl", learning_rate_ac=0.0, learning_rate_target_lora=args.lr_reader, learning_rate_special_inputs=args.lr_special,
+   185	        warmup_updates=args.warmup, lr_schedule=args.schedule, examples_per_update=args.epu, num_epochs=args.epochs,
+   186	        checkpoint_every_updates=args.ckpt_every, checkpoint_every_epoch=True, completion_samples=0, reporting_interval=1.0,
+   187	        max_duration_seconds=args.seconds, seed=args.seed, distributed=False, micro_batch_examples=1,
+   188	        gradient_checkpointing=not args.no_checkpointing,
+   189	        teacher_targets_file=str(args.teacher_targets) if args.teacher_targets else None)
+   190	    trainer = ActivationContextTrainer(h, config)
+   191	    if args.lr_reader == 0:                                       # frozen reader: its (fresh) adapter runs in bf16, its gradients are skipped
+   192	        from am_handler import reader_lora_to_bf16
+   193	        h.module_manager.ensure_lora(ac.config.target_model_lora_name)
+   194	        print(f"am_train: frozen reader adapter in bf16 ({reader_lora_to_bf16(h, ac)} tensors)", flush=True)
+   195	    run = {"name": args.name, "args": {k: str(v) for k, v in vars(args).items()}, "samples": len(items), "kept_ratio": handler.real_ratio()}
+   196	    Path(os.environ.get("ACTIVATION_SYNC_ROOT", ".")).mkdir(parents=True, exist_ok=True)
+   197	    (Path(os.environ.get("ACTIVATION_SYNC_ROOT", ".")) / f"{args.name}.run.json").write_text(json.dumps(run, indent=1))

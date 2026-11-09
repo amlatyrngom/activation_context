@@ -1,0 +1,18 @@
+# source: /workspace/IB/STATE.md
+# lines: 628-628,637-637,685-685,701-701,716-717,732-732 (of 1221 total)
+# extracted: nl -ba | sed -n per range; LOG ONLY: STATE.md lines for the M1 packet m1v2_b (4,209 training items, 88 panel, 527 updates, 2e-5/2e-5, 1 epoch), training job 2689361, and the init pair tqa_r2_b (arm B, r2_bu union packet). The m1v2_b recipe.json/prepared.json were not synced locally
+# git commit: tracked, MODIFIED in working tree vs HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 53ab689b251d0d90b0e3eceb93ad08269db837f85929985fe5540c6327872a5e
+# ---- lines 628-628
+   628	- 01:50Z: TQA B final material (fork-reported): round 2 = 9,287 ex / 898 tasks (FP8 6,016, NVFP4 3,271); round 1 kept 689 (DeepMath 666). Union r2_bu (natural) 9,976 ex, ≈1,240 updates ≈7.3 h; r2_bu_os (oversampled) 12,423 ex, ≈1,545 updates ≈9.1 h. Packets building on CSAIL (CPU jobs 2677659/2677660). Mix per pooled seeds 0+1 at ≈03:40Z, then submit on the H200 pair.
+# ---- lines 637-637
+   637	- 04:22Z: TQA B resubmitted as job 2679136 (jobs/train_r2_h200_v2.sbatch, --time=18:00:00, 50% snapshot ≈update 617 ≈10:40Z), started 04:21:53Z on the H200 pair; same r2_bu full union, 1,234 updates; end ≈17:00Z. 2678663 cancelled (37 min, no checkpoint).
+# ---- lines 685-685
+   685	- 16:43Z: B (2679136) COMPLETED; pair tqa_r2_b pulled in one CSAIL call 16:40Z (no optimizer.pt), md5 verified on pc-a/pc-b (ac_modules 7b15846d…, reader 5335e3e9…), READY 16:42Z. r2_read_b3 waiting for H8 to yield pc-b GPU 1 → B/B-RR dmext. H200 pair now free for H8a build/train.
+# ---- lines 701-701
+   701	- 20:00Z: M1 targets writing since 19:37Z on both pc GPUs (1,648 triples, md5 4b7b6862; est. end ≈23:00–00:30Z). Container chain PGID 1567568 (`kit/m1v2_after_gen.sh`, log m1/v2/after_gen.log): ≥90% generated → keep → material + 10% Musique replay → CSAIL upload → CPU packet build (jobs/build_m1_cpu.sbatch, OUT packets/m1v2_b, INIT r2/pairs_m1/tqa_r2_b). Dry run on 192 triples kept 427 examples. Note: staging B's pair on CSAIL used cp -rn then removed any optimizer.pt in the new folder (it may briefly have been copied; none remains). Training sbatch reviewed (existing train_r2_h200_v2.sbatch, afterany:2683336, --time 10h); coordinator submits once packets/m1v2_b/recipe.json exists (≈01:00–02:00Z). Init B unless the 3-seed dmext tables favour u245.
+# ---- lines 716-717
+   716	- 01:38Z: M1 targets done (1,648/1,648 triples; gen 01:30Z). Material: 3,867 examples over 676 tasks (unanimous 1,085, majority-right 1,521, minority-right 849, all-differ 412; 243 mixed triples had no correct target) + 430 Musique replay = 4,297 (≈537 updates); 200 eval prompts rebuilt exactly (no leak). Uploaded md5 OK; CSAIL packet build 2688688 submitted 01:36Z (→ packets/m1v2_b). Next: I submit training (afterany 2683336) once recipe.json exists.
+   717	- 02:31Z: H8a COMPLETED 02:20:49Z (870/870, 8:02); pairs/h8a_final READY pc-a 02:27Z / pc-b 02:28Z (ac 7932ca04, side_lora 57f967a8, reader fc98fc8c); 50% snapshot on CSAIL. M1 packet m1v2_b built (2688688, 2 min): 4,209 training items over 786 tasks (DeepMath 3,804, Musique 405), 88 panel items, 527 updates, rates 2e-5/2e-5, 1 epoch. **M1 training 2689361 submitted by me 02:29Z, RUNNING 02:30Z on quanta-h200-1** → ≈07:30Z. pc-a GPU 1 idle → asked the H7 fork to split the 9 H8a eval units across pc-a GPU 1 (now) + GPU 0 (after R5), done by ≈07:30Z, leaving pc-a GPU 1 free for M1 reads ≈08:00Z.
+# ---- lines 732-732
+   732	- 07:40Z: M1 training 2689361 COMPLETED 06:45Z (early). Relay 07:35Z: pair tqa_m1_v2 md5 OK, READY pc-a 07:37Z / pc-b 07:37Z; M1 reads start. Full-H8 build 2690920 in final checks (8,793 items, 21 held, 1,100 updates); train 2690921 → ≈08:00Z–18:10Z.

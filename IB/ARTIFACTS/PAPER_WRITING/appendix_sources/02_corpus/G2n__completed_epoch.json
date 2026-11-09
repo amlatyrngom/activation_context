@@ -1,0 +1,5 @@
+{
+  "epoch_number": 1,
+  "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001",
+  "target_lora_checkpoint": "LORAS/rag_reader/epoch_001"
+}

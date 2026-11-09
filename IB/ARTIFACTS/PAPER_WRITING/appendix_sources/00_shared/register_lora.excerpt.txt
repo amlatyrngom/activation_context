@@ -1,0 +1,56 @@
+# source: /workspace/activation/harness/module_manager.py
+# lines: 39-52 85-120
+# extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: clean at HEAD
+--- lines 39-52 ---
+    39	DEFAULT_LORA_TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    40	"""The seven projections of every transformer block: the usual full-coverage choice. The output head is never targeted."""
+    41	
+    42	
+    43	@dataclass
+    44	class LoraConfig:
+    45	    lora_name: str
+    46	    model_name: str
+    47	    rank: int
+    48	    alpha: int
+    49	    """2 x rank by default, the common LoRA convention."""
+    50	    dropout: float
+    51	    """0.05 by default, the common PEFT default."""
+    52	    target_modules: list[str]
+--- lines 85-120 ---
+    85	    def register_lora(
+    86	        self,
+    87	        lora_name: str,
+    88	        model_name: str,
+    89	        rank: int = 128,
+    90	        alpha: int | None = None,
+    91	        dropout: float = 0.05,
+    92	        target_modules: list[str] | None = None,
+    93	        checkpoint_path: str | None = None,
+    94	    ) -> LoraConfig:
+    95	        """
+    96	        Record the adapter config; the adapter itself is injected on first use, fresh (zero-init B: the
+    97	        identity) or from `checkpoint_path` (a PEFT adapter folder, absolute or relative to the synced
+    98	        folder, e.g. "LORAS/<name>/latest"). alpha None means 2 x rank; target_modules None means the
+    99	        seven block projections. A checkpoint is also what the engine serves after the first exchange.
+   100	        """
+   101	        assert model_name in self.harness.loaded_models, f"Unknown model {model_name!r}."
+   102	        assert lora_name not in self.lora_configs, f"LoRA {lora_name!r} is already registered."
+   103	        max_rank = self.harness.harness_config.max_lora_rank
+   104	        assert 1 <= rank <= max_rank, f"LoRA rank {rank} outside [1, {max_rank}] (harness max_lora_rank)."
+   105	        lora_config = LoraConfig(
+   106	            lora_name=lora_name,
+   107	            model_name=model_name,
+   108	            rank=rank,
+   109	            alpha=alpha if alpha is not None else 2 * rank,
+   110	            dropout=dropout,
+   111	            target_modules=list(target_modules or DEFAULT_LORA_TARGET_MODULES),
+   112	            checkpoint_path=None if checkpoint_path is None else str(_checkpoint_folder(checkpoint_path)),
+   113	        )
+   114	        if lora_config.checkpoint_path is not None:
+   115	            assert Path(lora_config.checkpoint_path, "adapter_config.json").exists(), f"No adapter at {lora_config.checkpoint_path}."
+   116	        assert all(other.adapter_name != lora_config.adapter_name for other in self.lora_configs.values()), (
+   117	            f"LoRA {lora_name!r} maps to adapter name {lora_config.adapter_name!r}, which another LoRA already uses."
+   118	        )
+   119	        self.lora_configs[lora_name] = lora_config
+   120	        return lora_config

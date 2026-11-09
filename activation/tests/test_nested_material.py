@@ -114,3 +114,23 @@ def test_encoder_counts_child_rows_as_side_tokens(tmp_path):
     example = trainer.build_example(ac, item)
     assert len(example.spans) == 1 and example.spans[0][1] - example.spans[0][0] == expected
     assert [r.compression_ratio for r in example.part_requests] == [0.25]
+
+
+def test_prefetched_side_token_counts_match_tokenization(tmp_path):
+    h, ac, study = study_for(tmp_path)
+    items = study.generate_reconstruction_samples([NESTED, FLAT], ratio=1 / 8, variant="reconstruct")
+    lazy = [ac.part_view_rows(part["messages"], part.get("compression_target")) for item in items for part in direct_parts(item.ac_messages)]
+    ac._side_token_counts.clear()
+    # Leaf parts only: the nested passage's child and the flat passage (the nested parent's length needs its child's rows).
+    assert ac.prefetch_side_token_counts(item.ac_messages for item in items) == 2
+    assert all(count == len(tokenize_with_parts(ac.side.tokenizer, messages, [], ac.pad_id)[0])
+               for messages in [ac._child_request(part, ac.config.default_compression_ratio).messages
+                                for item in items for part in direct_parts(item.ac_messages) if not direct_parts(part["messages"])]
+               for count in [ac._side_token_counts[ac._token_count_key(messages, [], None)]])
+    assert ac.prefetch_side_token_counts(item.ac_messages for item in items) == 0, "a second prefetch finds every leaf memoized"
+    assert [ac.part_view_rows(part["messages"], part.get("compression_target")) for item in items for part in direct_parts(item.ac_messages)] == lazy
+    # The memo gives the same answer as the tokenizer for a nested request with its child's rows (the capacity check's call).
+    (part,) = direct_parts(items[0].ac_messages)
+    child = ac._child_request(part, ac.config.default_compression_ratio)
+    rows = [ac.part_view_rows(p["messages"], p["compression_target"]) for p in direct_parts(child.messages)]
+    assert ac.side_token_count(child.messages, rows) == len(tokenize_with_parts(ac.side.tokenizer, child.messages, rows, ac.pad_id)[0])

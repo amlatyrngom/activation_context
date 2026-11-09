@@ -1,0 +1,18 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 96-105,113-114
+# extracted: nl -ba | sed -n (lr_schedule cooldown, lr_final_fraction 0.1, linear cooldown shape; teacher_cache_top_k 32 + remainder mass)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (file has uncommitted modifications in the working tree; excerpt is the working-tree version)
+# --- lines 96-105
+    96	    lr_schedule: str = "cosine"                # "constant" (warm-up only), "cosine": decay to lr_final_fraction of the base rate over the planned updates, or "cooldown" (warm-up → constant → decay over the last cooldown_updates), or "cyclical" (that, repeated every cycle_updates)
+    97	    lr_final_fraction: float = 0.1
+    98	    warmup_updates: int = 50                   # linear warm-up of both learning rates over this many updates (counted across calls)
+    99	    schedule_total_updates: int | None = None  # planned updates the cosine spans (default: updates done at the call's start + steps x num_epochs, so a resume stays on the curve)
+   100	    schedule_anchor_update: int | None = None   # a phase continuing an earlier schedule: from this update the cosine runs from
+   101	    schedule_anchor_factor: float | None = None # this factor (the earlier schedule's value there) down to lr_final_fraction, with no jump
+   102	    cooldown_updates: int | None = None        # lr_schedule "cooldown": the decay (to lr_final_fraction) spans the last cooldown_updates of the planned updates; constant before
+   103	    cooldown_shape: str = "linear"             # the cooldown's decay shape: "linear" (the usual) or "cosine"
+   104	    cycle_updates: int | None = None           # lr_schedule "cyclical": the planned updates are cut into cycles of this many (a cycle starts at each multiple; the last one runs to the plan's end and takes the
+   105	                                               # remainder). Each cycle: linear warm-up from lr_final_fraction to 1 over warmup_updates, constant, then the cooldown_updates decay back to lr_final_fraction
+# --- lines 113-114
+   113	    teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
+   114	                                               # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)

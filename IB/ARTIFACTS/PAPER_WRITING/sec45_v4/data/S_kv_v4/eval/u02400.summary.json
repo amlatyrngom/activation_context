@@ -1,0 +1,24 @@
+{
+ "acc": 65.5,
+ "em": 58.0,
+ "f1": 72.63,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 3,
+ "new_tokens_mean": 8.7,
+ "label": "S_kv_v4_u2400",
+ "pair": [
+  "/root/sec45/runs/S_kv_v4/sync/ckpt/step_02400/ac",
+  "/root/sec45/runs/S_kv_v4/sync/ckpt/step_02400/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1944,
+  "decode_seconds": 127.3
+ },
+ "seconds": 143
+}

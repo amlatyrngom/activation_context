@@ -1,0 +1,23 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_eval.py
+# lines: 50-51,79-81,88-98
+# extracted: nl -ba | sed -n (AC-arm eval: --inject-golds, question_first, passes, sampling without presence penalty)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 50-51
+    50	    p.add_argument("--inject-golds", action="store_true", help="every gold present in the first calls x per_call passages (rq_common.inject_golds)")
+    51	    p.add_argument("--shard", default="0/1"); p.add_argument("--limit", type=int); p.add_argument("--seed", type=int, default=0)
+# --- lines 79-81
+    79	    if a.inject_golds:
+    80	        assert a.native is None and a.easy is None, "--inject-golds applies to the BM25 lists"
+    81	        top = C.inject_golds(top, questions, a.calls * a.per_call)
+# --- lines 88-98
+    88	    base_items = C.build_items(study, corpus, questions, top, AC, a.ratio, calls=a.calls, per_call=a.per_call, question_first=a.question_first)
+    89	    from dataclasses import replace
+    90	    items, keys = [], []
+    91	    for item in base_items:                      # the passes of a question next to each other: one encode, one batch
+    92	        for k in range(a.pass_offset, a.pass_offset + a.passes):
+    93	            if (item.item_id, k) not in done:
+    94	                items.append(replace(item, item_id=f"{item.item_id}#{k}")); keys.append((item.item_id, k))
+    95	    print(f"rq_eval: {len(items)} decodes to run ({len(done)} already in {a.out}), shard {a.shard}, batch {a.batch}, max_new {a.max_new}", flush=True)
+    96	    sampling = {k: C.READ_SAMPLING[k] for k in ("temperature", "top_p", "top_k")}   # HF generate has no presence penalty (vLLM baselines: 1.5)
+    97	    trainer = ActivationContextTrainer(h, ActivationContextTrainingConfig(loss_kind="sft", distributed=False, completion_sampling=sampling,
+    98	                                                                          completion_max_new_tokens=a.max_new, max_example_tokens=72000))

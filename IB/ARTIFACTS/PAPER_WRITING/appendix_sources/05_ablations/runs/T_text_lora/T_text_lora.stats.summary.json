@@ -1,0 +1,11 @@
+{
+ "_source": "/workspace/IB/ARTIFACTS/PAPER_WRITING/sec45_v4/data/T_text_lora/T_text_lora.stats.json",
+ "_extracted": "list lengths + scalars; full file not copied",
+ "loss__len": 4000,
+ "seconds__len": 4000,
+ "grad_norm__len": 4000,
+ "updates": 4000,
+ "elapsed": 16901,
+ "stop_reason": "complete",
+ "grad_norm_max": 131.3355
+}

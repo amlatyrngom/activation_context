@@ -1,0 +1,2 @@
+{"update": 0, "held_nll": 2.5175800065994265, "held_nll_token": 2.515883109592354, "token_accuracy": 0.4819851176738739, "items": 500, "wall_seconds": 210}
+{"update": 200, "held_nll": 2.2761029558181765, "held_nll_token": 2.2775022507192126, "token_accuracy": 0.49894892776012423, "items": 500, "wall_seconds": 1531}

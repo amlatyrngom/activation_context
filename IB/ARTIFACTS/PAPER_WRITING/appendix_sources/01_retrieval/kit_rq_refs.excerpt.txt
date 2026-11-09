@@ -1,0 +1,34 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_refs.py
+# lines: 104-126,152-156
+# extracted: nl -ba | sed -n (reference sampling SAMPLING_NO_THINK, correct flag; --max-tokens default; --view gold)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 104-126
+   104	        for r in chunk:
+   105	            view = C.teacher_messages(corpus, native[r["id"]]) if a.view == "gold" else C.same_context_messages(corpus, native[r["id"]], r["ranking"])
+   106	            ids = tok.encode(tok.apply_chat_template([{"role": "user", "content": view[0]["content"]}], tokenize=False, add_generation_prompt=True,
+   107	                                                     enable_thinking=False), add_special_tokens=False)
+   108	            prompts.append({"prompt_token_ids": ids})
+   109	            params.append(SamplingParams(**C.SAMPLING_NO_THINK, max_tokens=a.max_tokens, seed=zlib.crc32(f"{r['id']}/ref0".encode())))
+   110	        fits = [len(p["prompt_token_ids"]) + a.max_tokens <= a.max_model_len for p in prompts]   # a too-long prompt would fail the whole call
+   111	        results = iter(llm.generate([p for p, ok in zip(prompts, fits) if ok], [x for x, ok in zip(params, fits) if ok], use_tqdm=False))
+   112	        with open(a.out, "a") as f:
+   113	            for r, prompt, ok in zip(chunk, prompts, fits):
+   114	                if not ok:
+   115	                    total += 1
+   116	                    f.write(json.dumps({**r, "view": a.view, "prompt_tokens": len(prompt["prompt_token_ids"]), "output_tokens": 0, "finish": "too_long",
+   117	                                        "pred": None, "correct": False, "text": ""}) + "\n")
+   118	                    continue
+   119	                o = next(results).outputs[0]
+   120	                pred = C.final_answer(o.text, need_think=False) if o.finish_reason == "stop" else None
+   121	                correct = bool(pred is not None and C.score(pred, native[r["id"]])["acc"])
+   122	                kept += correct; total += 1
+   123	                f.write(json.dumps({**r, "view": a.view, "prompt_tokens": len(prompt["prompt_token_ids"]), "output_tokens": len(o.token_ids),
+   124	                                    "finish": o.finish_reason, "pred": pred, "correct": correct, "text": o.text}) + "\n")
+   125	        print(f"rq_refs: {start + len(chunk)}/{len(records)} done, kept {kept}/{total} ({time.monotonic() - started:.0f}s)", flush=True)
+   126	    print(f"rq_refs: shard {a.shard} done in {time.monotonic() - started:.0f}s; correct {kept}/{total}", flush=True)
+# --- lines 152-156
+   152	    p.add_argument("--max-tokens", type=int, default=2048); p.add_argument("--max-model-len", type=int, default=24000)
+   153	    p.add_argument("--kv-cache-dtype", default="fp8", help="auto on Blackwell RTX (fp8 KV needs FlashInfer, absent there)")
+   154	    p.add_argument("--merge", nargs="+", type=Path, help="OUT SHARD... : concatenate shard files (no duplicate ids) and exit")
+   155	    p.add_argument("--view", choices=["same", "gold"], default="same", help="generate: the 9B reads the plan's list as text (same-context) or "
+   156	                   "the question's gold passages alone (rq_common.teacher_messages)")

@@ -1,0 +1,12 @@
+{
+ "variant": "summary_write",
+ "runs": 30,
+ "solved": 0,
+ "solved_share": 0.0,
+ "answered": 30,
+ "mean_continuation_tokens": 655.5,
+ "finish_reasons": {
+  "submitted": 30
+ },
+ "mean_seconds": 9.301365399360657
+}

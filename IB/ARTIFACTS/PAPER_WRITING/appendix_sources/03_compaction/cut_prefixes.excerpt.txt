@@ -1,0 +1,84 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/kit/cut_prefixes.py
+# lines: 1-19,46-59,76-118
+# extracted: nl -ba | sed -n (docstring: cut rule; qualifying window lower/upper; keep-first in evaluation order)
+# git commit: not tracked by git (IB/TMP is outside version control); file as on disk 2026-10-28
+
+     1	"""
+     2	Cut the shared prefixes of the resumption benchmark out of a pool run's rollout cache.
+     3	
+     4	A run qualifies when it passed --lower tokens and ended under --upper (any finish reason; runs ended by the trajectory cap
+     5	are out). Length = prompt tokens + every step's tokens, as the 27B recorded them (the 9B reader has the same vocabulary).
+     6	The cut is the first step boundary at or past --lower that is not an assistant turn, so a prefix always ends with tool
+     7	results (or a nudge) and the next thing to happen is a model turn. A run whose cut is its last step has nothing to resume
+     8	and is left out. One file per prefix (steps without log-probabilities) and an index.
+     9	
+    10	    python cut_prefixes.py --rollouts ROLLOUTS/pc_pool_eval_v1/rollouts.jsonl --out prefixes_eval_v1
+    11	
+    12	Training side only: --short-lower S also takes the runs that ended between S and --lower tokens, cut at the first such
+    13	boundary at or past --short-fraction of the run (entries marked "cut_rule": "short"; the others "window"). Evaluation
+    14	prefixes never use it.
+    15	
+    16	With --split and --keep-first N (evaluation side), the index keeps the first N prefixes in the split's evaluation order; the
+    17	rest go to `left_over`, each marked with whether its repository holds one of the kept prefixes (only the others may serve
+    18	training).
+    19	"""
+    ...
+    46	    short = args.short_lower is not None and args.short_lower <= total < args.lower
+    47	    if total < args.lower and not short:
+    48	        return None, labels + ["skip: under the lower bound"] + ["under the lower bound, solved"] * solved
+    49	    cut_at = args.short_fraction * total if short else args.lower
+    50	    if total >= args.upper or row.get("finish_reason") == "trajectory_cap":
+    51	        return None, labels + ["skip: reached the upper bound"]
+    52	    running, cut = head, None
+    53	    for position, step in enumerate(trajectory):
+    54	        running += len(step["token_ids"])
+    55	        if running >= cut_at and step["role"] != "assistant":
+    56	            cut = position + 1
+    57	            break
+    58	    if cut is None or cut >= len(trajectory):
+    59	        return None, labels + ["skip: nothing after the cut"]
+    ...
+    76	def main() -> int:
+    77	    parser = argparse.ArgumentParser()
+    78	    parser.add_argument("--rollouts", required=True)
+    79	    parser.add_argument("--out", required=True)
+    80	    parser.add_argument("--lower", type=int, default=20_000)
+    81	    parser.add_argument("--upper", type=int, default=50_000)
+    82	    parser.add_argument("--short-lower", type=int, default=None, help="training side: also cut the runs that ended between this and --lower")
+    83	    parser.add_argument("--short-fraction", type=float, default=0.6, help="where a short run is cut, as a share of its length")
+    84	    parser.add_argument("--split", default=None, help="split.json; with --keep-first, orders the prefixes by its evaluation order")
+    85	    parser.add_argument("--keep-first", type=int, default=None)
+    86	    args = parser.parse_args()
+    87	    out = Path(args.out)
+    88	    (out / "prefixes").mkdir(parents=True, exist_ok=True)
+    89	    status: dict[str, tuple[dict | None, list[str]]] = {}                                 # per task: (index entry, counters); the latest row of a task wins
+    90	    with open(args.rollouts) as handle:
+    91	        for line in handle:                                                               # streamed: a pool cache is several GB
+    92	            if not line.strip():
+    93	                continue
+    94	            row = json.loads(line)
+    95	            key = row.get("config_key") or task_of(row).get("task_id")
+    96	            previous = status.get(key)
+    97	            if previous is not None and previous[0] is not None:
+    98	                (out / previous[0]["file"]).unlink(missing_ok=True)
+    99	            status[key] = cut_row(row, key, args, out)
+   100	    index, why = [], Counter()
+   101	    for entry, labels in status.values():
+   102	        why.update(labels)
+   103	        if entry is not None:
+   104	            index.append(entry)
+   105	    index.sort(key=lambda entry: (entry["benchmark"] or "", entry["task_id"]))
+   106	    left_over: list[dict] = []
+   107	    if args.keep_first is not None:
+   108	        assert args.short_lower is None, "evaluation prefixes are cut by the window rule only"
+   109	        order = {task["task_id"]: task["evaluation_order"] for task in json.loads(Path(args.split).read_text())["tasks"] if task["side"] == "evaluation"}
+   110	        index.sort(key=lambda entry: order[entry["task_id"]])
+   111	        index, left_over = index[:args.keep_first], index[args.keep_first:]
+   112	        kept_repos = {entry["repo"] for entry in index}
+   113	        left_over = [{**entry, "repo_among_kept": entry["repo"] in kept_repos} for entry in left_over]
+   114	        why["prefixes kept (first in evaluation order)"] = len(index)
+   115	        why["left over"] = len(left_over)
+   116	        why["left over, repository not among the kept"] = sum(not entry["repo_among_kept"] for entry in left_over)
+   117	    (out / "index.json").write_text(json.dumps({"rollouts": str(args.rollouts), "lower": args.lower, "upper": args.upper, "keep_first": args.keep_first,
+   118	                                                "counts": dict(why), "prefixes": index, "left_over": left_over}, indent=1))
+    ...

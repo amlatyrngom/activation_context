@@ -1,0 +1,47 @@
+{
+ "u00000": {
+  "acc_lenient": 53.5,
+  "acc_strict": 26.5,
+  "em": 46.0,
+  "f1": 59.88,
+  "answered_strict": 57.0,
+  "new_tokens_mean": 26.1,
+  "n": 200
+ },
+ "u01000": {
+  "acc_lenient": 72.5,
+  "acc_strict": 72.5,
+  "em": 65.0,
+  "f1": 76.13,
+  "answered_strict": 100.0,
+  "new_tokens_mean": 8.2,
+  "n": 200
+ },
+ "u02000": {
+  "acc_lenient": 72.5,
+  "acc_strict": 72.5,
+  "em": 66.0,
+  "f1": 77.94,
+  "answered_strict": 100.0,
+  "new_tokens_mean": 8.0,
+  "n": 200
+ },
+ "u03000": {
+  "acc_lenient": 71.5,
+  "acc_strict": 71.5,
+  "em": 64.0,
+  "f1": 76.68,
+  "answered_strict": 100.0,
+  "new_tokens_mean": 8.1,
+  "n": 200
+ },
+ "u04000": {
+  "acc_lenient": 70.5,
+  "acc_strict": 70.5,
+  "em": 63.5,
+  "f1": 76.46,
+  "answered_strict": 100.0,
+  "new_tokens_mean": 8.1,
+  "n": 200
+ }
+}

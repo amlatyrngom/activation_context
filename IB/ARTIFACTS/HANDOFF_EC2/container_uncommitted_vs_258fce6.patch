@@ -1,0 +1,1205 @@
+diff --git a/.gitmodules b/.gitmodules
+new file mode 100644
+index 0000000..cb6c27f
+--- /dev/null
++++ b/.gitmodules
+@@ -0,0 +1,3 @@
++[submodule "paper"]
++	path = paper
++	url = https://github.com/amlatyrngom/activation_context_paper.git
+diff --git a/activation/ac_model/ac_model.py b/activation/ac_model/ac_model.py
+index 83669b9..0ec8ea8 100644
+--- a/activation/ac_model/ac_model.py
++++ b/activation/ac_model/ac_model.py
+@@ -29,6 +29,7 @@ fp32; the bases stay bf16. Checkpoints: `AC_MODELS/<name>/round_NNN` (+ `latest`
+ from __future__ import annotations
+ 
+ import dataclasses
++import hashlib
+ import json
+ import math
+ import shutil
+@@ -56,11 +57,14 @@ from .ac_model_utils import (
+     EncodeRequest,
+     RowCache,
+     RowHead,
++    SpecialInputHandler,
+     WindowedPooling,
++    batch_token_counts,
+     direct_parts,
+     interleaved_positions,
+     is_dense_piece,
+     normalize_messages,
++    render_with_part_sentinels,
+     resolve_intervention_layers,
+     row_cache_key,
+     sinusoidal_positions,
+@@ -74,6 +78,7 @@ if t.TYPE_CHECKING:
+ 
+ CHECKPOINT_FOLDER = "AC_MODELS"
+ MODULES_FILE = "ac_modules.pt"
++SPECIAL_INPUTS_FILE = "special_inputs.pt"   # the special-input handler's state, beside the modules (only when a handler is attached)
+ SIDE_LORA_FOLDER = "side_lora"
+ ROLLOUT, TRAINING = "rollout", "training"
+ ARCHITECTURE_VERSION = 2
+@@ -298,8 +303,10 @@ class ActivationContextModel:
+         self.profile_phases = False              # per-phase encode timings into stats.phase_seconds (synchronizes the device)
+         self.saved_rounds = 0
+         self.epoch_number = 0
++        self.special_input_handler: SpecialInputHandler | None = None   # set from outside: answers chosen parts instead of the encoder
+         tokenizer = self.side.tokenizer
+         self.pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else (tokenizer.eos_token_id or 0)
++        self._side_token_counts: dict[str, int] = {}   # content key -> side token count of a rendered part (side_token_count)
+         self._dense_vocab: torch.Tensor | None = None   # per side-vocabulary id: is_dense_piece of its text (built at the first density-weighted encode)
+ 
+     # ------------------------------------------------------------------------------------------ placement and modes
+@@ -312,8 +319,40 @@ class ActivationContextModel:
+         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
+         child_lengths = [self.part_view_rows(child.messages, child.compression_ratio, child.tools)
+                          for child in (self._child_request(part, ratio) for part in direct_parts(messages))]
+-        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)
+-        return self.num_view_rows(len(ids), ratio)
++        return self.num_view_rows(self.side_token_count(messages, child_lengths, tools), ratio)
++
++    @staticmethod
++    def _token_count_key(messages: list[dict], child_lengths: list[int], tools: list[dict] | None) -> str:
++        return hashlib.sha256(json.dumps([messages, child_lengths, tools or None], sort_keys=True, default=str).encode()).hexdigest()
++
++    def side_token_count(self, messages: list[dict], child_lengths: list[int], tools: list[dict] | None = None) -> int:
++        """len(tokenize_with_parts(side tokenizer, messages, child_lengths, ...)), memoized by content: example building and the
++        capacity check ask for the same parts' lengths (a retrieval item has 20 parts of ≈2.6k side tokens each)."""
++        key = self._token_count_key(messages, child_lengths, tools)
++        count = self._side_token_counts.get(key)
++        if count is None:
++            count = len(tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)[0])
++            self._side_token_counts[key] = count
++        return count
++
++    def prefetch_side_token_counts(self, histories: t.Iterable[list[dict]]) -> int:
++        """Fill the side_token_count memo for every leaf part (no nested parts) of these message histories with batched,
++        multi-threaded tokenizer calls; nested parts stay lazy (their length needs their children's rows). Returns the
++        number of parts tokenized."""
++        pending: dict[str, str] = {}
++        stack = [part for messages in histories for part in direct_parts(messages)]
++        while stack:
++            request = self._child_request(stack.pop(), self.config.default_compression_ratio)
++            children = list(direct_parts(request.messages))
++            if children:
++                stack.extend(children)
++                continue
++            key = self._token_count_key(request.messages, [], request.tools)
++            if key not in self._side_token_counts and key not in pending:
++                pending[key] = render_with_part_sentinels(self.side.tokenizer, request.messages, tools=request.tools)
++        for key, count in zip(pending, batch_token_counts(self.side.tokenizer, list(pending.values()))):
++            self._side_token_counts[key] = count
++        return len(pending)
+ 
+     def set_mode(self, mode: str) -> None:
+         """`training`: gradients, no cache, no queue (the caller batches); `rollout`: no grad, cache, queue."""
+@@ -442,6 +481,11 @@ class ActivationContextModel:
+         """The AC modules' parameters plus the side adapter's."""
+         return [parameter for parameter in self.modules.parameters() if parameter.requires_grad] + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
+ 
++    def special_input_parameters(self) -> list[nn.Parameter]:
++        """The attached special-input handler's trainable parameters (none without a handler)."""
++        handler = self.special_input_handler
++        return [] if handler is None else [parameter for parameter in handler.parameters() if parameter.requires_grad]
++
+     # ------------------------------------------------------------------------------------------ encoding
+     def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
+                tools: list[dict] | None = None) -> torch.Tensor:
+@@ -469,7 +513,13 @@ class ActivationContextModel:
+             raise RuntimeError(f"{self.name} is a deep AC model: encode_batch(with_layers=True) returns its rows with their deltas; a rows-only consumer would drop them silently")
+         results: list[ACOutput | None] = [None] * len(requests)
+         pending: list[int] = []
++        special = self.special_input_handler(list(requests)) if self.special_input_handler is not None else [None] * len(requests)
++        if len(special) != len(requests):
++            raise ValueError(f"the special-input handler answered {len(special)} of {len(requests)} requests")
+         for index, request in enumerate(requests):
++            if special[index] is not None:                # the handler's answer stands for the encoder's (never row-cached: it may train)
++                results[index] = special[index]
++                continue
+             cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools)) if self.mode == ROLLOUT else None
+             if cached is not None:
+                 self.stats.cache_hits += 1
+@@ -492,7 +542,8 @@ class ActivationContextModel:
+         if self.queue is not None:
+             self.stats.queue_batches, self.stats.queue_requests = self.queue.batches, self.queue.requests
+         device = self.device
+-        outputs = [output.to(device, torch.float32) for output in results]
++        outputs = [output._map(lambda tensor: tensor.to(device), lambda tensor: tensor.to(device)) if special[index] is not None   # a handler's answer keeps its dtypes
++                   else output.to(device, torch.float32) for index, output in enumerate(results)]                                # (e.g. bf16 keys/values: no fp32 round trip)
+         return outputs if with_layers else [output.input_embeds for output in outputs]
+ 
+     def _child_request(self, part: dict, parent_ratio: float) -> EncodeRequest:
+@@ -757,6 +808,8 @@ class ActivationContextModel:
+             folder = resolve_path(checkpoint_path, create=False)
+         self.harness.module_manager.ensure_lora(self.config.base_side_model_lora_name)
+         folder.mkdir(parents=True, exist_ok=True)
++        if self.special_input_handler is not None:
++            torch.save({"handler": type(self.special_input_handler).__name__, "state": self.special_input_handler.state_dict()}, folder / SPECIAL_INPUTS_FILE)
+         torch.save({"modules": self.modules.state_dict(), "config": {**dataclasses.asdict(self.config), "row_head_skip": self.modules.target_head.skip}, "version": self.version,
+                     "d_side": self.d_side, "d_target": self.d_target, "architecture_version": ARCHITECTURE_VERSION,
+                     "model_ids": [self.side.model_config.model_id, self.target.model_config.model_id],
+@@ -783,6 +836,12 @@ class ActivationContextModel:
+         if not folder.is_absolute():
+             folder = resolve_path(checkpoint_path, create=False)
+         state = torch.load(folder / MODULES_FILE, map_location="cpu", weights_only=False)
++        if (folder / SPECIAL_INPUTS_FILE).exists():
++            if self.special_input_handler is None:
++                raise ValueError(f"{folder} holds a special-input handler's trained state ({SPECIAL_INPUTS_FILE}): attach the handler before loading "
++                                 "(without it those inputs would silently go through the encoder)")
++            special_state = torch.load(folder / SPECIAL_INPUTS_FILE, map_location="cpu", weights_only=False)
++            self.special_input_handler.load_state_dict(special_state["state"])
+         if state.get("architecture_version") != ARCHITECTURE_VERSION:
+             raise ValueError("Checkpoint uses an incompatible AC architecture (legacy learned-marker checkpoints cannot load as content summaries)")
+         expected_ids = [self.side.model_config.model_id, self.target.model_config.model_id]
+diff --git a/activation/ac_model/ac_model_training.py b/activation/ac_model/ac_model_training.py
+index 75df01f..688acfc 100644
+--- a/activation/ac_model/ac_model_training.py
++++ b/activation/ac_model/ac_model_training.py
+@@ -88,6 +88,7 @@ class ActivationContextTrainingConfig:
+                                                # call's start, on the in-context history; its top-k log-probs + the remainder mass are stored before the first update)
+     learning_rate_ac: float = 1e-4             # AC modules and the side LoRA
+     learning_rate_target_lora: float = 2e-5    # the target adapter (0 = frozen: no steps, no penalty)
++    learning_rate_special_inputs: float = 0.0  # a third group: the attached special-input handler's parameters (ActivationContextModel.special_input_handler)
+     weight_decay: float = 0.0
+     adam_betas: tuple[float, float] = (0.9, 0.95)
+     adam_eps: float = 1e-8
+@@ -111,6 +112,7 @@ class ActivationContextTrainingConfig:
+     no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
+     teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
+                                                # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)
++    teacher_targets_file: str | None = None    # precomputed KL teacher targets (save_teacher_targets format, same top-k) loaded at the start of train(): valid only while the teacher is the reader as it is at that start (e.g. a frozen or fresh reader adapter)
+     teacher_cache_block_examples: int | None = None  # opt-in bounded preparation; KL uses a persisted frozen reader adapter, references are kept for one block + fixed panels
+     full_context_match_weight: float = 0.0     # > 0 (SFT only; 0 = off, nothing below is read): each training example with an in-context view also pulls the reader-with-rows towards
+                                                # the reader WITHOUT its adapter on that in-context history (the whole text in context), at the target positions of the last layer:
+@@ -127,7 +129,7 @@ class ActivationContextTrainingConfig:
+     deltas_off_panel: bool = False             # deep models: evaluate the reporting items a second time at every panel with the rows kept and the deltas removed ("deltas_off"): held minus deltas_off is the deltas' contribution
+     updates_per_epoch: int = 4                 # maximum gradient steps per epoch when examples_per_update is unset
+     examples_per_update: int | None = None     # when set, overrides updates_per_epoch: ceil(items / examples_per_update) steps
+-    micro_batch_examples: int = 1              # SFT: examples per right-padded reader forward (1 = one example at a time)
++    micro_batch_examples: int = 1              # SFT / KL: examples per right-padded reader forward (1 = one example at a time)
+     execution_policy: dict | None = None       # measured training-only batching/residency policy from tune_ac_execution
+     distributed: bool = False                 # torchrun: same global logical batch, one existing model pair per GPU
+     deterministic: bool = False               # strict scoped kernels; CUDA also needs CUBLAS_WORKSPACE_CONFIG at process startup
+@@ -146,12 +148,16 @@ class ActivationContextTrainingConfig:
+     reporting_interval: float = 0.1
+     completion_samples: int = 4
+     completion_max_new_tokens: int = 64
++    completion_sampling: dict | None = None    # batched checkpoint decodes only: e.g. {"temperature": 0.7, "top_p": 0.8, "top_k": 20} samples (key/value transfer
++                                               # payloads; None = greedy) - an evaluation protocol that uses the model's default sampled decoding
+ 
+     def __post_init__(self) -> None:
+         if self.distributed:
+-            if self.loss_kind != "sft":
+-                raise ValueError("Distributed AC training currently supports SFT")
+-            if self.teacher_cache_block_examples is None:
++            # KL with a precomputed teacher_targets_file: every rank loads the whole file and stays in eager mode (block preparation
++            # would drop the file's entries and rebuild them from a snapshot adapter, which the precomputed teacher does not have).
++            if self.loss_kind != "sft" and self.teacher_targets_file is None:
++                raise ValueError("Distributed AC training supports SFT, or KL from a precomputed teacher_targets_file")
++            if self.teacher_cache_block_examples is None and self.loss_kind == "sft":
+                 self.teacher_cache_block_examples = max(32, self.examples_per_update or 8)
+         if self.max_duration_seconds is not None and self.max_duration_seconds <= 0:
+             raise ValueError("max_duration_seconds must be positive")
+@@ -210,8 +216,8 @@ class ActivationContextTrainingConfig:
+             raise ValueError("share_part_encodings shares inside one padded SFT forward: it needs loss_kind='sft' and micro_batch_examples > 1")
+         if self.micro_batch_examples < 1:
+             raise ValueError("micro_batch_examples must be positive")
+-        if self.micro_batch_examples > 1 and self.loss_kind != "sft":
+-            raise ValueError("micro_batch_examples > 1 is only implemented for loss_kind='sft'")
++        if self.micro_batch_examples > 1 and self.loss_kind not in ("sft", "kl"):
++            raise ValueError("micro_batch_examples > 1 is implemented for loss_kind 'sft' and 'kl'")
+         if self.execution_policy is not None:
+             validate_execution_policy(self.execution_policy)
+             if self.loss_kind != "sft" or self.micro_batch_examples != 1:
+@@ -498,12 +504,18 @@ class ActivationContextTrainer:
+             config = model.config.get_text_config() if hasattr(model.config, "get_text_config") else model.config
+             return getattr(config, "max_position_embeddings", None)
+         target_limit, side_limit = capacity(ac_model.target.model), capacity(ac_model.side.model)
++        checked: set[str] = set()                    # parts repeat across examples (shared corpora): tokenize each distinct one once
+         for example in examples:
+             for view, ids in (("teacher", example.teacher_ids), ("student", example.student_ids)):
+                 if target_limit and len(ids) > target_limit:
+                     raise ValueError(f"{example.item.item_id}: {view} reader history has {len(ids)} tokens, exceeding supported capacity {target_limit}")
+             if side_limit:
+                 for request in example.part_requests:
++                    key = hashlib.sha256(json.dumps([request.messages, request.compression_ratio, request.tools], sort_keys=True,
++                                                    default=str).encode()).hexdigest()
++                    if key in checked:
++                        continue
++                    checked.add(key)
+                     try:
+                         validate_part_capacity(ac_model, request, side_limit)
+                     except ValueError as error:
+@@ -550,6 +562,13 @@ class ActivationContextTrainer:
+                              "refusing to rebuild targets from the updated reader")
+         self.teacher_cache.clear()                 # teacher targets belong to this invocation only: the reader as it is at this call's start
+         self.teacher_target_logp.clear()
++        if config.teacher_targets_file is not None:
++            if config.loss_kind != "kl":
++                raise ValueError("teacher_targets_file is for KL training")
++            loaded = self._merge_teacher_targets(Path(config.teacher_targets_file), None)
++            if not loaded:
++                raise ValueError(f"teacher_targets_file {config.teacher_targets_file}: no entries with top_k {config.teacher_cache_top_k}")
++            print(f"AC training: {loaded} precomputed teacher targets from {config.teacher_targets_file}", flush=True)
+         self._teacher_texts.clear()
+         self._teacher_snapshot = None
+         self._fixed_teacher_keys.clear()
+@@ -603,6 +622,8 @@ class ActivationContextTrainer:
+             reporter.render(force=True)
+         torch.manual_seed(config.seed + start_epoch)
+         with parallel.local_work():
++            # The parts' side lengths in batched, multi-threaded tokenizer calls (example building and the capacity check reuse them)
++            ac_model.prefetch_side_token_counts(item.ac_messages for item in [*training_data, *reporting_data, *validation_data])
+             examples = [self.build_example(ac_model, item) for item in training_data]
+             reporting_examples = [self.build_example(ac_model, item) for item in reporting_data]
+             validation_examples = [self.build_example(ac_model, item) for item in validation_data]
+@@ -694,6 +715,9 @@ class ActivationContextTrainer:
+                 gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]     # the scalar gates (row scale, input / position / residual scales): traced
+                 gate_names = {id(parameter): name for name, parameter in ac_model.modules.named_parameters() if parameter.numel() == 1}
+                 groups = [{"params": ac_parameters, "lr": config.learning_rate_ac}, {"params": target_parameters, "lr": config.learning_rate_target_lora}]
++                special_parameters = ac_model.special_input_parameters()
++                if special_parameters:                                   # old checkpoints keep their two-group layout
++                    groups.append({"params": special_parameters, "lr": config.learning_rate_special_inputs})
+                 if reset_optimizer:
+                     self.optimizers.pop(ac_model_name, None)
+                 optimizer = persistent_optimizer(self.optimizers, ac_model_name, groups,
+@@ -769,6 +793,16 @@ class ActivationContextTrainer:
+             planned_total = config.schedule_total_updates or (self.updates_done.get(ac_model_name, 0) + steps * config.num_epochs)
+             reader_frozen = config.learning_rate_target_lora == 0.0     # a frozen reader neither steps nor takes part in the clipping norm
+             encoder_frozen = config.learning_rate_ac == 0.0             # likewise a frozen encoder (AC modules + side LoRA)
++            def skip_frozen_gradients() -> None:
++                """A frozen group's weight gradients would be discarded after the backward: never compute them (re-applied each
++                update because checkpoint saves re-enable the adapter's parameters). Gradients still flow through those layers.
++                With nothing else trainable the old behaviour stays (the backward needs some parameter that takes a gradient)."""
++                if reader_frozen and encoder_frozen and not (special_parameters and config.learning_rate_special_inputs > 0):
++                    return
++                for frozen, parameters in ((reader_frozen, target_parameters), (encoder_frozen, ac_parameters)):
++                    if frozen:
++                        for parameter in parameters:
++                            parameter.requires_grad_(False)
+             for epoch in range(1, config.num_epochs + 1):
+                 epoch_number = start_epoch + epoch - 1
+                 epoch_started = time.monotonic()
+@@ -803,12 +837,13 @@ class ActivationContextTrainer:
+                                 self._prepare_teacher_block(ac_model, [examples[index] for index in local_indexes], device, reporter)
+                     if reporter is not None:
+                         reporter.report_phase(progress(step - 1), "training")
++                    skip_frozen_gradients()
+                     step_started = time.monotonic()
+                     before_side_tokens = ac_model.stats.side_tokens
+                     mini = order[(step - 1) * per_step:step * per_step]
+                     optimizer.zero_grad(set_to_none=True)
+                     totals = {"loss": 0.0, "agreement": 0.0, "tokens": 0, "penalty": []}
+-                    batched = config.micro_batch_examples > 1 and config.loss_kind == "sft"
++                    batched = config.micro_batch_examples > 1
+                     policy = config.execution_policy
+                     penalty_flags = None
+                     if policy is not None or config.distributed:
+@@ -843,7 +878,7 @@ class ActivationContextTrainer:
+                             elif batched:
+                                 results = self._batch_loss(ac_model, group_examples, device,
+                                     penalty_flags=[penalty_flags[index] for index in group] if penalty_flags is not None else None)
+-                                outcomes = [(result["objective"], None, result["penalty"]) for result in results]
++                                outcomes = [(result["objective"], result.get("agreement"), result["penalty"]) for result in results]
+                             else:
+                                 objective, agreement, _, _ = self._example_loss(ac_model, group_examples[0], device,
+                                     penalty_flag=penalty_flags[group[0]] if penalty_flags is not None else None)
+@@ -902,7 +937,7 @@ class ActivationContextTrainer:
+                             stats.gate_trace.append({"update": self.updates_done.get(ac_model_name, 0), **{gate_names.get(id(parameter), str(index)): float(parameter.detach()) for index, parameter in enumerate(gate_parameters)}})
+                         if trace_due:
+                             stats.intervention_trace.append(self._intervention_trace_entry(ac_model, self.updates_done.get(ac_model_name, 0), head_norms))
+-                        encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters)
++                        encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters + special_parameters)
+                         try:
+                             optimizer.step()
+                         finally:
+@@ -1427,7 +1462,7 @@ class ActivationContextTrainer:
+             lora = ac_model.config.target_model_lora_name
+             peft_model = manager.ensure_lora(lora)
+             embedding = target.model.get_input_embeddings()
+-            generation = dict(do_sample=False, use_cache=True,
++            generation = dict(do_sample=bool(self.config.completion_sampling), **(self.config.completion_sampling or {}), use_cache=True,
+                               pad_token_id=target.tokenizer.pad_token_id if target.tokenizer.pad_token_id is not None else target.tokenizer.eos_token_id)
+             # A chat turn can end before the model's end-of-text token.
+             eos_ids = peft_model.generation_config.eos_token_id
+@@ -1697,14 +1732,15 @@ class ActivationContextTrainer:
+     def _batch_loss(self, ac_model: ActivationContextModel, batch: t.Sequence[_Example], device: torch.device, with_penalty: bool = True, deltas_off: bool = False,
+                     *, encoded_outputs: list[ACOutput] | None = None, penalty_flags: list[bool] | None = None) -> list[dict]:
+         """
+-        SFT loss of several examples from one right-padded reader forward (and one encoder call for all their parts):
++        SFT or KL loss of several examples from one right-padded reader forward (and one encoder call for all their parts):
+         per example {"objective", "num", "target_logp", "hits", "penalty"}, the values `_example_loss` gives one at a
+         time. Under causal attention (and the causal recurrence of the linear-attention layers) a real token never sees
+         a later pad, so the padded rows need no mask. The sampled no-context references go through a second padded
+-        forward; `penalty` is the scaled term for the sampled examples and None for the rest.
++        forward; `penalty` is the scaled term for the sampled examples and None for the rest. KL reads each example's stored
++        teacher targets (as `_example_loss`; they must be in the cache) and adds its top-1 "agreement".
+         """
+         config = self.config
+-        assert config.loss_kind == "sft", "_batch_loss is the SFT path"
++        assert config.loss_kind in ("sft", "kl"), "_batch_loss is the SFT and KL path"
+         target = ac_model.target
+         base = target.model
+         base_dtype = next(base.parameters()).dtype
+@@ -1738,17 +1774,30 @@ class ActivationContextTrainer:
+         hidden = self._padded_forward(target, embeds, lora, payloads)
+         if torch.is_grad_enabled():
+             self._harvest_row_rms(payloads)
+-        states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
+-        targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
+-        cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
+-        results, cursor = [], 0
+-        for example in batch:
+-            num = example.num_completion
+-            weights = self._target_weights(example, device)
+-            objective = cross_entropy[cursor:cursor + num].mean() if weights is None else (cross_entropy[cursor:cursor + num] * weights).sum() / num
+-            results.append({"objective": objective, "num": num,
+-                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
+-            cursor += num
++        results = []
++        if config.loss_kind == "kl":
++            for index, example in enumerate(batch):
++                cached = self.teacher_cache.get(example.teacher_cache_key)
++                if cached is None:
++                    raise RuntimeError(f"{example.item.item_id}: no stored teacher targets; train() stores them before its first update "
++                                       "and eval() needs them for its items (teacher='current' stores them from the current reader)")
++                cached = tuple(tensor.to(device, non_blocking=True) for tensor in cached)
++                target_ids = torch.tensor(example.target_ids, device=device, dtype=torch.long)
++                objective, agreement, target_logp = self._chunked_kl(None, hidden[index, example.student_positions], head, cached=cached, target_ids=target_ids)
++                results.append({"objective": objective, "num": example.num_completion, "target_logp": target_logp, "hits": self._last_hits,
++                                "agreement": agreement, "penalty": None})
++        else:
++            states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
++            targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
++            cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
++            cursor = 0
++            for example in batch:
++                num = example.num_completion
++                weights = self._target_weights(example, device)
++                objective = cross_entropy[cursor:cursor + num].mean() if weights is None else (cross_entropy[cursor:cursor + num] * weights).sum() / num
++                results.append({"objective": objective, "num": num,
++                                "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
++                cursor += num
+         if config.full_context_match_weight > 0:
+             for index, example in enumerate(batch):     # "match": the example's full-context match term (see _full_context_match) or None
+                 results[index]["match"] = self._full_context_match(ac_model, example, hidden[index, example.student_positions], head, embedding, device)
+@@ -1867,6 +1916,12 @@ class ActivationContextTrainer:
+             return embeds, {"positions": [position for start, end in spans for position in range(start, end)], "layer_inputs": {}, "kv_values": kv_values,
+                             "kv_positions": torch.cat([output.kv_positions for output in outputs], dim=0),
+                             "kv_runs": [(start, end, int(output.kv_length)) for (start, end), output in zip(spans, outputs)],
++                            **({"kv_bias": {layer: torch.cat([output.kv_bias[layer] if output.kv_bias else output.kv_values[layer][0].new_zeros(output.kv_values[layer][0].shape[:2])
++                                                              for output in outputs], dim=0) for layer in layers}}
++                               if any(output.kv_bias for output in outputs) else {}),   # entry biases (a special-input handler's compacted cache)
++                            **({"kv_layer_counts": {layer: [int(output.kv_values[layer][0].shape[0]) for output in outputs] for layer in layers}}
++                               if any(int(output.kv_values[layer][0].shape[0]) != int(output.kv_positions.shape[0]) for output in outputs for layer in layers)
++                               else {}),                                                # a layer keeping fewer entries of a part (kv_transfer KV_LAYER_COUNTS)
+                             **({"kv_overwrite": True} if outputs[0].kv_overwrite else {})}   # overwrite mode: the rows are real positions (their input rows are in `embeds`)
+         if deltas_off or not outputs[0].has_interventions:
+             return embeds, None
+diff --git a/activation/ac_model/ac_model_utils.py b/activation/ac_model/ac_model_utils.py
+index 6525858..e09cbf0 100644
+--- a/activation/ac_model/ac_model_utils.py
++++ b/activation/ac_model/ac_model_utils.py
+@@ -90,17 +90,39 @@ def tokenize_with_parts(
+     renders one sentinel string per part; the text is split at the sentinels and the pieces tokenized
+     (no special tokens, as the template's own tokenization). The caller writes rows over the spans.
+     """
+-    flat = [_training_template_message(tokenizer, message, reasoning_as_text=True)
+-            for message in flatten_with_sentinels(messages, parts="sentinel")]
+     index = sum(1 for _ in direct_parts(messages))
+     assert index == len(part_lengths), f"{index} parts in the messages, {len(part_lengths)} lengths given"
++    text = render_with_part_sentinels(tokenizer, messages, tools=tools, add_generation_prompt=add_generation_prompt,
++                                      chat_template_kwargs=chat_template_kwargs)
++    return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
++
++
++def render_with_part_sentinels(tokenizer: "PreTrainedTokenizerBase", messages: list[dict], *, tools: list[dict] | None = None,
++                               add_generation_prompt: bool = False, chat_template_kwargs: dict | None = None) -> str:
++    """The chat-template text tokenize_with_parts encodes: one sentinel string per direct part."""
++    flat = [_training_template_message(tokenizer, message, reasoning_as_text=True)
++            for message in flatten_with_sentinels(messages, parts="sentinel")]
+     if tools and not template_takes_tools(tokenizer):
+         flat, tools = tools_in_system_text(flat, tools), None                     # the definitions ride in the system text instead
+     if not any(message.get("role") == "user" and not str(message.get("content") or "").strip().startswith("<tool_response>") for message in flat):
+         flat.insert(0, {"role": "user", "content": ""})                    # Qwen templates refuse a conversation without a user query (a mid-trajectory segment)
+-    text = tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
++    return tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
+                                          **(chat_template_kwargs or {}))
+-    return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
++
++
++def batch_token_counts(tokenizer: "PreTrainedTokenizerBase", texts: list[str], chunk: int = 1024) -> list[int]:
++    """len(tokenizer.encode(text, add_special_tokens=False)) of each text, through the tokenizer's batched call with its
++    Rust threads on (TOKENIZERS_PARALLELISM=false would run the batch on one thread; the setting is restored after)."""
++    previous = os.environ.get("TOKENIZERS_PARALLELISM")
++    os.environ["TOKENIZERS_PARALLELISM"] = "true"
++    try:
++        return [len(ids) for start in range(0, len(texts), chunk)
++                for ids in tokenizer(texts[start:start + chunk], add_special_tokens=False)["input_ids"]]
++    finally:
++        if previous is None:
++            os.environ.pop("TOKENIZERS_PARALLELISM", None)
++        else:
++            os.environ["TOKENIZERS_PARALLELISM"] = previous
+ 
+ 
+ def _training_template_message(tokenizer, message: dict, *, reasoning_as_text: bool = False) -> dict:
+@@ -255,9 +277,8 @@ def validate_part_capacity(ac_model, request, capacity: int) -> None:
+     """Check every recursive side forward: content tokens plus summary rows."""
+     children = [ac_model._child_request(part, request.compression_ratio) for part in direct_parts(request.messages)]
+     lengths = [ac_model.part_view_rows(child.messages, child.compression_ratio, child.tools) for child in children]
+-    tokenizer = ac_model.side.tokenizer
+-    ids, _ = tokenize_with_parts(tokenizer, request.messages, lengths, tokenizer.pad_token_id or 0, tools=request.tools)
+-    total = len(ids) + ac_model.num_view_rows(len(ids), request.compression_ratio)      # the content tokens plus the summary rows
++    count = ac_model.side_token_count(request.messages, lengths, request.tools)
++    total = count + ac_model.num_view_rows(count, request.compression_ratio)      # the content tokens plus the summary rows
+     if total > capacity:
+         raise ValueError(f"AC side forward needs {total} positions, exceeding supported capacity {capacity}")
+     for child in children:
+@@ -579,12 +600,15 @@ class ACOutput:
+     kv_positions: torch.Tensor | None = None # [V] long: the summary tokens' positions in the encoder's sequence
+     kv_length: int = 0                       # the length of the encoder's sequence (the positions the part takes up in the reader)
+     kv_overwrite: bool = False               # overwrite mode: the rows are real reader positions (input_embeds: the marker) whose keys/values are replaced
++    kv_bias: dict[int, torch.Tensor] = field(default_factory=dict)   # optional reader layer -> [V, kv_heads]: added to the entries' attention
++                                             # scores (a compacted cache's log-weights β; harness/kv_transfer.py KV_BIAS)
+ 
+     def _map(self, move: t.Callable[[torch.Tensor], torch.Tensor], index: t.Callable[[torch.Tensor], torch.Tensor]) -> "ACOutput":
+         return ACOutput(move(self.input_embeds), {int(layer): move(rows) for layer, rows in self.layer_inputs.items()},
+                         None if self.states is None else move(self.states),
+                         {int(layer): (move(keys), move(values)) for layer, (keys, values) in self.kv_values.items()},
+-                        None if self.kv_positions is None else index(self.kv_positions), self.kv_length, self.kv_overwrite)
++                        None if self.kv_positions is None else index(self.kv_positions), self.kv_length, self.kv_overwrite,
++                        {int(layer): move(bias) for layer, bias in self.kv_bias.items()})
+ 
+     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
+         return self._map(lambda tensor: tensor.to(device=device, dtype=dtype), lambda tensor: tensor.to(device=device))
+@@ -599,7 +623,8 @@ class ACOutput:
+     @property
+     def tensors(self) -> list[torch.Tensor]:
+         return [self.input_embeds, *self.layer_inputs.values(), *([self.states] if self.states is not None else []),
+-                *(tensor for pair in self.kv_values.values() for tensor in pair), *([self.kv_positions] if self.kv_positions is not None else [])]
++                *(tensor for pair in self.kv_values.values() for tensor in pair), *([self.kv_positions] if self.kv_positions is not None else []),
++                *self.kv_bias.values()]
+ 
+     @property
+     def nbytes(self) -> int:
+@@ -736,6 +761,23 @@ class EncodeRequest(t.NamedTuple):
+     tools: list[dict] | None = None            # the definitions the compressed segment ran with (part["tools"]); templated on the side
+ 
+ 
++@t.runtime_checkable
++class SpecialInputHandler(t.Protocol):
++    """Pluggable answers for chosen inputs, owned outside the main code (ActivationContextModel.special_input_handler).
++    Called once per encode_batch with every request; returns one answer per request: an ACOutput that stands for the
++    encoder's result for that part (never row-cached; it may carry gradients into `parameters()`), or None (the encoder
++    runs). The ACOutput must have the shape the encoder would give: as many rows (placeholders, for key/value transfer) as
++    `num_view_rows` of the part, and for key/value transfer `kv_values` at every reader layer, `kv_positions`, `kv_length`."""
++
++    def __call__(self, requests: list[EncodeRequest]) -> list["ACOutput | None"]: ...
++
++    def parameters(self) -> t.Iterable[torch.nn.Parameter]: ...
++
++    def state_dict(self) -> dict: ...
++
++    def load_state_dict(self, state: dict) -> t.Any: ...
++
++
+ def ac_execution_records(ac, examples):
+     """Actual recursive encoder work and reader lengths, shared by tuning and partitioning."""
+     counts, sequences = {}, {}
+diff --git a/activation/harness/hf_utils.py b/activation/harness/hf_utils.py
+index 6619b31..d600dba 100644
+--- a/activation/harness/hf_utils.py
++++ b/activation/harness/hf_utils.py
+@@ -284,7 +284,7 @@ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, inte
+ def generate_batch_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, attention_mask: torch.Tensor,
+                                       interventions: list[Interventions | None], **generate_kwargs):
+     """
+-    Greedy `generate` for B rows at once: LEFT-padded embeddings [B, L, d] with their mask [B, L] (0 on the pads) and one payload
++    Greedy or sampled `generate` (one sequence per row) for B rows at once: LEFT-padded embeddings [B, L, d] with their mask [B, L] (0 on the pads) and one payload
+     (or None) per row whose positions are already in the padded row's coordinates (the unpadded position plus the row's pad
+     count). Left padding is what keeps every row equal to its single-sequence run: HF derives the positions from the mask (a
+     row's first real token is position 0), the full-attention layers mask the pads, and a linear-attention layer zeroes the
+@@ -303,15 +303,16 @@ def generate_batch_with_interventions(peft_model, *, inputs_embeds: torch.Tensor
+         return generate_with_kv_overwrite(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
+     if has_kv(interventions):                # key/value transfer: its own prefill and greedy loop
+         return generate_with_kv_prefix(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
+-    if generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("do_sample", False) or generate_kwargs.get("num_return_sequences", 1) != 1:
+-        raise ValueError("generate_batch_with_interventions supports greedy decoding only")
++    last = max((max(payload["positions"]) for payload in interventions if payload and payload["positions"]), default=-1)
++    # Sampling keeps each row in place, so the payload rows still line up; beams and several sequences per row would not.
++    if last >= 0 and (generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("num_return_sequences", 1) != 1):
++        raise ValueError("generate_batch_with_interventions supports one sequence per row (greedy or sampled) when rows carry payloads (without any: HF's own generate)")
+     base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
+     # A multimodal wrapper keeps `rope_deltas` of the last generate's batch size, and a later embeddings-only forward of another
+     # batch size would read them: put back what was there.
+     holder = getattr(base_model, base_model.base_model_prefix, None)
+     restore_deltas = hasattr(holder, "rope_deltas")
+     deltas = holder.rope_deltas if restore_deltas else None
+-    last = max((max(payload["positions"]) for payload in interventions if payload and payload["positions"]), default=-1)
+     try:
+         if last < 0:
+             return peft_model.generate(inputs_embeds=inputs_embeds, attention_mask=attention_mask, **generate_kwargs)
+diff --git a/activation/harness/kv_transfer.py b/activation/harness/kv_transfer.py
+index 82c5493..61bcae3 100644
+--- a/activation/harness/kv_transfer.py
++++ b/activation/harness/kv_transfer.py
+@@ -37,6 +37,9 @@ import typing as t
+ import torch
+ 
+ KV_VALUES, KV_POSITIONS, KV_RUNS = "kv_values", "kv_positions", "kv_runs"
++KV_BIAS = "kv_bias"                                        # optional: {layer: [M, kv_heads]} added to the entries' attention scores
++KV_LAYER_COUNTS = "kv_layer_counts"                        # optional: {layer: [entries per run]}: that layer keeps only the first ones of each run
++                                                           # (kv_values / kv_bias of the layer hold exactly those; needs MASKLESS)
+ KV_OVERWRITE = "kv_overwrite"
+ KV_PREFIX_KWARG = "kv_prefix"
+ _HOOKS_ATTRIBUTE = "_activation_kv_prefix_hooks"
+@@ -127,12 +130,38 @@ def rotate_keys(model, keys: torch.Tensor, positions: torch.Tensor) -> torch.Ten
+ 
+ class PrefixKV:
+     """The transferred entries of every layer in front of the forward's own keys/values. `grow=False`: nothing is stored (a
+-    layer run twice returns the same tensors); `grow=True`: the returned tensors become the stored ones (generation)."""
+-
+-    def __init__(self, keys: list[torch.Tensor], values: list[torch.Tensor], grow: bool = False) -> None:
+-        self.keys, self.values, self.grow = keys, values, grow
++    layer run twice returns the same tensors); `grow=True`: the returned tensors become the stored ones (generation).
++    `biases` (optional, per layer [B, kv_heads, P]): a score added to every query head's attention to each entry, e.g. the
++    log-weight β of a compacted cache (Attention Matching); the attention pre-hook turns the layer's boolean mask additive."""
++
++    def __init__(self, keys: list[torch.Tensor], values: list[torch.Tensor], grow: bool = False, biases: list[torch.Tensor] | None = None,
++                 maskless: "MasklessLayout | list[MasklessLayout] | None" = None) -> None:
++        self.keys, self.values, self.grow, self.biases, self.maskless = keys, values, grow, biases, maskless
++        # Maskless generation: each layer's [entries, tokens] keys/values, already widened by the bias dimensions, in a buffer with
++        # room for `capacity` more tokens (_maskless_attention fills it); update() then hands over the new keys/values only.
++        self.capacity = 0
++        self.store: list[tuple[torch.Tensor, torch.Tensor] | None] = [None] * len(keys)
++        self.filled = [0] * len(keys)
++
++    @property
++    def stores(self) -> bool:
++        return self.grow and self.maskless is not None
++
++    def biased_mask(self, mask: torch.Tensor | None, attention) -> torch.Tensor:
++        """The additive float mask [B, heads, S, P + S] of `attention`'s layer: the boolean `mask` [B, 1, S, P + S] (True =
++        attend) as 0 / dtype minimum, plus this layer's bias on the P entry columns, repeated over each key/value head's query heads."""
++        if mask is None or mask.dtype != torch.bool or mask.ndim != 4:
++            raise ValueError("entry biases need the boolean 4D mask of bind_kv_prefix")
++        bias = self.biases[attention.layer_idx]
++        groups = int(getattr(attention, "num_key_value_groups", 1))
++        additive = torch.zeros(mask.shape, dtype=bias.dtype, device=mask.device).masked_fill(~mask, torch.finfo(bias.dtype).min)
++        heads = bias.repeat_interleave(groups, dim=1)[:, :, None, :]                       # [B, heads, 1, P]
++        entries = bias.shape[-1]
++        return torch.cat([additive[..., :entries] + heads, additive[..., entries:].expand(-1, heads.shape[1], -1, -1)], dim=-1)
+ 
+     def update(self, key_states: torch.Tensor, value_states: torch.Tensor, layer_idx: int, *args, **kwargs) -> tuple[torch.Tensor, torch.Tensor]:
++        if self.stores:
++            return key_states, value_states                # _maskless_attention appends them to the layer's buffer
+         keys = torch.cat([self.keys[layer_idx].to(key_states.dtype), key_states], dim=2)
+         values = torch.cat([self.values[layer_idx].to(value_states.dtype), value_states], dim=2)
+         if self.grow:
+@@ -169,6 +198,150 @@ class OverwriteKV:
+         return 0 if self.inner is None else self.inner.get_seq_length(*args, **kwargs)
+ 
+ 
++ENTRY_BIAS_KWARG = "kv_entry_bias"
++MASKLESS_KWARG = "kv_maskless"
++MASKLESS_STORE_KWARG = "kv_maskless_store"
++_ENTRY_BIAS_DIMS = 8                                      # extra head dimensions carrying the entry bias (a multiple of 8 keeps the fused kernels)
++_MASKED_SCORE = -1.0e4                                    # exp(-1e4) = 0: a key that takes no attention
++
++
++class MasklessLayout(t.NamedTuple):
++    """A prefix forward's boolean mask, rewritten as what the fused lower-right causal kernel cannot see by itself: keys never
++    visible (pads, placeholders, a row's missing entries) and, per group of runs ending at the same row index, which tokens
++    come before that end (they may not see the group's entries). bind_kv_prefix builds it only when it reproduces the mask on
++    every row that is attended."""
++    entries: int                     # P
++    prompt: int                      # S of the bound forward
++    key_bias: torch.Tensor           # [B, P + S] fp32: 0 or _MASKED_SCORE
++    early: torch.Tensor              # [B, S, G]: 1 where the token comes before group g's end
++    groups: torch.Tensor             # [B, P, G]: 1 where the entry belongs to group g
++
++
++def _maskless_attention(module, query, key, value, bias, layout: MasklessLayout, dropout: float = 0.0, scaling: float | None = None,
++                        store: "tuple[PrefixKV, int] | None" = None, **unused):
++    """Attention over [entries, tokens] without a mask: SDPA's lower-right causal bias (entries visible to every token by
++    position, tokens causal), the never-visible keys and the entry bias β in two extra head dimensions ([1, 1] on the query,
++    [hi, lo] = score / scaling on the key), and per group one more dimension (the query's "before the end" flag times
++    _MASKED_SCORE / scaling on the group's entry keys). Keys and values keep their kv heads (native GQA).
++    `store` (generation, PrefixKV.stores): `key` / `value` are this forward's own; the prefill widens [entries, prompt] once
++    into the layer's buffer, a decode step writes its key/value (visible, no bias) into the next slot and attends the filled part."""
++    import torch.nn.functional as F
++    from torch.nn.attention.bias import causal_lower_right
++    scaling = scaling or query.shape[-1] ** -0.5
++    head_dim = value.shape[-1]
++    queries = query.shape[2]
++    if store is not None:
++        prefix, layer = store
++        if prefix.store[layer] is None:
++            key = torch.cat([prefix.keys[layer].to(key.dtype), key], dim=2)
++            value = torch.cat([prefix.values[layer].to(value.dtype), value], dim=2)
++            if key.shape[2] != layout.entries + layout.prompt:
++                raise ValueError(f"maskless generation: the prefill has {key.shape[2]} keys, bound for {layout.entries + layout.prompt}")
++            key, value = _widened(key, value, bias, layout, scaling)
++            total = key.shape[2]
++            keys_buffer = key.new_empty(*key.shape[:2], total + prefix.capacity, key.shape[3])
++            values_buffer = value.new_empty(*value.shape[:2], total + prefix.capacity, value.shape[3])
++            keys_buffer[:, :, :total], values_buffer[:, :, :total] = key, value
++            prefix.store[layer], prefix.filled[layer] = (keys_buffer, values_buffer), total
++        else:
++            if queries != 1:
++                raise ValueError(f"maskless generation: a decode step of {queries} queries")
++            keys_buffer, values_buffer = prefix.store[layer]
++            at = prefix.filled[layer]
++            if at + 1 > keys_buffer.shape[2]:                                         # past the capacity: double the buffer
++                keys_buffer = torch.cat([keys_buffer, torch.empty_like(keys_buffer)], dim=2)
++                values_buffer = torch.cat([values_buffer, torch.empty_like(values_buffer)], dim=2)
++                prefix.store[layer] = (keys_buffer, values_buffer)
++            keys_buffer[:, :, at:at + 1] = torch.cat([key, key.new_zeros(*key.shape[:-1], _ENTRY_BIAS_DIMS)], dim=-1)
++            values_buffer[:, :, at:at + 1] = torch.cat([value, value.new_zeros(*value.shape[:-1], _ENTRY_BIAS_DIMS)], dim=-1)
++            prefix.filled[layer] = at + 1
++        length = prefix.filled[layer]
++        key, value = keys_buffer[:, :, :length], values_buffer[:, :, :length]
++    else:
++        length = key.shape[2]
++        key, value = _widened(key, value, bias, layout, scaling)
++    query = _widened_query(query, layout, length)
++    output = F.scaled_dot_product_attention(query, key, value, attn_mask=causal_lower_right(queries, length), dropout_p=dropout,
++                                            scale=scaling, enable_gqa=query.shape[1] != key.shape[1])
++    return output.transpose(1, 2).contiguous()[..., :head_dim], None
++
++
++def _widened_query(query: torch.Tensor, layout: MasklessLayout, length: int) -> torch.Tensor:
++    """Queries [B, heads, q, d] + [1, 1, early flags per group, 0...] (the flags only in the bound forward itself)."""
++    batch, _, queries, _ = query.shape
++    group_count = layout.groups.shape[-1]
++    if length == layout.entries + layout.prompt and queries == layout.prompt:
++        early = layout.early.to(query.dtype)                                      # the bound forward (or its checkpointed rerun)
++    elif queries == 1:
++        early = query.new_zeros(batch, 1, group_count)                            # a decode step comes after every run
++    else:
++        raise ValueError(f"maskless prefix attention: {queries} queries over {length} keys, bound for {layout.prompt} over {layout.entries + layout.prompt}")
++    rest = _ENTRY_BIAS_DIMS - 2 - group_count
++    return torch.cat([query, query.new_ones(*query.shape[:-1], 2), early[:, None].expand(batch, query.shape[1], queries, group_count),
++                      query.new_zeros(*query.shape[:-1], rest)], dim=-1)
++
++
++def _widened(key: torch.Tensor, value: torch.Tensor, bias: torch.Tensor | None, layout: MasklessLayout, scaling: float) -> tuple[torch.Tensor, torch.Tensor]:
++    """Keys [B, kv_heads, L, d] + [hi, lo, group columns, 0...] (L = the entries, the bound tokens and any generated ones) and
++    values + zeros."""
++    import torch.nn.functional as F
++    batch, heads, length, _ = key.shape
++    entries = layout.entries
++    score = layout.key_bias
++    if length > score.shape[1]:                                                   # decode steps: the generated tokens are visible
++        score = F.pad(score, (0, length - score.shape[1]))
++    score = score[:, None, :].expand(batch, heads, length)
++    if bias is not None:
++        score = score + F.pad(bias.float(), (0, length - entries))
++    target = score / scaling
++    high = target.to(key.dtype)
++    low = (target - high.float()).to(key.dtype)
++    group_count = layout.groups.shape[-1]
++    group_keys = F.pad(layout.groups.to(key.dtype) * (_MASKED_SCORE / scaling), (0, 0, 0, length - entries))   # [B, P + ..., G]
++    rest = _ENTRY_BIAS_DIMS - 2 - group_count
++    key = torch.cat([key, high[..., None], low[..., None], group_keys[:, None].expand(batch, heads, length, group_count),
++                     key.new_zeros(batch, heads, length, rest)], dim=-1)
++    value = torch.cat([value, value.new_zeros(*value.shape[:-1], _ENTRY_BIAS_DIMS)], dim=-1)
++    return key, value
++
++
++def _sdpa_with_entry_bias(module, query, key, value, attention_mask, *args, **kwargs):
++    """HF's sdpa attention, plus (when the attention pre-hook passed `kv_entry_bias` [B, kv_heads, P]) a score bias on the
++    first P key columns, carried in extra head dimensions instead of a float mask: queries gain [1, 1, 0, ...], the entry
++    keys [hi, lo, 0, ...] with hi + lo = bias / scaling split into two bf16 parts, so q.k * scaling gains exactly the bias
++    (accumulated in fp32) while the mask stays boolean, needs no gradient and keeps the fused kernels. With `kv_maskless`
++    (a MasklessLayout) the mask is not used at all (_maskless_attention)."""
++    from transformers.integrations.sdpa_attention import sdpa_attention_forward
++    bias = kwargs.pop(ENTRY_BIAS_KWARG, None)
++    layout = kwargs.pop(MASKLESS_KWARG, None)
++    store = kwargs.pop(MASKLESS_STORE_KWARG, None)
++    if layout is not None:
++        return _maskless_attention(module, query, key, value, bias, layout, *args, store=store, **kwargs)
++    if bias is None:
++        return sdpa_attention_forward(module, query, key, value, attention_mask, *args, **kwargs)
++    head_dim = value.shape[-1]
++    scaling = kwargs.get("scaling") or query.shape[-1] ** -0.5
++    kwargs["scaling"] = scaling
++    target = bias.float() / scaling                                                           # [B, kv_heads, P]
++    high = target.to(key.dtype)
++    low = (target - high.float()).to(key.dtype)
++    batch, heads, length = key.shape[:3]
++    entries = target.shape[-1]
++    entry_columns = torch.cat([high[..., None], low[..., None], key.new_zeros(batch, heads, entries, _ENTRY_BIAS_DIMS - 2)], dim=-1)
++    key = torch.cat([key, torch.cat([entry_columns, key.new_zeros(batch, heads, length - entries, _ENTRY_BIAS_DIMS)], dim=2)], dim=-1)
++    query = torch.cat([query, query.new_ones(*query.shape[:-1], 2), query.new_zeros(*query.shape[:-1], _ENTRY_BIAS_DIMS - 2)], dim=-1)
++    value = torch.cat([value, value.new_zeros(*value.shape[:-1], _ENTRY_BIAS_DIMS)], dim=-1)
++    output, weights = sdpa_attention_forward(module, query, key, value, attention_mask, *args, **kwargs)
++    return output[..., :head_dim], weights
++
++
++def _register_entry_bias_sdpa() -> None:
++    from transformers import AttentionInterface
++    from transformers.modeling_utils import ALL_ATTENTION_FUNCTIONS
++    if ALL_ATTENTION_FUNCTIONS.get("sdpa") is not _sdpa_with_entry_bias:
++        AttentionInterface.register("sdpa", _sdpa_with_entry_bias)        # identical to HF's sdpa unless `kv_entry_bias` is passed
++
++
+ def install_kv_hooks(model) -> None:
+     """Persistent, parameter-free pre-hooks (once per model): on every attention module a `kv_prefix=` keyword is taken out and
+     handed over as `past_key_values` (an OverwriteKV first bound to the cache the call came with); on a recurrent block's mixer
+@@ -176,12 +349,23 @@ def install_kv_hooks(model) -> None:
+     if getattr(model, _HOOKS_ATTRIBUTE, None) is not None:
+         return
+     check_kv_model(model, every_layer=False)
++    _register_entry_bias_sdpa()
+     def hook(module, args, kwargs):
+         if KV_PREFIX_KWARG not in kwargs:
+             return None
+         kwargs = dict(kwargs)
+         prefix = kwargs.pop(KV_PREFIX_KWARG)
+         kwargs["past_key_values"] = prefix.bound(kwargs.get("past_key_values")) if isinstance(prefix, OverwriteKV) else prefix
++        if isinstance(prefix, PrefixKV) and (prefix.biases is not None or prefix.maskless is not None):
++            if getattr(module.config, "_attn_implementation", None) == "sdpa":
++                if prefix.biases is not None:
++                    kwargs[ENTRY_BIAS_KWARG] = prefix.biases[module.layer_idx]     # carried in extra head dimensions (_sdpa_with_entry_bias)
++                if prefix.maskless is not None:
++                    kwargs[MASKLESS_KWARG] = prefix.maskless[module.layer_idx] if isinstance(prefix.maskless, list) else prefix.maskless
++                    if prefix.stores:
++                        kwargs[MASKLESS_STORE_KWARG] = (prefix, module.layer_idx)
++            elif prefix.biases is not None:
++                kwargs["attention_mask"] = prefix.biased_mask(kwargs.get("attention_mask"), module)
+         return args, kwargs
+     def drop(module, args, kwargs):
+         if KV_PREFIX_KWARG not in kwargs:
+@@ -234,20 +418,72 @@ def bind_kv_overwrite(model, inputs_embeds: torch.Tensor, attention_mask: torch.
+     return OverwriteKV(entries)
+ 
+ 
++DROP_PLACEHOLDERS = False     # opt-in: reader forwards drop the inert placeholder rows (drop_placeholders) instead of carrying them
++
++
++def drop_placeholders(inputs_embeds: torch.Tensor, attention_mask: torch.Tensor | None, payloads: t.Sequence[dict | None]
++                      ) -> tuple[torch.Tensor, torch.Tensor, list[dict | None], torch.Tensor]:
++    """The same reader forward without its placeholder rows (they attend only themselves and nobody attends them, so every
++    other row's result is unchanged): (inputs_embeds [B, S', d] left-padded, attention_mask [B, S'], payloads whose runs are
++    empty and name their entry count (start, start, span, entries), kept [B, S'] = each new row's index in the old row, -1 on
++    new padding). `restore_rows` puts outputs back at the old indices."""
++    batch, length = inputs_embeds.shape[:2]
++    device = inputs_embeds.device
++    real = torch.ones(batch, length, dtype=torch.bool, device=device) if attention_mask is None else attention_mask.to(device).bool()
++    keep = real.clone()
++    for row, payload in enumerate(payloads):
++        if payload and payload.get(KV_VALUES):
++            for start, end, *_ in payload[KV_RUNS]:
++                keep[row, start:end] = False
++    kept_rows = [keep[row].nonzero()[:, 0] for row in range(batch)]
++    width = max(int(rows.shape[0]) for rows in kept_rows)
++    kept = torch.full((batch, width), -1, dtype=torch.long, device=device)
++    new_payloads: list[dict | None] = []
++    for row, rows in enumerate(kept_rows):
++        offset = width - int(rows.shape[0])
++        kept[row, offset:] = rows
++        payload = payloads[row]
++        if payload and payload.get(KV_VALUES):
++            new_index = torch.full((length + 1,), -1, dtype=torch.long, device=device)
++            new_index[rows] = torch.arange(offset, width, device=device)
++            new_index[length] = width
++            def first_kept_at_or_after(index: int) -> int:                    # where the run's entries now sit (before the next kept row)
++                after = rows[rows >= index]
++                return int(new_index[after[0]]) if after.numel() else width
++            runs = []
++            for start, end, span, *count in payload[KV_RUNS]:
++                at = first_kept_at_or_after(end)
++                runs.append((at, at, span, count[0] if count else end - start))
++            payload = {**payload, KV_RUNS: runs}
++        new_payloads.append(payload)
++    index = kept.clamp_min(0)
++    embeds = torch.gather(inputs_embeds, 1, index[..., None].expand(-1, -1, inputs_embeds.shape[-1]))
++    return embeds, kept >= 0, new_payloads, kept
++
++
++def restore_rows(hidden: torch.Tensor, kept: torch.Tensor, length: int) -> torch.Tensor:
++    """[B, S', ...] outputs of a forward on drop_placeholders' rows, back at their old indices of a [B, length, ...] tensor (zero elsewhere)."""
++    out = hidden.new_zeros(hidden.shape[0], length + 1, *hidden.shape[2:])
++    target = torch.where(kept >= 0, kept, torch.full_like(kept, length))
++    out = out.index_put((torch.arange(hidden.shape[0], device=hidden.device)[:, None].expand_as(target), target), hidden)
++    return out[:, :length]
++
++
+ def has_kv(payloads: t.Sequence[dict | None] | None) -> bool:
+     return bool(payloads) and any(payload and payload.get(KV_VALUES) for payload in payloads)
+ 
+ 
+ def bind_kv_prefix(model, inputs_embeds: torch.Tensor, attention_mask: torch.Tensor | None, payloads: t.Sequence[dict | None],
+-                   grow: bool = False) -> tuple[dict, torch.Tensor, PrefixKV, torch.Tensor]:
++                   grow: bool = False) -> tuple[dict | torch.Tensor, torch.Tensor, PrefixKV, torch.Tensor]:
+     """
+-    (attention mask mapping, position ids [B, S], PrefixKV, column visibility [B, P + S]) for a reader forward of
++    (attention mask mapping per layer type, or the one 4D mask for a model without layer types, position ids [B, S], PrefixKV, column visibility [B, P + S]) for a reader forward of
+     `inputs_embeds` [B, S, d] whose rows carry one payload each (None: no transfer for that row):
+ 
+         kv_values     {layer: (keys, values)}, each [M, kv_heads, head_dim], keys not rotated, every decoder layer present
+         kv_positions  [M] long: each entry's position in its encoder sequence
+         kv_runs       [(start, end, length)] per part, in order: the placeholder run in this row's physical coordinates
+                       (end - start entries) and the length of the encoder sequence it stands for
++        kv_bias       optional {layer: [M, kv_heads]}: added to the entries' attention scores (0 where absent)
+ 
+     `attention_mask` [B, S] (0 on pads) is honoured for the token columns, and positions count real tokens only. The last
+     return value says which columns a token after the prompt may attend (the decode steps' mask).
+@@ -265,6 +501,12 @@ def bind_kv_prefix(model, inputs_embeds: torch.Tensor, attention_mask: torch.Ten
+     token_columns = real.clone()                                             # columns a later token may attend: real tokens that are no placeholders
+     prefix_visible = torch.zeros(batch, length, prefix, dtype=torch.bool, device=device)   # [row token, entry]
+     key_positions = torch.zeros(batch, prefix, dtype=torch.long, device=device)
++    run_ends: list[list[tuple[int, int, int]]] = [[] for _ in payloads]       # per row (end, first entry, last entry + 1)
++    run_starts: list[list[torch.Tensor]] = [[] for _ in payloads]             # per row: each run's first position
++    relatives: list[torch.Tensor | None] = [None] * batch
++    per_layer = any(counts[row] and payload.get(KV_LAYER_COUNTS) for row, payload in enumerate(payloads))
++    if per_layer and not MASKLESS:
++        raise ValueError("per-layer entry counts (kv_layer_counts) need the maskless attention (kv_transfer.MASKLESS)")
+     for row, payload in enumerate(payloads):
+         if not counts[row]:
+             continue
+@@ -272,16 +514,19 @@ def bind_kv_prefix(model, inputs_embeds: torch.Tensor, attention_mask: torch.Ten
+             raise ValueError("a payload carries either residual deltas or transferred keys/values, not both")
+         if sorted(payload[KV_VALUES]) != list(range(num_layers)):
+             raise ValueError(f"transferred keys/values must cover every decoder layer 0..{num_layers - 1}")
+-        relative = payload[KV_POSITIONS].to(device)
++        relative = relatives[row] = payload[KV_POSITIONS].to(device)
+         cursor = 0
+-        for start, end, span in payload[KV_RUNS]:
+-            entries = end - start
+-            if not 0 <= start <= end <= length or span < entries:
++        for start, end, span, *count in payload[KV_RUNS]:
++            entries = count[0] if count else end - start                   # (start, end, span, entries): fewer placeholders than entries (drop_placeholders)
++            if not 0 <= start <= end <= length or span < end - start or (count and end - start not in (0, entries)):
+                 raise ValueError(f"placeholder run ({start}, {end}) standing for {span} positions does not fit a row of {length}")
+-            key_positions[row, cursor:cursor + entries] = position_ids[row, start] + relative[cursor:cursor + entries]
+-            position_ids[row, end:] += span - entries
++            run_position = position_ids[row, start] if start < length else position_ids[row, length - 1] + 1
++            run_starts[row].append(run_position.clone())                       # a copy: the shift below moves position_ids[row, end:] in place
++            key_positions[row, cursor:cursor + entries] = run_position + relative[cursor:cursor + entries]
++            position_ids[row, end:] += span - (end - start)
+             prefix_visible[row, end:, cursor:cursor + entries] = True
+             token_columns[row, start:end] = False
++            run_ends[row].append((end, cursor, cursor + entries))
+             cursor += entries
+         if cursor != counts[row]:
+             raise ValueError("placeholder runs and transferred entries differ in count")
+@@ -289,35 +534,144 @@ def bind_kv_prefix(model, inputs_embeds: torch.Tensor, attention_mask: torch.Ten
+     eye = torch.eye(length, dtype=torch.bool, device=device)
+     tokens = (causal[None] & token_columns[:, None, :]) | eye[None]         # every token attends itself (a placeholder: only itself)
+     mask = torch.cat([prefix_visible, tokens], dim=2)[:, None]              # [B, 1, S, P + S], True = attend
+-    keys, values = [], []
++    entry_columns = torch.arange(prefix, device=device)[None] < torch.tensor(counts, device=device)[:, None]
++    columns = torch.cat([entry_columns, token_columns], dim=1)
++    maskless = _maskless_layout(mask, columns, token_columns, run_ends, prefix) if MASKLESS and prefix else None
++    if per_layer and maskless is None:
++        raise ValueError("per-layer entry counts (kv_layer_counts) on a layout the maskless attention cannot reproduce")
++
++    def layer_entries(layer: int) -> tuple[list[int], torch.Tensor, list[list[tuple[int, int, int]]]]:
++        """This layer's entry count per row, their key positions [B, P_l] and runs (end, first, last) in the layer's entries:
++        each run keeps the first kv_layer_counts[layer][run] of its entries (all of them without kv_layer_counts)."""
++        totals, ranges = [0] * batch, [[] for _ in range(batch)]
++        spans = []
++        for row, payload in enumerate(payloads):
++            layer_counts = payload.get(KV_LAYER_COUNTS) if counts[row] else None
++            taken = 0
++            for index, (end, first, last) in enumerate(run_ends[row]):
++                count = int(layer_counts[layer][index]) if layer_counts else last - first
++                if not 0 <= count <= last - first:
++                    raise ValueError(f"layer {layer}: {count} entries for a run of {last - first}")
++                spans.append((row, taken, first, count, run_starts[row][index]))
++                ranges[row].append((end, taken, taken + count))
++                taken += count
++            totals[row] = taken
++        positions = torch.zeros(batch, max(totals), dtype=torch.long, device=device)
++        for row, taken, first, count, start in spans:
++            positions[row, taken:taken + count] = start + relatives[row][first:first + count]
++        return totals, positions, ranges
++
++    keys, values, layer_layouts = [], [], []
++    biased = any(counts[row] and payload.get(KV_BIAS) for row, payload in enumerate(payloads))
++    biases = [] if biased else None
+     for layer in range(num_layers):
+-        layer_keys = inputs_embeds.new_zeros(batch, prefix, heads, head_dim)
+-        layer_values = inputs_embeds.new_zeros(batch, prefix, heads, head_dim)
++        totals, positions, ranges = layer_entries(layer) if per_layer else (counts, key_positions, run_ends)
++        width = max(totals)
++        layer_keys = inputs_embeds.new_zeros(batch, width, heads, head_dim)
++        layer_values = inputs_embeds.new_zeros(batch, width, heads, head_dim)
+         for row, payload in enumerate(payloads):
+-            if counts[row]:
++            if totals[row]:
+                 row_keys, row_values = payload[KV_VALUES][layer]
+-                layer_keys[row, :counts[row]] = row_keys.to(layer_keys)
+-                layer_values[row, :counts[row]] = row_values.to(layer_values)
+-        keys.append(rotate_keys(model, layer_keys.transpose(1, 2), key_positions))
++                if row_keys.shape[0] != totals[row]:
++                    raise ValueError(f"layer {layer}: {row_keys.shape[0]} transferred entries for {totals[row]}")
++                layer_keys[row, :totals[row]] = row_keys.to(layer_keys)
++                layer_values[row, :totals[row]] = row_values.to(layer_values)
++        keys.append(rotate_keys(model, layer_keys.transpose(1, 2), positions))
+         values.append(layer_values.transpose(1, 2))
+-    entry_columns = torch.arange(prefix, device=device)[None] < torch.tensor(counts, device=device)[:, None]
+-    columns = torch.cat([entry_columns, token_columns], dim=1)
++        if biased:
++            layer_bias = inputs_embeds.new_zeros(batch, heads, width, dtype=torch.float32)       # fp32: β of ±10 needs more than bf16
++            for row, payload in enumerate(payloads):
++                if totals[row] and payload.get(KV_BIAS):
++                    layer_bias[row, :, :totals[row]] = payload[KV_BIAS][layer].to(layer_bias).transpose(0, 1)
++            biases.append(layer_bias)
++        if per_layer:
++            layer_layouts.append(_layer_layout(maskless, totals, ranges, run_ends, token_columns))
++    cache = PrefixKV(keys, values, grow=grow, biases=biases, maskless=layer_layouts if per_layer else maskless)
+     from .hf_utils import text_decoder
+-    kinds = set(getattr(text_decoder(model).config, "layer_types", None) or ["full_attention"]) | {"full_attention"}
+-    return {kind: mask for kind in kinds}, position_ids, PrefixKV(keys, values, grow=grow), columns
++    layer_types = getattr(text_decoder(model).config, "layer_types", None)
++    if not layer_types:                                                      # e.g. Llama: one mask, taken as-is (4D) by the model
++        return mask, position_ids, cache, columns
++    kinds = set(layer_types) | {"full_attention"}
++    return {kind: mask for kind in kinds}, position_ids, cache, columns
++
++
++MASKLESS = False      # opt-in: prefix forwards through the sdpa wrapper run the fused lower-right causal kernel without the mask (MasklessLayout)
++
++
++def _layer_layout(full: MasklessLayout, totals: list[int], ranges: list[list[tuple[int, int, int]]], run_ends: list[list[tuple[int, int, int]]],
++                  token_columns: torch.Tensor) -> MasklessLayout:
++    """One layer's MasklessLayout when its runs keep fewer entries (kv_layer_counts): the same groups (runs ending at the same
++    index) and early tokens as the verified full layout, over this layer's entries."""
++    batch, length = token_columns.shape
++    width = max(totals)
++    device = token_columns.device
++    groups = torch.zeros(batch, width, full.groups.shape[-1], device=device)
++    for row, runs in enumerate(ranges):
++        ends = sorted({end for end, _, _ in run_ends[row]})
++        for end, first, last in runs:
++            groups[row, first:last, ends.index(end)] = 1.0
++    entry_columns = torch.arange(width, device=device)[None] < torch.tensor(totals, device=device)[:, None]
++    key_bias = torch.zeros(batch, width + length, device=device).masked_fill(~torch.cat([entry_columns, token_columns], dim=1), _MASKED_SCORE)
++    return MasklessLayout(width, length, key_bias, full.early, groups)
++
++
++def _maskless_layout(mask: torch.Tensor, columns: torch.Tensor, token_columns: torch.Tensor, run_ends: list[list[tuple[int, int, int]]],
++                     prefix: int) -> MasklessLayout | None:
++    """The MasklessLayout of a bound forward, or None when it would not reproduce `mask` [B, 1, S, P + S] on every attended row
++    (more groups of run ends than spare head dimensions, or a visibility the kernel's causality does not give)."""
++    batch, length = token_columns.shape
++    device = mask.device
++    ends = [sorted({end for end, _, _ in runs}) for runs in run_ends]
++    group_count = max(1, max(len(row) for row in ends))
++    if group_count > _ENTRY_BIAS_DIMS - 2:
++        return None
++    early = torch.zeros(batch, length, group_count, device=device)
++    groups = torch.zeros(batch, prefix, group_count, device=device)
++    for row, runs in enumerate(run_ends):
++        for end, first, last in runs:
++            group = ends[row].index(end)
++            early[row, :end, group] = 1.0
++            groups[row, first:last, group] = 1.0
++    key_bias = torch.zeros(batch, prefix + length, device=device).masked_fill(~columns, _MASKED_SCORE)
++    blocked = torch.einsum("bsg,bpg->bsp", early, groups) > 0
++    causal = torch.ones(length, length, dtype=torch.bool, device=device).tril()
++    implied = columns[:, None, :] & torch.cat([~blocked, causal[None].expand(batch, -1, -1)], dim=2)
++    attended = token_columns[:, :, None]                                     # rows a later computation reads: real tokens, no placeholders
++    if bool(((implied != mask[:, 0]) & attended).any()):
++        return None
++    return MasklessLayout(prefix, length, key_bias, early, groups)
++
++
++def _next_token(logits: torch.Tensor, do_sample: bool, temperature: float, top_k: int | None, top_p: float,
++                generator: torch.Generator | None) -> torch.Tensor:
++    if not do_sample:
++        return logits.argmax(dim=-1)
++    logits = logits.float() / max(temperature, 1e-6)
++    if top_k:
++        kth = logits.topk(min(int(top_k), logits.shape[-1]), dim=-1).values[..., -1:]
++        logits = logits.masked_fill(logits < kth, float("-inf"))
++    if top_p < 1.0:
++        ordered, order = logits.sort(dim=-1, descending=True)
++        probs = ordered.softmax(dim=-1)
++        drop = probs.cumsum(dim=-1) - probs > top_p                      # keep the smallest prefix whose mass reaches top_p
++        logits = logits.scatter(-1, order, ordered.masked_fill(drop, float("-inf")))
++    return torch.multinomial(logits.softmax(dim=-1), 1, generator=generator)[:, 0]
+ 
+ 
+ @torch.no_grad()
+ def generate_with_kv_prefix(peft_model, *, inputs_embeds: torch.Tensor, interventions: t.Sequence[dict | None],
+                             attention_mask: torch.Tensor | None = None, max_new_tokens: int = 20,
+-                            eos_token_id: int | list[int] | None = None, pad_token_id: int | None = None, **unused) -> torch.Tensor:
++                            eos_token_id: int | list[int] | None = None, pad_token_id: int | None = None,
++                            do_sample: bool = False, temperature: float = 1.0, top_k: int | None = None, top_p: float = 1.0,
++                            generator: torch.Generator | None = None, **unused) -> torch.Tensor:
+     """
+-    Greedy decoding of B prompts [B, L, d] whose payloads carry transferred keys/values (left-padded with `attention_mask`
+-    when B > 1; every row ends on a real token). Returns the new token ids [B, T] (as `generate` does for embeddings-only
+-    input), padded with `pad_token_id` after a row's end token. The caller holds the adapter scope.
++    Greedy (default) or sampled decoding of B prompts [B, L, d] whose payloads carry transferred keys/values (left-padded with
++    `attention_mask` when B > 1; every row ends on a real token). Sampling: `temperature`, then top-k, then nucleus top-p, as
++    HF's warpers do. Returns the new token ids [B, T] (as `generate` does for embeddings-only input), padded with
++    `pad_token_id` after a row's end token. The caller holds the adapter scope.
+     """
+-    if unused.get("do_sample") or unused.get("num_beams", 1) != 1:
+-        raise ValueError("generate_with_kv_prefix supports greedy decoding only")
++    if unused.get("num_beams", 1) != 1:
++        raise ValueError("generate_with_kv_prefix supports greedy or sampled decoding only")
+     from .hf_utils import text_decoder
+     base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
+     decoder = text_decoder(base_model)
+@@ -326,17 +680,20 @@ def generate_with_kv_prefix(peft_model, *, inputs_embeds: torch.Tensor, interven
+     batch = inputs_embeds.shape[0]
+     if attention_mask is not None and not bool(attention_mask[:, -1].all()):
+         raise ValueError("generate_with_kv_prefix takes left-padded rows (every row ends on a real token)")
++    if DROP_PLACEHOLDERS:
++        inputs_embeds, attention_mask, interventions, _ = drop_placeholders(inputs_embeds, attention_mask, interventions)
+     mask, position_ids, cache, columns = bind_kv_prefix(base_model, inputs_embeds, attention_mask, interventions, grow=True)
++    cache.capacity = max_new_tokens                                         # maskless: room in each layer's buffer for every generated token
+     hidden = decoder(inputs_embeds=inputs_embeds, attention_mask=mask, position_ids=position_ids, use_cache=False, return_dict=True,
+                      **{KV_PREFIX_KWARG: cache}).last_hidden_state[:, -1]
+     ends = [] if eos_token_id is None else ([eos_token_id] if isinstance(eos_token_id, int) else list(eos_token_id))
+     pad = pad_token_id if pad_token_id is not None else (ends[0] if ends else 0)
+     finished = torch.zeros(batch, dtype=torch.bool, device=inputs_embeds.device)
+     position = position_ids[:, -1]
+-    kinds = list(mask)
++    kinds = list(mask) if isinstance(mask, dict) else None
+     tokens = []
+     for step in range(max_new_tokens):
+-        token = head(hidden).argmax(dim=-1)
++        token = _next_token(head(hidden), do_sample, temperature, top_k, top_p, generator)
+         token = torch.where(finished, torch.full_like(token, pad), token)
+         tokens.append(token)
+         for end in ends:
+@@ -346,7 +703,7 @@ def generate_with_kv_prefix(peft_model, *, inputs_embeds: torch.Tensor, interven
+         position = position + 1
+         columns = torch.cat([columns, torch.ones(batch, 1, dtype=torch.bool, device=columns.device)], dim=1)
+         step_mask = columns[:, None, None, :]
+-        hidden = decoder(inputs_embeds=embed(token)[:, None].to(inputs_embeds.dtype), attention_mask={kind: step_mask for kind in kinds},
++        hidden = decoder(inputs_embeds=embed(token)[:, None].to(inputs_embeds.dtype), attention_mask=step_mask if kinds is None else {kind: step_mask for kind in kinds},
+                          position_ids=position[:, None], use_cache=False, return_dict=True, **{KV_PREFIX_KWARG: cache}).last_hidden_state[:, -1]
+     return torch.stack(tokens, dim=1)
+ 
+diff --git a/activation/harness/loaded_model.py b/activation/harness/loaded_model.py
+index 1d10d10..3db9930 100644
+--- a/activation/harness/loaded_model.py
++++ b/activation/harness/loaded_model.py
+@@ -511,7 +511,9 @@ class LoadedModel:
+         model = self.model
+         decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
+         from .hf_utils import INTERVENTIONS_KWARG, checkpoint_adapter_scope, install_intervention_hooks
++        from . import kv_transfer
+         from .kv_transfer import KV_PREFIX_KWARG, bind_kv_overwrite, bind_kv_prefix, has_kv, is_overwrite
++        dropped = None                                      # (kept rows, old length) when the placeholder rows are dropped for this forward
+         if interventions is not None:
+             if len(interventions) != inputs_embeds.shape[0]:
+                 raise ValueError(f"{len(interventions)} intervention payloads for {inputs_embeds.shape[0]} physical rows")
+@@ -520,6 +522,10 @@ class LoadedModel:
+             elif has_kv(interventions):                     # key/value transfer: attention entries, no residual hooks
+                 if position_ids is not None:
+                     raise ValueError("key/value transfer numbers the positions itself")
++                if kv_transfer.DROP_PLACEHOLDERS and capture is None:
++                    length = inputs_embeds.shape[1]
++                    inputs_embeds, attention_mask, interventions, kept = kv_transfer.drop_placeholders(inputs_embeds, attention_mask, interventions)
++                    dropped = (kept, length)
+                 attention_mask, position_ids, prefix, _ = bind_kv_prefix(model, inputs_embeds, attention_mask, interventions)
+                 kwargs = {**kwargs, KV_PREFIX_KWARG: prefix}
+             else:
+@@ -542,6 +548,8 @@ class LoadedModel:
+         finally:
+             for handle in handles:
+                 handle.remove()
++        if dropped is not None:
++            return kv_transfer.restore_rows(outputs.last_hidden_state, *dropped)
+         return outputs.last_hidden_state
+ 
+     def simple_vector_embed_many(self, texts: list[str]) -> torch.Tensor:
+diff --git a/activation/tests/test_batched_decode.py b/activation/tests/test_batched_decode.py
+index 3414200..317037a 100644
+--- a/activation/tests/test_batched_decode.py
++++ b/activation/tests/test_batched_decode.py
+@@ -338,8 +338,12 @@ def test_the_payload_is_bound_for_the_prefill_only(decode):
+         generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask.flip(-1), interventions=shifted, **generation)
+     with pytest.raises(ValueError, match="one payload per row"):
+         generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted[:1], **generation)
+-    with pytest.raises(ValueError, match="greedy"):
+-        generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True, max_new_tokens=2)
++    with pytest.raises(ValueError, match="one sequence per row"):
++        generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True,
++                                          num_return_sequences=2, max_new_tokens=2)
++    sampled = generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True,
++                                                max_new_tokens=2, min_new_tokens=2, pad_token_id=generation["pad_token_id"])
++    assert sampled.shape == (len(rows), 2), "sampling keeps one row per input row (the payload rows still line up)"
+ 
+ 
+ def test_multimodal_wrapper_batches_like_single_rows(decode):
+diff --git a/activation/tests/test_interventions.py b/activation/tests/test_interventions.py
+index 68ff113..ac9e724 100644
+--- a/activation/tests/test_interventions.py
++++ b/activation/tests/test_interventions.py
+@@ -393,6 +393,34 @@ def test_padded_batch_positions_and_causality(tmp_path):
+     assert payload is None and not torch.equal(kept, student)
+ 
+ 
++def test_padded_batch_kl_matches_single(tmp_path):
++    """KL through the padded batch: per example the loss, agreement and target log-probs of `_example_loss`, and the same gradients."""
++    torch.manual_seed(0)
++    h, ac = build(tmp_path, TINY_QWEN3, frequency=1)
++    trainer, items, examples, device = trainer_and_examples(h, ac, loss_kind="kl", micro_batch_examples=3)
++    trainer._store_teacher_targets(ac, examples, device, lora=None)
++    open_heads(ac)
++    assert len({len(e.student_ids) for e in examples}) > 1, "the fixture must pad"
++    params = [p for p in ac.modules.parameters() if p.requires_grad]
++    single = [trainer._example_loss(ac, example, device, with_penalty=False) for example in examples]
++    batched = trainer._batch_loss(ac, examples, device, with_penalty=False)
++    for (loss, agreement, num, logp), result in zip(single, batched):
++        assert result["num"] == num and result["agreement"] == pytest.approx(agreement)
++        torch.testing.assert_close(result["objective"], loss, atol=1e-4, rtol=1e-4)
++        torch.testing.assert_close(result["target_logp"], logp, atol=1e-4, rtol=1e-4)
++    joint = torch.autograd.grad(sum(result["objective"] for result in batched), params, allow_unused=True)
++    apart = torch.autograd.grad(sum(loss for loss, _, _, _ in single), params, allow_unused=True)
++    for j, a in zip(joint, apart):
++        if a is not None:
++            torch.testing.assert_close(j, a, atol=1e-5, rtol=1e-3)
++    # The sampled penalty (fraction 1 in the fixture) is the per-example term.
++    with_penalty = trainer._batch_loss(ac, examples, device, penalty_flags=[True] * len(examples))
++    for example, result in zip(examples, with_penalty):
++        trainer._example_loss(ac, example, device, penalty_flag=True)
++        torch.testing.assert_close(result["penalty"], trainer._penalty_term, atol=1e-4, rtol=1e-4)
++    config(loss_kind="kl", micro_batch_examples=2)          # the config accepts KL micro-batches
++
++
+ # --------------------------------------------------------------------------------------------------- 6. generation
+ def test_generation_matches_full_recompute(tmp_path, hybrid_dir):
+     h, ac = build(tmp_path, hybrid_dir, frequency=1)
+diff --git a/activation/tests/test_nested_material.py b/activation/tests/test_nested_material.py
+index 043ac12..8a2b670 100644
+--- a/activation/tests/test_nested_material.py
++++ b/activation/tests/test_nested_material.py
+@@ -114,3 +114,23 @@ def test_encoder_counts_child_rows_as_side_tokens(tmp_path):
+     example = trainer.build_example(ac, item)
+     assert len(example.spans) == 1 and example.spans[0][1] - example.spans[0][0] == expected
+     assert [r.compression_ratio for r in example.part_requests] == [0.25]
++
++
++def test_prefetched_side_token_counts_match_tokenization(tmp_path):
++    h, ac, study = study_for(tmp_path)
++    items = study.generate_reconstruction_samples([NESTED, FLAT], ratio=1 / 8, variant="reconstruct")
++    lazy = [ac.part_view_rows(part["messages"], part.get("compression_target")) for item in items for part in direct_parts(item.ac_messages)]
++    ac._side_token_counts.clear()
++    # Leaf parts only: the nested passage's child and the flat passage (the nested parent's length needs its child's rows).
++    assert ac.prefetch_side_token_counts(item.ac_messages for item in items) == 2
++    assert all(count == len(tokenize_with_parts(ac.side.tokenizer, messages, [], ac.pad_id)[0])
++               for messages in [ac._child_request(part, ac.config.default_compression_ratio).messages
++                                for item in items for part in direct_parts(item.ac_messages) if not direct_parts(part["messages"])]
++               for count in [ac._side_token_counts[ac._token_count_key(messages, [], None)]])
++    assert ac.prefetch_side_token_counts(item.ac_messages for item in items) == 0, "a second prefetch finds every leaf memoized"
++    assert [ac.part_view_rows(part["messages"], part.get("compression_target")) for item in items for part in direct_parts(item.ac_messages)] == lazy
++    # The memo gives the same answer as the tokenizer for a nested request with its child's rows (the capacity check's call).
++    (part,) = direct_parts(items[0].ac_messages)
++    child = ac._child_request(part, ac.config.default_compression_ratio)
++    rows = [ac.part_view_rows(p["messages"], p["compression_target"]) for p in direct_parts(child.messages)]
++    assert ac.side_token_count(child.messages, rows) == len(tokenize_with_parts(ac.side.tokenizer, child.messages, rows, ac.pad_id)[0])

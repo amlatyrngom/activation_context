@@ -1,0 +1,109 @@
+{
+ "_source": "/workspace/IB/ARTIFACTS/PAPER_WRITING/sec45_v4/data/R_in_e06ls/sync/R_in_e06ls.stats.json",
+ "_extracted": "scalar keys + timing dict + list lengths; learning_rates sampled at updates 1,25,50,51,1000,mid,last (list index = update-1; each entry = per-param-group rates); penalty: count of updates with nonzero penalty; last held entry",
+ "_note": "full file not copied (size); see _source",
+ "name": "R_in_e06ls",
+ "kind": "recon",
+ "mode": "in",
+ "timing": {
+  "updates": 2000,
+  "seconds_per_update_median": 5.44,
+  "effective_seconds_per_update": 6.77,
+  "startup_seconds": 9.3,
+  "item_seconds_per_item": 0.00503,
+  "example_seconds_per_item": 0.00554,
+  "train_call_seconds": 13626.5,
+  "longest_first_updates": 0,
+  "pair_gb": 1.53,
+  "gpu_total_gb": 95.0,
+  "seconds_per_update_mean": 5.68,
+  "first_updates_seconds": [
+   4.2,
+   4.8,
+   6.4
+  ],
+  "baseline_panel_seconds": 81.9,
+  "placement_seconds": 4.6,
+  "reporting_seconds": 850.1,
+  "checkpoint_seconds": 4.2,
+  "peak_gb": 18.3,
+  "wall_seconds": 13719,
+  "held_items": 500,
+  "micro_batch": 2,
+  "epu": 8,
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+ },
+ "held__len": 11,
+ "loss__len": 2000,
+ "step_seconds__len": 2000,
+ "grad_norm_ac__len": 2000,
+ "grad_norm_reader__len": 2000,
+ "penalty__len": 2000,
+ "learning_rates__len": 2000,
+ "stop_reason": "complete",
+ "valid": true,
+ "saved_updates__len": 0,
+ "final": "/root/sec45/runs/R_in_e06ls/sync/ckpt/final",
+ "order_trained__first_sha256": "e62f9f68364ae8e459c837e072ded23af1d5b51fcd83a223aed7a8fdddbd8491",
+ "order_predicted__first_sha256": "e62f9f68364ae8e459c837e072ded23af1d5b51fcd83a223aed7a8fdddbd8491",
+ "order_matches": true,
+ "order_full__first_sha256": "e62f9f68364ae8e459c837e072ded23af1d5b51fcd83a223aed7a8fdddbd8491",
+ "resumed_from_update": 0,
+ "resumed_optimizer": null,
+ "learning_rates_sampled": {
+  "update_1": [
+   2.0000000000000003e-06,
+   4.0000000000000003e-07
+  ],
+  "update_25": [
+   5e-05,
+   1e-05
+  ],
+  "update_50": [
+   0.0001,
+   2e-05
+  ],
+  "update_51": [
+   0.0001,
+   2e-05
+  ],
+  "update_1000": [
+   5.688440441781399e-05,
+   1.1376880883562798e-05
+  ],
+  "update_1001": [
+   5.681196730492368e-05,
+   1.1362393460984738e-05
+  ],
+  "update_2000": [
+   1.0000058400013411e-05,
+   2.000011680002682e-06
+  ]
+ },
+ "learning_rates_peak_per_group": [
+  0.0001,
+  2e-05
+ ],
+ "learning_rates_last_over_peak": [
+  0.1000005840001341,
+  0.10000058400013409
+ ],
+ "penalty_nonzero_updates": 1997,
+ "penalty_nonzero_fraction": 0.9985,
+ "grad_norm_ac_max": 28.91982078552246,
+ "grad_norm_ac_last": 0.5687525868415833,
+ "grad_norm_reader_max": 10.576133728027344,
+ "grad_norm_reader_last": 0.9675226807594299,
+ "held_last": {
+  "update": 2000,
+  "held_nll": 0.07395558011345565,
+  "held_nll_token": 0.07479107748348708,
+  "token_accuracy": 0.976442225933075,
+  "items": 500,
+  "wall_seconds": 13703
+ },
+ "loss_first_last": [
+  2.7798643112182617,
+  0.07132110209204257
+ ]
+}

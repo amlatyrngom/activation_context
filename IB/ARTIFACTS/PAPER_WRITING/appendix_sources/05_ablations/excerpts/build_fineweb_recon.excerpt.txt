@@ -1,0 +1,37 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/data/build_fineweb_recon.py
+# lines: 1-30
+# extracted: nl -ba | sed -n (module docstring)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: c0a0cd3b15631795
+
+----- lines 1-30 -----
+     1	"""
+     2	Section 4.5 reconstruction material: plain passages from FineWeb-Edu (HuggingFaceFW/fineweb-edu, sample-10BT), with every
+     3	document whose URL is on wikipedia.org (or any *.wikipedia.org) removed, because the task (HotpotQA) is built on Wikipedia.
+     4	
+     5	One passage per document: documents shorter than --min-tokens reader tokens are skipped; a document of --min-tokens ..
+     6	--max-tokens is kept whole; a longer one is cut after its last paragraph break (else sentence end, else space) that keeps the
+     7	passage within --max-tokens and at or above --min-tokens. Token counts use the reader's tokenizer (Qwen/Qwen3-4B-Instruct-2507).
+     8	Duplicates (same URL or same text) are dropped. The kept passages are shuffled with --seed; the first --held are the held-out
+     9	panel, the next --train the training pool.
+    10	
+    11	Writes (new files only; OUT must not exist):
+    12	  OUT/material.json.gz   {"train": [{text, doc_id, source, tokens, url}], "held": [...]}   (prepare_mix.py's material schema + url)
+    13	  OUT/stats.json         counts, token-length statistics per split, skip reasons, shards read
+    14	
+    15	  python build_fineweb_recon.py --out OUT [--train 60000 --held 500 --min-tokens 1024 --max-tokens 2048 --seed 0 --cache DIR]
+    16	Network: public Hugging Face downloads only (no token is read or sent).
+    17	"""
+    18	import argparse
+    19	import gzip
+    20	import hashlib
+    21	import json
+    22	import os
+    23	import random
+    24	import statistics
+    25	import time
+    26	from pathlib import Path
+    27	from urllib.parse import urlparse
+    28	
+    29	READER = "Qwen/Qwen3-4B-Instruct-2507"
+    30	REPO = "HuggingFaceFW/fineweb-edu"

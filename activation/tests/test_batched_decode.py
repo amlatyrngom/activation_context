@@ -338,8 +338,12 @@ def test_the_payload_is_bound_for_the_prefill_only(decode):
         generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask.flip(-1), interventions=shifted, **generation)
     with pytest.raises(ValueError, match="one payload per row"):
         generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted[:1], **generation)
-    with pytest.raises(ValueError, match="greedy"):
-        generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True, max_new_tokens=2)
+    with pytest.raises(ValueError, match="one sequence per row"):
+        generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True,
+                                          num_return_sequences=2, max_new_tokens=2)
+    sampled = generate_batch_with_interventions(peft_model, inputs_embeds=padded, attention_mask=mask, interventions=shifted, do_sample=True,
+                                                max_new_tokens=2, min_new_tokens=2, pad_token_id=generation["pad_token_id"])
+    assert sampled.shape == (len(rows), 2), "sampling keeps one row per input row (the payload rows still line up)"
 
 
 def test_multimodal_wrapper_batches_like_single_rows(decode):

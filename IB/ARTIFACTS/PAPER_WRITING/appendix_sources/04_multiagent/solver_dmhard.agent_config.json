@@ -1,0 +1,71 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_TRAJ_QA/node_sync/dmhard/rollouts.jsonl",
+ "_extraction": "first line of the JSONL parsed with json; only its 'agent_config' dict plus small scalar row fields kept; strings longer than 400 chars and lists longer than 40 items truncated (script /tmp/m1_agentcfg.py)",
+ "row_fields": {
+  "seed": 0,
+  "finish_reason": "submitted",
+  "ac_model_name": null,
+  "ac_model_version": null,
+  "lora_name": null,
+  "source": "policy",
+  "config_key": "deepmath___min_difficulty_6__n_1000000__seed_0/d8.5-33954/math/base/0",
+  "num_ac_parts": 0,
+  "num_ac_rows": 0
+ },
+ "agent_config": {
+  "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+  "user_prompt": "Solve the following math problem.\n\nIs the ring of holomorphic functions on a compact Riemann surface integrally closed?\n\nWhen you are done, call submit_answer with the final answer only, in the form the problem asks for: a number, a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No. No explanation.",
+  "messages_input": [],
+  "agent_name": "main",
+  "metadata": {
+   "benchmark": "deepmath",
+   "task_kind": "math",
+   "teacher_kind": "base",
+   "template": "math/base/0"
+  },
+  "model_name": "oracle",
+  "lora_name": null,
+  "ac_model_name": null,
+  "call_kwargs": {
+   "sampling_params": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "max_tokens": 8192
+   },
+   "chat_template_kwargs": {
+    "enable_thinking": true,
+    "reasoning_effort": "medium"
+   }
+  },
+  "record_sampling": true,
+  "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+  "env_args": null,
+  "env_memory_limit_mb": null,
+  "max_turns": 100,
+  "max_tool_errors": 8,
+  "max_duration": 3600.0,
+  "compaction_threshold_tokens": 1000000000,
+  "absolute_trajectory_cap": 40000,
+  "ac_compaction_ratio": 0.1,
+  "ac_subagent_ratio": 0.05,
+  "ac_tool_output_ratio": 0.025,
+  "ac_search_ratio": 0.05,
+  "tools": {
+   "compact": null,
+   "subagent": null
+  },
+  "env_setups": {},
+  "agentic_program": null,
+  "dataset_task": {
+   "task_id": "d8.5-33954",
+   "dataset_id": "deepmath___min_difficulty_6__n_1000000__seed_0",
+   "reference_metrics_kind": "math_verify",
+   "gold_answer": "Yes",
+   "gold_answer_aliases": [],
+   "agent_prompt": "Solve the following math problem.\n\nIs the ring of holomorphic functions on a compact Riemann surface integrally closed?\n\nWhen you are done, call submit_answer with the final answer only, in the form the problem asks for: a number, a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No. No explanation."
+  }
+ }
+}

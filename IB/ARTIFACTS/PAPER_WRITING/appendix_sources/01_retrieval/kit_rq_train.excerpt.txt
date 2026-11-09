@@ -1,0 +1,21 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_train.py
+# lines: 169-184
+# extracted: nl -ba | sed -n (--refs path: question_first=True forced, per_call 20; trainer config: epu, warmup, schedule, teacher_cache_top_k=32, penalty weight, cooldown)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 169-184
+   169	    elif calls is not None:                         # --refs: each question its own N (calls of PER_CALL = 20)
+   170	        build = lambda qs: [item for q in qs for item in C.build_items(study, corpus, [q], top, AC, a.ratio, replies=replies, calls=calls[q["id"]],
+   171	                                                                        per_call=20, question_first=True, same_context=a.teacher_view == "same")]
+   172	        items, held_items = build(train), build(held[:a.held_panel])
+   173	        print(f"rq_train --refs: train calls histogram {dict(sorted(__import__('collections').Counter(calls[q['id']] for q in train).items()))}", flush=True)
+   174	    else:
+   175	        items = C.build_items(study, corpus, train, top, AC, a.ratio, replies=replies, calls=a.calls, per_call=a.per_call, question_first=a.question_first)
+   176	        held_items = C.build_items(study, corpus, held[:a.held_panel], top, AC, a.ratio, replies=replies, calls=a.calls, per_call=a.per_call, question_first=a.question_first)
+   177	    steps = -(-len(items) // a.epu) * a.epochs
+   178	    config = ActivationContextTrainingConfig(
+   179	        loss_kind=a.loss, learning_rate_ac=a.encoder_lr, learning_rate_target_lora=a.reader_lr, warmup_updates=a.warmup, lr_schedule=a.schedule,
+   180	        examples_per_update=a.epu, num_epochs=a.epochs, checkpoint_every_updates=a.ckpt_every, checkpoint_every_epoch=True, completion_samples=0,
+   181	        reporting_interval=min(1.0, a.report_every * a.epu / len(items)), max_duration_seconds=a.seconds, seed=a.seed,
+   182	        micro_batch_examples=a.micro_batch, gradient_checkpointing=not a.no_checkpointing, teacher_cache_top_k=32, max_example_tokens=72000,
+   183	        no_context_penalty_weight=a.penalty_weight, schedule_total_updates=steps, cooldown_updates=a.cooldown_updates, teacher_targets_file=str(a.teacher_targets) if a.teacher_targets else None,
+   184	        distributed=world > 1)

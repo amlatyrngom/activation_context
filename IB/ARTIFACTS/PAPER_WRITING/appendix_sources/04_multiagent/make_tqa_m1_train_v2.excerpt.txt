@@ -1,0 +1,68 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/make_tqa_m1_train_v2.py
+# lines: 1-16,36-80 (of 95 total)
+# extracted: nl -ba | sed -n per range; training draw v2 (difficulty >= 8.5), excludes dmext and dmhard by id and normalized text
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 7b7834596f248a27b45d69e8893ec34260931ec5b63aed75be3029b5b116636a
+# ---- lines 1-16
+     1	"""
+     2	M1 training sample v2 (Oct 16 15:20Z, copy of make_tqa_m1_train.py): the tasks of --keep-from at difficulty >= --min-task-difficulty
+     3	come first (they were drawn by the same rule; checked disjoint from every other --used / --used-ids set), then fresh tasks drawn
+     4	by the same rule from the pool minus everything used (the --keep-from sample included) until --count. The earlier header follows.
+     5	
+     6	M1 training sample (Oct 16, copy of make_tqa_dmext.py): --count DeepMath training tasks at difficulty >= --min-task-difficulty (id prefix
+     7	"d<difficulty>-"), drawn from the same loader as every evaluation set; otherwise the dmext rule unchanged. The original header follows.
+     8	
+     9	DeepMath extended reserve for trajectory Q/A (Oct 16): a pre-registered, frozen evaluation set of --count DeepMath tasks (same pool as
+    10	the reserve and development sets: difficulty >= 6, seed 0), disjoint by task id and normalized question text from every DeepMath task
+    11	used before: tqa_at3_v1 (re-drawn as run_at3.py drew it), every --used sample.json, and every id in the --used-ids files (one id per
+    12	line; a scan of all rollout/material files on the nodes and in the repo). Same draw rule as make_tqa_samples_v2.py.
+    13	
+    14	Writes PAPER_TRAJ_QA/<id>/sample.json in make_tqa_samples.py's shape and prints the sha256 (sorted task ids joined by newlines).
+    15	
+    16	    python make_tqa_dmext.py --used reserve.json --used dev.json --used train_v1.json --used-ids scanned.txt
+# ---- lines 36-80
+    36	def main() -> int:
+    37	    parser = argparse.ArgumentParser()
+    38	    parser.add_argument("--used", action="append", required=True, help="sample.json of an earlier sample (repeatable)")
+    39	    parser.add_argument("--used-ids", action="append", default=[], help="file of task ids used anywhere (repeatable)")
+    40	    parser.add_argument("--id", default="tqa_m1_train_v2")
+    41	    parser.add_argument("--keep-from", required=True, help="sample.json whose tasks at >= the difficulty floor are kept first")
+    42	    parser.add_argument("--min-task-difficulty", type=float, default=8.5)
+    43	    parser.add_argument("--role", default="training M1 v2 DeepMath synthesis (difficulty >= 8.5)")
+    44	    parser.add_argument("--count", type=int, default=1000)
+    45	    parser.add_argument("--at3-seed", type=int, default=20261014)
+    46	    parser.add_argument("--seed", type=int, default=20261023)
+    47	    args = parser.parse_args()
+    48	    deepmath = DeepMathDataset.load(None, 10 ** 6, seed=0, min_difficulty=6.0)
+    49	    tasks = deepmath.scorable_tasks
+    50	    text = lambda t: norm(tasks[t].task_datum.get("question") or tasks[t].agent_prompt)
+    51	    used = {"at3": set(random.Random(args.at3_seed).sample(sorted(tasks), 100))}
+    52	    for path in args.used:
+    53	        for entry in json.load(open(path))["sample"].values():
+    54	            if entry["dataset_id"] == deepmath.dataset_id:
+    55	                used[path] = set(entry["task_ids"])
+    56	    for path in args.used_ids:
+    57	        used[path] = {line.strip() for line in open(path) if line.strip()}
+    58	    keep_doc = json.load(open(args.keep_from))["sample"]["deepmath"]
+    59	    assert keep_doc["dataset_id"] == deepmath.dataset_id
+    60	    kept = [t for t in keep_doc["task_ids"] if float(t.split("-")[0][1:]) >= args.min_task_difficulty]
+    61	    others = set().union(*used.values())
+    62	    assert not set(kept) & others and not {text(t) for t in kept} & {text(t) for t in others if t in tasks}, "a kept task is used elsewhere"
+    63	    used["keep_from:" + args.keep_from] = set(keep_doc["task_ids"])
+    64	    print("kept from", args.keep_from, len(kept))
+    65	    used_ids = set().union(*used.values())
+    66	    unknown = sorted(used_ids - set(tasks))
+    67	    used_text = {text(t) for t in used_ids if t in tasks}
+    68	    print("pool", len(tasks), "used ids", len(used_ids), "not in pool", len(unknown), unknown[:5], "used texts", len(used_text))
+    69	    for name, ids in used.items():
+    70	        print("  ", name, len(ids))
+    71	    pool = [t for t in sorted(tasks) if t not in used_ids and text(t) not in used_text and float(t.split("-")[0][1:]) >= args.min_task_difficulty]
+    72	    print("untouched after id+text exclusion", len(pool))
+    73	    chosen, seen = list(kept), {text(t) for t in kept}
+    74	    for task_id in random.Random(args.seed).sample(pool, len(pool)):
+    75	        if text(task_id) in seen:
+    76	            continue
+    77	        seen.add(text(task_id))
+    78	        chosen.append(task_id)
+    79	        if len(chosen) == args.count:
+    80	            break

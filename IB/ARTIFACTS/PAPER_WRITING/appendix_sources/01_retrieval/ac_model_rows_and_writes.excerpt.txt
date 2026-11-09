@@ -1,0 +1,42 @@
+# source: /workspace/activation/ac_model/ac_model.py
+# lines: 1-6,111-136,313-315
+# extracted: nl -ba | sed -n (V = clamp(ceil(tokens x ratio), min_view_rows, max_view_rows); intervention_frequency -1 = every full-attention layer)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (file has uncommitted modifications in the working tree; excerpt is the working-tree version)
+# --- lines 1-6
+     1	"""
+     2	The activation-context (AC) model: a side language model (Qwen3.5-0.8B for development, with a
+     3	rank-128 LoRA) that reads messages and emits V "view rows" in the target model's input space,
+     4	V = clamp(ceil(side tokens x compression ratio), min_view_rows, max_view_rows). The target model reads
+     5	those rows in place of the messages (an `activation_context` content part).
+     6	
+# --- lines 111-136
+   111	    A deep model (`intervention_frequency` != 0 or explicit `intervention_layers`) adds, per intervention layer, a read-out in
+   112	    which the row's final side state attends over the passage tokens' final side states (PassageAttention, zero-initialized
+   113	    output) and a zero-initialized bottleneck head (DeltaHead) whose output the reader adds to its residual stream at the row
+   114	    positions, at the input of that layer. Both are exactly zero at init, so a deep model starts bit-identical to the
+   115	    input-only one, and an input-only checkpoint loads into a deep model (the heads fresh). The reader-side operation is a
+   116	    per-request scatter-add on the hidden state entering the named layers: the same in HF and in an engine.
+   117	    """
+   118	    ac_model_name: str                       # identifies this model; parts name it in `ac_name`
+   119	    base_side_model_name: str                # the side base (a loaded model)
+   120	    base_side_model_lora_name: str           # its adapter, registered by ModuleManager.register_ac_model when new
+   121	    target_model_name: str                   # whose input space the rows land in
+   122	    target_model_lora_name: str              # the target adapter trained alongside (ActivationContextTrainer)
+   123	    default_compression_ratio: float = 1.0 / 16.0
+   124	    mixer_layers: int = 2
+   125	    mixer_window: int = 256                  # block size of the blocked local attention (each row sees 256-512 rows per side)
+   126	    mixer_heads: int = 8
+   127	    min_view_rows: int = 4
+   128	    max_view_rows: int = 4096
+   129	    side_lora_rank: int = 128
+   130	    encode_batch_max_tokens: int = 65_536    # side tokens per padded encode batch (B x longest)
+   131	    side_gradient_checkpointing: bool = True # on the side base in training mode
+   132	    checkpoint_path: str | None = None       # loaded by register_ac_model when given
+   133	    intervention_frequency: int = 0          # deep inputs: interior reader layers receiving a residual delta per row (0 = the embedding channel only);
+   134	                                             # -1 = every full-attention layer of the reader (0 excluded; the last-layer flag is moot) - the validated setting
+   135	    intervention_layers: list[int] | None = None   # explicit reader layers instead of the frequency rule (with intervention_frequency 0; 0 < layer < depth, unique)
+   136	    add_last_layer_intervention: bool = True # ... plus the last reader block (inert at frequency 0)
+# --- lines 313-315
+   313	    def num_view_rows(self, num_side_tokens: int, compression_ratio: float | None = None) -> int:
+   314	        ratio = self.config.default_compression_ratio if compression_ratio is None else compression_ratio
+   315	        return int(min(self.config.max_view_rows, max(self.config.min_view_rows, math.ceil(num_side_tokens * ratio))))

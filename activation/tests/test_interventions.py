@@ -393,6 +393,34 @@ def test_padded_batch_positions_and_causality(tmp_path):
     assert payload is None and not torch.equal(kept, student)
 
 
+def test_padded_batch_kl_matches_single(tmp_path):
+    """KL through the padded batch: per example the loss, agreement and target log-probs of `_example_loss`, and the same gradients."""
+    torch.manual_seed(0)
+    h, ac = build(tmp_path, TINY_QWEN3, frequency=1)
+    trainer, items, examples, device = trainer_and_examples(h, ac, loss_kind="kl", micro_batch_examples=3)
+    trainer._store_teacher_targets(ac, examples, device, lora=None)
+    open_heads(ac)
+    assert len({len(e.student_ids) for e in examples}) > 1, "the fixture must pad"
+    params = [p for p in ac.modules.parameters() if p.requires_grad]
+    single = [trainer._example_loss(ac, example, device, with_penalty=False) for example in examples]
+    batched = trainer._batch_loss(ac, examples, device, with_penalty=False)
+    for (loss, agreement, num, logp), result in zip(single, batched):
+        assert result["num"] == num and result["agreement"] == pytest.approx(agreement)
+        torch.testing.assert_close(result["objective"], loss, atol=1e-4, rtol=1e-4)
+        torch.testing.assert_close(result["target_logp"], logp, atol=1e-4, rtol=1e-4)
+    joint = torch.autograd.grad(sum(result["objective"] for result in batched), params, allow_unused=True)
+    apart = torch.autograd.grad(sum(loss for loss, _, _, _ in single), params, allow_unused=True)
+    for j, a in zip(joint, apart):
+        if a is not None:
+            torch.testing.assert_close(j, a, atol=1e-5, rtol=1e-3)
+    # The sampled penalty (fraction 1 in the fixture) is the per-example term.
+    with_penalty = trainer._batch_loss(ac, examples, device, penalty_flags=[True] * len(examples))
+    for example, result in zip(examples, with_penalty):
+        trainer._example_loss(ac, example, device, penalty_flag=True)
+        torch.testing.assert_close(result["penalty"], trainer._penalty_term, atol=1e-4, rtol=1e-4)
+    config(loss_kind="kl", micro_batch_examples=2)          # the config accepts KL micro-batches
+
+
 # --------------------------------------------------------------------------------------------------- 6. generation
 def test_generation_matches_full_recompute(tmp_path, hybrid_dir):
     h, ac = build(tmp_path, hybrid_dir, frequency=1)

@@ -284,7 +284,7 @@ def generate_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, inte
 def generate_batch_with_interventions(peft_model, *, inputs_embeds: torch.Tensor, attention_mask: torch.Tensor,
                                       interventions: list[Interventions | None], **generate_kwargs):
     """
-    Greedy `generate` for B rows at once: LEFT-padded embeddings [B, L, d] with their mask [B, L] (0 on the pads) and one payload
+    Greedy or sampled `generate` (one sequence per row) for B rows at once: LEFT-padded embeddings [B, L, d] with their mask [B, L] (0 on the pads) and one payload
     (or None) per row whose positions are already in the padded row's coordinates (the unpadded position plus the row's pad
     count). Left padding is what keeps every row equal to its single-sequence run: HF derives the positions from the mask (a
     row's first real token is position 0), the full-attention layers mask the pads, and a linear-attention layer zeroes the
@@ -303,15 +303,16 @@ def generate_batch_with_interventions(peft_model, *, inputs_embeds: torch.Tensor
         return generate_with_kv_overwrite(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
     if has_kv(interventions):                # key/value transfer: its own prefill and greedy loop
         return generate_with_kv_prefix(peft_model, inputs_embeds=inputs_embeds, attention_mask=attention_mask, interventions=interventions, **generate_kwargs)
-    if generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("do_sample", False) or generate_kwargs.get("num_return_sequences", 1) != 1:
-        raise ValueError("generate_batch_with_interventions supports greedy decoding only")
+    last = max((max(payload["positions"]) for payload in interventions if payload and payload["positions"]), default=-1)
+    # Sampling keeps each row in place, so the payload rows still line up; beams and several sequences per row would not.
+    if last >= 0 and (generate_kwargs.get("num_beams", 1) != 1 or generate_kwargs.get("num_return_sequences", 1) != 1):
+        raise ValueError("generate_batch_with_interventions supports one sequence per row (greedy or sampled) when rows carry payloads (without any: HF's own generate)")
     base_model = peft_model.get_base_model() if hasattr(peft_model, "get_base_model") else peft_model
     # A multimodal wrapper keeps `rope_deltas` of the last generate's batch size, and a later embeddings-only forward of another
     # batch size would read them: put back what was there.
     holder = getattr(base_model, base_model.base_model_prefix, None)
     restore_deltas = hasattr(holder, "rope_deltas")
     deltas = holder.rope_deltas if restore_deltas else None
-    last = max((max(payload["positions"]) for payload in interventions if payload and payload["positions"]), default=-1)
     try:
         if last < 0:
             return peft_model.generate(inputs_embeds=inputs_embeds, attention_mask=attention_mask, **generate_kwargs)

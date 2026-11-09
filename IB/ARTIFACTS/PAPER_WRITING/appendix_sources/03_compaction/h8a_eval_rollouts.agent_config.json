@@ -1,0 +1,535 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/ROLLOUTS/pc_r9h8a_s{2,3,4}_ac_{1000,2000,4000}/rollouts.jsonl",
+ "_extraction": "python: for each of the 9 H8a eval rollout files, read every line; report line count and the set of distinct values of selected agent_config fields and row 'seed'; 'first_agent_config' is the full agent_config of the first line of pc_r9h8a_s3_ac_2000 with long prompt texts truncated to 200 chars.",
+ "per_run": {
+  "pc_r9h8a_s2_ac_1000": {
+   "rows": 200,
+   "seed": [
+    2
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 1000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s2_ac_2000": {
+   "rows": 200,
+   "seed": [
+    2
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 2000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s2_ac_4000": {
+   "rows": 200,
+   "seed": [
+    2
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 4000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s3_ac_1000": {
+   "rows": 200,
+   "seed": [
+    3
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 1000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s3_ac_2000": {
+   "rows": 200,
+   "seed": [
+    3
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 2000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s3_ac_4000": {
+   "rows": 200,
+   "seed": [
+    3
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 4000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s4_ac_1000": {
+   "rows": 200,
+   "seed": [
+    4
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 1000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s4_ac_2000": {
+   "rows": 200,
+   "seed": [
+    4
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 2000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  },
+  "pc_r9h8a_s4_ac_4000": {
+   "rows": 200,
+   "seed": [
+    4
+   ],
+   "sampling_params": [
+    {
+     "max_tokens": 8192,
+     "min_p": 0.0,
+     "presence_penalty": 1.5,
+     "temperature": 1.0,
+     "top_k": 20,
+     "top_p": 0.95
+    }
+   ],
+   "chat_template_kwargs": [
+    {
+     "enable_thinking": true,
+     "reasoning_effort": "medium"
+    }
+   ],
+   "max_turns": [
+    150
+   ],
+   "max_duration": [
+    6000.0
+   ],
+   "absolute_trajectory_cap": [
+    90000
+   ],
+   "program_kwargs": [
+    {
+     "budget": 50000,
+     "keep_tokens": 4000,
+     "variant": "ac"
+    }
+   ],
+   "lora_name": [
+    "rag_reader"
+   ],
+   "ac_model_name": [
+    "rag_poc"
+   ],
+   "ac_model_version": [
+    43665
+   ],
+   "reference_metrics_kind": [
+    "exact_match"
+   ]
+  }
+ },
+ "first_agent_config": {
+  "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+  "user_prompt": "The repository spring-cloud/spring-cloud-stream is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: Allow for binders ...[truncated]",
+  "messages_input": [],
+  "agent_name": "main",
+  "metadata": {
+   "benchmark": "lca_bug_localization_java",
+   "task_kind": "code_search",
+   "teacher_kind": "base",
+   "template": "code_search/base/0",
+   "program": "resume_ac_2000",
+   "variant": "ac",
+   "keep_tokens": 2000,
+   "side": "evaluation",
+   "repo": "spring-cloud/spring-cloud-stream",
+   "language": "java",
+   "official_test": false
+  },
+  "model_name": "oracle",
+  "lora_name": "rag_reader",
+  "ac_model_name": "rag_poc",
+  "call_kwargs": {
+   "sampling_params": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "max_tokens": 8192
+   },
+   "chat_template_kwargs": {
+    "enable_thinking": true,
+    "reasoning_effort": "medium"
+   }
+  },
+  "record_sampling": true,
+  "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+  "env_args": null,
+  "env_memory_limit_mb": null,
+  "max_turns": 150,
+  "max_tool_errors": 8,
+  "max_duration": 6000.0,
+  "compaction_threshold_tokens": 1000000000,
+  "absolute_trajectory_cap": 90000,
+  "ac_compaction_ratio": 0.1,
+  "ac_subagent_ratio": 0.05,
+  "ac_tool_output_ratio": 0.025,
+  "ac_search_ratio": 0.05,
+  "tools": {
+   "compact": null,
+   "subagent": null
+  },
+  "env_setups": {
+   "repo": {
+    "class": "activation.dataset.loaders.lca_bug_localization:RepoTarballSetup",
+    "kwargs": {
+     "env_path": "/workspace/repo"
+    }
+   }
+  },
+  "agentic_program": {
+   "class": "resume_program:ResumeFromPrefix",
+   "kwargs": {
+    "prefix_file": "/root/activation_artifacts/pc/prefixes_eval9c_200/prefixes/lca_bug_localization_java__spring-cloud__spring-cloud-stream__742__741.json",
+    "variant": "ac",
+    "keep_tokens": 2000,
+    "budget": 50000,
+    "notes_folder": "/root/activation_artifacts/SYNC/PAPER_COMPACTION/pc_r9h8a_s3_ac_2000/notes"
+   }
+  },
+  "dataset_task": {
+   "task_id": "spring-cloud__spring-cloud-stream__742__741",
+   "dataset_id": "lca_bug_localization___config_java__split_dev__n_1000000__seed_0",
+   "reference_metrics_kind": "exact_match",
+   "gold_answer": "spring-cloud-stream/src/main/java/org/springframework/cloud/stream/binder/AbstractMessageChannelBinder.java",
+   "gold_answer_aliases": [],
+   "agent_prompt": "The repository spring-cloud/spring-cloud-stream is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: Allow for binders ...[truncated]"
+  }
+ }
+}

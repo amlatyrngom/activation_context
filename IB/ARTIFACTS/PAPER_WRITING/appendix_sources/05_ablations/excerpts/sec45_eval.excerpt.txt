@@ -1,0 +1,26 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/kit/sec45_eval.py
+# lines: 1-9 32-36 62-64
+# extracted: nl -ba | sed -n (docstring: dev200, greedy, one question-first call at 1/10; --max-new default 128; completion_sampling None)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 983763e77747be45
+
+----- lines 1-9 -----
+     1	"""
+     2	Section 4.5 accuracy of one checkpoint: the 200 HotpotQA dev questions (build_hotpot_tasks.py dev200: top-20 BM25 with both golds
+     3	injected, ONE question-first encoder call at 1/10), one GREEDY sample each, scored with rq_common.score on the reply's last
+     4	"Final answer:" line (acc = exact match or the normalized gold inside the normalized prediction; also EM, token F1, answered).
+     5	Same batched HF decode as rq_eval.py (ActivationContextTrainer._sample_completions_batched), with completion_sampling None (greedy).
+     6	
+     7	  python sec45_eval.py --mode MODE --data HOTPOT_DIR --pair AC_DIR READER_DIR --out OUT.jsonl [--label T_kv_u500] [--limit N]
+     8	  python sec45_eval.py --data HOTPOT_DIR --score OUT.jsonl            (score only)
+     9	OUT.jsonl gets one row per question (appended per batch; a rerun skips the ids already there); OUT.summary.json the scores.
+----- lines 32-36 -----
+    32	    p.add_argument("--mode", choices=sorted(S.MODES)); p.add_argument("--data", type=Path, required=True); p.add_argument("--split", default="dev200")
+    33	    p.add_argument("--pair", nargs=2, metavar=("AC_DIR", "READER_DIR")); p.add_argument("--out", type=Path); p.add_argument("--score", type=Path)
+    34	    p.add_argument("--label", default=""); p.add_argument("--limit", type=int); p.add_argument("--batch", type=int, default=32)
+    35	    p.add_argument("--max-new", type=int, default=128, help="new-token cap (a trained reply is ~10 tokens; a cut reply scores wrong)")
+    36	    a = p.parse_args()
+----- lines 62-64 -----
+    62	    print(f"sec45_eval: {len(items)} questions to decode ({len(done)} already in {a.out}), greedy, batch {a.batch}, max_new {a.max_new}", flush=True)
+    63	    trainer = ActivationContextTrainer(h, ActivationContextTrainingConfig(loss_kind="sft", distributed=False, completion_sampling=None,
+    64	                                                                          completion_max_new_tokens=a.max_new, max_example_tokens=72000))

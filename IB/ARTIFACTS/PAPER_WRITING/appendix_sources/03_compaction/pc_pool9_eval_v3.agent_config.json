@@ -1,0 +1,105 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/ROLLOUTS/pc_pool9_eval_v3/rollouts.jsonl",
+ "_extraction": "python: streamed every line; distinct values of model_name, lora_name, (max_turns, absolute_trajectory_cap), call_kwargs and seed; first_agent_config = first line's agent_config, strings truncated to 200 chars. This is the untuned 9B pool (pool v3, 600 evaluation runs) from which prefixes_eval9c_200 was cut (index.json 'rollouts').",
+ "rows": 600,
+ "model_name": [
+  "oracle"
+ ],
+ "lora_name": [
+  "None"
+ ],
+ "max_turns_and_trajectory_cap": [
+  [
+   150,
+   50000
+  ]
+ ],
+ "call_kwargs": [
+  {
+   "chat_template_kwargs": {
+    "enable_thinking": true,
+    "reasoning_effort": "medium"
+   },
+   "sampling_params": {
+    "max_tokens": 8192,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "temperature": 1.0,
+    "top_k": 20,
+    "top_p": 0.95
+   }
+  }
+ ],
+ "seeds": [
+  0
+ ],
+ "first_agent_config": {
+  "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+  "user_prompt": "The repository rasahq/rasa is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: `test_nlu` breaks when optional value i...[truncated]",
+  "messages_input": [],
+  "agent_name": "main",
+  "metadata": {
+   "benchmark": "lca_bug_localization",
+   "task_kind": "code_search",
+   "teacher_kind": "base",
+   "template": "code_search/base/0",
+   "side": "evaluation",
+   "repo": "rasahq/rasa",
+   "language": "py",
+   "official_test": false
+  },
+  "model_name": "oracle",
+  "lora_name": null,
+  "ac_model_name": null,
+  "call_kwargs": {
+   "sampling_params": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "max_tokens": 8192
+   },
+   "chat_template_kwargs": {
+    "enable_thinking": true,
+    "reasoning_effort": "medium"
+   }
+  },
+  "record_sampling": true,
+  "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+  "env_args": null,
+  "env_memory_limit_mb": null,
+  "max_turns": 150,
+  "max_tool_errors": 8,
+  "max_duration": 5400.0,
+  "compaction_threshold_tokens": 1000000000,
+  "absolute_trajectory_cap": 50000,
+  "ac_compaction_ratio": 0.1,
+  "ac_subagent_ratio": 0.05,
+  "ac_tool_output_ratio": 0.025,
+  "ac_search_ratio": 0.05,
+  "tools": {
+   "compact": null,
+   "subagent": null
+  },
+  "env_setups": {
+   "repo": {
+    "class": "activation.dataset.loaders.lca_bug_localization:RepoTarballSetup",
+    "kwargs": {
+     "env_path": "/workspace/repo"
+    }
+   }
+  },
+  "agentic_program": null,
+  "dataset_task": {
+   "task_id": "rasahq__rasa__10588__10587",
+   "dataset_id": "lca_bug_localization___config_py__split_dev__n_1000000__seed_0",
+   "reference_metrics_kind": "exact_match",
+   "gold_answer": "rasa/model_testing.py",
+   "gold_answer_aliases": [
+    "tests/test_model_testing.py"
+   ],
+   "agent_prompt": "The repository rasahq/rasa is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: `test_nlu` breaks when optional value i...[truncated]"
+  }
+ }
+}

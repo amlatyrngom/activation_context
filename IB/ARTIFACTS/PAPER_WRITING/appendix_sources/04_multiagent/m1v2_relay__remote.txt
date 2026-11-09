@@ -1,0 +1,9 @@
+STATE COMPLETED
+SAVE_OK
+13ade19c996f0a6cefbbdca459e959bf  AC_MODELS/rag_poc/epoch_001/ac_modules.pt
+70250daf7f8ad88fda73c8e1a3e41957  AC_MODELS/rag_poc/epoch_001/side_lora/README.md
+bdd80bcd934d694caed8373a04d6b473  AC_MODELS/rag_poc/epoch_001/side_lora/adapter_config.json
+3009c339bf4eef267b462afc0396a402  AC_MODELS/rag_poc/epoch_001/side_lora/adapter_model.safetensors
+a3cbbb4156982c8fbbcb234d4b904d26  LORAS/rag_reader/epoch_001/README.md
+4707ec48aae35cc1fc694ad21ee99c93  LORAS/rag_reader/epoch_001/adapter_config.json
+9a061158d10ed8a773feb8561751be5c  LORAS/rag_reader/epoch_001/adapter_model.safetensors

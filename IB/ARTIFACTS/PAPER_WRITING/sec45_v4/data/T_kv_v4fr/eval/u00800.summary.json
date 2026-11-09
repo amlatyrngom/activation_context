@@ -1,0 +1,24 @@
+{
+ "acc": 56.5,
+ "em": 53.5,
+ "f1": 66.74,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.8,
+ "label": "T_kv_v4fr_u800",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/T_kv_v4fr/sync/ckpt/step_00800/ac",
+  "/data/scratch-fast/ngom/sec45/runs/T_kv_v4fr/sync/ckpt/step_00800/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1563,
+  "decode_seconds": 76.9
+ },
+ "seconds": 123
+}

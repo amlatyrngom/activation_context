@@ -1,0 +1,13 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_text_eval.py
+# lines: 85-92
+# extracted: nl -ba | sed -n (SamplingParams for text arms: SAMPLING_NO_THINK incl. presence_penalty 1.5)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 85-92
+    85	                text = C.READ.format(passages=C.passages_block(corpus, [int(x) for x in top[q["id"]][:int(arm[3:])]]), question=q["question"])
+    86	            ids = tok.encode(tok.apply_chat_template([{"role": "user", "content": text}], tokenize=False, add_generation_prompt=True, enable_thinking=not a.no_thinking),
+    87	                             add_special_tokens=False)
+    88	            for k in range(a.passes):     # the passes of a prompt next to each other: one prefill, prefix-cached for the rest
+    89	                prompts.append({"prompt_token_ids": ids})
+    90	                jobs.append((q["id"], k, len(ids), SamplingParams(**(C.SAMPLING_NO_THINK if a.no_thinking else C.SAMPLING), max_tokens=a.max_tokens, seed=zlib.crc32(f"{a.set}/{arm}/{q['id']}/{k}".encode()))))
+    91	        results = llm.generate(prompts, [job[3] for job in jobs])
+    92	        rows = []

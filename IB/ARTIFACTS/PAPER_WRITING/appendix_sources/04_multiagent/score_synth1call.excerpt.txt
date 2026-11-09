@@ -1,0 +1,22 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/score_synth1call.py
+# lines: 1-8,31-37 (of 127 total)
+# extracted: nl -ba | sed -n per range; DeepMath scoring = math_verify_match
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 46888adcb3c16c062bd6242869f04f0f43712d56b2ef7e3f1648920f99b30153
+# ---- lines 1-8
+     1	"""
+     2	Score of the single-call synthesis (run_synth1call.py), with the scorers of the agentic runs (activation.dataset.scoring:
+     3	Musique token F1 against the answer and its aliases, at 1.0 and >= 0.5; DeepMath math-verify), against majority@3 of the
+     4	solvers at --cap and against the agentic synthesizer (run_synth.py caches). Unparsed answers, the --max-tokens length stop
+     5	and deadline-cut requests count unsolved (and are counted); "at cap": prompt + generated >= --cap counts unsolved.
+     6	Flips: paired task counts (a solved, b not / b solved, a not) with an exact two-sided sign test.
+     7	
+     8	    python score_synth1call.py --gen SYNC/PAPER_TRAJ_QA/tqa_synth1call_v1 --out score.json
+# ---- lines 31-37
+    31	def score(task: dict, answer: str | None) -> float:
+    32	    if answer is None:
+    33	        return 0.0
+    34	    golds = [task["gold_answer"], *(task.get("gold_answer_aliases") or [])]
+    35	    if task["reference_metrics_kind"] in ("f1", "F1") or str(task["reference_metrics_kind"]).lower().endswith("f1"):
+    36	        return float(scoring.token_f1(answer, golds) or 0.0)
+    37	    return float(scoring.math_verify_match(answer, golds) or 0.0)

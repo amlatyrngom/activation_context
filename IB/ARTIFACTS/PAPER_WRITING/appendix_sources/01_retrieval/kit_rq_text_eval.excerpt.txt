@@ -1,0 +1,41 @@
+# source: /workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit/rq_text_eval.py
+# lines: 1-11,26-40,43-50
+# extracted: nl -ba | sed -n (text/gold/none arms; BM25 build for dev200; max-tokens 12288; --no-thinking sampling at line 90 of the run copy)
+# git commit: not tracked (IB/TMP is gitignored); read on 2026-10-28
+# --- lines 1-11
+     1	"""
+     2	Retrieval Q/A text baselines (M2), vLLM with prefix caching: the 9B (thinking on, the probe's sampling) reads
+     3	  none     the question alone (NO_PASSAGES)
+     4	  gold     the gold passages (the teacher's view)
+     5	  topK     the BM25 (question only) top K passages as text, K in --ks (20 = accuracy@20, 400 = accuracy@400)
+     6	  native   the question's own HotpotQA distractor-setting context (2 gold + up to 8 distractors, dataset order; --native FILE)
+     7	for --passes sampled passes (seed = crc32(set/arm/id/pass)). Writes OUT_DIR/<set>.<arm>.jsonl and OUT_DIR/<set>.scores.json.
+     8	For --set dev200 (the probe's first 200 validation questions; disjoint from eval500) it first writes DATA/dev200_top1000_q.npy.
+     9	
+    10	  python rq_text_eval.py --data DATA --set eval500 --out-dir OUT --passes 3 [--ks 20 400] [--arms none gold top]
+    11	"""
+# --- lines 26-40
+    26	def dev_bm25(data: Path, corpus) -> None:
+    27	    import bm25s
+    28	    import numpy as np
+    29	    path = data / "dev200_top1000_q.npy"
+    30	    if path.exists():
+    31	        return
+    32	    questions = C.load_questions(data, "dev200")
+    33	    t = time.time()
+    34	    r = bm25s.BM25()
+    35	    r.index(bm25s.tokenize([f"{x}\n{y}" for x, y in corpus], stopwords="en", show_progress=False), show_progress=False)
+    36	    idx, _ = r.retrieve(bm25s.tokenize([q["question"] for q in questions], stopwords="en", show_progress=False), k=1000, show_progress=False, n_threads=8)
+    37	    idx = idx.astype(np.int32)
+    38	    np.save(path, idx)
+    39	    recall = {k: round(100 * float(np.mean([set(q["golds"]) <= set(row[:k].tolist()) for q, row in zip(questions, idx)])), 1) for k in (20, 100, 400)}
+    40	    print(f"dev200 bm25 in {time.time() - t:.0f}s, all-gold recall {recall}", flush=True)
+# --- lines 43-50
+    43	def main():
+    44	    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    45	    p.add_argument("--data", type=Path, required=True); p.add_argument("--set", default="eval500"); p.add_argument("--out-dir", type=Path, required=True)
+    46	    p.add_argument("--passes", type=int, default=3); p.add_argument("--ks", type=int, nargs="+", default=[20, 400])
+    47	    p.add_argument("--arms", nargs="+", default=["none", "gold", "top"]); p.add_argument("--max-tokens", type=int, default=12288)
+    48	    p.add_argument("--max-model-len", type=int, default=72000)
+    49	    p.add_argument("--no-thinking", action="store_true", help="enable_thinking False (free-form reasoning may still precede the answer line); non-thinking sampling")
+    50	    p.add_argument("--native", type=Path, help="native question file (m1/hotpot_val_native.questions.jsonl) for the 'native' arm")

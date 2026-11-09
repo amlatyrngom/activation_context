@@ -1,0 +1,31 @@
+{
+ "args": {
+  "split": "/root/activation_artifacts/pc/split.json",
+  "prefixes": "/root/activation_artifacts/pc/prefixes_eval_100",
+  "variants": "ac_4000,ac_2000,ac_1000",
+  "budget": 30000,
+  "summaries": null,
+  "tag": "pc_timing_v1",
+  "start": 0,
+  "limit": 30,
+  "seed": 0,
+  "model_id": "Qwen/Qwen3.5-9B",
+  "reasoning": "medium",
+  "max_turns": 1,
+  "max_duration": 3600.0,
+  "trajectory_cap": 62000,
+  "max_model_len": 72000,
+  "agents_per_gpu": 1,
+  "dry_install": 0,
+  "ac_checkpoint": "/root/activation_artifacts/pc/pairs/w1A_final/ac",
+  "reader_checkpoint": "/root/activation_artifacts/pc/pairs/w1A_final/reader",
+  "rows_only": true,
+  "side_model_id": "Qwen/Qwen3.5-2B",
+  "ac_memory_share": 0.4,
+  "encode_batch_tokens": 32000
+ },
+ "label": "ac_2000",
+ "prefixes": 30,
+ "missing": 0,
+ "without_summary": 0
+}

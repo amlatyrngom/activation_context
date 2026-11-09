@@ -1,0 +1,24 @@
+{
+ "acc": 65.5,
+ "em": 60.5,
+ "f1": 74.7,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.9,
+ "label": "T_kv_v4_u2000",
+ "pair": [
+  "/root/sec45/runs/T_kv_v4/sync/ckpt/step_02000/ac",
+  "/root/sec45/runs/T_kv_v4/sync/ckpt/step_02000/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1582,
+  "decode_seconds": 93.2
+ },
+ "seconds": 108
+}

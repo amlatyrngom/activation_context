@@ -1,0 +1,106 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/run_synth_ac.py
+# lines: 1-19,78-112,131-148,170-175,185-202 (of 238 total)
+# extracted: nl -ba | sed -n per range; AC synthesis read: rows only, ratio 0.1, max_tokens 64000, thinking on
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 562cd3733a5a00670abcdf89474de346a35215b069ba6e7ec5955b635547183b
+# ---- lines 1-19
+     1	"""
+     2	Single-call synthesis from AC rows: the reader (Qwen 3.5 9B + a trained pair's reader adapter) answers each task in ONE
+     3	completion (no tools, no agent loop) from the task text, each of the three @3 solver runs as an activation part encoded
+     4	question-blind by the pair's encoder at --ratio of its length (rows only), and each solver's final answer as text. The
+     5	shape of run_synth1call.py's summary+result condition with rows in place of summaries.
+     6	
+     7	Solver runs: run_at3.py cache (default tqa_at3_v1), cut by the --cap rule of run_synth.py: the steps whose running total
+     8	(prompt + steps) stays under --cap; the result under the same rule (solver_result).
+     9	
+    10	Encoder part (the T1 training view, ac_model_study.trajectory_qa_item with encoder_sees_question False): the solver's system
+    11	prompt, its task message, its steps' messages, then the blind instruction ("Summarize the useful facts ..."), with the
+    12	solver's tool definitions as the part's tools. compression_target = --ratio.
+    13	
+    14	Reader prompt: one user message, no system message (as run_synth1call.py): the task text minus its tool sentences
+    15	(run_synth1call.TASK_EDITS), INSTRUCTION, per agent "Agent N\\nIts run:\\n" + the part + "\\n\\nFinal answer: <result>",
+    16	then run_synth1call.FINAL_RULE. Thinking on (the study's reasoning), the agentic runs' sampling, max_tokens --max-tokens.
+    17	The completion is recorded as one assistant step; the answer is parsed as run_synth1call.parse_answer does.
+    18	If there is no such line, the last non-empty line of the reply is taken (parsed "last_line": the T1 reader answers bare).
+    19	finish_reason: "submitted" (parsed either way), "length" (the --max-tokens stop), "unparsed".
+# ---- lines 78-112
+    78	class SynthesizeFromRows(AgenticProgram):
+    79	    name = "synthesize_from_rows"
+    80	
+    81	    def __init__(self, agent: "Agent", benchmark: str, task_body: str, parts: list[dict], results: list[str], max_tokens: int,
+    82	                 notes_folder: str | None = None, **kwargs):
+    83	        super().__init__(agent)
+    84	        self.benchmark, self.task_body, self.parts, self.results = benchmark, task_body, parts, results
+    85	        self.max_tokens, self.notes_folder = int(max_tokens), notes_folder
+    86	
+    87	    def install(self) -> dict:
+    88	        agent = self.agent
+    89	        agent.begin()                                                           # dialect, no tools, then our own segment
+    90	        content = [{"type": "text", "text": self.task_body + "\n\n" + INSTRUCTION + "\n\n"}]
+    91	        for position, (part, result) in enumerate(zip(self.parts, self.results), start=1):
+    92	            content += [{"type": "text", "text": f"Agent {position}\nIts run:\n"}, deepcopy(part),
+    93	                        {"type": "text", "text": f"\n\nFinal answer: {result}\n\n"}]
+    94	        content.append({"type": "text", "text": FINAL_RULE[self.benchmark]})
+    95	        agent._begin_segment([{"role": "user", "content": content}])
+    96	        ac_model = agent.ac_model
+    97	        rows = [end - start for start, end in agent.spans]
+    98	        from activation.ac_model.ac_model import tokenize_with_parts
+    99	        side = [len(tokenize_with_parts(ac_model.side.tokenizer, part["messages"], [], ac_model.pad_id, tools=part.get("tools"))[0]) for part in self.parts]
+   100	        return {"task_id": agent.agent_config.dataset_task.task_id, "benchmark": self.benchmark, "prompt_tokens": len(agent.prefix),
+   101	                "rows": rows, "encoder_tokens": side, "results": self.results}
+   102	
+   103	    def execute(self):
+   104	        agent, results = self.agent, self.agent.run_results
+   105	        started = time.time()
+   106	        note = self.install()
+   107	        chat_kwargs = dict(agent.agent_config.call_kwargs or {})
+   108	        chat_kwargs["sampling_params"] = dict(chat_kwargs.get("sampling_params") or {}) | {"max_tokens": self.max_tokens}
+   109	        output = agent._submit(chat_kwargs)
+   110	        agent._last_turn_timing = {"turn_seconds": round(time.time() - started, 3), "prompt_tokens": output.prompt_token_count,
+   111	                                   "output_tokens": output.output_token_count}
+   112	        results.num_turns = 1
+# ---- lines 131-148
+   131	def main() -> int:
+   132	    parser = argparse.ArgumentParser()
+   133	    parser.add_argument("--at3-id", default="tqa_at3_v1")
+   134	    parser.add_argument("--tag", required=True)
+   135	    parser.add_argument("--pair", required=True, help="folder with ac/ (ac_modules.pt, side_lora/) and reader/")
+   136	    parser.add_argument("--ratio", type=float, default=0.1)
+   137	    parser.add_argument("--seeds", type=int, default=3)
+   138	    parser.add_argument("--limit", type=int, default=None)
+   139	    parser.add_argument("--cap", type=int, default=40_000)
+   140	    parser.add_argument("--max-tokens", type=int, default=64_000)
+   141	    parser.add_argument("--max-model-len", type=int, default=80_000)
+   142	    parser.add_argument("--model-id", default=READER_MODEL_ID)
+   143	    parser.add_argument("--side-model-id", default="Qwen/Qwen3.5-2B")
+   144	    parser.add_argument("--reasoning", default="medium")
+   145	    parser.add_argument("--agents-per-gpu", type=int, default=40)
+   146	    parser.add_argument("--ac-memory-share", type=float, default=0.4)
+   147	    parser.add_argument("--encode-batch-tokens", type=int, default=48_000)
+   148	    parser.add_argument("--seed", type=int, default=0)
+# ---- lines 170-175
+   170	    try:
+   171	        study.setup_reusable_artifacts(10 ** 6, seed=0)                       # the dataset ids run_at3.py used
+   172	        if not args.dry:
+   173	            register_pair(harness, str(pair / "ac"), str(pair / "reader"), rows_only=True, encode_batch_tokens=args.encode_batch_tokens)
+   174	        configs = []
+   175	        for name in benchmarks:
+# ---- lines 185-202
+   185	                rows = [solvers[(task_id, s)] for s in range(args.seeds)]
+   186	                results = [solver_result(row, args.cap) for row in rows]
+   187	                parts = []
+   188	                for row in rows:
+   189	                    part = ac_part(solver_messages(row, args.cap), AC_NAME, args.ratio, kind="subagent_return")
+   190	                    part["tools"] = deepcopy(solver_tools)
+   191	                    parts.append(part)
+   192	                body = task_text(name, rows[0]["agent_config"]["user_prompt"])
+   193	                config = study._config_for(name, task, AgentTeacherKind.BASE, 0)
+   194	                config.tools = {key: None for key in set(DEFAULT_TOOLS) | set(config.tools)}
+   195	                config.system_prompt = ""
+   196	                config.user_prompt = body
+   197	                config.env_setups = {}
+   198	                config.absolute_trajectory_cap = args.max_model_len
+   199	                config.ac_model_name, config.lora_name = AC_NAME, READER_ADAPTER_NAME
+   200	                config.agentic_program = (SynthesizeFromRows, {"benchmark": name, "task_body": body, "parts": parts, "results": results,
+   201	                                                               "max_tokens": args.max_tokens, "notes_folder": str(folder / "notes")})
+   202	                config.metadata = {**config.metadata, "program": "synth_ac", "solver_results": results, "ratio": args.ratio, "pair": str(pair)}

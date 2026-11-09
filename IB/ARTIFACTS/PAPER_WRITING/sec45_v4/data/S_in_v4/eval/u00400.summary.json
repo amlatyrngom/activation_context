@@ -1,0 +1,24 @@
+{
+ "acc": 16.5,
+ "em": 16.5,
+ "f1": 23.77,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.4,
+ "label": "S_in_v4_u400",
+ "pair": [
+  "/root/sec45/runs/S_in_v4/sync/ckpt/step_00400/ac",
+  "/root/sec45/runs/S_in_v4/sync/ckpt/step_00400/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1487,
+  "decode_seconds": 89.8
+ },
+ "seconds": 106
+}

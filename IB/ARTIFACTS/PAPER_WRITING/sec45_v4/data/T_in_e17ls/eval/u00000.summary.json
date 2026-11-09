@@ -1,0 +1,24 @@
+{
+ "acc": 10.5,
+ "em": 9.0,
+ "f1": 12.82,
+ "answered": 86.5,
+ "n": 200,
+ "length_stops": 3,
+ "new_tokens_mean": 21.2,
+ "label": "T_in_e17ls_u0",
+ "pair": [
+  "/root/sec45/init/R_in_e17ls_final/ac",
+  "/root/sec45/init/R_in_e17ls_final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 4435,
+  "decode_seconds": 49.9
+ },
+ "seconds": 104
+}

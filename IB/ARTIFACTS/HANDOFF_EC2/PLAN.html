@@ -1,0 +1,159 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>Host consolidation plan</title><style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#59636e;--line:#d8dee4;--code:#f0f1f3;--accent:#0b5cad}
+@media (prefers-color-scheme:dark){:root{--bg:#16181c;--fg:#e6e6e6;--muted:#9aa4af;--line:#30363d;--code:#22262c;--accent:#6cb6ff}}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,system-ui,"Segoe UI",sans-serif;margin:0;padding:24px 16px}
+main{max-width:900px;margin:auto}
+h1{font-size:1.6em;margin:.2em 0 .6em}h2{border-bottom:1px solid var(--line);padding-bottom:.25em;margin-top:1.8em}
+h3{margin-top:1.4em;color:var(--accent)}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font-size:.88em}
+table{border-collapse:collapse;display:block;overflow-x:auto;font-size:.92em}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}
+th{background:var(--code)}
+li{margin:.25em 0}
+</style></head><body><main><h1>Host consolidation plan (2026-11-09)</h1>
+<p>Goal: work from the EC2 host (<code>i-0918b8f73e9a0fe03</code>, t3.2xlarge, 8 CPU, 30 GB RAM, no GPU,
+repo at <code>/home/ubuntu/activation_context</code>) as the one normal workstation, with one git branch,
+working credentials, free disk, and a short <code>IB/STATE.md</code>. Then start the pre-rebuttal work
+(M5, planned separately).</p>
+<h2>Facts found while planning</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>What is true now</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This machine</td>
+<td>It <strong>is</strong> <code>i-0918b8f73e9a0fe03</code>, the instance earlier agents marked "never touch". It hosted the VS Code container. It is the only EC2 instance in any region; no loose EBS volumes.</td>
+</tr>
+<tr>
+<td>Git</td>
+<td><code>main</code> = <code>af52a4c</code> (your Sep 21 snapshot, 12 commits). <code>origin/paper-mvp-20261013</code> = <code>258fce6</code> (Oct 13, 17 agent commits). The two histories share only "Init Repo". <code>origin/ac-recon-night-20260917</code> is already an ancestor of the paper branch. Outside <code>IB/</code>, the host checkout has no local changes.</td>
+</tr>
+<tr>
+<td>Paper code</td>
+<td><code>258fce6</code> + the container patch (<code>container_uncommitted_vs_258fce6.patch</code>, 10 files, +651/−74) = what the container ran for the paper. The container also had the paper repo staged as a submodule <code>paper</code> → github.com/amlatyrngom/activation_context_paper.</td>
+</tr>
+<tr>
+<td>Old main vs paper</td>
+<td>Your Sep 21 snapshot differs from the closest paper commit (<code>5352f5b</code>, Sep 17) in 24 paths under <code>activation/</code>: the <code>ac_model/</code> files, <code>agentic_program_probe.py</code>, several <code>tests/test_basic_*</code> files, and <code>tests/data/</code> fixtures (tiny Qwen3, legacy AC modules). The paper branch also drops the <code>IB/REPOS/vllm</code> submodule.</td>
+</tr>
+<tr>
+<td>Credentials</td>
+<td>AWS credentials: host and container identical. <code>.env</code>: host has the same <code>GITHUB_TOKEN</code> value plus <code>HF_TOKEN</code>, so the host's file is already the superset. <code>gh</code>: logged in. Git identity: set on the host (the container's credential helper is VS Code-only). SSH: the host has <strong>no</strong> <code>~/.ssh</code>, so the CSAIL/ORCD key and config are missing. SkyPilot: host <code>~/.sky</code> exists; no clusters anywhere. No <code>aws</code> CLI on PATH (<code>uvx --from awscli aws</code> works); <code>.venv/bin/sky</code> exists. No TeX. The container's Claude <code>settings.json</code> only holds container-specific auto-mode notes; not worth carrying.</td>
+</tr>
+<tr>
+<td>Disk</td>
+<td>402 of 484 GB used. <code>IB/TMP</code> 249 GB (SYNC 106, PAPER_COMPACTION 47, PAPER_TRAJ_QA 46, PAPER_SEC45 42, AGENT_AC_PRETRAINING 6.8, rest small). Old VS Code container ≈102 GB (writable layer). Host HF cache 29 GB, uv cache 8.7 GB.</td>
+</tr>
+<tr>
+<td>Container-only data</td>
+<td><code>~/.claude/jobs/6f1c1373/tmp</code> 28 GB (the paper session's <code>$CLAUDE_JOB_DIR/tmp</code>, referenced by STATE, e.g. <code>tmp/pr/res/</code>), <code>/tmp/claude-1000/-workspace</code> 9.9 GB (task outputs), transcripts 954 MB, <code>/workspace/TMP</code> 70 MB. The rest (<code>.venv</code>, HF/uv caches, VS Code server) is re-creatable.</td>
+</tr>
+<tr>
+<td>S3</td>
+<td><code>s3://general-bucket-aln/activation-context-data/</code> holds ≈1.97 TB in 250,826 objects (checkpoints, run archives, two container archives from Oct 15 and Oct 24).</td>
+</tr>
+<tr>
+<td>ORCD "reservation 23493337"</td>
+<td>Not a reservation. It is a Slurm <strong>job</strong> named <code>data_amount_confirmation</code>, submitted on ORCD by an agent on Sep 22 (FIRST_TASK_AWARE_FINETUNING), then put on user hold, and used in a dependency fence. Nothing refers to it after September.</td>
+</tr>
+<tr>
+<td>STATE.md</td>
+<td>406 KB / 1,231 lines (Tressoir target ≈8 KB). Header summary dates from Oct 14; the rest is an Oct 14–27 log. Canon: ROOT 35 KB, ACTIVATION_CONTEXT 38 KB, AGENT_TRAINING 9 KB, plus a stray <code>ROOT_CANON.md.orig</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2>Milestones</h2>
+<p>Order: M2 (credentials, quick) → M1 (git) → M3 (disk) → M4 (state and canon). M5 is the next plan.</p>
+<h3>M1 — One <code>main</code> branch = the paper code</h3>
+<ol>
+<li>Tag the old main: <code>archive/main-20260921</code> → <code>af52a4c</code>; push the tag.</li>
+<li>Build the new commit in a temporary worktree from <code>origin/paper-mvp-20261013</code>:
+   <code>git apply --check</code> then <code>git apply</code> the container patch; add <code>.gitmodules</code> with
+   <code>paper</code> (activation_context_paper at <code>16a0260</code>, the submitted version) and keep <code>IB/REPOS/vllm</code>
+   (pinned v0.28.0, already on disk).</li>
+<li>Bring in the current <code>IB/</code> from the host (it is newer than the IB committed on the paper branch):
+   everything except <code>IB/TMP</code> (git-ignored), <code>IB/ARTIFACTS/HANDOFF_EC2/carry</code>, and artifact files
+   over 5 MB (11 files, ≈260 MB, all in <code>FIRST_TASK_AWARE_FINETUNING/</code>: <code>*.evidence.json</code>,
+   <code>*_COHORT100.tressoir.html</code>) — those go to S3 with a manifest, and a <code>.gitignore</code> rule keeps
+   them out. Remove <code>IB/CANON/ROOT_CANON.md.orig</code>.</li>
+<li><code>git merge -s ours archive/main-20260921</code> so the old history stays reachable and the push to
+   <code>origin/main</code> is a fast-forward (no force push).</li>
+<li>Point the host checkout at it: <code>git reset --mixed &lt;new&gt;</code> (index only; IB already matches), then
+   check out the non-IB paths from the new commit; <code>git status</code> must be clean.</li>
+<li>Validate: <code>python -m compileall -q activation</code>, plus the CPU unit tests that need no GPU
+   (<code>pytest activation/tests -m "not gpu"</code> or the fast subset that exists).</li>
+<li>Push <code>main</code>; delete the remote branches <code>paper-mvp-20261013</code> and <code>ac-recon-night-20260917</code>
+   (both are then ancestors of <code>main</code>).</li>
+</ol>
+<p>The 24 old-main-only differences are <strong>not</strong> ported (see decision D1); they stay in the tag.</p>
+<h3>M2 — Credentials and tools on the host</h3>
+<ul>
+<li>SSH: install <code>carry/ssh/{config,id_ed25519_orcd,.pub,known_hosts}</code> into <code>~/.ssh</code> (none exists, so
+  nothing to merge). First CSAIL/ORCD connection needs Duo: you run it.</li>
+<li>Move the guarded cluster wrappers <code>IB/TMP/AGENT_AC_PRETRAINING/ac_recon/{csail,orcd}_ssh.sh</code> out of
+  <code>IB/TMP</code> into <code>IB/CANON/CANON_ARTIFACTS/cluster_access/</code> and drop their <code>/workspace</code> assumptions.</li>
+<li>AWS: already identical. Install the CLI: <code>uv tool install awscli</code>.</li>
+<li><code>.env</code>, <code>gh</code>, git identity: nothing to do.</li>
+<li>SkyPilot: keep the host's <code>~/.sky</code>; check with <code>.venv/bin/sky check aws</code>.</li>
+<li>TeX: install TinyTeX in <code>~/.TinyTeX</code>; clone the paper as the <code>paper</code> submodule; repoint
+  <code>IB/ARTIFACTS/PAPER_WRITING/build_pdf.sh</code> from <code>/workspace/paper</code> to the repo's <code>paper/</code>; build
+  once and report page counts.</li>
+<li>Archive <code>carry/claude/paper_session_6f1c1373.jsonl.gz</code> (130 MB) to S3, then delete <code>carry/</code>.</li>
+</ul>
+<h3>M3 — Free disk (target: well under 100 GB used)</h3>
+<ol>
+<li><strong>Old VS Code container</strong> (≈102 GB): upload container-only data to
+   <code>s3://general-bucket-aln/activation-context-data/container_final_20261109/</code> — the job folder
+   <code>~/.claude/jobs/6f1c1373/</code> (28 GB), <code>/tmp/claude-1000/-workspace/</code> (9.9 GB), the transcripts
+   (954 MB), <code>/workspace/TMP</code>, <code>/workspace/kl_rows.json</code>. Check object counts and sizes, then
+   <code>docker rm -f</code> the container and <code>docker builder prune</code> (3.7 GB). Images (5 GB) stay.</li>
+<li><strong><code>IB/TMP</code></strong> (249 GB): <code>aws s3 sync</code> all of it to <code>.../host_ib_tmp_20261109/</code>, verify sizes per
+   folder, then delete local data files, keeping small text files (scripts, <code>.md</code>, <code>.json</code>, logs
+   under 1 MB) so kits and notes stay searchable. Directories with a <code>PRESERVE</code> flag are uploaded like
+   everything else. Pre-paper folders follow decision D2.</li>
+<li>Record what moved where in <code>IB/ARTIFACTS/HANDOFF_EC2/S3_INDEX.md</code> (prefix, contents, size, date).</li>
+<li>Leave the existing 1.97 TB on S3 alone for now; pruning it is a later, separate pass.</li>
+</ol>
+<h3>M4 — STATE consolidation, canon and memory</h3>
+<ol>
+<li>Archive the current <code>IB/STATE.md</code> verbatim as <code>IB/ARTIFACTS/HANDOFF_EC2/STATE_archive_20261109.md</code>
+   (committed, so nothing is lost).</li>
+<li>Read the whole archive and sort its content:</li>
+<li><strong>Paper evidence map → new <code>IB/CANON/PAPER_CANON.md</code>:</strong> for each paper figure/table, the script,
+     data path (local or S3) and final numbers; per workload the eval set, seeds, caps, decoding
+     settings and training hyperparameters actually used (this is the input for the "less arbitrary
+     training" work).</li>
+<li><strong>Durable lessons → existing canon files</strong> (training, cluster use, storage).</li>
+<li><strong>Chronology, dead runs, node juggling →</strong> stays only in the archive.</li>
+<li>Rewrite the guardrails in <code>ROOT_CANON.md</code> and STATE "Rules":</li>
+<li>keep: never start Duo or any interactive auth on CSAIL/ORCD (you do it);</li>
+<li>replace "never touch <code>i-0918b8f73e9a0fe03</code>" with "this host is the workstation: never stop or
+     terminate it; other EC2 resources are ours to manage";</li>
+<li>drop: ORCD 23493337 (cancel the held job by id the next time ORCD access is up, if it still
+     exists), "never copy <code>optimizer.pt</code>" (a storage judgement per run), and "commit only when asked"
+     (see D3); keep "cancel Slurm jobs by id" as a plain practice;</li>
+<li>replace every <code>/workspace</code> path with the repo root; drop container-only notes.</li>
+<li>Your working preferences (handoff section 4: before/after edits on your text, pull Overleaf first,
+   dictation, HTML diffs, page fit after builds, they/them) go into <code>ROOT_CANON.md</code> so every agent
+   sees them; Claude memory gets a short pointer file.</li>
+<li>New <code>IB/STATE.md</code> (≈8 KB): direction (pre-rebuttal), where things live (host, S3 index, paper
+   repo), open items (handoff section 3, trimmed to what matters), rules.</li>
+</ol>
+<h3>M5 — Pre-rebuttal work (next plan, not detailed here)</h3>
+<p>Text + reader-LoRA baseline on the main workloads; a standard, documented training and
+hyperparameter process with reruns where settings were missing; fairer baselines (e.g. retrieval
+decoding settings); rerun of <code>S_kv_v4fr</code>. Minor caption/wording issues are ignored. Compute: this
+host has no GPU, so GPUs come from SkyPilot/EC2, CSAIL or ORCD.</p>
+<h2>Decisions (accepted by the user, 2026-11-09)</h2>
+<ul>
+<li><strong>D1 — Old main's code:</strong> the paper code wins entirely; the old main stays only as tag
+  <code>archive/main-20260921</code>; nothing is ported.</li>
+<li><strong>D2 — <code>IB/TMP</code> data, pre-paper included:</strong> upload everything to S3, then delete locally (small
+  scripts and notes stay).</li>
+<li><strong>D3 — Commits:</strong> agents commit to <code>main</code> and push at milestone boundaries without asking.</li>
+<li><strong>D4 — Old VS Code container:</strong> remove it after its unique data is on S3.</li>
+</ul></main></body></html>

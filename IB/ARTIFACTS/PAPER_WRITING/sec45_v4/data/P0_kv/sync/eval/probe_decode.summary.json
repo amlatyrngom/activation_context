@@ -1,0 +1,24 @@
+{
+ "acc": 20.31,
+ "em": 20.31,
+ "f1": 27.37,
+ "answered": 100.0,
+ "n": 64,
+ "length_stops": 1,
+ "new_tokens_mean": 9.3,
+ "label": "probe",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/P0_kv/sync/P0_kv_task_mb2/ckpt/final/ac",
+  "/data/scratch-fast/ngom/sec45/runs/P0_kv/sync/P0_kv_task_mb2/ckpt/final/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 64,
+  "batches": 2,
+  "encodes": 64,
+  "cache_hits": 0,
+  "new_tokens": 656,
+  "decode_seconds": 18.2
+ },
+ "seconds": 55
+}

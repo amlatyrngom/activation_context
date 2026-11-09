@@ -1,0 +1,24 @@
+{
+ "acc": 42.5,
+ "em": 40.0,
+ "f1": 55.62,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.7,
+ "label": "T_in_e06ls_u800",
+ "pair": [
+  "/root/sec45/runs/T_in_e06ls/sync/ckpt/step_00800/ac",
+  "/root/sec45/runs/T_in_e06ls/sync/ckpt/step_00800/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1543,
+  "decode_seconds": 35.7
+ },
+ "seconds": 48
+}

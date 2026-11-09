@@ -1,0 +1,71 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/kit/sec45_common.py
+# lines: 1-38 69-76 123-138
+# extracted: nl -ba | sed -n (module docstring, MODES/RATIO/PER_CALL, linear_skip = least-squares row head, recon_items/task_items question_first)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: b56b7c8eb9f77786
+
+----- lines 1-38 -----
+     1	"""
+     2	Section 4.5 kit, shared parts: the three write modes, the data, and the two item builders. Thin layer over existing code:
+     3	  - models and AC fields: run_qa.harness() of the 4B bench (PAPER_CORPUS_QA/kit/bench/run_qa.py, env QA4B_*), unchanged;
+     4	  - plain passage reconstruction: ActivationContextStudyGenerator.generate_reconstruction_samples(variant="reconstruct")
+     5	    (the reader sees the passage only through its compressed part and reproduces all of it; SFT);
+     6	  - the task: rq_common.build_items (PAPER_RETRIEVAL_QA/kit) with one question-first encoder call over the 20 passages and the
+     7	    answer-only target "Final answer: <answer>" (rq_common.answer_replies; SFT, thinking off).
+     8	
+     9	Write modes (env of run_qa.pair_setup; a loaded pair carries its own mode in ac_modules.pt and is checked against --mode):
+    10	  in    Input Embeddings          QA4B_LAYERS=none
+    11	  res   Hidden Residuals          QA4B_LAYERS=3,7,11,15,19,23,27,31,35  (input rows plus residual deltas at every 4th reader layer)
+    12	  kv    All-Layer KVs             QA4B_KV=1 QA4B_LAYERS=none            (the encoder's keys/values at its markers enter every reader layer)
+    13	Every mode: QA4B_READER = QA4B_SIDE = Qwen/Qwen3-4B-Instruct-2507 (one loaded base with two adapters), reader LoRA rank QA4B_RANK
+    14	(128), interleaved summary layout, compression ratio 1/10, RQ_THINKING=0.
+    15	v6 (Oct 27): a smaller encoder only when asked for explicitly, SEC45_ENCODER=<Hub id> (e.g. Qwen/Qwen3-0.6B; modes in/res only:
+    16	kv needs the reader's own base). It becomes QA4B_SIDE (a separate encoder base, run_qa.harness); the AC row head keeps run_qa's
+    17	default for unequal widths (row_head_linear_skip False). Without SEC45_ENCODER any encoder/reader mismatch is still refused.
+    18	"""
+    19	from __future__ import annotations
+    20	
+    21	import gzip
+    22	import hashlib
+    23	import json
+    24	import os
+    25	import sys
+    26	from pathlib import Path
+    27	
+    28	HERE = Path(__file__).resolve().parent
+    29	RQ_KIT = Path(os.environ.get("SEC45_RQ_KIT", "/workspace/IB/TMP/PAPER_RETRIEVAL_QA/kit"))
+    30	BENCH = Path(os.environ.get("CQA_BENCH", "/workspace/IB/TMP/PAPER_CORPUS_QA/kit/bench"))
+    31	READER_ID = "Qwen/Qwen3-4B-Instruct-2507"
+    32	RES_LAYERS = "3,7,11,15,19,23,27,31,35"
+    33	MODES = {"in": {"QA4B_LAYERS": "none", "QA4B_KV": "0"},
+    34	         "res": {"QA4B_LAYERS": RES_LAYERS, "QA4B_KV": "0"},
+    35	         "kv": {"QA4B_LAYERS": "none", "QA4B_KV": "1"}}
+    36	RATIO = 0.1
+    37	LAYOUT = "interleaved"
+    38	PER_CALL = 20                     # the task's 20 passages, read in ONE encoder call
+----- lines 69-76 -----
+    69	def linear_skip() -> bool:
+    70	    """v7 (Oct 27): SEC45_LINEAR_SKIP=1 starts a FRESH smaller-encoder pair with the row head's linear skip (row_head_linear_skip: rows
+    71	    start as the least-squares side->reader embedding map of the encoder's final states instead of a random FFN projection). Only with
+    72	    SEC45_ENCODER (equal widths use the identity skip). Unset = v6 behaviour. A loaded or resumed pair keeps the head it was saved with."""
+    73	    on = os.environ.get("SEC45_LINEAR_SKIP") == "1"
+    74	    if on and not os.environ.get("SEC45_ENCODER"):
+    75	        raise SystemExit("SEC45_LINEAR_SKIP=1 needs SEC45_ENCODER (a smaller encoder; equal widths use the identity skip)")
+    76	    return on
+----- lines 123-138 -----
+   123	def recon_items(study, passages: list[dict], seed: int = 0):
+   124	    """Plain passage reconstruction at 1/10: the passage is one AC part, the target is the whole passage (SFT)."""
+   125	    rows = [{"text": p["text"], "doc_id": p["doc_id"], "source": p.get("source", "fineweb_edu")} for p in passages]
+   126	    items = study.generate_reconstruction_samples(rows, ratio=RATIO, variant="reconstruct", seed=seed)
+   127	    if len(items) != len(rows):
+   128	        raise ValueError(f"{len(rows)} passages gave {len(items)} reconstruction items")
+   129	    return items
+   130	
+   131	
+   132	def task_items(study, corpus, rows: list[dict], ac_name: str):
+   133	    """HotpotQA items: question first, then ONE encoder call over the 20 passages (golds injected), target 'Final answer: <answer>'."""
+   134	    import rq_common as C
+   135	    assert not C.THINK, "RQ_THINKING=0 must be set before rq_common is imported (setup_environment)"
+   136	    top = {r["id"]: [int(x) for x in r["top20"]] for r in rows}
+   137	    return C.build_items(study, corpus, rows, top, ac_name, RATIO, replies=C.answer_replies(rows), calls=1, per_call=PER_CALL,
+   138	                         question_first=True)

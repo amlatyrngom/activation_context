@@ -1,0 +1,38 @@
+# source: /workspace/activation/dataset/loaders/lca_bug_localization.py
+# lines: 1-11,197-197,207-219,250-253
+# extracted: nl -ba | sed -n (exact match on any changed file: gold = first changed file, aliases = the rest)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (tracked; unmodified in working tree per git status)
+
+     1	"""
+     2	LongCodeArena bug localization (`JetBrains-Research/lca-bug-localization`): an issue and the repository at the base
+     3	commit; the task is to name the file that must change. Exact match on any changed file's path (the first is the gold,
+     4	the rest aliases). `max_changed_files` and `max_repo_files` keep tasks localizable and checkouts small.
+     5	
+     6	Without a passage index (`index_files_per_repo=0`, the suite's setting: agents use ripgrep) nothing is fetched at load:
+     7	each rollout's RepoTarballSetup downloads the base commit's GitHub tarball into node-local temp space, checks the gold
+     8	file exists, copies the tree to /workspace/repo in the sandbox and deletes the download. A repository that is gone
+     9	(or keeps failing to fetch) makes the task unavailable: the run ends before its first turn, recorded and skipped.
+    10	With an index, the loader fetches every checkout into a persistent cache (REPO_CACHE/<owner>__<repo>/<sha>) at load,
+    11	indexes its text files as corpus documents, drops tasks whose gold is absent, and CopyTreeSetup copies from the cache.
+    ...
+   197	             max_changed_files: int = 3, max_repo_files: int = 3000, max_issue_chars: int = 6000, max_tasks_per_repo: int = 20,
+    ...
+   207	        # Eager fetching drops rows (fetch failures, absent gold) at load, so it reads a margin; lazy rows are all kept.
+   208	        margin = None if max_examples is None else max_examples if lazy else max_examples + max(20, max_examples // 5)
+   209	        for row in load_dataset(HF_DATASET, config, split=split, streaming=True):
+   210	            changed = [str(path) for path in ast.literal_eval(row["changed_files"])]
+   211	            if not changed or len(changed) > max_changed_files or int(row["repo_files_without_tests_count"]) > max_repo_files:
+   212	                continue
+   213	            if int(row.get("code_changed_files_count") or 0) == 0:
+   214	                continue
+   215	            repo = f"{row['repo_owner']}/{row['repo_name']}"
+   216	            if per_repo.get(repo, 0) >= max_tasks_per_repo:
+   217	                continue
+   218	            per_repo[repo] = per_repo.get(repo, 0) + 1
+   219	            candidates.append((row, changed))
+    ...
+   250	                            "issue_body": row["issue_body"], "changed_files": changed, "issue_url": row.get("issue_url"),
+   251	                            **({"tarball_url": tarball_url(str(row["repo_owner"]), str(row["repo_name"]), str(row["base_sha"]))}
+   252	                               if lazy else {"checkout_path": local})},
+   253	                reference_metrics_kind=DatasetTaskMetricsKind.EXACT_MATCH, gold_answer=changed[0], gold_answer_aliases=changed[1:],
+    ...

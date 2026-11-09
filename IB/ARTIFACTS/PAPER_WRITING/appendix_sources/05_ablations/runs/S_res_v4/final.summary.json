@@ -1,0 +1,24 @@
+{
+ "acc": 21.5,
+ "em": 20.0,
+ "f1": 28.83,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.6,
+ "label": "S_res_v4_final",
+ "pair": [
+  "/root/sec45/runs/S_res_v4/sync/ckpt/final/ac",
+  "/root/sec45/runs/S_res_v4/sync/ckpt/final/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1527,
+  "decode_seconds": 47.6
+ },
+ "seconds": 63
+}

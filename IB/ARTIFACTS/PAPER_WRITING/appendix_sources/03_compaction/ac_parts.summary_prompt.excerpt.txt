@@ -1,0 +1,35 @@
+# source: /workspace/activation/common/ac_parts.py
+# lines: 14-42
+# extracted: nl -ba | sed -n (COMPACTION_SUMMARY_PROMPT: 'under 500 words')
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (tracked, unmodified in working tree)
+
+    14	AC_PART_TYPE = "activation_context"
+    15	# Agent-side parts (09-26): depth 1, flat text only. A segment part keeps the latest whole messages that fit AC_FLAT_MAX_TOKENS
+    16	# (the encoder was validated to 65,536 tokens; the rest is left for the part's tool definitions and template). A part whose
+    17	# serialized size passes AC_PART_MAX_CHARS is refused: nested copies once grew rollout records to several GB each.
+    18	AC_FLAT_MAX_TOKENS = 56_000
+    19	AC_FLAT_HEAD_CHARS = 80_000                # a head user message (task, brief, injected context) keeps head + tail beyond this
+    20	AC_MESSAGE_TOKEN_OVERHEAD = 8             # template tokens per message on top of its rendered text (estimate)
+    21	AC_PART_MAX_CHARS = 2_000_000
+    22	PART_SENTINEL = "⁣ACPART{index}⁣"     # rendered in place of a part by the chat template, split out before tokenizing
+    23	COMPACTION_SUMMARY_PROMPT = """Write a concise handoff so the task can resume without rereading the conversation. Keep the entire handoff under 500 words, prioritizing details needed to resume. Preserve exact details and uncertainty. Keep guesses separate from observed results; searches are not confirmation. Preserve conflicting evidence. Use these five sections:
+    24	
+    25	# Summary Overview
+    26	The current goal and overall situation.
+    27	
+    28	# Progress So Far
+    29	[v] Completed work and results.
+    30	[-] Work in progress or blocked.
+    31	[ ] Work remaining.
+    32	
+    33	# Notes/Insights/Lessons To Preserve
+    34	Key findings, decisions, and concrete details needed later.
+    35	
+    36	# Immediate Continuation
+    37	The next action, including any blocker that must be resolved first.
+    38	
+    39	# DOs/DON'Ts
+    40	Quote still-applicable constraints from the original task's system/user messages, preserving their scope. If absent, write "None".
+    41	
+    42	Update older notes to reflect the latest state. Avoid repetition; distinguish completed work from plans and attempts."""
+    ...

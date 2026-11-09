@@ -1,0 +1,45 @@
+{
+ "_source": "/workspace/IB/ARTIFACTS/PAPER_AM/evals/E_G2n_u500.json",
+ "_extraction": "json.load; all top-level keys kept except views.<view>.rows (per-question rows dropped); nothing else changed",
+ "model": "Qwen/Qwen3-4B-Instruct-2507",
+ "sampling": {
+  "temperature": 0.7,
+  "top_p": 0.8,
+  "top_k": 20
+ },
+ "max_new": 2048,
+ "passes": 1,
+ "pass_offset": 0,
+ "exports": "/root/am_v1/export/t0.1_fastest",
+ "table": "kv",
+ "init": null,
+ "handler_state": "/root/am_v1/train_runs/G2n_all20_lr1e3_tables/epoch_001_step_00500.pt",
+ "ac": null,
+ "reader": null,
+ "views": {
+  "am": {
+   "n": 400,
+   "accuracy": 0.795,
+   "parsed": 0.99,
+   "per_context": {
+    "0": 0.82,
+    "1": 0.83,
+    "2": 0.78,
+    "3": 0.75
+   },
+   "choices": {
+    "4": 68,
+    "1": 48,
+    "2": 99,
+    "3": 128,
+    "5": 53,
+    "None": 4
+   },
+   "mean_chars": 925.1775,
+   "seconds": 2316.5,
+   "_rows_count": 400
+  }
+ },
+ "kept_ratio": 0.09990598111006346,
+ "seconds": 2340.5
+}

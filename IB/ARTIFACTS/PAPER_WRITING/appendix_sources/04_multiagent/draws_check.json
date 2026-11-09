@@ -1,0 +1,90 @@
+{
+ "dmhard": {
+  "n": 300,
+  "unique": 300,
+  "sha256": "a224909f21b37afd9206448c818e4eaf14b62ada45fff81070e63fbc58388fe9",
+  "difficulty": {
+   "8.5": 226,
+   "9.0": 72,
+   "9.5": 2
+  },
+  "min": 8.5
+ },
+ "train_v2": {
+  "n": 1000,
+  "unique": 1000,
+  "sha256": "5edcd0ddfca820f6fd21184c27888178fa30df043d4c09e7404048ce7c5a9a03",
+  "difficulty": {
+   "8.5": 741,
+   "9.0": 248,
+   "9.5": 10,
+   "10.0": 1
+  },
+  "kept_from_m1": 467,
+  "fresh": 533
+ },
+ "overlap_check": {
+  "node_sync/dmext/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_p2/PAPER_TRAJ_QA/tqa_train_solve_v1/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_partial1/PAPER_TRAJ_QA/tqa_train_solve_v1/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_train_v1/PAPER_TRAJ_QA/tqa_train_solve_v1/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_reserve_v1/PAPER_TRAJ_QA/tqa_reserve_solve_v1m/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_r2a/PAPER_TRAJ_QA/tqa_train2_solve_v1/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/slim_r2a/PAPER_TRAJ_QA/tqa_train1_mus_s34/sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "round2/samples/tqa_dev_solve_v1.sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "round2/samples/tqa_train2_solve_v1.sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "round2/samples/tqa_train1_mus_s34_sample.sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "round2/samples/tqa_extres_solve_v1.sample.json": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/dmext/exclusion_inputs/dm_ids_pca_all.txt": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/dmext/exclusion_inputs/dm_ids_repo_all.txt": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "node_sync/dmext/exclusion_inputs/dm_ids_pcb_all.txt": {
+   "dmhard": 0,
+   "train_v2": 0
+  },
+  "tqa_m1_train (v1 draw)": {
+   "dmhard": 0,
+   "train_v2 (kept, intended)": 467
+  },
+  "dmhard vs train_v2": 0
+ },
+ "note": "checked in the container before any run (Oct 16 ~15:15Z); the draws also exclude by normalized question text (see node log args)"
+}

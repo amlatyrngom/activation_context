@@ -1,0 +1,86 @@
+# source: /workspace/activation/agent_training/agent_training_utils.py
+# lines: 448-465 484-545
+# extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: clean at HEAD
+--- lines 448-465 ---
+   448	def persistent_optimizer(optimizers: dict, key: str, param_groups: list[dict], device, *, betas, eps: float, weight_decay: float) -> torch.optim.AdamW:
+   449	    """
+   450	    The AdamW kept under `key` (one per adapter / AC model), created on first use and reused across
+   451	    rounds so the moments and the step counters survive a round boundary (a fresh AdamW every round
+   452	    would make each round's first steps sign-like updates at the full learning rate). Its moment tensors
+   453	    are moved to `device` (park them on the host with `optimizer_state_to` between rounds). Rebuilt with
+   454	    a note when the parameter objects differ from the stored optimizer's (an adapter re-injected).
+   455	    `param_groups` are {"params", "lr"} dicts; each group remembers its "base_lr" for `set_learning_rates`.
+   456	    """
+   457	    optimizer = optimizers.get(key)
+   458	    wanted = [id(parameter) for group in param_groups for parameter in group["params"]]
+   459	    if optimizer is not None and [id(parameter) for group in optimizer.param_groups for parameter in group["params"]] != wanted:
+   460	        print(f"persistent_optimizer - the trainable parameters of {key!r} changed: optimizer state reset", flush=True)
+   461	        optimizer = None
+   462	    if optimizer is None:
+   463	        optimizer = torch.optim.AdamW([{**group, "base_lr": group["lr"]} for group in param_groups], betas=tuple(betas), eps=eps, weight_decay=weight_decay)
+   464	        optimizers[key] = optimizer
+   465	    optimizer_state_to(optimizer, device)
+--- lines 484-545 ---
+   484	def set_learning_rates(optimizer: torch.optim.Optimizer, updates_done: int, warmup_updates: int, **schedule_kwargs) -> float:
+   485	    """Every group's lr = base_lr x lr_factor(updates_done, warmup_updates, **schedule_kwargs). Returns the factor."""
+   486	    factor = lr_factor(updates_done, warmup_updates, **schedule_kwargs)
+   487	    for group in optimizer.param_groups:
+   488	        group["lr"] = group["base_lr"] * factor
+   489	    return factor
+   490	
+   491	
+   492	def cycle_span(updates_done: int, cycle_updates: int, total_updates: int | None = None) -> tuple[int, int]:
+   493	    """schedule="cyclical": (start, length) of the cycle that holds the update about to be applied (`updates_done` are done). Cycles start
+   494	    at the multiples of cycle_updates, so no boundary moves when the plan changes; the last one runs to total_updates (it takes the
+   495	    remainder, and any update past the plan). Without total_updates every cycle has cycle_updates."""
+   496	    count = max(1, total_updates // cycle_updates) if total_updates else None
+   497	    index = updates_done // cycle_updates
+   498	    if count is None or index < count - 1:
+   499	        return index * cycle_updates, cycle_updates
+   500	    start = (count - 1) * cycle_updates
+   501	    return start, total_updates - start
+   502	
+   503	
+   504	def lr_factor(updates_done: int, warmup_updates: int, *, total_updates: int | None = None, schedule: str = "constant",
+   505	              final_fraction: float = 0.1, anchor_update: int | None = None, anchor_factor: float | None = None,
+   506	              cooldown_updates: int | None = None, cooldown_shape: str = "linear", cycle_updates: int | None = None) -> float:
+   507	    """Linear warm-up: every group's lr = base_lr x min(1, (updates_done + 1) / warmup_updates); the configured rate once past it.
+   508	    schedule="cosine": after the warm-up the factor follows a half cosine from 1 to final_fraction over total_updates. With an
+   509	    anchor (a phase continuing an earlier schedule), from anchor_update on it follows a half cosine from anchor_factor down to
+   510	    final_fraction at total_updates instead, so the rate carries on from where the earlier schedule left it.
+   511	    schedule="cooldown" (warm-up, stable, decay): the factor stays 1 until total_updates - cooldown_updates, then decays to
+   512	    final_fraction at total_updates — linearly (cooldown_shape="linear") or along a half cosine ("cosine") — and holds there.
+   513	    schedule="cyclical" (with cycle_updates; see cycle_span): every cycle is that warm-up, stable, decay on its own updates, except
+   514	    that its warm-up rises from final_fraction, not from 0: the mirror image of the linear decay that ended the cycle before.
+   515	    Returns the factor."""
+   516	    if schedule == "cyclical" and cycle_updates:
+   517	        start, length = cycle_span(updates_done, cycle_updates, total_updates)
+   518	        position, decay_start = updates_done - start, max(warmup_updates, length - (cooldown_updates or 0))
+   519	        if position < warmup_updates:
+   520	            return 1.0 - (1.0 - final_fraction) * (warmup_updates - 1 - position) / warmup_updates
+   521	        if position < decay_start:
+   522	            return 1.0
+   523	        progress = min(1.0, (position - decay_start) / max(1, length - decay_start))
+   524	        if cooldown_shape == "cosine":
+   525	            return final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+   526	        if cooldown_shape == "linear":
+   527	            return 1.0 - (1.0 - final_fraction) * progress
+   528	        raise ValueError(f"unknown cooldown_shape {cooldown_shape!r}: 'linear' or 'cosine'")
+   529	    factor = min(1.0, (updates_done + 1) / warmup_updates) if warmup_updates > 0 else 1.0
+   530	    if schedule == "cosine" and total_updates and anchor_update is not None and updates_done >= anchor_update:
+   531	        progress = min(1.0, (updates_done - anchor_update) / max(1, total_updates - anchor_update))
+   532	        factor *= final_fraction + (anchor_factor - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+   533	    elif schedule == "cosine" and total_updates:
+   534	        span = max(1, total_updates - warmup_updates)
+   535	        progress = min(1.0, max(0.0, (updates_done - warmup_updates) / span))
+   536	        factor *= final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+   537	    elif schedule == "cooldown" and total_updates and cooldown_updates:
+   538	        start = max(warmup_updates, total_updates - cooldown_updates)
+   539	        if updates_done >= start:
+   540	            progress = min(1.0, (updates_done - start) / max(1, total_updates - start))
+   541	            if cooldown_shape == "cosine":
+   542	                factor *= final_fraction + (1.0 - final_fraction) * 0.5 * (1.0 + math.cos(math.pi * progress))
+   543	            elif cooldown_shape == "linear":
+   544	                factor *= 1.0 - (1.0 - final_fraction) * progress
+   545	            else:

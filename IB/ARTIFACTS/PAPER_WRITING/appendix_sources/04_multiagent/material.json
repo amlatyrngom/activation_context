@@ -1,0 +1,22 @@
+{
+ "kept": "/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/keep/kept.jsonl",
+ "slim": [
+  "/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/slims/tqa_m1_v2_9b_a/rollouts.jsonl",
+  "/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/slims/tqa_m1_v2_9b_b/rollouts.jsonl",
+  "/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/slims/tqa_m1_v2_27b_a/rollouts.jsonl",
+  "/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/slims/tqa_m1_v2_27b_b/rollouts.jsonl"
+ ],
+ "contents": 1393,
+ "tasks": 676,
+ "examples": 3867,
+ "cap": 40000,
+ "ratio": 0.1,
+ "seeds": 3,
+ "ac_name": "rag_poc",
+ "m1_examples": 3867,
+ "musique_replay_examples": 430,
+ "musique_replay_contents": 151,
+ "replay_source": "/workspace/IB/TMP/PAPER_TRAJ_QA/round2/material_bu",
+ "final_examples": 4297,
+ "excluded_ids": 1800
+}

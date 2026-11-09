@@ -1,0 +1,75 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 89-96 113-114 712-724 792-800 915-923 2121-2132 562-572
+# extracted: nl -ba | sed -n: optimizer defaults, teacher top-k 32, optimizer param groups (special-inputs group), frozen flags, the clip call (frozen encoder/reader excluded; special-input table never in the clip list), teacher top-k + remainder. Same logic at HEAD (HEAD lines 770-771, 886, 112).
+# git commit: HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; working tree MODIFIED (uncommitted) — line numbers are the working tree's
+# ---- lines 89-96
+    89	    learning_rate_ac: float = 1e-4             # AC modules and the side LoRA
+    90	    learning_rate_target_lora: float = 2e-5    # the target adapter (0 = frozen: no steps, no penalty)
+    91	    learning_rate_special_inputs: float = 0.0  # a third group: the attached special-input handler's parameters (ActivationContextModel.special_input_handler)
+    92	    weight_decay: float = 0.0
+    93	    adam_betas: tuple[float, float] = (0.9, 0.95)
+    94	    adam_eps: float = 1e-8
+    95	    max_grad_norm: float = 1.0
+    96	    lr_schedule: str = "cosine"                # "constant" (warm-up only), "cosine": decay to lr_final_fraction of the base rate over the planned updates, or "cooldown" (warm-up → constant → decay over the last cooldown_updates), or "cyclical" (that, repeated every cycle_updates)
+# ---- lines 113-114
+   113	    teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
+   114	                                               # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)
+# ---- lines 712-724
+   712	                ac_parameters = ac_model.trainable_parameters()
+   713	                target_parameters = manager.lora_parameters(target_lora)
+   714	                assert ac_parameters and target_parameters
+   715	                gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]     # the scalar gates (row scale, input / position / residual scales): traced
+   716	                gate_names = {id(parameter): name for name, parameter in ac_model.modules.named_parameters() if parameter.numel() == 1}
+   717	                groups = [{"params": ac_parameters, "lr": config.learning_rate_ac}, {"params": target_parameters, "lr": config.learning_rate_target_lora}]
+   718	                special_parameters = ac_model.special_input_parameters()
+   719	                if special_parameters:                                   # old checkpoints keep their two-group layout
+   720	                    groups.append({"params": special_parameters, "lr": config.learning_rate_special_inputs})
+   721	                if reset_optimizer:
+   722	                    self.optimizers.pop(ac_model_name, None)
+   723	                optimizer = persistent_optimizer(self.optimizers, ac_model_name, groups,
+   724	                        device, betas=config.adam_betas, eps=config.adam_eps, weight_decay=config.weight_decay)
+# ---- lines 792-800
+   792	                reporter.report_completions(baseline, stats.baseline_samples)
+   793	            planned_total = config.schedule_total_updates or (self.updates_done.get(ac_model_name, 0) + steps * config.num_epochs)
+   794	            reader_frozen = config.learning_rate_target_lora == 0.0     # a frozen reader neither steps nor takes part in the clipping norm
+   795	            encoder_frozen = config.learning_rate_ac == 0.0             # likewise a frozen encoder (AC modules + side LoRA)
+   796	            def skip_frozen_gradients() -> None:
+   797	                """A frozen group's weight gradients would be discarded after the backward: never compute them (re-applied each
+   798	                update because checkpoint saves re-enable the adapter's parameters). Gradients still flow through those layers.
+   799	                With nothing else trainable the old behaviour stays (the backward needs some parameter that takes a gradient)."""
+   800	                if reader_frozen and encoder_frozen and not (special_parameters and config.learning_rate_special_inputs > 0):
+# ---- lines 915-923
+   915	                            if frozen:
+   916	                                for parameter in parameters:
+   917	                                    parameter.grad = None
+   918	                        norm_ac = self._grad_norm(ac_parameters); norm_reader = self._grad_norm(target_parameters)
+   919	                        trace_due = ac_model.is_deep and self._intervention_trace_due(self.updates_done.get(ac_model_name, 0))
+   920	                        head_norms = self._head_grad_norms(ac_model) if trace_due else None           # before clipping, only when consumed
+   921	                        grad_norm = float(torch.nn.utils.clip_grad_norm_(([] if encoder_frozen else ac_parameters) + ([] if reader_frozen else target_parameters), config.max_grad_norm))
+   922	                        if not math.isfinite(grad_norm):
+   923	                            raise FloatingPointError("Non-finite gradient norm; optimizer update was not applied")
+# ---- lines 2121-2132
+  2121	    @torch.no_grad()
+  2122	    def _teacher_top_k(self, teacher_states: torch.Tensor, head: torch.nn.Module, k: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+  2123	        """(ids [C, k], log-probs [C, k] descending, log remainder mass [C]) of the teacher at every completion position."""
+  2124	        chunk, fp32 = getattr(self, "_logits_chunk_tokens", self.config.logits_chunk_tokens or 64), self.config.fp32_head_matmul
+  2125	        ids, logps, rests = [], [], []
+  2126	        for start in range(0, teacher_states.shape[0], chunk):
+  2127	            logp = F.log_softmax(head_logits(teacher_states[start:start + chunk], head, fp32), dim=-1)
+  2128	            values, indexes = logp.topk(min(k, logp.shape[-1]), dim=-1)
+  2129	            ids.append(indexes.to(torch.int32))
+  2130	            logps.append(values)
+  2131	            rests.append(torch.log(torch.clamp(1.0 - values.exp().sum(dim=-1), min=1e-12)))
+  2132	        return torch.cat(ids), torch.cat(logps), torch.cat(rests)
+# ---- lines 562-572 (appended: stored teacher targets must carry top_k == teacher_cache_top_k)
+   562	                             "refusing to rebuild targets from the updated reader")
+   563	        self.teacher_cache.clear()                 # teacher targets belong to this invocation only: the reader as it is at this call's start
+   564	        self.teacher_target_logp.clear()
+   565	        if config.teacher_targets_file is not None:
+   566	            if config.loss_kind != "kl":
+   567	                raise ValueError("teacher_targets_file is for KL training")
+   568	            loaded = self._merge_teacher_targets(Path(config.teacher_targets_file), None)
+   569	            if not loaded:
+   570	                raise ValueError(f"teacher_targets_file {config.teacher_targets_file}: no entries with top_k {config.teacher_cache_top_k}")
+   571	            print(f"AC training: {loaded} precomputed teacher targets from {config.teacher_targets_file}", flush=True)
+   572	        self._teacher_texts.clear()

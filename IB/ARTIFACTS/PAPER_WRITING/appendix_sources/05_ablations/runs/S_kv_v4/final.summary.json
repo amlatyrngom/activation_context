@@ -1,0 +1,24 @@
+{
+ "acc": 67.0,
+ "em": 59.0,
+ "f1": 73.83,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 3,
+ "new_tokens_mean": 8.6,
+ "label": "S_kv_v4_final",
+ "pair": [
+  "/root/sec45/runs/S_kv_v4/sync/ckpt/final/ac",
+  "/root/sec45/runs/S_kv_v4/sync/ckpt/final/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1916,
+  "decode_seconds": 60.2
+ },
+ "seconds": 75
+}

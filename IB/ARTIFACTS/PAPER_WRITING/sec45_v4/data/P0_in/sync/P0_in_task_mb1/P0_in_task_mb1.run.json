@@ -1,0 +1,101 @@
+{
+ "name": "P0_in_task_mb1",
+ "args": {
+  "kind": "task",
+  "mode": "in",
+  "data": "/data/scratch-fast/ngom/sec45/data/hotpot_tasks_v1",
+  "fresh": "True",
+  "pair": "None",
+  "name": "P0_in_task_mb1",
+  "steps": "23",
+  "epu": "8",
+  "seconds": "1500.0",
+  "encoder_lr": "2e-05",
+  "reader_lr": "2e-05",
+  "warmup": "5",
+  "schedule": "cosine",
+  "ckpt_every": "None",
+  "no_save": "True",
+  "report_every": "1000",
+  "held_panel": "32",
+  "micro_batch": "1",
+  "block_examples": "64",
+  "penalty_weight": "1.0",
+  "longest_first": "3",
+  "seed": "0",
+  "offset": "0",
+  "keep_optimizer": "False"
+ },
+ "train_items": 184,
+ "held_items": 32,
+ "planned_updates": 23,
+ "models": {
+  "QA4B_READER": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_SIDE": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_RANK": "128",
+  "QA4B_LAYERS": "none",
+  "QA4B_KV": "0",
+  "RQ_THINKING": "0"
+ },
+ "ac_fields": {
+  "kv_transfer": false,
+  "intervention_frequency": 0,
+  "intervention_layers": null,
+  "summary_layout": "interleaved",
+  "side_lora_rank": 128,
+  "max_view_rows": 4096
+ },
+ "train_target_tokens_mean": 7.8,
+ "penalty_weight": 1.0,
+ "penalty_fraction": 0.25,
+ "order": {
+  "loaded_epoch_number": 0,
+  "start_epoch": 1,
+  "shuffle": false,
+  "shuffle_seed": 1,
+  "torch_seed": 1,
+  "first_updates": [
+   [
+    "5a7f964d5542995d8a8ddeab",
+    "5a8005905542992e7d278de1",
+    "5a80c8d7554299260e20a15c",
+    "5a8348b755429966c78a6b6f",
+    "5a8630315542991e771815b0",
+    "5adfec4755429925eb1afb34",
+    "5ae13db35542997b2ef7d155",
+    "5ae82c9055429952e35eaa76"
+   ],
+   [
+    "5a761a6b5542994ccc9186d4",
+    "5a82a36a55429954d2e2eb8d",
+    "5a8ab2825542996c9b8d5f59",
+    "5ab95e75554299131ca4230b",
+    "5ac2512d5542996366519970",
+    "5ac3dd1b5542997ea680c954",
+    "5ae1e10c554299422ee996b8",
+    "5ae660fc5542996d980e7b32"
+   ],
+   [
+    "5a78b84e554299029c4b5e53",
+    "5a877b935542993e715abf68",
+    "5a8b41e555429949d91db512",
+    "5a9091a95542995651fb5190",
+    "5ab6d1265542995eadef00a6",
+    "5abbeb32554299114383a099",
+    "5ac4988c5542996feb3fe900",
+    "5ac49f5e5542995c82c4ad6b"
+   ],
+   [
+    "5a7789af5542995d831811a7",
+    "5a8baa705542996e8ac88998",
+    "5ab526855542996a3a96a03b",
+    "5ab65fda55429954757d3269",
+    "5ab8638655429934fafe6d99",
+    "5abb40a1554299642a094a7c",
+    "5abcfea35542992ac4f38187",
+    "5ae1e2ba554299422ee996bc"
+   ]
+  ],
+  "first_sha256": "11f256695f7792e1b2f5ec2b4ad443ca81ac524b17a52e64f22181c77bd40a19"
+ }
+}

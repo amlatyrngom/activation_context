@@ -1,0 +1,24 @@
+{
+ "acc": 21.0,
+ "em": 19.5,
+ "f1": 29.16,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.6,
+ "label": "S_in_v4_u3600",
+ "pair": [
+  "/root/sec45/runs/S_in_v4/sync/ckpt/step_03600/ac",
+  "/root/sec45/runs/S_in_v4/sync/ckpt/step_03600/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1523,
+  "decode_seconds": 88.6
+ },
+ "seconds": 104
+}

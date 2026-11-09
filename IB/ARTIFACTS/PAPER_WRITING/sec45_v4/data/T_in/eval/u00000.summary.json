@@ -1,0 +1,24 @@
+{
+ "acc": 16.0,
+ "em": 14.5,
+ "f1": 19.1,
+ "answered": 91.0,
+ "n": 200,
+ "length_stops": 9,
+ "new_tokens_mean": 21.1,
+ "label": "T_in_u0",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/init/R_in_final/ac",
+  "/data/scratch-fast/ngom/sec45/init/R_in_final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 4401,
+  "decode_seconds": 60.1
+ },
+ "seconds": 83
+}

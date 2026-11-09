@@ -1,0 +1,24 @@
+{
+ "acc": 68.5,
+ "em": 61.0,
+ "f1": 74.64,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 7.2,
+ "label": "T_res_v4_u3600",
+ "pair": [
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_03600/ac",
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_03600/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1649,
+  "decode_seconds": 93.1
+ },
+ "seconds": 108
+}

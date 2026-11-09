@@ -1,0 +1,24 @@
+{
+ "acc": 15.0,
+ "em": 15.0,
+ "f1": 21.29,
+ "answered": 97.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 9.9,
+ "label": "T_in_v4fre4_u0",
+ "pair": [
+  "/root/sec45/init/R_in_v4fre4_final/ac",
+  "/root/sec45/init/R_in_v4fre4_final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 2174,
+  "decode_seconds": 58.1
+ },
+ "seconds": 73
+}

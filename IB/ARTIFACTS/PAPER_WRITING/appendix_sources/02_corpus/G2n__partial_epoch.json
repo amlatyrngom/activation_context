@@ -1,0 +1,7 @@
+{
+  "epoch_number": 1,
+  "step": 1750,
+  "steps": 2221,
+  "ac_checkpoint": "AC_MODELS/rag_poc/epoch_001_step_01750",
+  "target_lora_checkpoint": "LORAS/rag_reader/epoch_001_step_01750"
+}

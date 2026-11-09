@@ -88,6 +88,7 @@ class ActivationContextTrainingConfig:
                                                # call's start, on the in-context history; its top-k log-probs + the remainder mass are stored before the first update)
     learning_rate_ac: float = 1e-4             # AC modules and the side LoRA
     learning_rate_target_lora: float = 2e-5    # the target adapter (0 = frozen: no steps, no penalty)
+    learning_rate_special_inputs: float = 0.0  # a third group: the attached special-input handler's parameters (ActivationContextModel.special_input_handler)
     weight_decay: float = 0.0
     adam_betas: tuple[float, float] = (0.9, 0.95)
     adam_eps: float = 1e-8
@@ -111,6 +112,7 @@ class ActivationContextTrainingConfig:
     no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
     teacher_cache_top_k: int = 32              # stored teacher (KL) and no-context reference (penalty): top-k log-probs + the remainder mass per target position,
                                                # the gold token always among them; the KL is between the k+1-way coarsened distributions (a lower bound of the exact KL)
+    teacher_targets_file: str | None = None    # precomputed KL teacher targets (save_teacher_targets format, same top-k) loaded at the start of train(): valid only while the teacher is the reader as it is at that start (e.g. a frozen or fresh reader adapter)
     teacher_cache_block_examples: int | None = None  # opt-in bounded preparation; KL uses a persisted frozen reader adapter, references are kept for one block + fixed panels
     full_context_match_weight: float = 0.0     # > 0 (SFT only; 0 = off, nothing below is read): each training example with an in-context view also pulls the reader-with-rows towards
                                                # the reader WITHOUT its adapter on that in-context history (the whole text in context), at the target positions of the last layer:
@@ -127,7 +129,7 @@ class ActivationContextTrainingConfig:
     deltas_off_panel: bool = False             # deep models: evaluate the reporting items a second time at every panel with the rows kept and the deltas removed ("deltas_off"): held minus deltas_off is the deltas' contribution
     updates_per_epoch: int = 4                 # maximum gradient steps per epoch when examples_per_update is unset
     examples_per_update: int | None = None     # when set, overrides updates_per_epoch: ceil(items / examples_per_update) steps
-    micro_batch_examples: int = 1              # SFT: examples per right-padded reader forward (1 = one example at a time)
+    micro_batch_examples: int = 1              # SFT / KL: examples per right-padded reader forward (1 = one example at a time)
     execution_policy: dict | None = None       # measured training-only batching/residency policy from tune_ac_execution
     distributed: bool = False                 # torchrun: same global logical batch, one existing model pair per GPU
     deterministic: bool = False               # strict scoped kernels; CUDA also needs CUBLAS_WORKSPACE_CONFIG at process startup
@@ -146,12 +148,16 @@ class ActivationContextTrainingConfig:
     reporting_interval: float = 0.1
     completion_samples: int = 4
     completion_max_new_tokens: int = 64
+    completion_sampling: dict | None = None    # batched checkpoint decodes only: e.g. {"temperature": 0.7, "top_p": 0.8, "top_k": 20} samples (key/value transfer
+                                               # payloads; None = greedy) - an evaluation protocol that uses the model's default sampled decoding
 
     def __post_init__(self) -> None:
         if self.distributed:
-            if self.loss_kind != "sft":
-                raise ValueError("Distributed AC training currently supports SFT")
-            if self.teacher_cache_block_examples is None:
+            # KL with a precomputed teacher_targets_file: every rank loads the whole file and stays in eager mode (block preparation
+            # would drop the file's entries and rebuild them from a snapshot adapter, which the precomputed teacher does not have).
+            if self.loss_kind != "sft" and self.teacher_targets_file is None:
+                raise ValueError("Distributed AC training supports SFT, or KL from a precomputed teacher_targets_file")
+            if self.teacher_cache_block_examples is None and self.loss_kind == "sft":
                 self.teacher_cache_block_examples = max(32, self.examples_per_update or 8)
         if self.max_duration_seconds is not None and self.max_duration_seconds <= 0:
             raise ValueError("max_duration_seconds must be positive")
@@ -210,8 +216,8 @@ class ActivationContextTrainingConfig:
             raise ValueError("share_part_encodings shares inside one padded SFT forward: it needs loss_kind='sft' and micro_batch_examples > 1")
         if self.micro_batch_examples < 1:
             raise ValueError("micro_batch_examples must be positive")
-        if self.micro_batch_examples > 1 and self.loss_kind != "sft":
-            raise ValueError("micro_batch_examples > 1 is only implemented for loss_kind='sft'")
+        if self.micro_batch_examples > 1 and self.loss_kind not in ("sft", "kl"):
+            raise ValueError("micro_batch_examples > 1 is implemented for loss_kind 'sft' and 'kl'")
         if self.execution_policy is not None:
             validate_execution_policy(self.execution_policy)
             if self.loss_kind != "sft" or self.micro_batch_examples != 1:
@@ -498,12 +504,18 @@ class ActivationContextTrainer:
             config = model.config.get_text_config() if hasattr(model.config, "get_text_config") else model.config
             return getattr(config, "max_position_embeddings", None)
         target_limit, side_limit = capacity(ac_model.target.model), capacity(ac_model.side.model)
+        checked: set[str] = set()                    # parts repeat across examples (shared corpora): tokenize each distinct one once
         for example in examples:
             for view, ids in (("teacher", example.teacher_ids), ("student", example.student_ids)):
                 if target_limit and len(ids) > target_limit:
                     raise ValueError(f"{example.item.item_id}: {view} reader history has {len(ids)} tokens, exceeding supported capacity {target_limit}")
             if side_limit:
                 for request in example.part_requests:
+                    key = hashlib.sha256(json.dumps([request.messages, request.compression_ratio, request.tools], sort_keys=True,
+                                                    default=str).encode()).hexdigest()
+                    if key in checked:
+                        continue
+                    checked.add(key)
                     try:
                         validate_part_capacity(ac_model, request, side_limit)
                     except ValueError as error:
@@ -550,6 +562,13 @@ class ActivationContextTrainer:
                              "refusing to rebuild targets from the updated reader")
         self.teacher_cache.clear()                 # teacher targets belong to this invocation only: the reader as it is at this call's start
         self.teacher_target_logp.clear()
+        if config.teacher_targets_file is not None:
+            if config.loss_kind != "kl":
+                raise ValueError("teacher_targets_file is for KL training")
+            loaded = self._merge_teacher_targets(Path(config.teacher_targets_file), None)
+            if not loaded:
+                raise ValueError(f"teacher_targets_file {config.teacher_targets_file}: no entries with top_k {config.teacher_cache_top_k}")
+            print(f"AC training: {loaded} precomputed teacher targets from {config.teacher_targets_file}", flush=True)
         self._teacher_texts.clear()
         self._teacher_snapshot = None
         self._fixed_teacher_keys.clear()
@@ -603,6 +622,8 @@ class ActivationContextTrainer:
             reporter.render(force=True)
         torch.manual_seed(config.seed + start_epoch)
         with parallel.local_work():
+            # The parts' side lengths in batched, multi-threaded tokenizer calls (example building and the capacity check reuse them)
+            ac_model.prefetch_side_token_counts(item.ac_messages for item in [*training_data, *reporting_data, *validation_data])
             examples = [self.build_example(ac_model, item) for item in training_data]
             reporting_examples = [self.build_example(ac_model, item) for item in reporting_data]
             validation_examples = [self.build_example(ac_model, item) for item in validation_data]
@@ -694,6 +715,9 @@ class ActivationContextTrainer:
                 gate_parameters = [parameter for parameter in ac_parameters if parameter.numel() == 1]     # the scalar gates (row scale, input / position / residual scales): traced
                 gate_names = {id(parameter): name for name, parameter in ac_model.modules.named_parameters() if parameter.numel() == 1}
                 groups = [{"params": ac_parameters, "lr": config.learning_rate_ac}, {"params": target_parameters, "lr": config.learning_rate_target_lora}]
+                special_parameters = ac_model.special_input_parameters()
+                if special_parameters:                                   # old checkpoints keep their two-group layout
+                    groups.append({"params": special_parameters, "lr": config.learning_rate_special_inputs})
                 if reset_optimizer:
                     self.optimizers.pop(ac_model_name, None)
                 optimizer = persistent_optimizer(self.optimizers, ac_model_name, groups,
@@ -769,6 +793,16 @@ class ActivationContextTrainer:
             planned_total = config.schedule_total_updates or (self.updates_done.get(ac_model_name, 0) + steps * config.num_epochs)
             reader_frozen = config.learning_rate_target_lora == 0.0     # a frozen reader neither steps nor takes part in the clipping norm
             encoder_frozen = config.learning_rate_ac == 0.0             # likewise a frozen encoder (AC modules + side LoRA)
+            def skip_frozen_gradients() -> None:
+                """A frozen group's weight gradients would be discarded after the backward: never compute them (re-applied each
+                update because checkpoint saves re-enable the adapter's parameters). Gradients still flow through those layers.
+                With nothing else trainable the old behaviour stays (the backward needs some parameter that takes a gradient)."""
+                if reader_frozen and encoder_frozen and not (special_parameters and config.learning_rate_special_inputs > 0):
+                    return
+                for frozen, parameters in ((reader_frozen, target_parameters), (encoder_frozen, ac_parameters)):
+                    if frozen:
+                        for parameter in parameters:
+                            parameter.requires_grad_(False)
             for epoch in range(1, config.num_epochs + 1):
                 epoch_number = start_epoch + epoch - 1
                 epoch_started = time.monotonic()
@@ -803,12 +837,13 @@ class ActivationContextTrainer:
                                 self._prepare_teacher_block(ac_model, [examples[index] for index in local_indexes], device, reporter)
                     if reporter is not None:
                         reporter.report_phase(progress(step - 1), "training")
+                    skip_frozen_gradients()
                     step_started = time.monotonic()
                     before_side_tokens = ac_model.stats.side_tokens
                     mini = order[(step - 1) * per_step:step * per_step]
                     optimizer.zero_grad(set_to_none=True)
                     totals = {"loss": 0.0, "agreement": 0.0, "tokens": 0, "penalty": []}
-                    batched = config.micro_batch_examples > 1 and config.loss_kind == "sft"
+                    batched = config.micro_batch_examples > 1
                     policy = config.execution_policy
                     penalty_flags = None
                     if policy is not None or config.distributed:
@@ -843,7 +878,7 @@ class ActivationContextTrainer:
                             elif batched:
                                 results = self._batch_loss(ac_model, group_examples, device,
                                     penalty_flags=[penalty_flags[index] for index in group] if penalty_flags is not None else None)
-                                outcomes = [(result["objective"], None, result["penalty"]) for result in results]
+                                outcomes = [(result["objective"], result.get("agreement"), result["penalty"]) for result in results]
                             else:
                                 objective, agreement, _, _ = self._example_loss(ac_model, group_examples[0], device,
                                     penalty_flag=penalty_flags[group[0]] if penalty_flags is not None else None)
@@ -902,7 +937,7 @@ class ActivationContextTrainer:
                             stats.gate_trace.append({"update": self.updates_done.get(ac_model_name, 0), **{gate_names.get(id(parameter), str(index)): float(parameter.detach()) for index, parameter in enumerate(gate_parameters)}})
                         if trace_due:
                             stats.intervention_trace.append(self._intervention_trace_entry(ac_model, self.updates_done.get(ac_model_name, 0), head_norms))
-                        encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters)
+                        encoder_has_grad = any(parameter.grad is not None for parameter in ac_parameters + special_parameters)
                         try:
                             optimizer.step()
                         finally:
@@ -1427,7 +1462,7 @@ class ActivationContextTrainer:
             lora = ac_model.config.target_model_lora_name
             peft_model = manager.ensure_lora(lora)
             embedding = target.model.get_input_embeddings()
-            generation = dict(do_sample=False, use_cache=True,
+            generation = dict(do_sample=bool(self.config.completion_sampling), **(self.config.completion_sampling or {}), use_cache=True,
                               pad_token_id=target.tokenizer.pad_token_id if target.tokenizer.pad_token_id is not None else target.tokenizer.eos_token_id)
             # A chat turn can end before the model's end-of-text token.
             eos_ids = peft_model.generation_config.eos_token_id
@@ -1697,14 +1732,15 @@ class ActivationContextTrainer:
     def _batch_loss(self, ac_model: ActivationContextModel, batch: t.Sequence[_Example], device: torch.device, with_penalty: bool = True, deltas_off: bool = False,
                     *, encoded_outputs: list[ACOutput] | None = None, penalty_flags: list[bool] | None = None) -> list[dict]:
         """
-        SFT loss of several examples from one right-padded reader forward (and one encoder call for all their parts):
+        SFT or KL loss of several examples from one right-padded reader forward (and one encoder call for all their parts):
         per example {"objective", "num", "target_logp", "hits", "penalty"}, the values `_example_loss` gives one at a
         time. Under causal attention (and the causal recurrence of the linear-attention layers) a real token never sees
         a later pad, so the padded rows need no mask. The sampled no-context references go through a second padded
-        forward; `penalty` is the scaled term for the sampled examples and None for the rest.
+        forward; `penalty` is the scaled term for the sampled examples and None for the rest. KL reads each example's stored
+        teacher targets (as `_example_loss`; they must be in the cache) and adds its top-1 "agreement".
         """
         config = self.config
-        assert config.loss_kind == "sft", "_batch_loss is the SFT path"
+        assert config.loss_kind in ("sft", "kl"), "_batch_loss is the SFT and KL path"
         target = ac_model.target
         base = target.model
         base_dtype = next(base.parameters()).dtype
@@ -1738,17 +1774,30 @@ class ActivationContextTrainer:
         hidden = self._padded_forward(target, embeds, lora, payloads)
         if torch.is_grad_enabled():
             self._harvest_row_rms(payloads)
-        states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
-        targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
-        cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
-        results, cursor = [], 0
-        for example in batch:
-            num = example.num_completion
-            weights = self._target_weights(example, device)
-            objective = cross_entropy[cursor:cursor + num].mean() if weights is None else (cross_entropy[cursor:cursor + num] * weights).sum() / num
-            results.append({"objective": objective, "num": num,
-                            "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
-            cursor += num
+        results = []
+        if config.loss_kind == "kl":
+            for index, example in enumerate(batch):
+                cached = self.teacher_cache.get(example.teacher_cache_key)
+                if cached is None:
+                    raise RuntimeError(f"{example.item.item_id}: no stored teacher targets; train() stores them before its first update "
+                                       "and eval() needs them for its items (teacher='current' stores them from the current reader)")
+                cached = tuple(tensor.to(device, non_blocking=True) for tensor in cached)
+                target_ids = torch.tensor(example.target_ids, device=device, dtype=torch.long)
+                objective, agreement, target_logp = self._chunked_kl(None, hidden[index, example.student_positions], head, cached=cached, target_ids=target_ids)
+                results.append({"objective": objective, "num": example.num_completion, "target_logp": target_logp, "hits": self._last_hits,
+                                "agreement": agreement, "penalty": None})
+        else:
+            states = torch.cat([hidden[index, example.student_positions] for index, example in enumerate(batch)], dim=0)
+            targets = torch.cat([torch.tensor(example.target_ids, device=device, dtype=torch.long) for example in batch])
+            cross_entropy, token_logp, hits = self._chunked_sft_tokens(states, head, targets)
+            cursor = 0
+            for example in batch:
+                num = example.num_completion
+                weights = self._target_weights(example, device)
+                objective = cross_entropy[cursor:cursor + num].mean() if weights is None else (cross_entropy[cursor:cursor + num] * weights).sum() / num
+                results.append({"objective": objective, "num": num,
+                                "target_logp": token_logp[cursor:cursor + num], "hits": hits[cursor:cursor + num], "penalty": None})
+                cursor += num
         if config.full_context_match_weight > 0:
             for index, example in enumerate(batch):     # "match": the example's full-context match term (see _full_context_match) or None
                 results[index]["match"] = self._full_context_match(ac_model, example, hidden[index, example.student_positions], head, embedding, device)
@@ -1867,6 +1916,12 @@ class ActivationContextTrainer:
             return embeds, {"positions": [position for start, end in spans for position in range(start, end)], "layer_inputs": {}, "kv_values": kv_values,
                             "kv_positions": torch.cat([output.kv_positions for output in outputs], dim=0),
                             "kv_runs": [(start, end, int(output.kv_length)) for (start, end), output in zip(spans, outputs)],
+                            **({"kv_bias": {layer: torch.cat([output.kv_bias[layer] if output.kv_bias else output.kv_values[layer][0].new_zeros(output.kv_values[layer][0].shape[:2])
+                                                              for output in outputs], dim=0) for layer in layers}}
+                               if any(output.kv_bias for output in outputs) else {}),   # entry biases (a special-input handler's compacted cache)
+                            **({"kv_layer_counts": {layer: [int(output.kv_values[layer][0].shape[0]) for output in outputs] for layer in layers}}
+                               if any(int(output.kv_values[layer][0].shape[0]) != int(output.kv_positions.shape[0]) for output in outputs for layer in layers)
+                               else {}),                                                # a layer keeping fewer entries of a part (kv_transfer KV_LAYER_COUNTS)
                             **({"kv_overwrite": True} if outputs[0].kv_overwrite else {})}   # overwrite mode: the rows are real positions (their input rows are in `embeds`)
         if deltas_off or not outputs[0].has_interventions:
             return embeds, None

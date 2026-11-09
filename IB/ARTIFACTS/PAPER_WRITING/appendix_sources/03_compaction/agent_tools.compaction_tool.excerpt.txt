@@ -1,0 +1,23 @@
+# source: /workspace/activation/agent/agent_tools.py
+# lines: 463-479
+# extracted: nl -ba | sed -n (the harness's compact tool carries COMPACTION_SUMMARY_PROMPT in its description)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (tracked; unmodified in working tree per git status)
+
+   463	class CompactionTool(AgentTool):
+   464	    aliases = {'text': 'summary', 'notes': 'summary', 'content': 'summary', 'state': 'summary'}
+   465	    """
+   466	    Compacts the conversation into a new segment. With an AC model the finished segment becomes the
+   467	    recursive tree part of the new prompt and the summary follows it as text; without one only the
+   468	    summary carries over. The finished segment is recorded under the run's `compactions`
+   469	    (finish_reason "compacted"). The loop demands a lone `compact` call once the segment's soft
+   470	    threshold is reached (Agent.COMPACTION_DEMAND) and refuses every other call until then.
+   471	    """
+   472	    name = "compact"
+   473	    description = ("Compact the conversation so far. Call it alone, without other tools, when asked to compact.\n\n"
+   474	                   + COMPACTION_SUMMARY_PROMPT)
+   475	    parameters = {
+   476	        "type": "object",
+   477	        "properties": {"summary": {"type": "string", "description": "A handoff using the five sections above."}},
+   478	        "required": ["summary"],
+   479	    }
+    ...

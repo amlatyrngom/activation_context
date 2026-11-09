@@ -1,0 +1,24 @@
+{
+ "acc": 60.0,
+ "em": 55.0,
+ "f1": 68.39,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.9,
+ "label": "T_in_e06ls_final",
+ "pair": [
+  "/root/sec45/runs/T_in_e06ls/sync/ckpt/final/ac",
+  "/root/sec45/runs/T_in_e06ls/sync/ckpt/final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1585,
+  "decode_seconds": 21.0
+ },
+ "seconds": 33
+}

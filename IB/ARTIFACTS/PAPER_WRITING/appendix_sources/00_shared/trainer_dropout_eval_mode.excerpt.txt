@@ -1,0 +1,29 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 664-670 611-613
+# extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: working tree (uncommitted modifications on top of HEAD: ' M activation/ac_model/ac_model_training.py')
+--- lines 664-670 ---
+   664	                manager.ensure_lora(target_lora)
+   665	                device = ac_model.prepare()
+   666	                ac_model.set_mode(TRAINING)
+   667	                bases = list(dict.fromkeys([target.model, ac_model.side.model]))
+   668	                for base in bases:
+   669	                    base.train()
+   670	                    disable_dropout(base)
+--- lines 611-613 ---
+   611	                for base, training, checkpointed in modes:
+   612	                    base.train(training)
+   613	                    disable_dropout(base)
+  # source: /workspace/activation/agent_training/agent_training_utils.py
+  # lines: 550-557
+  # extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+  # git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: clean at HEAD
+--- lines 550-557 ---
+   550	def disable_dropout(module: torch.nn.Module) -> int:
+   551	    """Dropout layers to eval while the rest trains (checkpointing needs training mode). Returns how many."""
+   552	    count = 0
+   553	    for child in module.modules():
+   554	        if isinstance(child, torch.nn.Dropout):
+   555	            child.eval()
+   556	            count += 1
+   557	    return count

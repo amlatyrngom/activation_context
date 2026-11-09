@@ -1,0 +1,50 @@
+# source: /workspace/IB/TMP/PAPER_AM/kit/am_lh.py
+# lines: 1-45
+# extracted: nl -ba | sed -n: AM system prompt and parse_model_choice/format_question compiled from the AM repo
+# git commit: untracked in /workspace git (HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa)
+# ---- lines 1-45
+     1	"""
+     2	LongHealth exactly as the Attention Matching repo builds it (longhealth5: 20 patients, 4 contexts of 5, 100 questions each), its
+     3	question prompt for Qwen3-4B-Instruct-2507 and its answer parser, without importing the repo's heavy modules: `load_longhealth_data`
+     4	is loaded from its file (stdlib only) and the two prompt/parse functions are compiled from their source.
+     5	
+     6	Layout (AM's evaluation): [system: AM's system prompt, user: the article] then [user: question + options + instruction] -> assistant.
+     7	The article is the five patients' notes joined by blank lines; AM's KV-based chunking cuts it at every `<text_0>`, one chunk per
+     8	patient, so each patient is one activation-context part here. AM's token spans tile the article with no gaps (the blank
+     9	lines are inside the chunks), so the parts follow each other with no text between them: our part starts equal AM's.
+    10	"""
+    11	from __future__ import annotations
+    12	
+    13	import ast
+    14	import hashlib
+    15	import importlib.util
+    16	import os
+    17	import re
+    18	from pathlib import Path
+    19	
+    20	AM_REPO = Path(os.environ.get("AM_REPO", "/workspace/IB/TMP/PAPER_CORPUS_QA/am_compaction"))
+    21	MODEL = "Qwen/Qwen3-4B-Instruct-2507"
+    22	SYSTEM = "You are a helpful assistant. Answer a question based on the provided context."   # evaluation/utils.get_default_system_prompt
+    23	
+    24	
+    25	def _functions(path: Path, names: list[str]) -> dict:
+    26	    tree = ast.parse(path.read_text())
+    27	    keep = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+    28	    scope: dict = {"re": re, "Optional": __import__("typing").Optional, "List": list, "Dict": dict}
+    29	    exec(compile(ast.Module(body=keep, type_ignores=[]), str(path), "exec"), scope)
+    30	    return {name: scope[name] for name in names}
+    31	
+    32	
+    33	_utils = _functions(AM_REPO / "evaluation" / "utils.py", ["format_question", "parse_model_choice"])
+    34	parse_model_choice = _utils["parse_model_choice"]
+    35	
+    36	
+    37	def question_content(question: str, options: list[str]) -> str:
+    38	    """The user message AM's format_question writes for Qwen3-4B-Instruct-2507 (the chat template is applied by our harness)."""
+    39	    class _Capture:
+    40	        def apply_chat_template(self, messages, **kwargs):
+    41	            return messages[0]["content"]
+    42	    return _utils["format_question"](_Capture(), question, options, MODEL)
+    43	
+    44	
+    45	def load_contexts(patients_per_article: int = 5, n_articles: int | None = None) -> list[dict]:

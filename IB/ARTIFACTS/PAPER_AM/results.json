@@ -1,0 +1,416 @@
+{
+ "_note": "LongHealth, AM's 4 contexts x 5 patients (100 Q each, 400 total), Qwen3-4B-Instruct-2507, compression 1/10. Accuracy as fractions. per_context = contexts 0..3. 'passes' = sampled evaluation passes averaged. Sources: IB/STATE.md (Oct 19).",
+ "bars": {
+  "no_context": {
+   "label": "No Context",
+   "per_context": [
+    0.34,
+    0.35,
+    0.39,
+    0.36
+   ],
+   "all": 0.36,
+   "passes": 1,
+   "source": "AM's own code (R1 no context)"
+  },
+  "cartridges": {
+   "label": "Cartridges",
+   "per_context": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "all": 0.69,
+   "passes": null,
+   "source": "AM paper (arXiv 2602.16284) Fig. 3, read off the plot at 1/10 (\u22480.68-0.69; upper bound taken, per the user 2026-10-19)"
+  },
+  "am_uniform": {
+   "label": "AM Uniform",
+   "per_context": [
+    0.52,
+    0.58,
+    0.64,
+    0.62
+   ],
+   "all": 0.59,
+   "passes": 1,
+   "source": "AM's own code: ctx 0-1 R2 (t0.1_fastest-u), ctx 2-3 t0.1_fastest-u23 on cqa-ec2r (Oct 19 23:25Z); 236/400"
+  },
+  "am_nonuniform": {
+   "label": "AM Nonuniform",
+   "per_context": [
+    0.71,
+    0.79,
+    0.79,
+    0.72
+   ],
+   "all": 0.7525,
+   "passes": 1,
+   "source": "AM's own code (R4, t0.1_fastest)"
+  },
+  "full_context": {
+   "label": "Full Context",
+   "per_context": [
+    0.77,
+    0.84,
+    0.77,
+    0.8
+   ],
+   "all": 0.795,
+   "passes": 1,
+   "source": "AM's own code (R1 full 5-patient context)"
+  },
+  "trained_nonuniform": {
+   "label": "AM Nonuniform + KL Training (ours)",
+   "per_context": [
+    0.8367,
+    0.8667,
+    0.7767,
+    0.7633
+   ],
+   "all": 0.8108,
+   "passes": 3,
+   "source": "our harness, G2n_all20_lr1e3 final (1 epoch v1, 2,221 updates x 8; cqa-ec2r); 3 sampled passes (seeds 1000k+ctx, k=0..2): evals/E_G2n_all20_lr1e3_final.json (pass 0 .8175) + evals/E_G2n_final_p12.json (passes 1-2 .8075); ci95 = question bootstrap",
+   "pass0_all": 0.8175,
+   "ci95": [
+    0.7758,
+    0.845
+   ]
+  }
+ },
+ "reference": {
+  "label": "Right Patient Only",
+  "per_context": [
+   0.89,
+   0.86,
+   0.83,
+   0.77
+  ],
+  "all": 0.8375,
+  "source": "AM's own code (R3 single right patient)"
+ },
+ "examples_per_update": 8,
+ "curves": {
+  "trained_nonuniform": {
+   "label": "AC KV Non-Uniform",
+   "points": [
+    {
+     "updates": 0,
+     "all": 0.7575,
+     "passes": 1,
+     "note": "our harness, closed-form AM cache (Step 1)"
+    },
+    {
+     "updates": 500,
+     "all": 0.795,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.82,
+      0.83,
+      0.78,
+      0.75
+     ],
+     "note": "evals/E_G2n_u500.json"
+    },
+    {
+     "updates": 1000,
+     "all": 0.815,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.82,
+      0.86,
+      0.79,
+      0.79
+     ],
+     "note": "evals/E_G2n_u1000.json"
+    },
+    {
+     "updates": 1500,
+     "all": 0.8125,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.88,
+      0.82,
+      0.78,
+      0.77
+     ],
+     "note": "evals/E_G2n_u1500.json"
+    },
+    {
+     "updates": 2221,
+     "all": 0.8175,
+     "passes": 1,
+     "note": "final (end of cosine)"
+    }
+   ]
+  },
+  "trained_uniform": {
+   "label": "AC KV Uniform",
+   "points": [
+    {
+     "updates": 0,
+     "all": 0.5575,
+     "passes": 1,
+     "per_context": [
+      0.44,
+      0.61,
+      0.62,
+      0.56
+     ],
+     "note": "our harness, closed-form AM uniform cache (t0.1_fastest-u-all); AM's own code gave .59"
+    },
+    {
+     "updates": 500,
+     "all": 0.72,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.73,
+      0.73,
+      0.69,
+      0.73
+     ],
+     "note": "evals/E_U2n_u500.json"
+    },
+    {
+     "updates": 1000,
+     "all": 0.745,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.77,
+      0.74,
+      0.74,
+      0.73
+     ],
+     "note": "evals/E_U2n_u1000.json"
+    },
+    {
+     "updates": 1500,
+     "all": 0.75,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.73,
+      0.75,
+      0.74,
+      0.78
+     ],
+     "note": "evals/E_U2n_u1500.json"
+    },
+    {
+     "updates": 2221,
+     "all": 0.7575,
+     "passes": 1,
+     "per_context": [
+      0.77,
+      0.77,
+      0.72,
+      0.77
+     ],
+     "note": "final (end of cosine); evals/E_U2n_all20_lr1e3_final.json"
+    }
+   ]
+  },
+  "input_residuals": {
+   "label": "AC Input + Residuals",
+   "points": [
+    {
+     "updates": 0,
+     "all": 0.3625,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.44,
+      0.37,
+      0.32,
+      0.32
+     ],
+     "note": "same start as input only (zero residual deltas); evals/E_rows_u0.json"
+    },
+    {
+     "updates": 500,
+     "all": 0.405,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.38,
+      0.41,
+      0.37,
+      0.46
+     ],
+     "note": "A_deepS_all20_lr1e3 step 500 (kit_v11 sampled); CSAIL H200; evals/E_deepS_u500_c01.json + E_deepS_u500_c23.json"
+    },
+    {
+     "updates": 1000,
+     "all": 0.4775,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.48,
+      0.49,
+      0.46,
+      0.48
+     ],
+     "note": "CSAIL H200; evals/E_deepS_u1000_c01.json + E_deepS_u1000_c23.json"
+    },
+    {
+     "updates": 1500,
+     "all": 0.535,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.48,
+      0.56,
+      0.55,
+      0.55
+     ],
+     "note": "CSAIL H200; evals/E_deepS_u1500_c01.json + E_deepS_u1500_c23.json"
+    },
+    {
+     "updates": 2000,
+     "all": 0.56,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.55,
+      0.62,
+      0.5,
+      0.57
+     ],
+     "note": "CSAIL H200; evals/E_deepS_u2000_c01.json + E_deepS_u2000_c23.json"
+    },
+    {
+     "updates": 2221,
+     "all": 0.58,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.64,
+      0.58,
+      0.5,
+      0.6
+     ],
+     "note": "R_deepS rerun final (u2221); CSAIL H200; evals/E_deepS_final_R_c01.json + E_deepS_final_R_c23.json"
+    }
+   ]
+  },
+  "input_only": {
+   "label": "AC Input",
+   "points": [
+    {
+     "updates": 0,
+     "all": 0.3625,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.44,
+      0.37,
+      0.32,
+      0.32
+     ],
+     "note": "closed-form selected rows (no training); the input+residuals start is the same table with zero deltas; evals/E_rows_u0.json"
+    },
+    {
+     "updates": 500,
+     "all": 0.4425,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.44,
+      0.37,
+      0.52,
+      0.44
+     ],
+     "note": "CSAIL H200; evals/E_rows_u500_c01.json + E_rows_u500_c23.json"
+    },
+    {
+     "updates": 1000,
+     "all": 0.4275,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.37,
+      0.48,
+      0.44,
+      0.42
+     ],
+     "note": "CSAIL H200; evals/E_rows_u1000_c01.json + E_rows_u1000_c23.json"
+    },
+    {
+     "updates": 1500,
+     "all": 0.48,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.51,
+      0.47,
+      0.47,
+      0.47
+     ],
+     "note": "CSAIL H200; evals/E_rows_u1500_c01.json + E_rows_u1500_c23.json"
+    },
+    {
+     "updates": 2221,
+     "all": 0.4675,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.41,
+      0.49,
+      0.47,
+      0.5
+     ],
+     "note": "end of epoch 1 (v1); evals/E_rows_final.json"
+    },
+    {
+     "updates": 3221,
+     "all": 0.5175,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.5,
+      0.54,
+      0.53,
+      0.5
+     ],
+     "note": "continuation on v1v2s1 (fresh cosine, lr 1e-3) step 1000 = 2221 + 1000 updates; evals/E_C_rows_all20_s01000.json",
+     "continuation": true
+    },
+    {
+     "updates": 4221,
+     "all": 0.5225,
+     "passes": 1,
+     "n": 400,
+     "per_context": [
+      0.45,
+      0.57,
+      0.53,
+      0.54
+     ],
+     "note": "continuation step 2000; evals/E_C_rows_all20_s02000.json",
+     "continuation": true
+    }
+   ]
+  }
+ },
+ "epoch1_updates": 2221,
+ "tokens": {
+  "contexts": 4,
+  "per_pair_question_answer": 518.5,
+  "per_pair_answer": 391.5,
+  "epoch1_per_context_question_answer": {
+   "0": 2246690,
+   "1": 2255116,
+   "2": 2380631,
+   "3": 2328126
+  },
+  "note": "Qwen3-4B tokenizer over the 17,764 epoch-1 pairs (selfstudy_v1_all.jsonl, truncated records dropped as in training), question + answer text without chat-template tokens or the context; tokens per context at update u = 8u x 518.5 / 4. Same unit as the Cartridges repo's TokenCounts (system/user + assistant tokens of the synthesized conversations).",
+  "cartridges_per_context": 100000000.0,
+  "cartridges_note": "AM Table 3, LongHealth-5: '100-150M' self-study tokens per 60k-token context (~15 H100-hours). We plot the low end, the estimate most favourable to Cartridges."
+ }
+}

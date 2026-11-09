@@ -1,0 +1,53 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/prepare_synth_sft_v3.py
+# lines: 1-24,43-49,131-141,182-183 (of 236 total)
+# extracted: nl -ba | sed -n per range; docstring, constants (8 per update, cosine/0.1/50 warm-up), config overrides, updates = ceil(items/8)
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: f371f22dbaf80177339e19432032d3d0fab665fff127dee2d9f56799cbfdfe42
+# ---- lines 1-24
+     1	"""
+     2	prepare_synth_sft_v3.py (Oct 15, round 2): prepare_synth_sft_v2.py joining parts and examples on content_id (one reader prompt per
+     3	solver triple; several triples per task) instead of task_id. Held panel and the reserve check stay per task. Otherwise unchanged.
+     4	
+     5	Stage 2 of the last-mile SFT pass: make_synth_sft_material.py's material -> a trainer packet that
+     6	`run_channel_mixture.py train --output PACKET` loads unchanged (written the way prepare_agent_continuation.py writes its packets).
+     7	CPU only (CUDA_VISIBLE_DEVICES= ).
+     8	
+     9	One example per kept 27B single-call completion. The reader sees the synthesizer evaluation's prompt (one user message: task
+    10	text, INSTRUCTION, three "Agent N / Its run: <AC part at 1/10> / Final answer: ..." blocks, FINAL_RULE; no system message, no
+    11	tools) and learns the completion: the generation prompt with enable_thinking ends "<|im_start|>assistant\\n<think>\\n", and the
+    12	target is the completion text as generated (reasoning, "\\n</think>\\n\\n", reply ending in a `Final answer:` line) + <|im_end|>.
+    13	chat_template_kwargs are the evaluation's ({"enable_thinking": true, "reasoning_effort": "medium"}).
+    14	
+    15	Held panel: --held-tasks tasks per benchmark drawn from the TRAINING tasks with --seed (all their kept samples; never trained),
+    16	panel groups synth_sft/<benchmark>. Tasks in --exclude-tasks (the reserve set) stop the build if any appears in the material.
+    17	
+    18	Training config: the one of --base-recipe (the T1-shaped own-question run: cosine to lr_final_fraction, warm-up, deltas off
+    19	training, ...), with loss sft, both rates --lr (2e-5), 8 examples per update, --epochs passes, schedule_total_updates =
+    20	updates per pass x epochs, and --reporting-interval.
+    21	
+    22	    python prepare_synth_sft.py --material material_v1 --output PACKET --initial-pair PAIR --base-recipe RECIPE \
+    23	        --exclude-tasks reserve_tasks.json --held-tasks 16 --epochs 2
+    24	"""
+# ---- lines 43-49
+    43	FAMILY = "synth_sft"
+    44	EXAMPLES_PER_UPDATE = 8
+    45	CHAT_KWARGS = {"enable_thinking": True, "reasoning_effort": "medium"}       # run_synth_ac's call_kwargs
+    46	IM_END = 248046
+    47	GENERATION_PROMPT_END = "<|im_start|>assistant\n<think>\n"
+    48	CHUNK = 8
+    49	SCHEDULE_SHAPE = {"lr_schedule": "cosine", "lr_final_fraction": 0.1, "warmup_updates": 50}    # T1's shape, checked in the base recipe
+# ---- lines 131-141
+   131	    def config_of(steps: int, epochs: int) -> ActivationContextTrainingConfig:
+   132	        kwargs = {key: tuple(value) if isinstance(value, list) else value for key, value in base.items()}
+   133	        required = dict(loss_kind="sft", learning_rate_ac=a.lr, learning_rate_target_lora=a.lr, examples_per_update=EXAMPLES_PER_UPDATE,
+   134	                        num_epochs=epochs, schedule_total_updates=steps * epochs, reporting_interval=a.reporting_interval,
+   135	                        checkpoint_every_updates=None, **SCHEDULE_SHAPE)
+   136	        optional = dict(resume_optimizer=False, resume_skip_steps=0, full_context_match_weight=0.0)   # set only where this tree has them
+   137	        missing = sorted(set(required) - known)
+   138	        if missing:
+   139	            raise ValueError(f"training-config fields this tree does not know: {missing}")
+   140	        kwargs.update(required, **{key: value for key, value in optional.items() if key in known})
+   141	        return ActivationContextTrainingConfig(**kwargs)
+# ---- lines 182-183
+   182	    steps = math.ceil(len(train_items) / EXAMPLES_PER_UPDATE)
+   183	    config = config_of(steps, a.epochs)

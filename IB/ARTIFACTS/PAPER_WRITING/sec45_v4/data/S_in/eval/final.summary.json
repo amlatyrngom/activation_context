@@ -1,0 +1,24 @@
+{
+ "acc": 21.0,
+ "em": 20.5,
+ "f1": 28.63,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.5,
+ "label": "S_in_final",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/S_in/sync/ckpt/final/ac",
+  "/data/scratch-fast/ngom/sec45/runs/S_in/sync/ckpt/final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1502,
+  "decode_seconds": 38.2
+ },
+ "seconds": 84
+}

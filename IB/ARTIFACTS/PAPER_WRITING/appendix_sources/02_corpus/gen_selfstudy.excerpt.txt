@@ -1,0 +1,140 @@
+# source: /workspace/IB/TMP/PAPER_AM/kit/gen_selfstudy.py
+# lines: 1-27 281-300 315-375 488-511
+# extracted: nl -ba | sed -n: docstring, model, generator arguments and sampling lines
+# git commit: untracked in /workspace git (HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa); file mtime Oct 19 21:45
+# ---- lines 1-27
+     1	"""
+     2	Step-2a training data for the AM-compaction comparison (Qwen3-4B-Instruct-2507, LongHealth patients 01-20).
+     3	
+     4	The generator and teacher reads ONE patient's record only (AM's single-patient text assembly); every user message names the
+     5	patient, so it stays answerable when the student sees five patients at once.
+     6	
+     7	  gen       (GPU, vLLM)  raw samples: ~75 % Cartridges-style self-study (writer turn A, answer turn B), ~25 % eval-shaped
+     8	                         multiple choice (writer writes question + 5 options + key; a separate call answers with AM's exact
+     9	                         format_question prompt; kept iff AM's parse_model_choice parses).
+    10	  finalize  (CPU)        near-duplicate guard against the 400 eval questions, trim to the target counts, stats, readable samples.
+    11	
+    12	Prompt texts: seed prompts copied from cartridges/data/resources.py and SYSTEM_PROMPT_TEMPLATE from
+    13	cartridges/synthesizers/self_study.py; context / question formatting and the answer parser copied verbatim from the AM repo
+    14	(evaluation/utils.py, evaluation/datasets.py).
+    15	"""
+    16	from __future__ import annotations
+    17	
+    18	import argparse
+    19	import json
+    20	import os
+    21	import random
+    22	import re
+    23	import time
+    24	from pathlib import Path
+    25	
+    26	MODEL = "Qwen/Qwen3-4B-Instruct-2507"
+    27	
+# ---- lines 281-300
+   281	def cmd_gen(args):
+   282	    from transformers import AutoTokenizer
+   283	    from vllm import LLM, SamplingParams
+   284	
+   285	    rng = random.Random(args.seed)
+   286	    patients = load_patients(args.data)
+   287	    tokenizer = AutoTokenizer.from_pretrained(args.model)
+   288	    n_es = round(args.per_patient * args.evalshape_frac)
+   289	    n_ss = args.per_patient - n_es
+   290	    over = args.overgen
+   291	    # one generate call per patient and stage: every batch shares the patient's ~12k-token prefix, which lets vLLM use
+   292	    # cascade attention (the shared prefix is read once per decode step instead of once per sequence)
+   293	    # no per-request SamplingParams seeds: they force vLLM's per-request-generator sampling loop (≈10x slower here); the
+   294	    # engine seed keeps runs reproducible
+   295	    llm = LLM(model=args.model, max_model_len=args.max_model_len, gpu_memory_utilization=args.gpu_util, enable_prefix_caching=True,
+   296	              seed=args.seed, disable_cascade_attn=False)
+   297	    gen_config = dict(temperature=0.7, top_p=0.8, top_k=20)   # the model's generation_config.json (default decoding)
+   298	    raw_dir = Path(args.out) / f"raw_{args.tag}"
+   299	    raw_dir.mkdir(parents=True, exist_ok=True)
+   300	    wanted = [pid for pid in patients if not args.patients or pid in args.patients.split(",")]
+# ---- lines 315-375
+   315	        t0 = time.time()
+   316	        jobs, prompts, params = [], [], []
+   317	        seeds = SEEDS_V2 if args.recipe == "v2" else SEEDS
+   318	        for i in range(int(n_ss * over) + 1):
+   319	            seed_type = rng.choice(list(seeds))
+   320	            note_id = rng.choice(notes)
+   321	            rule = naming_rule(pid, patient).replace("{note_id}", note_id)
+   322	            if args.recipe == "v2" and seed_type in WHOLE_RECORD_KINDS:   # a note anchor makes "list ALL" answer one note only
+   323	                rule = rule.split(" Base your message")[0] + " Do not mention note ids (such as text_1) in your message."
+   324	            seed = seeds[seed_type](rng) + rule
+   325	            prompts.append(tokenizer.apply_chat_template([{"role": "system", "content": system}, {"role": "user", "content": seed}],
+   326	                                                         tokenize=False, add_generation_prompt=True, enable_thinking=False))
+   327	            jobs.append(dict(kind="selfstudy", patient_id=pid, seed_type=seed_type, note_id=note_id, n=i))
+   328	            # v2: writer temperature varies per message (Cartridges temperature_a = 0.6 in v1)
+   329	            params.append(SamplingParams(temperature=rng.choice([0.6, 0.8, 1.0]) if args.recipe == "v2" else 0.6, max_tokens=512))
+   330	        for i in range(int(n_es * over) + 1):
+   331	            note_id = rng.choice(notes)
+   332	            ask = EVALSHAPE_WRITER.format(name=patient["name"], pid=pid, note_id=note_id)
+   333	            if args.recipe == "v2":
+   334	                ask += f"\nThe question should be about {rng.choice(EVALSHAPE_KINDS_V2)}."
+   335	            prompts.append(tokenizer.apply_chat_template([{"role": "system", "content": system}, {"role": "user", "content": ask}],
+   336	                                                         tokenize=False, add_generation_prompt=True, enable_thinking=False))
+   337	            jobs.append(dict(kind="evalshape", patient_id=pid, seed_type="evalshape", note_id=note_id, n=i))
+   338	            params.append(SamplingParams(temperature=1.0, top_p=0.95, max_tokens=512))
+   339	        outs = llm.generate(prompts, params, use_tqdm=False)
+   340	        t1 = time.time()
+   341	        writer_tokens = sum(len(o.outputs[0].token_ids) for o in outs)
+   342	
+   343	        # ---- stage 2: answers with AM's context format (system + record, then the user turn)
+   344	        stage2, prompts2, params2 = [], [], []
+   345	        writer_fail = {"selfstudy": 0, "evalshape": 0}
+   346	        for job, out in zip(jobs, outs):
+   347	            text = out.outputs[0].text.strip()
+   348	            if job["kind"] == "selfstudy":
+   349	                text = text.strip().strip("'\"").strip()
+   350	                if not text or out.outputs[0].finish_reason == "length":
+   351	                    writer_fail["selfstudy"] += 1
+   352	                    continue
+   353	                job["user"] = text
+   354	                max_tokens = 2048 if args.recipe == "v2" and job["seed_type"] in LONG_ANSWER_KINDS else 1024
+   355	            else:
+   356	                parsed = parse_writer_json(text)
+   357	                if parsed is None:
+   358	                    writer_fail["evalshape"] += 1
+   359	                    continue
+   360	                question, options, key = parsed
+   361	                order = list(range(5))
+   362	                rng.shuffle(order)                     # the writer favours early keys: shuffle options, remap the key
+   363	                correct = options[ord(key) - 65]
+   364	                options = [options[i] for i in order]
+   365	                key = chr(65 + options.index(correct))
+   366	                job.update(question=question, options=options, key=key,
+   367	                           user=am_question_content(am_prefixed_question(pid, patient, question), options))
+   368	                max_tokens = 512
+   369	            stage2.append(job)
+   370	            prompts2.append(am_prompt(tokenizer, article, job["user"]))
+   371	            params2.append(SamplingParams(**gen_config, max_tokens=max_tokens))
+   372	        outs2 = llm.generate(prompts2, params2, use_tqdm=False)
+   373	        t2 = time.time()
+   374	
+   375	        answer_tokens, kept, parse_fail, lines = 0, 0, 0, []
+# ---- lines 488-511 (argparse defaults; appended)
+   488	    sub = parser.add_subparsers(dest="cmd", required=True)
+   489	    gen = sub.add_parser("gen")
+   490	    gen.add_argument("--data", required=True)
+   491	    gen.add_argument("--model", default=MODEL)
+   492	    gen.add_argument("--out", required=True)
+   493	    gen.add_argument("--tag", required=True)
+   494	    gen.add_argument("--per-patient", type=int, default=1000)
+   495	    gen.add_argument("--evalshape-frac", type=float, default=0.25)
+   496	    gen.add_argument("--overgen", type=float, default=1.2)
+   497	    gen.add_argument("--max-model-len", type=int, default=32768)
+   498	    gen.add_argument("--gpu-util", type=float, default=0.9)
+   499	    gen.add_argument("--seed", type=int, default=0)
+   500	    gen.add_argument("--patients", default="", help="comma-separated patient ids (default: all 20)")
+   501	    gen.add_argument("--recipe", choices=["v1", "v2"], default="v1", help="v2: more seed kinds, varied writer temperature, "
+   502	                     "eval-shaped questions rotated over LongHealth's question kinds")
+   503	    fin = sub.add_parser("finalize")
+   504	    fin.add_argument("--data", required=True)
+   505	    fin.add_argument("--raw", required=True)
+   506	    fin.add_argument("--out", required=True)
+   507	    fin.add_argument("--tag", required=True)
+   508	    fin.add_argument("--per-patient", type=int, default=1000)
+   509	    fin.add_argument("--evalshape-frac", type=float, default=0.25)
+   510	    fin.add_argument("--seed", type=int, default=0)
+   511	    args = parser.parse_args()

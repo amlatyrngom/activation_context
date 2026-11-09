@@ -1,0 +1,13 @@
+{
+ "variant": "ac_1000",
+ "runs": 30,
+ "solved": 1,
+ "solved_share": 0.03333333333333333,
+ "answered": 2,
+ "mean_continuation_tokens": 28043.8,
+ "finish_reasons": {
+  "max_turns": 28,
+  "submitted": 2
+ },
+ "mean_seconds": 10.807830286026
+}

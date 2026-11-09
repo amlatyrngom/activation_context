@@ -1,0 +1,44 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/kit/export_h7_material.py
+# lines: 1-21,35-50
+# extracted: nl -ba | sed -n (selection: shortest solved + up to 2 near within 1.3x; 3 size slices)
+# git commit: not tracked by git (IB/TMP is outside version control); file as on disk 2026-10-28
+
+     1	"""
+     2	H7 material (Oct 15 ≈12:30Z): k-sample `full` resume caches (run_resume_k.py) -> material.jsonl for the H7S and H7M arms.
+     3	
+     4	Per prefix (one cut of one training run), the k continuations the untuned 9B wrote with the whole prefix in view are read with
+     5	export_continuation_material.material_of (same checks, same line format). Among the solved ones, ordered by continuation
+     6	length (written + tool context tokens):
+     7	  shortest   the shortest solved run
+     8	  near       up to --near-max more solved runs within --near-factor x the shortest's length
+     9	  dropped    a prefix whose shortest solved run is under --guess-tokens while fewer than 2 of the k runs solved (a likely guess)
+    10	Each kept run becomes one material line with a unique task_id "<task>#c<cut>s<seed>" (the packet builder keys runs by task
+    11	id), plus
+    12	  prefix_id     "<task>#c<cut>": the size draws are seeded by it
+    13	  item_slices   which of the 3 log-uniform size slices of [1/20, 1/5] this line trains at; a prefix trains --items-per-prefix
+    14	                items (more if it kept more runs), slices cycling from a prefix-seeded offset
+    15	  median_alt    the prefix's median solved run (upper median), read by the H7M build at sizes <= 1/10 instead of this line's
+    16	                own continuation
+    17	Summary beside the output: counts by keep type and cut, mean continuation lengths of the kept lines and of the median runs.
+    18	
+    19	    python export_h7_material.py --out material_h7.jsonl \
+    20	        --cache c16:ROLLOUTS/h7k3_trB_c16_full/rollouts.jsonl:PAPER_COMPACTION/h7k3_trB_c16_full/notes:prefixes_h7_trB_c16 ...
+    21	"""
+    ...
+    35	def length(record: dict) -> int:
+    36	    return record["tokens"]["continuation_written"] + record["tokens"]["continuation_context"]
+    37	
+    38	
+    39	def main() -> int:
+    40	    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    41	    parser.add_argument("--cache", action="append", required=True, help="CUT:ROLLOUTS_JSONL:NOTES_DIR:PREFIX_FOLDER")
+    42	    parser.add_argument("--out", required=True)
+    43	    parser.add_argument("--reader-tokenizer", default="Qwen/Qwen3.5-9B")
+    44	    parser.add_argument("--near-factor", type=float, default=1.3)
+    45	    parser.add_argument("--near-max", type=int, default=2)
+    46	    parser.add_argument("--guess-tokens", type=int, default=1500)
+    47	    parser.add_argument("--items-per-prefix", type=int, default=2)
+    48	    parser.add_argument("--slices", type=int, default=3)
+    49	    parser.add_argument("--seed", type=int, default=20261015)
+    50	    args = parser.parse_args()
+    ...

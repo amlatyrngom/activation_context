@@ -1,0 +1,94 @@
+{
+  "seed": 20261014,
+  "epochs": 2,
+  "phase": "Synthesizer last-mile SFT (sft): {\"epochs\": 2, \"held_tasks_per_benchmark\": 16, \"loss\": \"sft\", \"lr_ac\": 2e-05, \"lr_reader\": 2e-05, \"ratio\": 0.1, \"task\": \"synthesizer last-mile SFT: 27B single-call completions on the AC synthesizer prompt\"}",
+  "arm": {
+    "task": "synthesizer last-mile SFT: 27B single-call completions on the AC synthesizer prompt",
+    "loss": "sft",
+    "lr_ac": 2e-05,
+    "lr_reader": 2e-05,
+    "epochs": 2,
+    "ratio": 0.1,
+    "held_tasks_per_benchmark": 16
+  },
+  "counts": {
+    "wanted": {
+      "synth_sft": 1301
+    }
+  },
+  "actual_train": {
+    "synth_sft": 1301
+  },
+  "unique_sources": {
+    "synth_sft": 1301
+  },
+  "target_tokens": {
+    "synth_sft": 1853440
+  },
+  "failures": [],
+  "loss_shares": "natural: every example weighs 1",
+  "global_batch": 8,
+  "material": "/data/scratch/ngom/activation/paper_traj_qa_v1/tqa_sft_v1/material_v1",
+  "material_sha256": {
+    "parts.jsonl": "70d683f579fc1ca9a89b58b5eea2bd20f2c0bceb93be3c53a42a7ba3c2a1d7ee",
+    "examples.jsonl": "d5d54eb1c56534935c41af33ef23a5511a4cbcb06c74de40d7f1dc46e5f18242"
+  },
+  "held": {
+    "rule": "task_panel/held.json",
+    "panel": "/data/scratch/ngom/activation/paper_traj_qa_v1/tqa_sft_v1/packets/synth_sft_v1/task_panel",
+    "panel_sha256": "a189f9915b76e68700375b5be8862e1b6109ddc197c6936a73892869d8f6b1de",
+    "held_sha256": "05a71f1c5757823736d6344f74014e2f2a4c54e4db84fbe2410c2ae8fc17c4ee"
+  },
+  "initial_pair": {
+    "ac_checkpoint": "/data/scratch/ngom/activation/paper_traj_qa_v1/pairs/tqa_own_ro_final/ac",
+    "reader_checkpoint": "/data/scratch/ngom/activation/paper_traj_qa_v1/pairs/tqa_own_ro_final/reader"
+  },
+  "base_recipe": "/data/scratch/ngom/activation/paper_traj_qa_v1/tqa_own_v1/packets/tqa_own_ro_v1/recipe.json",
+  "training_config": {
+    "loss_kind": "sft",
+    "learning_rate_ac": 2e-05,
+    "learning_rate_target_lora": 2e-05,
+    "weight_decay": 0.0,
+    "adam_betas": [
+      0.9,
+      0.95
+    ],
+    "adam_eps": 1e-08,
+    "max_grad_norm": 1.0,
+    "lr_schedule": "cosine",
+    "lr_final_fraction": 0.1,
+    "warmup_updates": 50,
+    "schedule_total_updates": 326,
+    "schedule_anchor_update": null,
+    "schedule_anchor_factor": null,
+    "resume_optimizer": false,
+    "resume_skip_steps": 0,
+    "checkpoint_every_updates": null,
+    "checkpoint_every_epoch": true,
+    "no_context_penalty_weight": 1.0,
+    "no_context_penalty_fraction": 0.25,
+    "teacher_cache_top_k": 32,
+    "teacher_cache_block_examples": 32,
+    "deltas_off_panel": false,
+    "deltas_off_training": true,
+    "updates_per_epoch": 4,
+    "examples_per_update": 8,
+    "micro_batch_examples": 1,
+    "execution_policy": null,
+    "distributed": false,
+    "deterministic": false,
+    "max_example_tokens": 72000,
+    "logits_chunk_tokens": 64,
+    "fp32_head_matmul": false,
+    "gradient_checkpointing": true,
+    "gradient_checkpointing_min_tokens": 0,
+    "seed": 20260925,
+    "num_epochs": 2,
+    "shuffle_examples": true,
+    "cost_bucket_examples": 0,
+    "max_duration_seconds": null,
+    "reporting_interval": 0.25,
+    "completion_samples": 0,
+    "completion_max_new_tokens": 64
+  }
+}

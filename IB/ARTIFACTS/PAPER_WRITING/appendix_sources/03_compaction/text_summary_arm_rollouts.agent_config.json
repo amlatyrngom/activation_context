@@ -1,0 +1,263 @@
+{
+ "_source": {
+  "pc_r9d50_s2_summary_write": "/workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/ROLLOUTS/pc_r9d50_s2_summary_write/rollouts.jsonl",
+  "pc_r9d50_s2_summary": "/workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/ROLLOUTS/pc_r9d50_s2_summary/rollouts.jsonl",
+  "pc_r9d50_s2_full": "/workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/ROLLOUTS/pc_r9d50_s2_full/rollouts.jsonl"
+ },
+ "_extraction": "python: json.loads of the FIRST line of each file; kept 'agent_config' (long strings truncated to 200 chars) plus row seed/finish_reason. summary_write = the 9B writing the summary through the compact tool (resume_program:CaptureSummaryTool); summary = the continuation from that summary; full = continuation with the full prefix. Seed 2 shown; seeds 3-4 share the settings.",
+ "arms": {
+  "pc_r9d50_s2_summary_write": {
+   "seed": 2,
+   "finish_reason": "submitted",
+   "agent_config": {
+    "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+    "user_prompt": "The repository hazelcast/hazelcast-simulator is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: Performance measuring...[truncated]",
+    "messages_input": [],
+    "agent_name": "main",
+    "metadata": {
+     "benchmark": "lca_bug_localization_java",
+     "task_kind": "code_search",
+     "teacher_kind": "base",
+     "template": "code_search/base/0",
+     "program": "resume_summary_write",
+     "variant": "summary_write",
+     "keep_tokens": 0,
+     "side": "evaluation",
+     "repo": "hazelcast/hazelcast-simulator",
+     "language": "java",
+     "official_test": false
+    },
+    "model_name": "oracle",
+    "lora_name": null,
+    "ac_model_name": null,
+    "call_kwargs": {
+     "sampling_params": {
+      "temperature": 1.0,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "max_tokens": 8192
+     },
+     "chat_template_kwargs": {
+      "enable_thinking": true,
+      "reasoning_effort": "medium"
+     }
+    },
+    "record_sampling": true,
+    "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+    "env_args": null,
+    "env_memory_limit_mb": null,
+    "max_turns": 150,
+    "max_tool_errors": 8,
+    "max_duration": 6000.0,
+    "compaction_threshold_tokens": 1000000000,
+    "absolute_trajectory_cap": 90000,
+    "ac_compaction_ratio": 0.1,
+    "ac_subagent_ratio": 0.05,
+    "ac_tool_output_ratio": 0.025,
+    "ac_search_ratio": 0.05,
+    "tools": {
+     "compact": {
+      "class": "resume_program:CaptureSummaryTool",
+      "kwargs": {}
+     },
+     "subagent": null
+    },
+    "env_setups": {
+     "repo": {
+      "class": "activation.dataset.loaders.lca_bug_localization:RepoTarballSetup",
+      "kwargs": {
+       "env_path": "/workspace/repo"
+      }
+     }
+    },
+    "agentic_program": {
+     "class": "resume_program:ResumeFromPrefix",
+     "kwargs": {
+      "prefix_file": "/root/activation_artifacts/pc/prefixes_eval9c_200/prefixes/lca_bug_localization_java__hazelcast__hazelcast-simulator__321__320.json",
+      "variant": "summary_write",
+      "keep_tokens": 0,
+      "budget": 50000,
+      "notes_folder": "/root/activation_artifacts/SYNC/PAPER_COMPACTION/pc_r9d50_s2_summary_write/notes"
+     }
+    },
+    "dataset_task": {
+     "task_id": "hazelcast__hazelcast-simulator__321__320",
+     "dataset_id": "lca_bug_localization___config_java__split_dev__n_1000000__seed_0",
+     "reference_metrics_kind": "exact_match",
+     "gold_answer": "stabilizer/src/main/java/com/hazelcast/stabilizer/coordinator/TestCaseRunner.java",
+     "gold_answer_aliases": [],
+     "agent_prompt": "The repository hazelcast/hazelcast-simulator is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: Performance measuring...[truncated]"
+    }
+   }
+  },
+  "pc_r9d50_s2_summary": {
+   "seed": 2,
+   "finish_reason": "submitted",
+   "agent_config": {
+    "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+    "user_prompt": "The repository stevenblack/hosts is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: script run with --noupdate should...[truncated]",
+    "messages_input": [],
+    "agent_name": "main",
+    "metadata": {
+     "benchmark": "lca_bug_localization",
+     "task_kind": "code_search",
+     "teacher_kind": "base",
+     "template": "code_search/base/0",
+     "program": "resume_summary",
+     "variant": "summary",
+     "keep_tokens": 0,
+     "side": "evaluation",
+     "repo": "stevenblack/hosts",
+     "language": "py",
+     "official_test": true
+    },
+    "model_name": "oracle",
+    "lora_name": null,
+    "ac_model_name": null,
+    "call_kwargs": {
+     "sampling_params": {
+      "temperature": 1.0,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "max_tokens": 8192
+     },
+     "chat_template_kwargs": {
+      "enable_thinking": true,
+      "reasoning_effort": "medium"
+     }
+    },
+    "record_sampling": true,
+    "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+    "env_args": null,
+    "env_memory_limit_mb": null,
+    "max_turns": 150,
+    "max_tool_errors": 8,
+    "max_duration": 6000.0,
+    "compaction_threshold_tokens": 1000000000,
+    "absolute_trajectory_cap": 90000,
+    "ac_compaction_ratio": 0.1,
+    "ac_subagent_ratio": 0.05,
+    "ac_tool_output_ratio": 0.025,
+    "ac_search_ratio": 0.05,
+    "tools": {
+     "compact": null,
+     "subagent": null
+    },
+    "env_setups": {
+     "repo": {
+      "class": "activation.dataset.loaders.lca_bug_localization:RepoTarballSetup",
+      "kwargs": {
+       "env_path": "/workspace/repo"
+      }
+     }
+    },
+    "agentic_program": {
+     "class": "resume_program:ResumeFromPrefix",
+     "kwargs": {
+      "prefix_file": "/root/activation_artifacts/pc/prefixes_eval9c_200/prefixes/lca_bug_localization__stevenblack__hosts__112__107.json",
+      "variant": "summary",
+      "keep_tokens": 0,
+      "budget": 50000,
+      "notes_folder": "/root/activation_artifacts/SYNC/PAPER_COMPACTION/pc_r9d50_s2_summary/notes",
+      "summary": "# Summary Overview\nFixed updateHostsFile.py so that running with --noupdate (-n) doesn't ask \"Do you want to update all data sources?\" The fix was in promptForUpdate() function at line 149.\n\n# Progres...[truncated]"
+     }
+    },
+    "dataset_task": {
+     "task_id": "stevenblack__hosts__112__107",
+     "dataset_id": "lca_bug_localization___config_py__split_dev__n_1000000__seed_0",
+     "reference_metrics_kind": "exact_match",
+     "gold_answer": "updateHostsFile.py",
+     "gold_answer_aliases": [],
+     "agent_prompt": "The repository stevenblack/hosts is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: script run with --noupdate should...[truncated]"
+    }
+   }
+  },
+  "pc_r9d50_s2_full": {
+   "seed": 2,
+   "finish_reason": "submitted",
+   "agent_config": {
+    "system_prompt": "You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute rather than guessing, and give your final answer exactly once through submit_answer.",
+    "user_prompt": "The repository globus/globus-cli is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: `endpoint permission list` is way...[truncated]",
+    "messages_input": [],
+    "agent_name": "main",
+    "metadata": {
+     "benchmark": "lca_bug_localization",
+     "task_kind": "code_search",
+     "teacher_kind": "base",
+     "template": "code_search/base/0",
+     "program": "resume_full",
+     "variant": "full",
+     "keep_tokens": 0,
+     "side": "evaluation",
+     "repo": "globus/globus-cli",
+     "language": "py",
+     "official_test": false
+    },
+    "model_name": "oracle",
+    "lora_name": null,
+    "ac_model_name": null,
+    "call_kwargs": {
+     "sampling_params": {
+      "temperature": 1.0,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "max_tokens": 8192
+     },
+     "chat_template_kwargs": {
+      "enable_thinking": true,
+      "reasoning_effort": "medium"
+     }
+    },
+    "record_sampling": true,
+    "env_dockerfile_path": "/root/activation_artifacts/SYNC/ENVIRONMENTS/3d919c702d26/Dockerfile",
+    "env_args": null,
+    "env_memory_limit_mb": null,
+    "max_turns": 150,
+    "max_tool_errors": 8,
+    "max_duration": 6000.0,
+    "compaction_threshold_tokens": 1000000000,
+    "absolute_trajectory_cap": 90000,
+    "ac_compaction_ratio": 0.1,
+    "ac_subagent_ratio": 0.05,
+    "ac_tool_output_ratio": 0.025,
+    "ac_search_ratio": 0.05,
+    "tools": {
+     "compact": null,
+     "subagent": null
+    },
+    "env_setups": {
+     "repo": {
+      "class": "activation.dataset.loaders.lca_bug_localization:RepoTarballSetup",
+      "kwargs": {
+       "env_path": "/workspace/repo"
+      }
+     }
+    },
+    "agentic_program": {
+     "class": "resume_program:ResumeFromPrefix",
+     "kwargs": {
+      "prefix_file": "/root/activation_artifacts/pc/prefixes_eval9c_200/prefixes/lca_bug_localization__globus__globus-cli__423__422.json",
+      "variant": "full",
+      "keep_tokens": 0,
+      "budget": 50000,
+      "notes_folder": "/root/activation_artifacts/SYNC/PAPER_COMPACTION/pc_r9d50_s2_full/notes"
+     }
+    },
+    "dataset_task": {
+     "task_id": "globus__globus-cli__423__422",
+     "dataset_id": "lca_bug_localization___config_py__split_dev__n_1000000__seed_0",
+     "reference_metrics_kind": "exact_match",
+     "gold_answer": "globus_cli/commands/endpoint/permission/list.py",
+     "gold_answer_aliases": [],
+     "agent_prompt": "The repository globus/globus-cli is checked out at /workspace/repo (the state before the fix). The issue below was fixed by changing one file. Find that file.\n\nIssue: `endpoint permission list` is way...[truncated]"
+    }
+   }
+  }
+ }
+}

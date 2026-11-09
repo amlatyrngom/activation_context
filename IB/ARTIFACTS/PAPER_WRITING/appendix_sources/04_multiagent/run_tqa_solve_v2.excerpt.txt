@@ -1,0 +1,65 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/run_tqa_solve_v2.py
+# lines: 1-43,55-69 (of 87 total)
+# extracted: nl -ba | sed -n per range; solver settings: 9B, thinking (reasoning medium), 100 turns, 40k trajectory cap, seeds 0..2, no compaction/subagent
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 679fb038d3586ce0729eb21ec17d895f49f18cc0f9f510705f695ea380c2126b
+# ---- lines 1-43
+     1	"""
+     2	run_tqa_solve_v2.py (Oct 15): run_tqa_solve.py plus --base-seed (more runs on a sample that already has seeds 0..2, under a new
+     3	cache id). Otherwise unchanged.
+     4	
+     5	Untuned 9B solver runs over a fixed sample (make_tqa_samples.py): the settings of run_at3.py (single agent, thinking on, no
+     6	subagent, no compaction) with the trajectory Q/A cap of 40k tokens (a plain stop). Each task runs with seeds 0..--seeds-1
+     7	in one grouped rollout call; cache ROLLOUTS/<caching-id>/rollouts.jsonl, resumable. The sample (and the loader arguments
+     8	that reproduce its dataset ids) is read from PAPER_TRAJ_QA/<caching-id>/sample.json.
+     9	
+    10	    python run_tqa_solve.py --caching-id tqa_train_solve_v1 [--limit 2 --seeds 1 --as-id tqa_solve_smoke]
+    11	"""
+    12	import argparse
+    13	import dataclasses
+    14	import json
+    15	import time
+    16	
+    17	from activation.agent.rollout_reporter import RolloutReporter
+    18	from activation.agent_training import agent_training_teacher_study as teacher_study
+    19	from activation.agent_training.agent_training_teacher_study import ORACLE_MODEL_NAME, AgentTeacherKind, AgentTrainingStudy
+    20	from activation.common.data_syncing import resolve_path
+    21	
+    22	READER_MODEL_ID = "Qwen/Qwen3.5-9B"
+    23	SINGLE_AGENT_SYSTEM_PROMPT = ("You are a capable, careful agent solving a task in a Linux sandbox. Use the tools to look things up and compute "
+    24	                              "rather than guessing, and give your final answer exactly once through submit_answer.")     # as run_at3.py
+    25	NO_COMPACTION = 10 ** 9
+    26	
+    27	
+    28	def main() -> int:
+    29	    parser = argparse.ArgumentParser()
+    30	    parser.add_argument("--caching-id", required=True, help="the sample's folder; also the cache unless --as-id")
+    31	    parser.add_argument("--as-id", default=None, help="write the cache and report under this id instead (smoke tests)")
+    32	    parser.add_argument("--limit", type=int, default=None, help="first N tasks per benchmark only")
+    33	    parser.add_argument("--seeds", type=int, default=3)
+    34	    parser.add_argument("--base-seed", type=int, default=0)
+    35	    parser.add_argument("--sample-id", default=None, help="read the sample from PAPER_TRAJ_QA/<sample-id> (default: --caching-id)")
+    36	    parser.add_argument("--model-id", default=READER_MODEL_ID)
+    37	    parser.add_argument("--reasoning", default="medium")
+    38	    parser.add_argument("--max-turns", type=int, default=100)
+    39	    parser.add_argument("--max-duration", type=float, default=3600.0)
+    40	    parser.add_argument("--trajectory-cap", type=int, default=40_000)
+    41	    parser.add_argument("--max-model-len", type=int, default=56_000)
+    42	    parser.add_argument("--agents-per-gpu", type=int, default=40)
+    43	    args = parser.parse_args()
+# ---- lines 55-69
+    55	    study = AgentTrainingStudy(harness, {name: 1.0 for name in sample}, reasoning=args.reasoning, max_turns=args.max_turns,
+    56	                               max_duration=args.max_duration, compaction_threshold_tokens=NO_COMPACTION, system_prompt=SINGLE_AGENT_SYSTEM_PROMPT)
+    57	    started = time.time()
+    58	    try:
+    59	        study.setup_reusable_artifacts({name: entry.get("max_examples", 10 ** 6) for name, entry in sample.items()}, seed=0)
+    60	        configs, used = [], {}
+    61	        for name, entry in sample.items():
+    62	            dataset = study.datasets[name]
+    63	            assert dataset.dataset_id == entry["dataset_id"], (dataset.dataset_id, entry["dataset_id"])
+    64	            ids = entry["task_ids"][:args.limit] if args.limit else entry["task_ids"]
+    65	            used[name] = {**entry, "task_ids": ids}
+    66	            for task_id in ids:
+    67	                config = study._config_for(name, dataset.scorable_tasks[task_id], AgentTeacherKind.BASE, 0)
+    68	                config.tools = {**config.tools, "compact": None, "subagent": None}
+    69	                config.absolute_trajectory_cap = args.trajectory_cap

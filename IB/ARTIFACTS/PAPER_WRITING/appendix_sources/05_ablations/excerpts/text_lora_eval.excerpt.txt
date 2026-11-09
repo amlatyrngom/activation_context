@@ -1,0 +1,19 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/text_lora/text_lora_eval.py
+# lines: 1-6 33-33 46-46 56-56
+# extracted: nl -ba | sed -n (greedy, max 2,048 new tokens, lenient rule)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 9f38e94b13b73b37
+
+----- lines 1-6 -----
+     1	"""Dev200 accuracy of the text + reader-LoRA baseline (text_lora_train.py) at each saved adapter, decoded like text4b_sec45.py (the
+     2	53.0 text line): rq_common.READ with the row's top20 as text, thinking off, ONE greedy sample, max 2,048 new tokens. Scores: strict =
+     3	rq_common.score on the last "Final answer:" line; lenient = the same, falling back to the reply's last non-empty line when it is at
+     4	most 120 characters and there is no "Final answer:" line (the rule that reproduces the untuned 4B's 53.0).
+     5	
+     6	  python text_lora_eval.py --data HOTPOT_TASKS_DIR --out OUT [--base]     (OUT = text_lora_train.py's --out; --base adds update 0)
+----- lines 33-33 -----
+    33	    p.add_argument("--base", action="store_true"); p.add_argument("--max-tokens", type=int, default=2048)
+----- lines 46-46 -----
+    46	    llm = LLM(model=MODEL_ID, max_model_len=16384, gpu_memory_utilization=0.85, enable_lora=True, max_lora_rank=128, max_loras=1, seed=0)
+----- lines 56-56 -----
+    56	        outs = llm.generate(prompts, SamplingParams(temperature=0.0, max_tokens=a.max_tokens), lora_request=lora)

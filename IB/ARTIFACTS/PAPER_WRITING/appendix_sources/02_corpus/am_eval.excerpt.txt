@@ -1,0 +1,57 @@
+# source: /workspace/IB/TMP/PAPER_AM/kit/am_eval.py
+# lines: 1-14 64-100
+# extracted: nl -ba | sed -n: docstring (AM prompt + parse_model_choice, default sampled decoding), argparse defaults, sampling from generation_config
+# git commit: untracked in /workspace git (HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa)
+# ---- lines 1-14
+     1	"""
+     2	Attention Matching's LongHealth evaluation (longhealth5: 4 contexts x 100 questions, Qwen3-4B-Instruct-2507) in our harness.
+     3	
+     4	Views (each question sees its own context of five patients):
+     5	  am    every patient is an activation-context part answered by AMKVTable (the exported AM cache, or a trained table)
+     6	  full  the article as plain text (AM's "original")
+     7	  none  no article (AM's "no_context")
+     8	  right the question's own patient only, as plain text (the single-document upper bound)
+     9	Prompt and scoring are AM's: [system, user: context] + [user: question, options, "think step by step very briefly ... letter"],
+    10	the model's default sampled decoding (its generation_config) unless --greedy, up to --max-new tokens, parse_model_choice.
+    11	
+    12	  python am_eval.py --views am full none --exports EXPORT_DIR --out OUT.json [--handler-state special_inputs.pt] [--ac A --reader R]
+    13	  (PYTHONPATH=<code tree>; CQA_BENCH=<corpus kit bench dir>; the corpus kit's harness() builds Qwen3-4B-Instruct-2507 with key/value transfer)
+    14	"""
+# ---- lines 64-100
+    64	    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    65	    parser.add_argument("--views", nargs="+", default=["am"], choices=("am", "full", "none", "right"))
+    66	    parser.add_argument("--exports", type=Path, help="folder of am_export.py ctx_*.pt files (view am)")
+    67	    parser.add_argument("--handler-state", type=Path, help="a trained table (special_inputs.pt) loaded over the export")
+    68	    parser.add_argument("--table", choices=("kv", "rows"), default="kv",
+    69	                        help="view am: kv = AMKVTable over --exports; rows = am_rows.EncodedTable from --init")
+    70	    parser.add_argument("--init", type=Path, help="--table rows: the encoder outputs (am_rows.py encode)")
+    71	    parser.add_argument("--ac", type=Path); parser.add_argument("--reader", type=Path)
+    72	    parser.add_argument("--contexts", type=int, nargs="+", default=[0, 1, 2, 3]); parser.add_argument("--limit", type=int, default=0)
+    73	    parser.add_argument("--batch", type=int, default=4); parser.add_argument("--max-new", type=int, default=2048)
+    74	    parser.add_argument("--greedy", action="store_true"); parser.add_argument("--passes", type=int, default=1)
+    75	    parser.add_argument("--pass-offset", type=int, default=0, help="first pass index (a later run adds passes with new seeds)")
+    76	    parser.add_argument("--out", type=Path, required=True)
+    77	    parser.add_argument("--keep-placeholders", action="store_true", help="carry the inert placeholder rows (slower; same result)")
+    78	    parser.add_argument("--masked", action="store_true", help="attention with the boolean mask (slower; same result) instead of the maskless fused kernel")
+    79	    args = parser.parse_args()
+    80	    started = time.monotonic()
+    81	    import torch
+    82	    from transformers import GenerationConfig
+    83	    from activation.ac_model import ActivationContextStudyGenerator, ActivationContextTrainer, ActivationContextTrainingConfig
+    84	    from activation.ac_model.ac_model_training import ActivationContextTrainingProgress
+    85	    from activation.autotuners import configure_fla_runtime
+    86	    from run_qa import AC, harness
+    87	    from activation.harness import kv_transfer
+    88	    kv_transfer.DROP_PLACEHOLDERS = not args.keep_placeholders    # the table's entries need no placeholder rows in the reader
+    89	    kv_transfer.MASKLESS = not args.masked                        # fused lower-right causal attention, native GQA (kv_transfer.MasklessLayout)
+    90	    from am_handler import AMKVTable
+    91	    from am_train import table_environment
+    92	    init = table_environment(args) if "am" in args.views else None
+    93	    sampling = None
+    94	    if not args.greedy:
+    95	        generation = GenerationConfig.from_pretrained(am_lh.MODEL)
+    96	        sampling = {key: getattr(generation, key) for key in ("temperature", "top_p", "top_k") if getattr(generation, key, None) is not None}
+    97	    h = harness(args.ac, args.reader)
+    98	    study = ActivationContextStudyGenerator(h, AC)
+    99	    ac = study.ac_model
+   100	    trainer = ActivationContextTrainer(h, ActivationContextTrainingConfig(distributed=False, completion_max_new_tokens=args.max_new, loss_kind="sft",

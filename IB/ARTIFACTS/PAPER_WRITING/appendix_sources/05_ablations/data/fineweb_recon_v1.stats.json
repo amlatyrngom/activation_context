@@ -1,0 +1,38 @@
+{
+ "reader_tokenizer": "Qwen/Qwen3-4B-Instruct-2507",
+ "dataset": "HuggingFaceFW/fineweb-edu (sample-10BT)",
+ "shards_read": [
+  "sample/10BT/000_00000.parquet"
+ ],
+ "documents_scanned": 230000,
+ "skipped": {
+  "wikipedia_url": 1995,
+  "short_prefilter": 144120,
+  "short": 23157,
+  "no_cut": 0,
+  "out_of_range_after_cut": 0,
+  "duplicate": 26
+ },
+ "rule": "one passage per document, 1024..2048 reader tokens, wikipedia.org URLs removed, seed 0",
+ "train": {
+  "count": 60000,
+  "mean": 1587.4,
+  "median": 1581.0,
+  "p10": 1098,
+  "p90": 2031,
+  "min": 1024,
+  "max": 2048,
+  "total_tokens": 95243420
+ },
+ "held": {
+  "count": 500,
+  "mean": 1586.8,
+  "median": 1583.5,
+  "p10": 1106,
+  "p90": 2033,
+  "min": 1029,
+  "max": 2048,
+  "total_tokens": 793424
+ },
+ "seconds": 377
+}

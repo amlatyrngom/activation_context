@@ -1,0 +1,105 @@
+{
+ "name": "R_in_e17ls",
+ "args": {
+  "kind": "recon",
+  "mode": "in",
+  "data": "/root/sec45/data/fineweb_recon_v1",
+  "fresh": "True",
+  "pair": "None",
+  "name": "R_in_e17ls",
+  "steps": "2000",
+  "epu": "8",
+  "seconds": "864000.0",
+  "encoder_lr": "0.0001",
+  "reader_lr": "2e-05",
+  "warmup": "50",
+  "schedule": "cosine",
+  "ckpt_every": "200",
+  "no_save": "False",
+  "report_every": "200",
+  "held_panel": "None",
+  "micro_batch": "2",
+  "block_examples": "64",
+  "penalty_weight": "1.0",
+  "longest_first": "0",
+  "seed": "0",
+  "offset": "0",
+  "keep_optimizer": "False",
+  "resume_if_possible": "True",
+  "keep_steps": "final"
+ },
+ "train_items": 16000,
+ "held_items": 500,
+ "planned_updates": 2000,
+ "models": {
+  "QA4B_READER": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_SIDE": "Qwen/Qwen3-1.7B",
+  "SEC45_ENCODER": "Qwen/Qwen3-1.7B",
+  "SEC45_LINEAR_SKIP": "1",
+  "QA4B_RANK": "128",
+  "QA4B_LAYERS": "none",
+  "QA4B_KV": "0",
+  "RQ_THINKING": "0"
+ },
+ "ac_fields": {
+  "kv_transfer": false,
+  "intervention_frequency": 0,
+  "intervention_layers": null,
+  "summary_layout": "interleaved",
+  "side_lora_rank": 128,
+  "max_view_rows": 4096
+ },
+ "train_target_tokens_mean": 1585.1,
+ "penalty_weight": 1.0,
+ "penalty_fraction": 0.25,
+ "order": {
+  "loaded_epoch_number": 0,
+  "start_epoch": 1,
+  "shuffle": true,
+  "shuffle_seed": 1,
+  "torch_seed": 1,
+  "first_updates": [
+   [
+    "reconstruct:fineweb_edu:071a3e07f72479add26f",
+    "reconstruct:fineweb_edu:18802f39c52d940d7c2d",
+    "reconstruct:fineweb_edu:50e79386b3031ca644bc",
+    "reconstruct:fineweb_edu:597095f6cce351761387",
+    "reconstruct:fineweb_edu:91aa3135c6d02f81d5a9",
+    "reconstruct:fineweb_edu:a13b9153b6d3cbf0c28b",
+    "reconstruct:fineweb_edu:b502c37c107d41d3be91",
+    "reconstruct:fineweb_edu:f0eb93b254960a486479"
+   ],
+   [
+    "reconstruct:fineweb_edu:271afc7c9e815330c512",
+    "reconstruct:fineweb_edu:36080069d86f9057ffe5",
+    "reconstruct:fineweb_edu:9a45661a84ee2a1bcbf0",
+    "reconstruct:fineweb_edu:a6a80b0bfe439d6e1b2c",
+    "reconstruct:fineweb_edu:ac6cb57c708f4517f104",
+    "reconstruct:fineweb_edu:aedac0b9453f915609b9",
+    "reconstruct:fineweb_edu:ccba7b1c04ca763bec9f",
+    "reconstruct:fineweb_edu:f09109d29e340c2cc14c"
+   ],
+   [
+    "reconstruct:fineweb_edu:028d9fcc5bd13a8b12b8",
+    "reconstruct:fineweb_edu:3f5a7a5d913022e312f3",
+    "reconstruct:fineweb_edu:5e394072bbc5a0811cdd",
+    "reconstruct:fineweb_edu:770cf56c32a0637d722b",
+    "reconstruct:fineweb_edu:97d3f0a0ee13bdf9d3a5",
+    "reconstruct:fineweb_edu:982904b370f4390b41de",
+    "reconstruct:fineweb_edu:a219bb1f11b133cbcfb9",
+    "reconstruct:fineweb_edu:b5c71dbc371957a19cf6"
+   ],
+   [
+    "reconstruct:fineweb_edu:042fe7a5cae1726d0913",
+    "reconstruct:fineweb_edu:28d06c3af5beb5acae9f",
+    "reconstruct:fineweb_edu:43306770c2dad7c8db26",
+    "reconstruct:fineweb_edu:6515a73d216f8db966fe",
+    "reconstruct:fineweb_edu:71524180ea05bf38de26",
+    "reconstruct:fineweb_edu:a4d96884e23ed022f6de",
+    "reconstruct:fineweb_edu:b2c68a73fc04b6b2ad71",
+    "reconstruct:fineweb_edu:ce8700cb1f2502d69c9c"
+   ]
+  ],
+  "first_sha256": "e62f9f68364ae8e459c837e072ded23af1d5b51fcd83a223aed7a8fdddbd8491"
+ }
+}

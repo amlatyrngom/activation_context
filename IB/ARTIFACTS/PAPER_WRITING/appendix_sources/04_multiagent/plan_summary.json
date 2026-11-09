@@ -1,0 +1,27 @@
+{
+ "tasks": 1000,
+ "k9_hist": {
+  "0": 151,
+  "1": 82,
+  "2": 179,
+  "3": 588
+ },
+ "27b_ran_on": 233,
+ "27b_runs": 466,
+ "27b_runs_right": 153,
+ "k0_tasks_with_27b_right (unusable -> usable)": 37,
+ "k0_tasks_27b_ran": 151,
+ "k1_tasks_with_27b_right (more minority-right)": 56,
+ "k1_tasks_27b_ran": 82,
+ "triples_by_type": {
+  "deepmath/all_differ": 50,
+  "deepmath/all_differ/27b": 164,
+  "deepmath/majority_right": 358,
+  "deepmath/majority_right/27b": 194,
+  "deepmath/minority_right": 114,
+  "deepmath/minority_right/27b": 356,
+  "deepmath/unanimous_right": 412
+ },
+ "triples_total": 1648,
+ "triple_tasks": 710
+}

@@ -1,0 +1,14 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 111-112 229-232
+# extracted: nl -ba | sed -n (no-context penalty defaults; penalty active only while reader lr > 0 -> none for frozen-reader runs)
+# git commit: tracked; working tree MODIFIED vs HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa (git status ' M')
+# sha256 of source: 4b936c447205d92e
+
+----- lines 111-112 -----
+   111	    no_context_penalty_weight: float = 1.0     # λ of the no-context penalty (0 = off); applied only while the reader adapter trains
+   112	    no_context_penalty_fraction: float = 0.25  # share of training examples carrying the penalty each update; the term is scaled by 1/fraction (unbiased)
+----- lines 229-232 -----
+   229	    def penalty_active(self) -> bool:
+   230	        """The no-context penalty trains the reader adapter only: it is on when λ > 0 and the adapter has a learning rate."""
+   231	        return self.no_context_penalty_weight > 0 and self.learning_rate_target_lora > 0
+   232	

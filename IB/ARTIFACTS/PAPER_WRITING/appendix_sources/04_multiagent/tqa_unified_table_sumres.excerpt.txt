@@ -1,0 +1,63 @@
+# source: /workspace/IB/ARTIFACTS/PAPER_TRAJ_QA/scripts/tqa_unified_table_sumres.py
+# lines: 1-57 (of 114 total)
+# extracted: nl -ba | sed -n per range; table builder: seeds per set (dmext 3, dmhard 5), majority vote random tie-break, scoring
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 4baab751840d1498d30f0a9ea48121b1de7d2158e6a6120a580eb96460f72720
+# ---- lines 1-57
+     1	"""
+     2	Unified DeepMath difficulty table (Oct 18; user: one table, 6-8 in one column, 8.5 and >=9 in their own columns). Two layouts:
+     3	  merged:   6-8 = tqa_dmext_solve_v1 tasks < 8.5; 8.5 and >=9 pool both sets (dmext's 28 tasks at >=8.5 join tqa_dmhard's).
+     4	  separate: 6-8 from tqa_dmext_solve_v1, 8.5 and >=9 from tqa_dmhard only (dmext's 28 hard tasks left out).
+     5	Share = per-task mean over that task's seeds, averaged over tasks (each task weighs the same whatever its seed count; dmext 3 seeds,
+     6	dmhard 5). Paired tests are task x seed pooled over seeds, two-sided sign test, as tqa_dm_arms.py (seed i against the reference's
+     7	seed i; against majority, each seed against the fixed vote). Scoring as tqa_dm_arms.py.
+     8	Majority vote (user, Oct 18: the paper's "Majority Vote"): the answer two runs share; with no such answer, a uniformly random one of
+     9	the runs' answers. Its share is the expected score of that draw; its paired tests use one fixed draw (seeded by task id). The strict
+    10	vote (no majority = unsolved; the earlier tables) is kept as "majority strict". "summary" = Results + Summary (tqa_r2dm{h,x}_sumres_s*,
+    11	added Oct 19; table only, not in the figures per the user). --json writes the separate layout for the figures.
+    12	
+    13	    PYTHONPATH=../../PAPER_COMPACTION/kit python tqa_unified_table.py --sync-root <SYNC mirror> --out t.txt
+    14	"""
+    15	import argparse
+    16	import json
+    17	import random
+    18	from pathlib import Path
+    19	
+    20	import score_synth_lenient as lenient
+    21	from run_synth import load_solvers, solver_result
+    22	from score_synth1call import score, sign_test
+    23	from tqa_r2_gate import load
+    24	
+    25	SETS = {"dmext": ("tqa_dmext_solve_v1", "r2dmx", 3), "dmhard": ("tqa_dmhard", "r2dmh", 5)}
+    26	ARMS = [("results", "gen", "PAPER_TRAJ_QA/tqa_{p}_res_s{s}/gen_0.jsonl"), ("M1", "ac", "ROLLOUTS/tqa_{p}_ac_m1_s{s}/rollouts.jsonl"),
+    27	        ("M1 no rows", "ac", "ROLLOUTS/tqa_{p}_norows_m1_s{s}/rollouts.jsonl"), ("summary", "gen", "PAPER_TRAJ_QA/tqa_{p}_sumres_s{s}/gen_0.jsonl")]
+    28	
+    29	
+    30	def set_marks(root: Path, at3_id: str, tag: str, seeds: int) -> dict:
+    31	    sample = json.loads((root / "PAPER_TRAJ_QA" / at3_id / "sample.json").read_text())["sample"]["deepmath"]
+    32	    rows = load_solvers(root, at3_id)
+    33	    tasks = [t for t in sample["task_ids"] if all((t, s) in rows for s in range(3))]
+    34	    out = {}
+    35	    for t in tasks:
+    36	        task = rows[(t, 0)]["agent_config"]["dataset_task"]
+    37	        answers = [solver_result(rows[(t, s)], 40_000) for s in range(3)]
+    38	        solved = [score(task, a) >= 1.0 for a in answers]
+    39	        majority = lenient.majority_answer("deepmath", answers)
+    40	        strict = majority is not None and score(task, majority) >= 1.0
+    41	        valid = [ok for answer, ok in zip(answers, solved) if isinstance(answer, str)]
+    42	        tied = majority is None and bool(valid)
+    43	        out[t] = {"diff": float(t.split("-")[0][1:]), "single": solved, "any@3": [any(solved)], "majority strict": [strict],
+    44	                  "majority": [sum(valid) / len(valid) if tied else strict],
+    45	                  "majority draw": [random.Random(t).choice(valid) if tied else strict]}
+    46	    for name, kind, pattern in ARMS:
+    47	        for s in range(seeds):
+    48	            got = load(f"{kind}:{root / pattern.format(p=tag, s=s)}")
+    49	            for t in tasks:
+    50	                row = got.get(t)
+    51	                ok = False
+    52	                if row is not None and not row["bad"] and not row["length"]:
+    53	                    answer, _ = lenient.readings("deepmath", row["text"])["lenient"]
+    54	                    ok = score(row["task"], answer) >= 1.0
+    55	                out[t].setdefault(name, []).append(ok)
+    56	    print(f"{at3_id}: {len(tasks)} tasks", flush=True)
+    57	    return out

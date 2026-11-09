@@ -1,0 +1,24 @@
+{
+ "acc": 0.0,
+ "em": 0.0,
+ "f1": 0.0,
+ "answered": 2.0,
+ "n": 200,
+ "length_stops": 78,
+ "new_tokens_mean": 64.3,
+ "label": "T_kv_v4fr_u0",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/init/R_kv_v4fr_final/ac",
+  "/data/scratch-fast/ngom/sec45/init/R_kv_v4fr_final/reader"
+ ],
+ "mode": "kv",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 12988,
+  "decode_seconds": 70.6
+ },
+ "seconds": 92
+}

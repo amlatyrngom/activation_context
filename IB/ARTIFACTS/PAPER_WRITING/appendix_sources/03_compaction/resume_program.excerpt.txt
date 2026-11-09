@@ -1,0 +1,37 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/kit/resume_program.py
+# lines: 1-22,48-55
+# extracted: nl -ba | sed -n (variants full/none/summary/summary_write/ac; compact tool capture)
+# git commit: not tracked by git (IB/TMP is outside version control); file as on disk 2026-10-28
+
+     1	"""
+     2	The resumption benchmark's program: a reader agent picks up a task after a prefix another model (the 27B) wrote, with the
+     3	prefix kept whole or replaced, and runs the ordinary model loop from there under a continuation budget.
+     4	
+     5	What the reader's prompt holds, by variant (the head is always the reader's own rendering of the system prompt, tools and task):
+     6	
+     7	    full            head + every prefix step                      (upper reference)
+     8	    none            head + a note that nothing was kept           (lower reference)
+     9	    recent          head + that note + the last `keep_tokens` of the prefix as turns (the oldest kept turn cut at its head:
+    10	                    its call stays, its output and its reasoning keep their ends)
+    11	    summary         head + the harness's compaction message carrying `summary` (a text summary written earlier)
+    12	    summary_write   head + every prefix step + the harness's demand to compact: the run ends when the reader calls
+    13	                    compact(summary); the summary is the run's answer (config.tools must map "compact" to CaptureSummaryTool)
+    14	    ac              head + the harness's compaction message carrying the prefix as AC rows (`keep_tokens` rows; the config
+    15	                    names the AC model and the reader adapter): the same message Agent.compact builds, without a summary
+    16	
+    17	Prefix steps go in at token level: an assistant turn is the 27B's sampled tokens verbatim (same vocabulary), and the text
+    18	between turns is rendered by the reader's own chat template, as in a live run. The installed prompt becomes the run's
+    19	`prompt_token_ids` / `prompt_messages`, so the run's trajectory is the continuation alone and its token count is the
+    20	metric. The budget ends the run with finish_reason "continuation_budget" once the continuation reaches `budget` tokens.
+    21	A note per run (sizes, how many between-turn renderings differ from the 27B's record) goes to `notes_folder`.
+    22	"""
+    ...
+    48	class CaptureSummaryTool(CompactionTool):
+    49	    """The compact tool as the model sees it (same name, description and schema); the summary becomes the run's answer and ends the run."""
+    50	
+    51	    def execute(self, summary: str = "") -> ToolCallResult:
+    52	        if not str(summary or "").strip():
+    53	            return ToolCallResult(output="Nothing recorded: compact needs the handoff as its `summary` argument.", is_error=True)
+    54	        self.agent.run_results.answer = str(summary)
+    55	        return ToolCallResult(output="Summary recorded.", is_final=True)
+    ...

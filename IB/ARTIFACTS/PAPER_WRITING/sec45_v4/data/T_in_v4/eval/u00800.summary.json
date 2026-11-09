@@ -1,0 +1,24 @@
+{
+ "acc": 53.0,
+ "em": 49.0,
+ "f1": 64.41,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.5,
+ "label": "T_in_v4_u800",
+ "pair": [
+  "/root/sec45/runs/T_in_v4/sync/ckpt/step_00800/ac",
+  "/root/sec45/runs/T_in_v4/sync/ckpt/step_00800/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1500,
+  "decode_seconds": 90.4
+ },
+ "seconds": 105
+}

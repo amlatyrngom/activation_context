@@ -1,0 +1,30 @@
+{
+ "name": "G2n_all20_lr1e3",
+ "args": {
+  "exports": "/root/am_v1/export/t0.1_fastest",
+  "data": "/root/am_data/out/selfstudy_v1_all.jsonl",
+  "table": "kv",
+  "init": "None",
+  "reader_lora": "None",
+  "name": "G2n_all20_lr1e3",
+  "per_patient": "0",
+  "evalshape_share": "0.25",
+  "lr_special": "0.001",
+  "lr_reader": "0.0",
+  "epu": "8",
+  "epochs": "1",
+  "warmup": "25",
+  "schedule": "cosine",
+  "ckpt_every": "250",
+  "seconds": "None",
+  "seed": "0",
+  "keep_truncated": "False",
+  "teacher_targets": "/root/am_v1/teacher/teacher_v1_all.pt",
+  "profile": "False",
+  "keep_placeholders": "False",
+  "no_checkpointing": "True",
+  "masked": "False"
+ },
+ "samples": 17764,
+ "kept_ratio": 0.09990598111006346
+}

@@ -1,0 +1,24 @@
+{
+ "acc": 17.0,
+ "em": 16.5,
+ "f1": 23.47,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.8,
+ "label": "S_in_v4fr_u1200",
+ "pair": [
+  "/root/sec45/runs/S_in_v4fr/sync/ckpt/step_01200/ac",
+  "/root/sec45/runs/S_in_v4fr/sync/ckpt/step_01200/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1551,
+  "decode_seconds": 92.7
+ },
+ "seconds": 109
+}

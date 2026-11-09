@@ -1,0 +1,13 @@
+{
+ "variant": "ac_2000",
+ "runs": 30,
+ "solved": 2,
+ "solved_share": 0.06666666666666667,
+ "answered": 6,
+ "mean_continuation_tokens": 24149.2,
+ "finish_reasons": {
+  "max_turns": 24,
+  "submitted": 6
+ },
+ "mean_seconds": 9.637199878692627
+}

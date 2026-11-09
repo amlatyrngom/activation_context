@@ -1,0 +1,27 @@
+# source: /workspace/activation/harness/vllm_wrapper.py
+# lines: 210-232
+# extracted: nl -ba | sed -n '210,232p' (thinking-off default and default sampling for Qwen3.5-9B; runs override per agent_config)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: clean at HEAD
+   210	        # Qwen3.6 / Qwen3.8 publish the same non-thinking sampling; presence_penalty curbs repetition.
+   211	        qwen_non_thinking = {
+   212	            "sampling_params": {
+   213	                "temperature": 0.7,
+   214	                "top_p": 0.8,
+   215	                "top_k": 20,
+   216	                "min_p": 0.0,
+   217	                "presence_penalty": 1.5,
+   218	            },
+   219	        }
+   220	        known = {
+   221	            "unsloth/Qwen3.8-27B-NVFP4": qwen_non_thinking,
+   222	            "Qwen/Qwen3.8-27B-FP8": qwen_non_thinking,
+   223	            "nvidia/Qwen3.6-35B-A3B-NVFP4": qwen_non_thinking,
+   224	            "Qwen/Qwen3.6-35B-A3B-FP8": qwen_non_thinking,
+   225	            # Qwen3.5 thinks by default; agents and study prompts want the direct answer.
+   226	            "Qwen/Qwen3.5-9B": qwen_non_thinking | {"chat_template_kwargs": {"enable_thinking": False}},
+   227	            "RedHatAI/Qwen3.5-9B-FP8-dynamic": qwen_non_thinking | {"chat_template_kwargs": {"enable_thinking": False}},
+   228	            "Qwen/Qwen3.5-4B": qwen_non_thinking | {"chat_template_kwargs": {"enable_thinking": False}},
+   229	        }
+   230	        if model_id not in known:
+   231	            print(f"{model_id} - No recommended chat kwargs; using engine defaults.")
+   232	        return {key: dict(value) for key, value in known.get(model_id, {}).items()}

@@ -1,0 +1,24 @@
+{
+ "acc": 66.5,
+ "em": 61.5,
+ "f1": 75.47,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.9,
+ "label": "T_res_v4_u2400",
+ "pair": [
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_02400/ac",
+  "/root/sec45/runs/T_res_v4/sync/ckpt/step_02400/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1583,
+  "decode_seconds": 90.7
+ },
+ "seconds": 106
+}

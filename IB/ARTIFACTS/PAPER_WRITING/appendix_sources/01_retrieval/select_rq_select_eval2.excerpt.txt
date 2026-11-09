@@ -1,0 +1,74 @@
+# source: /home/node/.claude/jobs/6f1c1373/tmp/pr/res/select/rq_select_eval2.py
+# lines: 1-18,31-35,68-90,136-143,171-181
+# extracted: nl -ba | sed -n (select->text: 2B selector, at most 2 of 20, greedy temperature 0, 64 tokens, thinking off; 9B reader with SAMPLING_NO_THINK)
+# git commit: outside the /workspace git repo (job tmp dir); read on 2026-10-28
+# --- lines 1-18
+     1	"""
+     2	v2 (Oct 27 15:20Z): the v1 2B listed many passages in numeric order, so "the first 2" favoured low numbers. v2 asks for the
+     3	most relevant first and names arms <mode><K><tag> (--tag), so a 9B selector (the reader selecting for itself) can sit next to the 2B.
+     4	
+     5	Select-then-answer text baseline (user, Oct 27: the decode twin of the AC encode path, an AI reviewer's objection).
+     6	The AC path: the 2B encoder reads the question, then each call of 20 BM25 passages, and writes ACs at 1/10 of the passage tokens
+     7	for the 9B reader. Here the same 2B, in the same calls (question first), DECODES text instead, and the 9B reads that text:
+     8	  sel{K}   per call, the 2B names the passages needed (at most --max-select); the 9B reads the selected passages verbatim
+     9	           (about 1/10 of the call's tokens at 2 of 20, the AC budget)
+    10	  sum{K}   per call, the 2B writes the relevant facts in at most --sum-tokens tokens (the AC budget of a call); the 9B reads the notes
+    11	Two processes, one model each:
+    12	  --phase select   the selector (greedy, thinking off) over every call; writes OUT/<set>.<mode><K>.select.jsonl
+    13	  --phase read     the 9B reader, thinking off, --passes sampled passes (the text baselines' settings); writes OUT/<set>.<arm>.jsonl
+    14	                   and adds the arm to OUT/<set>.scores.json (same fields as rq_text_eval.py, plus the selector's numbers)
+    15	
+    16	  python rq_select_eval.py --phase select --data DATA --out-dir OUT --ks 100 200 --modes sel sum
+    17	  python rq_select_eval.py --phase read   --data DATA --out-dir OUT --ks 100 200 --modes sel sum --passes 3
+    18	"""
+# --- lines 31-35
+    31	READER_ID = "Qwen/Qwen3.5-9B"
+    32	SELECT = ("Below are passages retrieved by a search engine for a question; most are irrelevant. Which passages contain information "
+    33	          "needed to answer the question? Name at most {m} passages, the most relevant first. Reply with one line of the form\n"
+    34	          "Selected: <passage numbers, most relevant first, comma-separated>\nor, if no passage is relevant,\nSelected: none\n\n"
+    35	          "Question: {question}\n\n{passages}")
+# --- lines 68-90
+    68	def phase_select(a, corpus, questions, ranks):
+    69	    from transformers import AutoTokenizer
+    70	    from vllm import LLM, SamplingParams
+    71	    tok = AutoTokenizer.from_pretrained(a.selector)
+    72	    llm = LLM(model=a.selector, max_model_len=16384, kv_cache_dtype=a.kv_cache_dtype, gpu_memory_utilization=0.9, enable_prefix_caching=True,
+    73	              limit_mm_per_prompt={"image": 0, "video": 0}, seed=0)
+    74	    for mode in a.modes:
+    75	        for k in a.ks:
+    76	            out = a.out_dir / f"{a.set}.{arm_name(mode, k, a)}.select.jsonl"
+    77	            if out.exists():
+    78	                continue
+    79	            t = time.time()
+    80	            prompts, jobs = [], []
+    81	            for q in questions:
+    82	                for start, idx in calls_of(ranks[k][q["id"]], a.per_call):
+    83	                    block = C.passages_block(corpus, idx, start).rstrip("\n")
+    84	                    text = (SELECT.format(m=a.max_select, question=q["question"], passages=block) if mode == "sel"
+    85	                            else SUMMARIZE.format(question=q["question"], passages=block))
+    86	                    ids = tok.encode(tok.apply_chat_template([{"role": "user", "content": text}], tokenize=False, add_generation_prompt=True,
+    87	                                                             enable_thinking=False), add_special_tokens=False)
+    88	                    prompts.append({"prompt_token_ids": ids})
+    89	                    jobs.append((q["id"], start, idx, len(ids)))
+    90	            sp = SamplingParams(temperature=0.0, max_tokens=a.select_tokens if mode == "sel" else a.sum_tokens)
+# --- lines 136-143
+   136	            for q in questions:
+   137	                text = reader_text(corpus, q, sel[q["id"]], mode)
+   138	                ids = tok.encode(tok.apply_chat_template([{"role": "user", "content": text}], tokenize=False, add_generation_prompt=True, enable_thinking=False),
+   139	                                 add_special_tokens=False)
+   140	                for k_ in range(a.passes):
+   141	                    prompts.append({"prompt_token_ids": ids})
+   142	                    jobs.append((q["id"], k_, len(ids), SamplingParams(**C.SAMPLING_NO_THINK, max_tokens=a.max_tokens,
+   143	                                                                       seed=zlib.crc32(f"{a.set}/{arm}/{q['id']}/{k_}".encode()))))
+# --- lines 171-181
+   171	def main():
+   172	    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+   173	    p.add_argument("--phase", choices=["select", "read"], required=True)
+   174	    p.add_argument("--data", type=Path, required=True); p.add_argument("--set", default="eval500"); p.add_argument("--out-dir", type=Path, required=True)
+   175	    p.add_argument("--ks", type=int, nargs="+", default=[100, 200]); p.add_argument("--modes", nargs="+", default=["sel", "sum"], choices=["sel", "sum"])
+   176	    p.add_argument("--per-call", type=int, default=20); p.add_argument("--selector", default="Qwen/Qwen3.5-2B"); p.add_argument("--tag", default="r", help="arm-name suffix (v1 arms had none)")
+   177	    p.add_argument("--max-select", type=int, default=2, help="passages named per call (2 of 20 = the AC ratio 1/10)")
+   178	    p.add_argument("--select-tokens", type=int, default=64); p.add_argument("--sum-tokens", type=int, default=240, help="1/10 of a 20-passage call")
+   179	    p.add_argument("--passes", type=int, default=3); p.add_argument("--max-tokens", type=int, default=12288); p.add_argument("--max-model-len", type=int, default=32768)
+   180	    p.add_argument("--kv-cache-dtype", default="auto"); p.add_argument("--inject-golds", action="store_true")
+   181	    a = p.parse_args()

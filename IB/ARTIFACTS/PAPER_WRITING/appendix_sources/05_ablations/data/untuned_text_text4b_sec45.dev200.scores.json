@@ -1,0 +1,38 @@
+{
+ "top20i": {
+  "acc": 27.0,
+  "em": 22.5,
+  "f1": 29.18,
+  "answered": 58.0,
+  "n": 200,
+  "decode": "greedy",
+  "length_stops": 0,
+  "prompt_tokens_mean": 2396,
+  "new_tokens_mean": 26,
+  "seconds": 16
+ },
+ "gold": {
+  "acc": 46.0,
+  "em": 39.0,
+  "f1": 49.48,
+  "answered": 68.0,
+  "n": 200,
+  "decode": "greedy",
+  "length_stops": 0,
+  "prompt_tokens_mean": 330,
+  "new_tokens_mean": 19,
+  "seconds": 2
+ },
+ "none": {
+  "acc": 19.0,
+  "em": 17.5,
+  "f1": 23.87,
+  "answered": 99.0,
+  "n": 200,
+  "decode": "greedy",
+  "length_stops": 2,
+  "prompt_tokens_mean": 76,
+  "new_tokens_mean": 70,
+  "seconds": 16
+ }
+}

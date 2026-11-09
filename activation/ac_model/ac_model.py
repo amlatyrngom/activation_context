@@ -29,6 +29,7 @@ fp32; the bases stay bf16. Checkpoints: `AC_MODELS/<name>/round_NNN` (+ `latest`
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import math
 import shutil
@@ -56,11 +57,14 @@ from .ac_model_utils import (
     EncodeRequest,
     RowCache,
     RowHead,
+    SpecialInputHandler,
     WindowedPooling,
+    batch_token_counts,
     direct_parts,
     interleaved_positions,
     is_dense_piece,
     normalize_messages,
+    render_with_part_sentinels,
     resolve_intervention_layers,
     row_cache_key,
     sinusoidal_positions,
@@ -74,6 +78,7 @@ if t.TYPE_CHECKING:
 
 CHECKPOINT_FOLDER = "AC_MODELS"
 MODULES_FILE = "ac_modules.pt"
+SPECIAL_INPUTS_FILE = "special_inputs.pt"   # the special-input handler's state, beside the modules (only when a handler is attached)
 SIDE_LORA_FOLDER = "side_lora"
 ROLLOUT, TRAINING = "rollout", "training"
 ARCHITECTURE_VERSION = 2
@@ -298,8 +303,10 @@ class ActivationContextModel:
         self.profile_phases = False              # per-phase encode timings into stats.phase_seconds (synchronizes the device)
         self.saved_rounds = 0
         self.epoch_number = 0
+        self.special_input_handler: SpecialInputHandler | None = None   # set from outside: answers chosen parts instead of the encoder
         tokenizer = self.side.tokenizer
         self.pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else (tokenizer.eos_token_id or 0)
+        self._side_token_counts: dict[str, int] = {}   # content key -> side token count of a rendered part (side_token_count)
         self._dense_vocab: torch.Tensor | None = None   # per side-vocabulary id: is_dense_piece of its text (built at the first density-weighted encode)
 
     # ------------------------------------------------------------------------------------------ placement and modes
@@ -312,8 +319,40 @@ class ActivationContextModel:
         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
         child_lengths = [self.part_view_rows(child.messages, child.compression_ratio, child.tools)
                          for child in (self._child_request(part, ratio) for part in direct_parts(messages))]
-        ids, _ = tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)
-        return self.num_view_rows(len(ids), ratio)
+        return self.num_view_rows(self.side_token_count(messages, child_lengths, tools), ratio)
+
+    @staticmethod
+    def _token_count_key(messages: list[dict], child_lengths: list[int], tools: list[dict] | None) -> str:
+        return hashlib.sha256(json.dumps([messages, child_lengths, tools or None], sort_keys=True, default=str).encode()).hexdigest()
+
+    def side_token_count(self, messages: list[dict], child_lengths: list[int], tools: list[dict] | None = None) -> int:
+        """len(tokenize_with_parts(side tokenizer, messages, child_lengths, ...)), memoized by content: example building and the
+        capacity check ask for the same parts' lengths (a retrieval item has 20 parts of ≈2.6k side tokens each)."""
+        key = self._token_count_key(messages, child_lengths, tools)
+        count = self._side_token_counts.get(key)
+        if count is None:
+            count = len(tokenize_with_parts(self.side.tokenizer, messages, child_lengths, self.pad_id, tools=tools)[0])
+            self._side_token_counts[key] = count
+        return count
+
+    def prefetch_side_token_counts(self, histories: t.Iterable[list[dict]]) -> int:
+        """Fill the side_token_count memo for every leaf part (no nested parts) of these message histories with batched,
+        multi-threaded tokenizer calls; nested parts stay lazy (their length needs their children's rows). Returns the
+        number of parts tokenized."""
+        pending: dict[str, str] = {}
+        stack = [part for messages in histories for part in direct_parts(messages)]
+        while stack:
+            request = self._child_request(stack.pop(), self.config.default_compression_ratio)
+            children = list(direct_parts(request.messages))
+            if children:
+                stack.extend(children)
+                continue
+            key = self._token_count_key(request.messages, [], request.tools)
+            if key not in self._side_token_counts and key not in pending:
+                pending[key] = render_with_part_sentinels(self.side.tokenizer, request.messages, tools=request.tools)
+        for key, count in zip(pending, batch_token_counts(self.side.tokenizer, list(pending.values()))):
+            self._side_token_counts[key] = count
+        return len(pending)
 
     def set_mode(self, mode: str) -> None:
         """`training`: gradients, no cache, no queue (the caller batches); `rollout`: no grad, cache, queue."""
@@ -442,6 +481,11 @@ class ActivationContextModel:
         """The AC modules' parameters plus the side adapter's."""
         return [parameter for parameter in self.modules.parameters() if parameter.requires_grad] + self.harness.module_manager.lora_parameters(self.config.base_side_model_lora_name)
 
+    def special_input_parameters(self) -> list[nn.Parameter]:
+        """The attached special-input handler's trainable parameters (none without a handler)."""
+        handler = self.special_input_handler
+        return [] if handler is None else [parameter for parameter in handler.parameters() if parameter.requires_grad]
+
     # ------------------------------------------------------------------------------------------ encoding
     def encode(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
                tools: list[dict] | None = None) -> torch.Tensor:
@@ -469,7 +513,13 @@ class ActivationContextModel:
             raise RuntimeError(f"{self.name} is a deep AC model: encode_batch(with_layers=True) returns its rows with their deltas; a rows-only consumer would drop them silently")
         results: list[ACOutput | None] = [None] * len(requests)
         pending: list[int] = []
+        special = self.special_input_handler(list(requests)) if self.special_input_handler is not None else [None] * len(requests)
+        if len(special) != len(requests):
+            raise ValueError(f"the special-input handler answered {len(special)} of {len(requests)} requests")
         for index, request in enumerate(requests):
+            if special[index] is not None:                # the handler's answer stands for the encoder's (never row-cached: it may train)
+                results[index] = special[index]
+                continue
             cached = self.cache.get(row_cache_key(request.messages, request.compression_ratio, request.is_recursive, self.version, request.tools)) if self.mode == ROLLOUT else None
             if cached is not None:
                 self.stats.cache_hits += 1
@@ -492,7 +542,8 @@ class ActivationContextModel:
         if self.queue is not None:
             self.stats.queue_batches, self.stats.queue_requests = self.queue.batches, self.queue.requests
         device = self.device
-        outputs = [output.to(device, torch.float32) for output in results]
+        outputs = [output._map(lambda tensor: tensor.to(device), lambda tensor: tensor.to(device)) if special[index] is not None   # a handler's answer keeps its dtypes
+                   else output.to(device, torch.float32) for index, output in enumerate(results)]                                # (e.g. bf16 keys/values: no fp32 round trip)
         return outputs if with_layers else [output.input_embeds for output in outputs]
 
     def _child_request(self, part: dict, parent_ratio: float) -> EncodeRequest:
@@ -757,6 +808,8 @@ class ActivationContextModel:
             folder = resolve_path(checkpoint_path, create=False)
         self.harness.module_manager.ensure_lora(self.config.base_side_model_lora_name)
         folder.mkdir(parents=True, exist_ok=True)
+        if self.special_input_handler is not None:
+            torch.save({"handler": type(self.special_input_handler).__name__, "state": self.special_input_handler.state_dict()}, folder / SPECIAL_INPUTS_FILE)
         torch.save({"modules": self.modules.state_dict(), "config": {**dataclasses.asdict(self.config), "row_head_skip": self.modules.target_head.skip}, "version": self.version,
                     "d_side": self.d_side, "d_target": self.d_target, "architecture_version": ARCHITECTURE_VERSION,
                     "model_ids": [self.side.model_config.model_id, self.target.model_config.model_id],
@@ -783,6 +836,12 @@ class ActivationContextModel:
         if not folder.is_absolute():
             folder = resolve_path(checkpoint_path, create=False)
         state = torch.load(folder / MODULES_FILE, map_location="cpu", weights_only=False)
+        if (folder / SPECIAL_INPUTS_FILE).exists():
+            if self.special_input_handler is None:
+                raise ValueError(f"{folder} holds a special-input handler's trained state ({SPECIAL_INPUTS_FILE}): attach the handler before loading "
+                                 "(without it those inputs would silently go through the encoder)")
+            special_state = torch.load(folder / SPECIAL_INPUTS_FILE, map_location="cpu", weights_only=False)
+            self.special_input_handler.load_state_dict(special_state["state"])
         if state.get("architecture_version") != ARCHITECTURE_VERSION:
             raise ValueError("Checkpoint uses an incompatible AC architecture (legacy learned-marker checkpoints cannot load as content summaries)")
         expected_ids = [self.side.model_config.model_id, self.target.model_config.model_id]

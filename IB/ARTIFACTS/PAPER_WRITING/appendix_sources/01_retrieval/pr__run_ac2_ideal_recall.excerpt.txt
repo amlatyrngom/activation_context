@@ -1,0 +1,18 @@
+# source: /home/node/.claude/jobs/6f1c1373/tmp/pr/run_ac2.sh
+# lines: 1-7,20-29
+# extracted: nl -ba | sed -n; lines 8-19 (S3 download of the Arm G checkpoint via boto3) omitted
+# git commit: outside the /workspace git repo (job tmp dir); read on 2026-10-28
+     1	#!/bin/bash
+     2	# Perfect-recall evals (user, Oct 27): Arm G (the retrieval frontier's AC checkpoint) on eval500 with golds injected (rq_eval --inject-golds),
+     3	# 1x20i (perfect recall@20), 5x20i (@100), then 10x20i (@200); question-first, 1/10, thinking off, 3 passes; same flags as the frontier evals.
+     4	# Re-running skips finished outputs and rq_eval skips ids already written.
+     5	set -u; P=/root/pr; cd $P   # not ~/sky_workdir: the autotune worker (python -m) would import the repo's newer activation from the cwd
+     6	export RQ_THINKING=0 PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True VLLM_WORKER_MULTIPROC_METHOD=spawn
+     7	export ACTIVATION_SYNC_ROOT=$P/sync PYTHONPATH=$P/code/code_rq5:$P/code/kit_pr:$P/code/cqa_kit/bench:$P/code/cqa_kit CQA_BENCH=$P/code/cqa_kit/bench
+    20	  O=$P/out/e500_${calls}x20i_armG.jsonl
+    21	  [ -f $O.done ] && continue
+    22	  echo "=== $(date -u +%FT%TZ) ${calls}x20i start"
+    23	  /root/sky_workdir/.venv/bin/python $P/code/kit_pr/rq_eval.py --data $P/data --set eval500 --pair $PG --ratio 0.1 --calls $calls --per-call 20 --question-first \
+    24	     --inject-golds --batch 32 --max-new 12288 --passes 3 --out $O > $P/out/e500_${calls}x20i_armG.log 2>&1
+    25	  rc=$?; echo "=== $(date -u +%FT%TZ) ${calls}x20i exit $rc"; [ $rc = 0 ] && touch $O.done
+    26	done

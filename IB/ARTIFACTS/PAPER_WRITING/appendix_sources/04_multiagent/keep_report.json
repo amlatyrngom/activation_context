@@ -1,0 +1,58 @@
+{
+ "stats": {
+  "deepmath/all_differ": {
+   "samples": 856,
+   "correct": 567,
+   "correct_closed": 567,
+   "pass": 412,
+   "items_checked": 2109,
+   "items_unsupported": 367,
+   "triples": 214,
+   "triples_with_pass": 146,
+   "kept": 412
+  },
+  "deepmath/majority_right": {
+   "samples": 2208,
+   "correct": 2011,
+   "correct_closed": 2011,
+   "pass": 1521,
+   "items_checked": 5180,
+   "items_unsupported": 888,
+   "triples": 552,
+   "triples_with_pass": 508,
+   "kept": 1521
+  },
+  "deepmath/minority_right": {
+   "samples": 1880,
+   "correct": 1364,
+   "correct_closed": 1364,
+   "pass": 849,
+   "items_checked": 5641,
+   "items_unsupported": 1023,
+   "triples": 470,
+   "triples_with_pass": 339,
+   "kept": 849
+  },
+  "deepmath/unanimous_right": {
+   "samples": 1236,
+   "correct": 1215,
+   "correct_closed": 1215,
+   "pass": 1085,
+   "items_checked": 1407,
+   "items_unsupported": 185,
+   "triples": 412,
+   "triples_with_pass": 400,
+   "kept": 1085
+  }
+ },
+ "kept_by_type": {
+  "deepmath/all_differ": 412,
+  "deepmath/majority_right": 1521,
+  "deepmath/minority_right": 849,
+  "deepmath/unanimous_right": 1085
+ },
+ "kept": 3867,
+ "hint_kept_before_cap": 0,
+ "failed_mixed_triples": 243,
+ "tolerance": 0
+}

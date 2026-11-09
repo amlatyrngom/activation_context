@@ -1,0 +1,49 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/kit/gen_summaries_vllm.py
+# lines: 1-19,40-50,60-70 (of 92 total)
+# extracted: nl -ba | sed -n per range; Results + Summary: summaries written by untuned 9B (compact-tool summary, 8,192-token turn)
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 0449a164dcf6ff8944203a5b735c46ce51b2ec093c06995dc73878d2642baf00
+# ---- lines 1-19
+     1	"""
+     2	Summary writing for Results + Summary on CSAIL (Oct 18), plain vLLM: the prompts of build_summary_prompts.py (run_synth.py's
+     3	summaries stage, built on CPU) sampled for ONE assistant turn with the agentic runs' thinking sampling and per-turn cap (8,192
+     4	tokens), untuned Qwen 3.5 9B. The summary is the `summary` argument of the turn's compact call (CaptureSummaryTool). The harness
+     5	would have executed any other tool call and continued; here a turn without a compact call is resampled once (seed + 1000), then
+     6	recorded as no summary. Output <sync-root>/ROLLOUTS/<tag>_summaries/rollouts.jsonl in the fields run_synth.read_summaries reads
+     7	(agent_config.dataset_task, agent_config.metadata.solver_seed, finish_reason "submitted", answer = the summary). Resumable: runs
+     8	already written are skipped.
+     9	
+    10	    python gen_summaries_vllm.py --prompts P/tqa_sum_dmh_summary_prompts.jsonl --tag tqa_sum_dmh --sync-root S [--limit 4]
+    11	"""
+    12	import argparse
+    13	import json
+    14	import re
+    15	import time
+    16	from pathlib import Path
+    17	
+    18	MODEL_ID = "Qwen/Qwen3.5-9B"
+    19	SAMPLING = {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}   # the solver rows' call_kwargs
+# ---- lines 40-50
+    40	    parser = argparse.ArgumentParser()
+    41	    parser.add_argument("--prompts", required=True)
+    42	    parser.add_argument("--tag", required=True)
+    43	    parser.add_argument("--sync-root", required=True)
+    44	    parser.add_argument("--max-tokens", type=int, default=8192)
+    45	    parser.add_argument("--max-model-len", type=int, default=50_000)
+    46	    parser.add_argument("--seed", type=int, default=0)
+    47	    parser.add_argument("--limit", type=int, default=None)
+    48	    args = parser.parse_args()
+    49	    out = Path(args.sync_root) / "ROLLOUTS" / f"{args.tag}_summaries" / "rollouts.jsonl"
+    50	    out.parent.mkdir(parents=True, exist_ok=True)
+# ---- lines 60-70
+    60	    from vllm import LLM, SamplingParams
+    61	    llm = LLM(model=MODEL_ID, max_model_len=args.max_model_len, kv_cache_dtype="fp8", gpu_memory_utilization=0.9,
+    62	              limit_mm_per_prompt={"image": 0, "video": 0}, seed=args.seed)
+    63	    started = time.time()
+    64	    with open(out, "a") as handle:
+    65	        pending = todo
+    66	        for attempt, seed in enumerate((args.seed, args.seed + 1000)):
+    67	            outputs = llm.generate([{"prompt_token_ids": r["prompt_token_ids"]} for r in pending],
+    68	                                   SamplingParams(**SAMPLING, max_tokens=args.max_tokens, seed=seed))
+    69	            retry = []
+    70	            for row, output in zip(pending, outputs):

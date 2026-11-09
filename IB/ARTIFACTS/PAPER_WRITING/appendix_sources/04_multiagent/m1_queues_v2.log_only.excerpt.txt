@@ -1,0 +1,57 @@
+# source: /workspace/IB/TMP/PAPER_TRAJ_QA/m1/QUEUES_V2.md
+# lines: 1-16,26-31,40-43,62-77,84-88 (of 119 total)
+# extracted: nl -ba | sed -n per range; working notes (log-like) of the M1 v2 fork: draws, phase 1 (9B x3 + 27B x2), triples, targets, packet m1v2_b 527 updates
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 6853275bfa9ee2e104566d6a81eb9fb0ce28e6023ab0c69fe4e0fa33a06c4f19
+# ---- lines 1-16
+     1	# M1 v2 queues (synthesis fork, re-armed Oct 16 15:11Z; supersedes QUEUES.md)
+     2	
+     3	Coordinator 15:20Z: a new frozen hard eval set, and training shifted to difficulty ≥8.5. The v1 queues (PGIDs 1429037, 1471470 on pc-a; 3753838, 3795269 on pc-b) were all still waiting. I killed them with SIGKILL by PGID at ≈15:08Z, so `pc/m1_done_b0` was not touched.
+     4	
+     5	## Draws
+     6	Both draws were made on pc-a before any run. My container check (`m1/v2/draws_check.json`) found 0 overlap with every evaluation and training sample and with the id scans; dmhard ∩ train_v2 is also 0.
+     7	
+     8	| Draw | Tasks | sha256 | Difficulty mix | Source |
+     9	|---|---|---|---|---|
+    10	| `tqa_dmhard` (frozen eval) | 300 | `a224909f21b37afd9206448c818e4eaf14b62ada45fff81070e63fbc58388fe9` | d8.5 226, d9 72, d9.5 2 | Untouched ≥8.5 pool of 4,355 (after excluding dmext and the whole v1 draw). Seed 20261022. |
+    11	| `tqa_m1_train_v2` (training) | 1,000 | `5edcd0ddfca820f6fd21184c27888178fa30df043d4c09e7404048ce7c5a9a03` | d8.5 741, d9 248, d9.5 10, d10 1 | 467 kept from the v1 draw (all its ≥8.5 tasks) + 533 fresh. Seed 20261023. |
+    12	
+    13	- Scripts: `kit/make_tqa_m1_train.py` for dmhard, `kit/make_tqa_m1_train_v2.py` for training.
+    14	- No d8 slice. Easier DeepMath material is already in the init (B / u245 hold the round-1 DeepMath examples), and the 9B GPU time goes further on ≥8.5.
+    15	- Halves follow the drawn order: `tqa_dmhard_a/b` (150 + 150) and `tqa_m1_v2_9b_a/b` (500 + 500), in `m1/v2/samples/`.
+    16	
+# ---- lines 26-31
+    26	**Each node's queue** (`m1v2_gpu.sh`), in order:
+    27	1. dmhard half: 9B × 3 → `m1/v2/dmhard_done_X`.
+    28	2. pc-a only: the 27B smoke run, 2 tasks × 1.
+    29	3. Training half: 9B × 3 → slim → pick tasks with ≤ 1 of 3 right (sample `tqa_m1_v2_27b_X`).
+    30	4. 27B × 2 on those tasks (seeds 3–4) → slim → `m1/v2/phase1_done_X`.
+    31	
+# ---- lines 40-43
+    40	## Phase 2
+    41	- **Targets:** written on the two M1 pc GPUs with the 27B NVFP4 (coordinator 16:12Z: H8a holds the H200 pair until ≈01:30Z, worst case 04:00Z).
+    42	  - Two shards, deadline 03:30Z, waiting on the `.ready` file I push after planning the triples.
+    43	- **Then:** keep, material (+10 % Musique replay), the CSAIL packet, and the training sbatch for the coordinator's go.
+# ---- lines 62-77
+    62	## Phase 1 done, triples planned, targets running (19:58Z)
+    63	- **Phase 1:** done at 19:21Z on pc-a and 19:34Z on pc-b. Row counts checked: 9B 1,500 + 1,500; 27B 264 + 202, all expected rows.
+    64	- **Training tasks by 9B runs right** (0 / 1 / 2 / 3 of 3): 151 / 82 / 179 / 588.
+    65	- **What the 27B added:** it ran 466 times on 233 tasks; 153 runs were right (33 %).
+    66	  - 37 of the 151 tasks with no 9B solve gained a correct 27B run, so they became usable.
+    67	  - 56 of the 82 tasks with one 9B solve gained a correct 27B run.
+    68	- **Triples:** `m1/v2/plan/triples.jsonl`, md5 4b7b6862…, 1,648 triples over 710 tasks; summary in `m1/v2/plan_summary.json`.
+    69	
+    70	  | Type | 9B runs only | With a 27B run |
+    71	  |---|---|---|
+    72	  | majority_right | 358 | 194 |
+    73	  | minority_right | 114 | 356 |
+    74	  | all_differ | 50 | 164 |
+    75	  | unanimous_right | 412 | 0 |
+    76	
+    77	- **Push:** to both nodes at 19:37Z, md5 checked, `.ready` touched. The gen queues started at 19:37Z on pc-a GPU 1 and pc-b GPU 0.
+# ---- lines 84-88
+    84	  - Dry run on the first 192 generated triples: keep → 427 examples, and the material built; its check rebuilt 200 evaluation prompts exactly.
+    85	- **B pair on CSAIL:** `r2/pairs_m1/tqa_r2_b` (new folder), md5 equal to `round2/pairs/tqa_r2_b.md5`.
+    86	
+    87	## Relay, reads and tables (armed Oct 17 02:37Z)
+    88	- **Packet and training:** packet m1v2_b (2688688: 4,209 items, 527 updates). The coordinator submitted training 2689361 at ≈02:30Z; expected end ≈07:30Z.

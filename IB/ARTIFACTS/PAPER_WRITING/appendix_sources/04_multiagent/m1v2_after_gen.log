@@ -1,0 +1,20 @@
+2026-10-16T19:58:50Z m1v2_after_gen: waiting for gen_done_a and gen_done_b
+2026-10-17T01:34:47Z m1v2_after_gen: generated 1648 of 1648 triples
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+2026-10-17T01:34:48Z m1v2_material: gen a: 824 triples
+Warning: Permanently added '[localhost]:10022' (ED25519) to the list of known hosts.
+2026-10-17T01:34:50Z m1v2_material: gen b: 824 triples
+ "failed_mixed_triples": 243,
+ "tolerance": 0
+}
+check - 200 evaluation prompts rebuilt exactly
+material - 3867 examples over 676 tasks -> /workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/material
+M1 3867 {'unanimous_right': 1085, 'majority_right': 1521, 'minority_right': 849, 'all_differ': 412} replay 430 final 4297
+178M	/workspace/IB/TMP/PAPER_TRAJ_QA/m1/v2/material
+2026-10-17T01:36:40Z m1v2_material: done
+material md5 ok
+-rw-r--r-- 1 ngom nogroup 2278 Oct 16 15:22 /data/scratch-fast/ngom/activation/paper_traj_qa_v1/r2/jobs/build_m1_cpu.sbatch
+19M	/data/scratch-fast/ngom/activation/paper_traj_qa_v1/r2/m1v2_material
+Submitted batch job 2688688
+sbatch: partition quanta-h200, qos quanta-main
+2026-10-17T01:36:52Z m1v2_after_gen: done: packet build submitted

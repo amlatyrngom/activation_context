@@ -1,0 +1,85 @@
+{
+ "_about": "Retrieval QA (HotpotQA, BM25 over the HotpotQA corpus), thinking off, 1/10 for ours. Accuracy in %. tokens = mean reader (9B) input tokens per question (tok_counts.py: text = rq_text_eval's prompt; ours = rq_eval's student turn with each part as ceil(0.1 x side tokens) rows). Keys of text/ours/stage2 = passages K (ours: K/20 question-first calls of 20). null = not measured yet. none = the 9B with no passages (thinking off; dev200 1 pass, eval500 mean of 3 passes). eval500 ours: top-100 and top-200 are means of 3 passes (Oct 21 \u224821:05Z); top-20 and top-400 are 1 pass.",
+ "dev200": {
+  "label": "dev200: 200 validation questions, BM25 top K, 1 pass",
+  "tokens": {
+   "text": {
+    "20": 2401.88,
+    "100": 11976.655,
+    "200": 24316.22,
+    "400": 49196.62
+   },
+   "ours": {
+    "20": 331.39,
+    "40": 573.59,
+    "100": 1303.16,
+    "200": 2555.17,
+    "400": 5079.105
+   },
+   "none": 81.335
+  },
+  "text": {
+   "20": 50.5,
+   "100": 53.5,
+   "200": 51.5,
+   "400": 54.0
+  },
+  "ours": {
+   "20": 53.5,
+   "40": 54.5,
+   "100": 57.5,
+   "200": 60.0,
+   "400": 60.0
+  },
+  "stage2": {
+   "20": 50.0,
+   "40": null,
+   "100": null,
+   "200": null,
+   "400": 56.0
+  },
+  "gold": 68.0,
+  "none": 25.5
+ },
+ "eval500": {
+  "label": "eval500: 500 validation questions, BM25 top K, mean of 3 passes (ours top-100/200 and Text; ours top-20/400 1 pass)",
+  "tokens": {
+   "text": {
+    "20": 2396.37,
+    "100": 11995.862,
+    "200": 24351.208,
+    "400": 49406.634
+   },
+   "ours": {
+    "20": 331.304,
+    "40": 571.916,
+    "100": 1305.788,
+    "200": 2559.486,
+    "400": 5101.314
+   },
+   "none": 81.798
+  },
+  "text": {
+   "20": 43.93,
+   "100": 49.2,
+   "200": 52.67,
+   "400": 53.47
+  },
+  "ours": {
+   "20": 49.4,
+   "40": null,
+   "100": 52.87,
+   "200": 54.07,
+   "400": 53.6
+  },
+  "stage2": {
+   "20": null,
+   "40": null,
+   "100": null,
+   "200": null,
+   "400": null
+  },
+  "gold": 67.73,
+  "none": 23.07
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "acc": 44.0,
+ "em": 39.5,
+ "f1": 55.83,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.7,
+ "label": "T_res_final",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/T_res/sync/ckpt/final/ac",
+  "/data/scratch-fast/ngom/sec45/runs/T_res/sync/ckpt/final/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1538,
+  "decode_seconds": 40.4
+ },
+ "seconds": 85
+}

@@ -1,0 +1,24 @@
+{
+ "acc": 23.0,
+ "em": 22.0,
+ "f1": 30.2,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.6,
+ "label": "S_res_v4_u3200",
+ "pair": [
+  "/root/sec45/runs/S_res_v4/sync/ckpt/step_03200/ac",
+  "/root/sec45/runs/S_res_v4/sync/ckpt/step_03200/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1517,
+  "decode_seconds": 90.7
+ },
+ "seconds": 107
+}

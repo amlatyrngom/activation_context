@@ -1,0 +1,15 @@
+# source: /workspace/IB/ARTIFACTS/PAPER_TRAJ_QA/PLAN.md
+# lines: 36-44 (of 441 total)
+# extracted: nl -ba | sed -n per range; PLAN.md: T1 trajectory-QA run (packet tqa_blind_ro_v1, 1,000 updates, cosine, 50 warm-up, rows only, 2e-5/2e-5) -> pair tqa_blind_ro_final; its own initial pair (reconstruction) is not named here
+# git commit: not tracked by git (IB/TMP and IB/ARTIFACTS paths may be gitignored); HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa
+# sha256 of source: 98cc46fb250022837608800286111dc9521ee8f79c8bade378abd656663d8273
+# ---- lines 36-44
+    36	## T1 first run (Oct 14 00:46Z; built by a background fork, logged 00:58Z)
+    37	
+    38	`/data/scratch/ngom/activation/paper_traj_qa_v1/`: wrappers `build_traj_packet.py`, `check_traj_packet.py` (the tree is not edited); packet `packets/tqa_blind_ro_v1` (derived from clean `tqa_blind_src_v1`, 8,400 items): 8,000 `traj_qa` items, all `trajectory_qa/uncontextual`, sizes log-uniform 1/20–1/5 (min 0.05, median 0.1002, max 0.2; drawn by the wrapper, the tree samples uniform 1/20–1/10), 1,000 updates, cosine, 50 warm-up, panel every 10 %, `deltas_off_training=true`, 2e-5 | 2e-5, snapshots 50 %. Held 64 questions (the mixed run's panel) in groups 1/16, r20, r10, r5. Job 2653843 on `quanta-gh200-3`. Start readings: no context 0.6653; full 0.2782; r20 0.5255; 1/16 0.5230; r10 0.4597; r5 0.4507. Build job 2653794 (CPU, 4 min 49 s).
+    39	
+    40	
+    41	## T1 result (Oct 14 07:52Z) — status Review
+    42	
+    43	- Run `packets/tqa_blind_ro_v1` (job 2653843) done; held loss 0.526 | 0.523 | 0.460 | 0.451 → 0.253 | 0.226 | 0.186 | 0.162 (1/20 | 1/16 | 1/10 | 1/5). Pair `pairs/tqa_blind_ro_final`.
+    44	- Judged correct of 64 (blind Sonnet, 5 judges, 368 distinct answers; `IB/TMP/PAPER_TRAJ_QA/judge/keys/t1/scores_t1.json`): untuned full text 51 (9 not submitted); nothing 16; starting pair 18 | 18 | 19 | 17; trained pair 37 | 40 | 49 | 51 (1/20 | 1/16 | 1/10 | 1/5).

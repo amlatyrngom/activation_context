@@ -1,0 +1,29 @@
+# source: /home/node/.claude/jobs/6f1c1373/tmp/backup/cqa-ec2r/small/train_runs/G2n_all20_lr1e3.log
+# lines: 1-19 2251-2255
+# extracted: nl -ba | sed -n (head: setup lines + first 3 updates; tail: last updates and end-of-run). Full log 2255 lines, 139 KB, not copied. Line 3 is a harmless HF Hub warning (no token value).
+# ---- lines 1-19
+     1	am_train: 17764 samples over 20 patients (2213 truncated records dropped); kinds {'selfstudy': 12852, 'evalshape': 4912}
+     2	harness: reader Qwen/Qwen3-4B-Instruct-2507 (LoRA rank 128), side Qwen/Qwen3-4B-Instruct-2507, AC {"default_compression_ratio": 0.0625, "input_pooling_stride": 0, "intervention_frequency": 0, "kv_transfer": true, "min_view_rows": 2, "mixer_layers": 2}, layout interleaved; from environment (QA4B_KV=1: key/value transfer, encoder base = reader base)
+     3	Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+     4	qwen4b - Initializing model.
+     5	qwen4b - Initialized model in 0.92s.
+     6	am_train: kv table of 20 patients, kept ratio 0.0999, 1733.2M trainable numbers
+     7	Loading LongHealth data from: /root/am_v1/compaction/data/longhealth_benchmark_v5.json
+     8	Loaded 4 grouped articles (5 patients per article)
+     9	qwen4b - Moving model to cuda.
+    10	Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 7900.93it/s]
+    11	qwen4b - Moved model in 1.52s
+    12	am_train: frozen reader adapter in bf16 (504 tensors)
+    13	AC training: 19951 precomputed teacher targets from /root/am_v1/teacher/teacher_v1_all.pt
+    14	rag_poc - Head scales initialized: side 0.0220, target 0.0220
+    15	AC epoch 1/1 step 1/2221 global 1: kl loss 0.2101, 4.9s
+    16	AC epoch 1/1 step 2/2221 global 2: kl loss 0.2266, 3.3s
+    17	AC epoch 1/1 step 3/2221 global 3: kl loss 0.2064, 3.2s
+    18	AC epoch 1/1 step 4/2221 global 4: kl loss 0.1546, 3.0s
+    19	AC epoch 1/1 step 5/2221 global 5: kl loss 0.1857, 3.3s
+# ---- lines 2251-2255
+  2251	AC epoch 1/1 step 2221/2221 global 2221: kl loss 0.0726, 1.6s
+  2252	rag_poc - Saved checkpoint (version 2221) to /root/am_v1/train_runs/sync_G2n_all20_lr1e3/AC_MODELS/rag_poc/epoch_001
+  2253	qwen4b - Moving model to cpu.
+  2254	qwen4b - Moved model in 9.26s
+  2255	am_train: done in 7651s; loss first/last None / None

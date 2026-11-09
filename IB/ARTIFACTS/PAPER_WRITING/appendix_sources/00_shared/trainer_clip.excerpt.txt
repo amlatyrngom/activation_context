@@ -1,0 +1,11 @@
+# source: /workspace/activation/ac_model/ac_model_training.py
+# lines: 918-923
+# extracted: nl -ba | sed -n (line numbers are of the working-tree file)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa; file state: working tree (uncommitted modifications on top of HEAD: ' M activation/ac_model/ac_model_training.py')
+--- lines 918-923 ---
+   918	                        norm_ac = self._grad_norm(ac_parameters); norm_reader = self._grad_norm(target_parameters)
+   919	                        trace_due = ac_model.is_deep and self._intervention_trace_due(self.updates_done.get(ac_model_name, 0))
+   920	                        head_norms = self._head_grad_norms(ac_model) if trace_due else None           # before clipping, only when consumed
+   921	                        grad_norm = float(torch.nn.utils.clip_grad_norm_(([] if encoder_frozen else ac_parameters) + ([] if reader_frozen else target_parameters), config.max_grad_norm))
+   922	                        if not math.isfinite(grad_norm):
+   923	                            raise FloatingPointError("Non-finite gradient norm; optimizer update was not applied")

@@ -511,7 +511,9 @@ class LoadedModel:
         model = self.model
         decoder = model.get_decoder() if hasattr(model, "get_decoder") else getattr(model, model.base_model_prefix)
         from .hf_utils import INTERVENTIONS_KWARG, checkpoint_adapter_scope, install_intervention_hooks
+        from . import kv_transfer
         from .kv_transfer import KV_PREFIX_KWARG, bind_kv_overwrite, bind_kv_prefix, has_kv, is_overwrite
+        dropped = None                                      # (kept rows, old length) when the placeholder rows are dropped for this forward
         if interventions is not None:
             if len(interventions) != inputs_embeds.shape[0]:
                 raise ValueError(f"{len(interventions)} intervention payloads for {inputs_embeds.shape[0]} physical rows")
@@ -520,6 +522,10 @@ class LoadedModel:
             elif has_kv(interventions):                     # key/value transfer: attention entries, no residual hooks
                 if position_ids is not None:
                     raise ValueError("key/value transfer numbers the positions itself")
+                if kv_transfer.DROP_PLACEHOLDERS and capture is None:
+                    length = inputs_embeds.shape[1]
+                    inputs_embeds, attention_mask, interventions, kept = kv_transfer.drop_placeholders(inputs_embeds, attention_mask, interventions)
+                    dropped = (kept, length)
                 attention_mask, position_ids, prefix, _ = bind_kv_prefix(model, inputs_embeds, attention_mask, interventions)
                 kwargs = {**kwargs, KV_PREFIX_KWARG: prefix}
             else:
@@ -542,6 +548,8 @@ class LoadedModel:
         finally:
             for handle in handles:
                 handle.remove()
+        if dropped is not None:
+            return kv_transfer.restore_rows(outputs.last_hidden_state, *dropped)
         return outputs.last_hidden_state
 
     def simple_vector_embed_many(self, texts: list[str]) -> torch.Tensor:

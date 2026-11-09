@@ -1,0 +1,24 @@
+{
+ "acc": 20.0,
+ "em": 19.0,
+ "f1": 26.12,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 1,
+ "new_tokens_mean": 7.8,
+ "label": "T_res_v4fr_u400",
+ "pair": [
+  "/data/scratch-fast/ngom/sec45/runs/T_res_v4fr/sync/ckpt/step_00400/ac",
+  "/data/scratch-fast/ngom/sec45/runs/T_res_v4fr/sync/ckpt/step_00400/reader"
+ ],
+ "mode": "res",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1759,
+  "decode_seconds": 88.4
+ },
+ "seconds": 137
+}

@@ -1,0 +1,21 @@
+# source: /workspace/activation/ac_model/ac_model_utils.py
+# lines: 681-696
+# extracted: nl -ba | sed -n (resolve_intervention_layers: -1 -> every full-attention layer)
+# git commit: 258fce6adf6e59ad54594b82863d7cb6169404fa (file has uncommitted modifications in the working tree; excerpt is the working-tree version)
+# --- lines 681-696
+   681	def resolve_intervention_layers(num_layers: int, frequency: int, add_last: bool, full_attention_layers: t.Iterable[int] | None = None) -> list[int]:
+   682	    """
+   683	    Reader layers whose input receives a delta: `frequency` interior points floor(L*i/(frequency+1)), each snapped to a
+   684	    full-attention block within two indices (the earlier one on a tie), plus L-1 when asked; 0 excluded, sorted,
+   685	    deduplicated. Frequency 0 disables everything, the last-layer flag included. Frequency -1 = every full-attention
+   686	    layer of the reader (0 excluded; the last-layer flag and the snapping are moot).
+   687	    """
+   688	    if frequency == 0:
+   689	        return []                              # zero mode is unconditional, whatever the target description says
+   690	    if frequency < -1 or num_layers < 1:
+   691	        raise ValueError("intervention_frequency must be -1 (every full-attention layer), 0 or positive, and the reader must have layers")
+   692	    full = sorted(set(int(index) for index in (full_attention_layers or [])))
+   693	    if frequency == -1:
+   694	        if not full:
+   695	            raise ValueError("intervention_frequency -1 selects every full-attention layer, and the reader describes none")
+   696	        return [layer for layer in full if 0 < layer < num_layers]

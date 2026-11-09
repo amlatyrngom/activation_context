@@ -1,0 +1,46 @@
+# source: /workspace/IB/TMP/PAPER_COMPACTION/node_sync/pc-a_live/pc/logs/queue_a1_h8a_eval.log
+# lines: selected (line numbers kept), lines cut to 400 chars
+# extracted: nl -ba | grep -E 'GPU [01]: |run9h|^resume |pair registered|Loaded checkpoint|ended|evaluations done' | cut -c1-400 (vLLM engine/config noise and an HF Hub warning omitted)
+# git commit: not tracked by git (node log pulled to IB/TMP)
+
+     1	2026-10-17T02:53:47Z GPU 1: bash kit/run9h_unit.sh 3 pc_r9h8a_s3 ac_2000 /root/activation_artifacts/pc/pairs/h8a_final
+     2	2026-10-17T02:53:47Z run9h: seed 3 tag pc_r9h8a_s3 variants ac_2000 pair /root/activation_artifacts/pc/pairs/h8a_final on GPU 1
+     4	resume - 200 prefixes, variants ['ac_2000'], tag pc_r9h8a_s3, benchmarks ['lca_bug_localization', 'lca_bug_localization_java', 'lca_bug_localization_kt']
+    12	rag_poc - Loaded checkpoint (version 43665) from /root/activation_artifacts/pc/pairs/h8a_final/ac
+    13	resume - pair registered: AC /root/activation_artifacts/pc/pairs/h8a_final/ac (shape {'summary_layout': 'interleaved', 'row_head_linear_skip': False, 'bin_density_weight': 0.0}, deep True, rows only True), reader adapter /root/activation_artifacts/pc/pairs/h8a_final/reader
+    18	resume - ac_2000: 200 configs built, 0 tasks not loaded now, 0 without a summary; cache ROLLOUTS/pc_r9h8a_s3_ac_2000
+    97	resume - ac_2000: {"runs": 200, "solved": 141, "solved_share": 0.705, "answered": 182, "mean_continuation_tokens": 18734.975, "finish_reasons": {"max_tool_errors": 15, "submitted": 182, "continuation_budget": 3}, "mean_seconds": 352.2623467576504} (2650s)
+   114	resume - done in 2656s
+   115	2026-10-17T03:38:15Z run9h: pc_r9h8a_s3 ac_2000 ended (0)
+   116	2026-10-17T03:38:15Z GPU 1: ended (0)
+   117	2026-10-17T03:38:15Z GPU 1: bash kit/run9h_unit.sh 2 pc_r9h8a_s2 ac_1000 /root/activation_artifacts/pc/pairs/h8a_final
+   118	2026-10-17T03:38:15Z run9h: seed 2 tag pc_r9h8a_s2 variants ac_1000 pair /root/activation_artifacts/pc/pairs/h8a_final on GPU 1
+   120	resume - 200 prefixes, variants ['ac_1000'], tag pc_r9h8a_s2, benchmarks ['lca_bug_localization', 'lca_bug_localization_java', 'lca_bug_localization_kt']
+   128	rag_poc - Loaded checkpoint (version 43665) from /root/activation_artifacts/pc/pairs/h8a_final/ac
+   129	resume - pair registered: AC /root/activation_artifacts/pc/pairs/h8a_final/ac (shape {'summary_layout': 'interleaved', 'row_head_linear_skip': False, 'bin_density_weight': 0.0}, deep True, rows only True), reader adapter /root/activation_artifacts/pc/pairs/h8a_final/reader
+   134	resume - ac_1000: 200 configs built, 0 tasks not loaded now, 0 without a summary; cache ROLLOUTS/pc_r9h8a_s2_ac_1000
+   213	resume - ac_1000: {"runs": 200, "solved": 134, "solved_share": 0.67, "answered": 182, "mean_continuation_tokens": 20276.65, "finish_reasons": {"max_tool_errors": 14, "submitted": 182, "continuation_budget": 4}, "mean_seconds": 368.1737056434155} (2698s)
+   230	resume - done in 2704s
+   231	2026-10-17T04:23:32Z run9h: pc_r9h8a_s2 ac_1000 ended (0)
+   232	2026-10-17T04:23:32Z GPU 1: ended (0)
+   233	2026-10-17T04:23:32Z GPU 1: bash kit/run9h_unit.sh 4 pc_r9h8a_s4 ac_1000 /root/activation_artifacts/pc/pairs/h8a_final
+   234	2026-10-17T04:23:32Z run9h: seed 4 tag pc_r9h8a_s4 variants ac_1000 pair /root/activation_artifacts/pc/pairs/h8a_final on GPU 1
+   236	resume - 200 prefixes, variants ['ac_1000'], tag pc_r9h8a_s4, benchmarks ['lca_bug_localization', 'lca_bug_localization_java', 'lca_bug_localization_kt']
+   244	rag_poc - Loaded checkpoint (version 43665) from /root/activation_artifacts/pc/pairs/h8a_final/ac
+   245	resume - pair registered: AC /root/activation_artifacts/pc/pairs/h8a_final/ac (shape {'summary_layout': 'interleaved', 'row_head_linear_skip': False, 'bin_density_weight': 0.0}, deep True, rows only True), reader adapter /root/activation_artifacts/pc/pairs/h8a_final/reader
+   250	resume - ac_1000: 200 configs built, 0 tasks not loaded now, 0 without a summary; cache ROLLOUTS/pc_r9h8a_s4_ac_1000
+   329	resume - ac_1000: {"runs": 200, "solved": 132, "solved_share": 0.66, "answered": 182, "mean_continuation_tokens": 19885.455, "finish_reasons": {"max_tool_errors": 16, "submitted": 182, "continuation_budget": 2}, "mean_seconds": 349.31286715865133} (2537s)
+   346	resume - done in 2543s
+   347	2026-10-17T05:06:06Z run9h: pc_r9h8a_s4 ac_1000 ended (0)
+   348	2026-10-17T05:06:06Z GPU 1: ended (0)
+   349	2026-10-17T05:06:06Z GPU 1: bash kit/run9h_unit.sh 3 pc_r9h8a_s3 ac_4000 /root/activation_artifacts/pc/pairs/h8a_final
+   350	2026-10-17T05:06:06Z run9h: seed 3 tag pc_r9h8a_s3 variants ac_4000 pair /root/activation_artifacts/pc/pairs/h8a_final on GPU 1
+   352	resume - 200 prefixes, variants ['ac_4000'], tag pc_r9h8a_s3, benchmarks ['lca_bug_localization', 'lca_bug_localization_java', 'lca_bug_localization_kt']
+   360	rag_poc - Loaded checkpoint (version 43665) from /root/activation_artifacts/pc/pairs/h8a_final/ac
+   361	resume - pair registered: AC /root/activation_artifacts/pc/pairs/h8a_final/ac (shape {'summary_layout': 'interleaved', 'row_head_linear_skip': False, 'bin_density_weight': 0.0}, deep True, rows only True), reader adapter /root/activation_artifacts/pc/pairs/h8a_final/reader
+   366	resume - ac_4000: 200 configs built, 0 tasks not loaded now, 0 without a summary; cache ROLLOUTS/pc_r9h8a_s3_ac_4000
+   445	resume - ac_4000: {"runs": 200, "solved": 142, "solved_share": 0.71, "answered": 189, "mean_continuation_tokens": 17730.69, "finish_reasons": {"submitted": 189, "continuation_budget": 3, "max_tool_errors": 8}, "mean_seconds": 363.64554661631587} (2785s)
+   462	resume - done in 2791s
+   463	2026-10-17T05:52:49Z run9h: pc_r9h8a_s3 ac_4000 ended (0)
+   464	2026-10-17T05:52:49Z GPU 1: ended (0)
+   465	2026-10-17T05:52:49Z h8a_eval_queue GPU 1: evaluations done

@@ -1,0 +1,58 @@
+# source: /workspace/IB/ARTIFACTS/PAPER_COMPACTION/RESULTS_SO_FAR.md
+# lines: 1-14, 205-242
+# extracted: nl -ba | sed -n (MVP figure definition incl. difficulty; timing caveat; H8a section)
+# git commit: untracked (IB/ARTIFACTS/PAPER_COMPACTION/ is '??' in git status at 258fce6)
+
+     1	# Compaction: best results so far (Oct 14, updated Oct 16 06:30Z)
+     2	
+     3	For the writing session. Every number below was read from the run outputs. The full history is in `PLAN.md`.
+     4	
+     5	**Status:** you accepted these results as the MVP (Oct 14). Hill-climbing continues on the side.
+     6	
+     7	- **Canonical MVP figure (user, Oct 18; stands unless the PI's feedback this week changes it):** `figs/fig_compaction_mvp.{pdf,png}`, numbers in `figs/fig_compaction_mvp.json`.
+     8	  - Panels (a) solved and (b) continuation tokens: eval-200 (9B-written prefixes, 50k continuation budget), seeds 2–4, AC = H8a at 1/5 and 1/10, against full context, no context and the 9B text summary.
+     9	  - x-axis "Continuation Difficulty": Mean (all 200), P50 (hardest 50%), P75 (hardest 25%). Difficulty is the original 9B run's tokens after the cut. AC 1/20, truncation and the noisy P90 group (20 tasks) are left out on purpose.
+    10	  - Panel (c) compaction duration is unchanged from the frozen-100 figure, so it was timed on 27B-written prefixes. Say so in the caption, or re-time it on the 9B prefixes when a node is up.
+    11	  - Rebuild: `scripts/make_fig_compaction_v4.py` (copy; it runs from `IB/TMP/PAPER_COMPACTION/kit`, next to `heldout_quantiles_cache.pkl`) with `--style paper --ratios 1/5,1/10 --no-trunc --upto P75 --kind bar --values --fig-width 10`.
+    12	- **Earlier figures:** `figs/frozen100_h0_fig.*` (frozen-100 set, H0 pair) and arm A's `figs/frozen100_w1A_fig.*`.
+    13	- **Draft text:** `compaction_results_draft.tex` uses the H0 numbers below; its header lists the snapshot sentences the data refutes.
+    14	
+    ...
+   205	| H7S (mixed), 1/5 | 70.3% / 18.4k | 61.0% | 61.3% | 15.3k |
+   206	| R5 (1/5 only), 1/5 | 69.7% / 18.6k | 60.7% | 59.3% | 14.2k |
+   207	
+   208	- Per-task over the 3 seeds: R10 vs H7S wins 47 and loses 57 (p .38); R20 vs H7S wins 69 and loses 59 (p .43); R5 vs H7S wins 43 and loses 47 (p .75).
+   209	- Reading: specializing to one ratio gives no reliable gain at any ratio. One mixed-ratio model suffices, which is the simpler story.
+   210	
+   211	**H8a: H7's recipe on 1.75× the material (Oct 17; evals seeds 2–4).** H8a uses 3,393 kept prefixes (H7S used 1,942). It has the same init (H5), the same selection, 1 epoch and the same rates. Cells give solved share / mean continuation tokens.
+   212	
+   213	| Ratio | Model | All 200 | Hardest 50% | Hardest 25% | Median tokens |
+   214	|---|---|---|---|---|---|
+   215	| 1/5 | H7S | 70.3% / 18.4k | 61.0% | 61.3% | 15.3k |
+   216	| 1/5 | H8a | 71.3% / 17.1k | 61.7% | 62.0% | 12.6k |
+   217	| 1/10 | H7S | 69.3% / 18.8k | 59.7% | 58.7% | 15.5k |
+   218	| 1/10 | H8a | 71.0% / 18.3k | 59.7% | 60.0% | 15.1k |
+   219	| 1/20 | H7S | 64.5% / 21.1k | 56.3% | 53.3% | 17.9k |
+   220	| 1/20 | H8a | 65.7% / 20.0k | 54.3% | 52.7% | 17.4k |
+   221	| — | Full prefix | 71.7% / 17.3k | 63.0% | 62.7% | 13.2k |
+   222	
+   223	- **Per task over 3 seeds, H8a vs H7S:** 1/5 wins 46 and loses 40; 1/10 wins 53 and loses 43; 1/20 wins 68 and loses 61. None is significant.
+   224	- **Against full context:** at 1/5, 37 vs 39; at 1/10, 43 vs 47. H8a is statistically indistinguishable from the full prefix at 1/5 and 1/10.
+   225	- **Against the summary:** at 1/5, 51 vs 35 (p .11); at 1/20, 51 vs 69 (p .12).
+   226	- **Reading:** more material of the same kind gives small, consistent gains of about 1 point and about 1k fewer tokens. These are not significant on 200 tasks.
+   227	
+   228	**Full H8: H7's recipe on 2.2× the material (Oct 17 20:30Z; evals seeds 2–4, all 200 rows, no error rows).** Full H8 uses 4,276 kept prefixes, with the same init, recipe and 1 epoch as H8a (1,100 updates; loss 0.55 to 0.33).
+   229	
+   230	| Ratio | Model | All 200 | Hardest 50% | Hardest 25% | Median tokens |
+   231	|---|---|---|---|---|---|
+   232	| 1/5 | H8a | 71.3% / 17.1k | 61.7% | 62.0% | 12.6k |
+   233	| 1/5 | Full H8 | 70.5% / 17.4k | 60.3% | 61.3% | 13.7k |
+   234	| 1/10 | H8a | 71.0% / 18.3k | 59.7% | 60.0% | 15.1k |
+   235	| 1/10 | Full H8 | 68.7% / 17.6k | 55.7% | 54.0% | 13.8k |
+   236	| 1/20 | H8a | 65.7% / 20.0k | 54.3% | 52.7% | 17.4k |
+   237	| 1/20 | Full H8 | 66.8% / 19.6k | 58.3% | 57.3% | 16.7k |
+   238	| — | Summary | 68.7% / 21.2k | 57.0% | 55.3% | 17.3k |
+   239	
+   240	- **Per task over 3 seeds, full H8 vs H8a:** at 1/5, 39 won and 44 lost; at 1/10, 42 and 56 (p .19); at 1/20, 61 and 54. None is significant.
+   241	- **Against the summary:** at 1/5, 53 vs 42 (p .30); at 1/10, 52 vs 52; at 1/20, 53 vs 64.
+   242	- **Reading:** past 1.75× the material, more best-of-3 continuations at the same recipe do not move eval-200. H8a stays the compaction model for the paper. Only at 1/20 is full H8 ahead of both H8a and H7S, and that is within noise.

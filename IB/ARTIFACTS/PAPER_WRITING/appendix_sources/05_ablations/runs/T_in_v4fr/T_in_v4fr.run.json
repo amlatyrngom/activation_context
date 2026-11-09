@@ -1,0 +1,103 @@
+{
+ "name": "T_in_v4fr",
+ "args": {
+  "kind": "task",
+  "mode": "in",
+  "data": "/data/scratch-fast/ngom/sec45/data/hotpot_tasks_v1",
+  "fresh": "False",
+  "pair": "['/data/scratch-fast/ngom/sec45/init/R_in_v4fr_final/ac', '/data/scratch-fast/ngom/sec45/init/R_in_v4fr_final/reader']",
+  "name": "T_in_v4fr",
+  "steps": "4000",
+  "epu": "8",
+  "seconds": "864000.0",
+  "encoder_lr": "2e-05",
+  "reader_lr": "0.0",
+  "warmup": "50",
+  "schedule": "cosine",
+  "ckpt_every": "400",
+  "no_save": "False",
+  "report_every": "200",
+  "held_panel": "None",
+  "micro_batch": "4",
+  "block_examples": "64",
+  "penalty_weight": "1.0",
+  "longest_first": "0",
+  "seed": "0",
+  "offset": "0",
+  "keep_optimizer": "False",
+  "resume_if_possible": "True",
+  "keep_steps": "all"
+ },
+ "train_items": 32000,
+ "held_items": 200,
+ "planned_updates": 4000,
+ "models": {
+  "QA4B_READER": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_SIDE": "Qwen/Qwen3-4B-Instruct-2507",
+  "QA4B_RANK": "128",
+  "QA4B_LAYERS": "none",
+  "QA4B_KV": "0",
+  "RQ_THINKING": "0"
+ },
+ "ac_fields": {
+  "kv_transfer": false,
+  "intervention_frequency": 0,
+  "intervention_layers": null,
+  "summary_layout": "interleaved",
+  "side_lora_rank": 128,
+  "max_view_rows": 4096
+ },
+ "train_target_tokens_mean": 7.9,
+ "penalty_weight": 1.0,
+ "penalty_fraction": 0.25,
+ "order": {
+  "loaded_epoch_number": 1,
+  "start_epoch": 1,
+  "shuffle": true,
+  "shuffle_seed": 1,
+  "torch_seed": 1,
+  "first_updates": [
+   [
+    "5a728dac5542994cef4bc32e",
+    "5a7332cf5542994cef4bc4b0",
+    "5a7fbf9855429969796c1b43",
+    "5a8b5a7b55429971feec46f4",
+    "5a8d5a795542994ba4e3dc7e",
+    "5adcc9535542990d50227d1d",
+    "5ae082d555429924de1b70f5",
+    "5ae84a4b5542997ec2727799"
+   ],
+   [
+    "5a8204dc55429926c1cdadea",
+    "5a8eee655542995a26add566",
+    "5ab8174055429916710eafe6",
+    "5abd38d75542993062266c21",
+    "5ac2c382554299218029db2b",
+    "5ade65dc554299728e26c712",
+    "5ae321c655429928c4239625",
+    "5ae691c95542996d980e7c09"
+   ],
+   [
+    "5a7d2ddb554299452d57bb48",
+    "5a7e7dcc5542991319bc94bf",
+    "5a804e045542992bc0c4a6e6",
+    "5ab2de71554299194fa93558",
+    "5ab880bc55429934fafe6e03",
+    "5adceeea5542994ed6169c21",
+    "5ae1bcc9554299234fd042e0",
+    "5ae5bf2a5542990ba0bbb2ca"
+   ],
+   [
+    "5a72913a5542992359bc30ff",
+    "5a736eb855429901807db057",
+    "5a8a426055429930ff3c0d31",
+    "5a8a52b15542996c9b8d5eb4",
+    "5a8b141255429971feec463c",
+    "5ababa50554299232ef4a387",
+    "5ac1f8e15542996366519931",
+    "5adc963f5542994ed6169ba1"
+   ]
+  ],
+  "first_sha256": "c0a5726ed3470bdac76c362a831f020cb213a090a20f59f115bb4444ff329fca"
+ }
+}

@@ -1,0 +1,19 @@
+# source: /home/node/.claude/jobs/6f1c1373/tmp/pr/code/kit_pr/text4b_sec45.py
+# lines: 1-8 25-25 33-33
+# extracted: nl -ba | sed -n (untuned text arms: greedy, --max-tokens default 2048)
+# git commit: n/a: job tmp dir outside the repo
+# sha256 of source: 2c2b8d9909197dab
+
+----- lines 1-8 -----
+     1	"""Text reference for Fig. 7c (user, Oct 27): base Qwen3-4B-Instruct-2507 (the section 4.5 reader, no LoRA) reading the section 4.5
+     2	dev200 tasks AS TEXT, decoded like sec45_eval.py (one GREEDY sample, scored with rq_common.score on the last "Final answer:" line).
+     3	Arms: top20i = the tasks' own top20 (question-only BM25 top 20 with both golds injected = perfect recall@20, the passages the AC runs
+     4	encode); gold = the two gold passages only; none = the question alone. Prompt = rq_common.READ / NO_PASSAGES (the 9B text baselines').
+     5	
+     6	  python text4b_sec45.py --data HOTPOT_TASKS_DIR --out-dir OUT [--max-tokens 2048]
+     7	"""
+     8	import argparse
+----- lines 25-25 -----
+    25	    p.add_argument("--arms", nargs="+", default=["top20i", "gold", "none"]); p.add_argument("--max-tokens", type=int, default=2048)
+----- lines 33-33 -----
+    33	    greedy = SamplingParams(temperature=0.0, max_tokens=a.max_tokens)

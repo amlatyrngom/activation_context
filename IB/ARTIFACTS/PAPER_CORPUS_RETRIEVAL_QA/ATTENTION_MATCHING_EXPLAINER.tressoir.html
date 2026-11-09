@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A simplified explainer of Attention Matching KV compaction">
+  <title>Attention Matching explained</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.css">
+</head>
+<body>
+  <main class="tressoir-document">
+    <header class="document-header">
+      <p class="eyebrow">Explainer · Attention Matching (Zweiger, Fu, Guo, Kim · arXiv 2602.16284)</p>
+      <h1>Attention Matching, simply: shrinking a document's key/value cache without training</h1>
+      <p class="lede">The model reads a long document once and keeps one key and one value per token, at every layer and head. Attention Matching replaces those T entries with t ≪ T new entries plus one extra number per entry (a bias β). They are chosen so that <strong>any later query gets the same answer from the document as before</strong>. Everything is fit with plain least squares in seconds to minutes, not hours of gradient descent.</p>
+      <ul class="meta" aria-label="Artifact metadata">
+        <li>Written 19 Oct 2026</li>
+        <li>Figure numbers read off the paper's plot (±0.02)</li>
+        <li>Plan: <a href="./FREE_WEIGHTS_PLAN.tressoir.md" data-tressoir-open-file>FREE_WEIGHTS_PLAN.tressoir.md</a></li>
+      </ul>
+    </header>
+
+    <section class="section" aria-labelledby="one-idea">
+      <h2 id="one-idea">1. The one idea: a document answers a query with two numbers</h2>
+      <p>Take one layer and one key/value head. A query \(q\) looks at the document's keys \(K\) (T rows) and values \(V\). From the document's point of view, everything the query gets is captured by two quantities:</p>
+      <ul>
+        <li><strong>What the document says</strong>: its own attention output, normalized over the document only:
+          \[\text{out}(q) = \frac{\sum_j e^{q\cdot K_j}\,V_j}{\sum_j e^{q\cdot K_j}}\]</li>
+        <li><strong>How loud the document is</strong>: its attention mass, the softmax denominator it contributes:
+          \[\text{mass}(q) = \sum_j e^{q\cdot K_j}\]</li>
+      </ul>
+      <p>When the document sits next to other tokens (the question, the answer being written, other documents), the real attention output is just a mass-weighted mix of each block's own output:</p>
+      <div class="math-display">\[\text{attention}(q) = \frac{\text{mass}_{\text{doc}}\cdot\text{out}_{\text{doc}} + \text{mass}_{\text{rest}}\cdot\text{out}_{\text{rest}}}{\text{mass}_{\text{doc}} + \text{mass}_{\text{rest}}}\]</div>
+      <p><strong>So:</strong> if a small cache reproduces both <em>out</em> and <em>mass</em> for the queries the model will actually ask, the document's contribution is unchanged, whatever comes after it. That is the whole objective. It never looks at the next-token loss; it works layer by layer and head by head.</p>
+    </section>
+
+    <section class="section" aria-labelledby="why-beta">
+      <h2 id="why-beta">2. Why each kept entry needs a bias β</h2>
+      <p>Keeping fewer keys makes the document too quiet. For a query of all zeros every key scores \(e^0 = 1\), so the original mass is T while any t-entry cache gives t. A dropped-token cache therefore always under-weights the document against the question tokens. That is a weakness of the eviction methods (H2O, SnapKV, PyramidKV).</p>
+      <p>The fix is one scalar per kept entry, added to its attention score: \(e^{q\cdot C_{k,j} + \beta_j}\). Writing \(w_j = e^{\beta_j}\), <strong>\(w_j\) is "how many original keys this kept key stands for"</strong>. It costs one extra number per entry, against 2 × 128 for its key and value.</p>
+      <p><strong>A worked example.</strong> Suppose four of the document's keys are identical, \(K_1=\dots=K_4=k\), with values \(v_1,\dots,v_4\). Every query weights them equally. So keep one entry with key \(k\), value \(\tfrac14(v_1+v_2+v_3+v_4)\) and \(\beta=\log 4\):</p>
+      <ul>
+        <li>mass: \(e^{q\cdot k+\log 4} = 4e^{q\cdot k}\), exactly as before;</li>
+        <li>output: the average value, exactly as before;</li>
+        <li>this holds for every possible query. With no β, the document would look four times quieter.</li>
+      </ul>
+      <p>Real keys are not identical, so the fit is approximate and is made over a sample of realistic queries.</p>
+      <svg viewBox="0 0 560 120" role="img" aria-label="Eight original entries become two kept entries with weights 3 and 5" style="max-width:560px">
+        <g font-family="inherit" font-size="13" fill="currentColor">
+          <text x="0" y="18">original cache (T = 8)</text>
+          <rect x="0" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <rect x="34" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <rect x="68" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="102" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <rect x="136" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <rect x="170" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <rect x="204" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="238" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor"/>
+          <text x="300" y="47">→</text>
+          <text x="340" y="18">compacted (t = 2)</text>
+          <rect x="340" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <rect x="374" y="28" width="28" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <text x="340" y="78">w = 3</text>
+          <text x="384" y="96">w = 5</text>
+          <text x="0" y="96">bold = keys kept as they are; values are re-fit</text>
+        </g>
+      </svg>
+    </section>
+
+    <section class="section" aria-labelledby="recipe">
+      <h2 id="recipe">3. The recipe: three closed-form steps per layer and head</h2>
+      <p>Fitting keys, β and values together would need gradient descent. The paper avoids it by fitting them one after another, each with a standard solver.</p>
+      <ol>
+        <li><strong>Collect reference queries.</strong> These stand in for "the queries the model will ask later". The model reads the document, then is asked to repeat it: <code>{doc} Repeat the previous context. {doc}</code>, an idea from KVzip. The queries it produces while repeating are recorded. Optionally, four "self-study" prompts are added, e.g. "Aggregate all key facts mentioned in the context", and the queries produced while answering them are recorded. This gives up to 50,000 queries per head.</li>
+        <li><strong>Pick which keys to keep (\(C_k\)).</strong> Kept keys are original keys, a subset. There are two ways to choose:
+          <ul>
+            <li><em>Highest attention:</em> score every key by how much attention it gets across the reference queries (root mean square) and keep the top t. Takes seconds.</li>
+            <li><em>OMP</em> (orthogonal matching pursuit): greedily add the key that best fixes the remaining mass error, re-fitting the weights each time. Best quality, but minutes per context.</li>
+          </ul></li>
+        <li><strong>Fit β</strong> so that the mass matches: choose weights \(w \ge 0\) minimizing \(\sum_i\big(\sum_j w_j e^{q_i\cdot C_{k,j}} - \text{mass}(q_i)\big)^2\). This is non-negative least squares. Then \(\beta=\log w\), clamped to [−3, 3] in the highest-attention variant.</li>
+        <li><strong>Fit the values \(C_v\)</strong> so that the outputs match. With keys and β fixed, the compact attention weights \(x_i\) for each query are known, and the targets are the original outputs \(y_i\). So \(C_v = \arg\min \lVert X C_v - Y\rVert^2\), ordinary least squares. The new values are new vectors, not copies of old ones.</li>
+      </ol>
+      <p>The same steps as a sketch in code (one layer, one key/value head; the real code subtracts the maximum score for numerical stability):</p>
+      <pre class="code-block"><code class="language-python"># K, V: [T, d] original keys/values · Q: [n, d] reference queries · t: how many entries to keep
+scores = Q @ K.T / d**0.5                      # [n, T]
+attn = scores.softmax(dim=1)
+keep = attn.pow(2).mean(0).sqrt().topk(t).indices     # step 2: highest-attention keys
+Ck = K[keep]                                   # [t, d]
+
+mass = scores.exp().sum(1)                     # [n]   original mass per query
+Phi = (Q @ Ck.T / d**0.5).exp()                # [n, t]
+w = nnls(Phi, mass).clamp(e**-3, e**3)         # step 3: "how many keys each kept key stands for"
+beta = w.log()
+
+X = (Q @ Ck.T / d**0.5 + beta).softmax(dim=1)  # [n, t] compact attention weights
+Y = attn @ V                                   # [n, d] original outputs
+Cv = lstsq(X, Y)                               # step 4: values reproducing the outputs</code></pre>
+      <p><strong>Positions.</strong> The compact cache stores t entries but keeps the document's full length T for numbering, so the question that follows gets the same positions (and rotary phases) as with the full document. Our key/value transfer already does this: kept keys sit at their original positions, and the reader counts the full length.</p>
+    </section>
+
+    <section class="section" aria-labelledby="refinements">
+      <h2 id="refinements">4. Three refinements that matter in the paper</h2>
+      <ul>
+        <li><strong>Uneven budgets per head.</strong> Some heads barely care about extra entries, others need many. The paper measures this once per model, finds that the ranking of heads holds across documents and datasets, and shares out the total budget with a greedy exchange.</li>
+        <li><strong>Layer by layer, "on-policy".</strong> Compacting layer 3 slightly changes the queries layer 4 produces. So layers are compacted in order, and each layer's reference queries are recorded with the earlier layers already compacted. This gives a small but consistent gain.</li>
+        <li><strong>Chunks.</strong> On LongHealth, each 60k-token context of 5 patients is read in full once. Its cache is then cut into 5 chunks, each chunk is compacted on its own, and the pieces are concatenated. For our special-input handler, this means compacted entries for each document separately.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="numbers">
+      <h2 id="numbers">5. What it buys: Qwen3-4B on LongHealth, 1/10 size</h2>
+      <p>The setup is Figure 3 of the paper:</p>
+      <ul>
+          <li>model: Qwen3-4B-Instruct-2507;</li>
+          <li>LongHealth patients 1–20, grouped as 4 contexts of 5 patients (≈60k tokens each), 100 multiple-choice questions per context, 400 in all;</li>
+          <li>size = kept entries ÷ document tokens, with the chat-template tokens kept as they are.</li>
+      </ul>
+      <p>The values below are read off the plot, so treat them as ±0.02.</p>
+      <table>
+        <thead><tr><th>Method</th><th>How it works</th><th>Accuracy at 1/10</th></tr></thead>
+        <tbody>
+          <tr><td>Full cache (no compaction)</td><td>—</td><td>≈0.81</td></tr>
+          <tr><td>AM, highest-attention keys</td><td>this explainer</td><td>≈0.75</td></tr>
+          <tr><td>AM, OMP keys</td><td>this explainer, greedy keys</td><td>no point at 1/10; ≈0.74 at 1/20</td></tr>
+          <tr><td>KVzip</td><td>drop entries the repeat task does not use (uneven per head)</td><td>≈0.75</td></tr>
+          <tr><td>Cartridges</td><td>train a cache by gradient descent on self-study (≈hours per context)</td><td>≈0.68</td></tr>
+          <tr><td>H2O+</td><td>drop low-attention entries</td><td>≈0.47</td></tr>
+          <tr><td>SnapKV, PyramidKV</td><td>drop entries using the last tokens' attention</td><td>≈0.35</td></tr>
+          <tr><td>Summarization</td><td>replace text by a summary</td><td>≈0.34–0.41 (points only up to 1/20)</td></tr>
+          <tr><td>No context</td><td>—</td><td>≈0.34</td></tr>
+        </tbody>
+      </table>
+      <p>At 1/50 and 1/100, AM and Cartridges are close (≈0.61–0.67 against ≈0.65). In time, on one H200 and a 60k LongHealth context with Gemma3-12B (the paper's Table 1):</p>
+      <ul>
+          <li>highest-attention key selection 3 s, β 2.2 s, values 1.8 s;</li>
+          <li>repeat-prefill queries 8 s, self-study queries 139 s;</li>
+          <li>OMP selection 565 s (104 s in its fast form).</li>
+      </ul>
+      <p>Cartridges takes hours per context.</p>
+    </section>
+
+    <section class="section" aria-labelledby="limits">
+      <h2 id="limits">6. Where it stops, by the authors' own account</h2>
+      <ul>
+        <li><strong>Kept keys must be original keys.</strong> Only β and the values are freely fit. At extreme ratios (100×) on LongHealth, Cartridges wins, which the authors attribute to gradient descent searching a wider space. Their stated future work is "directly optimizing compact keys".</li>
+        <li><strong>It matches attention, not answers.</strong> Each layer is fit to reproduce that layer's attention over sampled queries. Nothing checks that the final answer is right; small errors can add up across 36 layers.</li>
+        <li><strong>The reference queries are a guess</strong> at future questions. Questions that probe a fact the repeat task never needed can miss.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="ours">
+      <h2 id="ours">7. How this plugs into our special-input handler, and how to beat it</h2>
+      <p>The output of Attention Matching is exactly what our key/value handler returns for a document: per layer, t keys (unrotated), t values, and each key's position in the document. The one addition is β, which needs a per-entry, per-head bias in the reader's attention mask. Recommended arms, in order:</p>
+      <ol>
+        <li><strong>AM through the handler</strong> (no training). Reproduce ≈0.75 at 1/10 inside our harness. This calibrates our evaluation against Figure 3 and shows that "the AC interface is compatible with prior compaction methods" with a real number.</li>
+        <li><strong>Free keys/values, Cartridges-style</strong> (the earlier plan), started from real tokens.</li>
+        <li><strong>AM start, then gradient (proposed).</strong> Start the free keys, β and values from the AM solution (≈0.75 on day one, in minutes). Then train all three end-to-end on the answer loss. This removes AM's "original keys only" limit and Cartridges' slow start. It follows the authors' future work and costs only reader-sized updates, since no encoder runs.</li>
+        <li><strong>Optional middle ground:</strong> the AM repository contains an unreported joint gradient fit (<code>OptimJointCompaction</code>). It adjusts keys, β and values per layer on the matching loss, with no full-model backward.</li>
+      </ol>
+      <p>Details, data and run order are in the plan.</p>
+    </section>
+
+    <aside class="feedback-dock" data-feedback-dock>
+      <section class="feedback-popover" id="artifact-feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="artifact-feedback-title" hidden>
+        <header class="feedback-popover-header">
+          <h2 id="artifact-feedback-title">Feedback Form</h2>
+          <button class="feedback-close" type="button" data-feedback-close aria-label="Close feedback form">×</button>
+        </header>
+        <div class="feedback-editor">
+          <textarea id="artifact-feedback" data-tressoir-feedback aria-label="Feedback Form (Markdown)"></textarea>
+        </div>
+      </section>
+
+      <button class="feedback-trigger" type="button" data-feedback-toggle aria-expanded="false" aria-controls="artifact-feedback-panel" aria-label="Open feedback form" title="Feedback">
+        <svg data-tressoir-inline viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 5.75h14v10.5H9l-4 3v-13.5Z"></path>
+          <path d="M8.25 9h7.5M8.25 12.5h5"></path>
+        </svg>
+      </button>
+    </aside>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js"></script>
+  <script defer data-manual src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markup.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-css.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-clike.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-javascript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-typescript.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-jsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-tsx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-yaml.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-python.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-rust.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-sql.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-diff.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/diff-highlight/prism-diff-highlight.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/meta.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/gh/amlatyrngom/tressoir-external@v0.1.7/extension/src/notebook/assets/linear/tressoir-linear.js"></script>
+</body>
+</html>

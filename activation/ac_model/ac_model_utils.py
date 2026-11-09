@@ -90,17 +90,39 @@ def tokenize_with_parts(
     renders one sentinel string per part; the text is split at the sentinels and the pieces tokenized
     (no special tokens, as the template's own tokenization). The caller writes rows over the spans.
     """
-    flat = [_training_template_message(tokenizer, message, reasoning_as_text=True)
-            for message in flatten_with_sentinels(messages, parts="sentinel")]
     index = sum(1 for _ in direct_parts(messages))
     assert index == len(part_lengths), f"{index} parts in the messages, {len(part_lengths)} lengths given"
+    text = render_with_part_sentinels(tokenizer, messages, tools=tools, add_generation_prompt=add_generation_prompt,
+                                      chat_template_kwargs=chat_template_kwargs)
+    return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
+
+
+def render_with_part_sentinels(tokenizer: "PreTrainedTokenizerBase", messages: list[dict], *, tools: list[dict] | None = None,
+                               add_generation_prompt: bool = False, chat_template_kwargs: dict | None = None) -> str:
+    """The chat-template text tokenize_with_parts encodes: one sentinel string per direct part."""
+    flat = [_training_template_message(tokenizer, message, reasoning_as_text=True)
+            for message in flatten_with_sentinels(messages, parts="sentinel")]
     if tools and not template_takes_tools(tokenizer):
         flat, tools = tools_in_system_text(flat, tools), None                     # the definitions ride in the system text instead
     if not any(message.get("role") == "user" and not str(message.get("content") or "").strip().startswith("<tool_response>") for message in flat):
         flat.insert(0, {"role": "user", "content": ""})                    # Qwen templates refuse a conversation without a user query (a mid-trajectory segment)
-    text = tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
+    return tokenizer.apply_chat_template(flat, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False,
                                          **(chat_template_kwargs or {}))
-    return encode_with_part_sentinels(tokenizer, text, list(part_lengths), pad_id)
+
+
+def batch_token_counts(tokenizer: "PreTrainedTokenizerBase", texts: list[str], chunk: int = 1024) -> list[int]:
+    """len(tokenizer.encode(text, add_special_tokens=False)) of each text, through the tokenizer's batched call with its
+    Rust threads on (TOKENIZERS_PARALLELISM=false would run the batch on one thread; the setting is restored after)."""
+    previous = os.environ.get("TOKENIZERS_PARALLELISM")
+    os.environ["TOKENIZERS_PARALLELISM"] = "true"
+    try:
+        return [len(ids) for start in range(0, len(texts), chunk)
+                for ids in tokenizer(texts[start:start + chunk], add_special_tokens=False)["input_ids"]]
+    finally:
+        if previous is None:
+            os.environ.pop("TOKENIZERS_PARALLELISM", None)
+        else:
+            os.environ["TOKENIZERS_PARALLELISM"] = previous
 
 
 def _training_template_message(tokenizer, message: dict, *, reasoning_as_text: bool = False) -> dict:
@@ -255,9 +277,8 @@ def validate_part_capacity(ac_model, request, capacity: int) -> None:
     """Check every recursive side forward: content tokens plus summary rows."""
     children = [ac_model._child_request(part, request.compression_ratio) for part in direct_parts(request.messages)]
     lengths = [ac_model.part_view_rows(child.messages, child.compression_ratio, child.tools) for child in children]
-    tokenizer = ac_model.side.tokenizer
-    ids, _ = tokenize_with_parts(tokenizer, request.messages, lengths, tokenizer.pad_token_id or 0, tools=request.tools)
-    total = len(ids) + ac_model.num_view_rows(len(ids), request.compression_ratio)      # the content tokens plus the summary rows
+    count = ac_model.side_token_count(request.messages, lengths, request.tools)
+    total = count + ac_model.num_view_rows(count, request.compression_ratio)      # the content tokens plus the summary rows
     if total > capacity:
         raise ValueError(f"AC side forward needs {total} positions, exceeding supported capacity {capacity}")
     for child in children:
@@ -579,12 +600,15 @@ class ACOutput:
     kv_positions: torch.Tensor | None = None # [V] long: the summary tokens' positions in the encoder's sequence
     kv_length: int = 0                       # the length of the encoder's sequence (the positions the part takes up in the reader)
     kv_overwrite: bool = False               # overwrite mode: the rows are real reader positions (input_embeds: the marker) whose keys/values are replaced
+    kv_bias: dict[int, torch.Tensor] = field(default_factory=dict)   # optional reader layer -> [V, kv_heads]: added to the entries' attention
+                                             # scores (a compacted cache's log-weights β; harness/kv_transfer.py KV_BIAS)
 
     def _map(self, move: t.Callable[[torch.Tensor], torch.Tensor], index: t.Callable[[torch.Tensor], torch.Tensor]) -> "ACOutput":
         return ACOutput(move(self.input_embeds), {int(layer): move(rows) for layer, rows in self.layer_inputs.items()},
                         None if self.states is None else move(self.states),
                         {int(layer): (move(keys), move(values)) for layer, (keys, values) in self.kv_values.items()},
-                        None if self.kv_positions is None else index(self.kv_positions), self.kv_length, self.kv_overwrite)
+                        None if self.kv_positions is None else index(self.kv_positions), self.kv_length, self.kv_overwrite,
+                        {int(layer): move(bias) for layer, bias in self.kv_bias.items()})
 
     def to(self, device: torch.device | str, dtype: torch.dtype) -> "ACOutput":
         return self._map(lambda tensor: tensor.to(device=device, dtype=dtype), lambda tensor: tensor.to(device=device))
@@ -599,7 +623,8 @@ class ACOutput:
     @property
     def tensors(self) -> list[torch.Tensor]:
         return [self.input_embeds, *self.layer_inputs.values(), *([self.states] if self.states is not None else []),
-                *(tensor for pair in self.kv_values.values() for tensor in pair), *([self.kv_positions] if self.kv_positions is not None else [])]
+                *(tensor for pair in self.kv_values.values() for tensor in pair), *([self.kv_positions] if self.kv_positions is not None else []),
+                *self.kv_bias.values()]
 
     @property
     def nbytes(self) -> int:
@@ -734,6 +759,23 @@ class EncodeRequest(t.NamedTuple):
     compression_ratio: float
     is_recursive: bool
     tools: list[dict] | None = None            # the definitions the compressed segment ran with (part["tools"]); templated on the side
+
+
+@t.runtime_checkable
+class SpecialInputHandler(t.Protocol):
+    """Pluggable answers for chosen inputs, owned outside the main code (ActivationContextModel.special_input_handler).
+    Called once per encode_batch with every request; returns one answer per request: an ACOutput that stands for the
+    encoder's result for that part (never row-cached; it may carry gradients into `parameters()`), or None (the encoder
+    runs). The ACOutput must have the shape the encoder would give: as many rows (placeholders, for key/value transfer) as
+    `num_view_rows` of the part, and for key/value transfer `kv_values` at every reader layer, `kv_positions`, `kv_length`."""
+
+    def __call__(self, requests: list[EncodeRequest]) -> list["ACOutput | None"]: ...
+
+    def parameters(self) -> t.Iterable[torch.nn.Parameter]: ...
+
+    def state_dict(self) -> dict: ...
+
+    def load_state_dict(self, state: dict) -> t.Any: ...
 
 
 def ac_execution_records(ac, examples):

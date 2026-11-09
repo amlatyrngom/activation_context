@@ -1,0 +1,66 @@
+{
+ "final": 19977,
+ "selfstudy": 15000,
+ "evalshape": 4977,
+ "near_dup_dropped": 19,
+ "near_dup_examples": [
+  {
+   "generated": "Which of the following treatments was initiated for Mrs. Jane Done during her hospital admission from 10/23/2020 to 11/01/2020?",
+   "eval": "which of the following medications was given to the mrs. done for eczema treatment during the hospital stay from 10/23/2020 to 11/01/2020?",
+   "jaccard": 0.63
+  },
+  {
+   "generated": "What was the key decision made by the gastrointestinal tumor board regarding Mrs. Jill Anderson's pancreatic cancer treatment on September 30, 2021?",
+   "eval": "what recommendation was made by the gastrointestinal tumor board on september 30th, 2021 regarding mrs. anderson's treatment?",
+   "jaccard": 0.67
+  },
+  {
+   "generated": "What was the primary reason for Mr. John Miller's initial hospital admission in July 2019?",
+   "eval": "what was the initial reason for mr. hurley's hospital admission in october 2019?",
+   "jaccard": 0.67
+  },
+  {
+   "generated": "What was the primary reason for Mr. John Miller's initial hospital admission in July 2019?",
+   "eval": "what was the initial reason for mr. hurley's hospital admission in october 2019?",
+   "jaccard": 0.67
+  },
+  {
+   "generated": "Which of the following best describes the histopathological findings in the right breast mastectomy specimen from Mrs. Linda Mayer's surgery on 09/01/2019?",
+   "eval": "which of the following best describes the tnm classification for mrs. linda mayer's right breast condition after the surgery on 09/01/2019?",
+   "jaccard": 0.61
+  }
+ ],
+ "unnamed_selfstudy_dropped": 66,
+ "evalshape_agree_rate": 0.8971,
+ "evalshape_agree_rate_raw": 0.8995,
+ "key_letter_counts": {
+  "A": 965,
+  "B": 965,
+  "C": 985,
+  "D": 1045,
+  "E": 1017
+ },
+ "truncated": {
+  "selfstudy": 2148,
+  "evalshape": 65
+ },
+ "mean_answer_tokens": {
+  "selfstudy": 543.3,
+  "evalshape": 212.3
+ },
+ "mean_prompt_tokens": 11872.9,
+ "seed_type_counts": {
+  "structuring": 2907,
+  "summarization": 3049,
+  "question": 2992,
+  "use_case": 3067,
+  "creative": 2985,
+  "evalshape": 4977
+ },
+ "short_patients": {
+  "patient_11": {
+   "selfstudy": 750,
+   "evalshape": 227
+  }
+ }
+}

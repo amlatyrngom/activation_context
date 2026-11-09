@@ -1,0 +1,13 @@
+{
+ "variant": "ac_4000",
+ "runs": 30,
+ "solved": 3,
+ "solved_share": 0.1,
+ "answered": 7,
+ "mean_continuation_tokens": 23175.7,
+ "finish_reasons": {
+  "max_turns": 23,
+  "submitted": 7
+ },
+ "mean_seconds": 10.305287392934163
+}

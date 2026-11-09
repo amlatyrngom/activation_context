@@ -1,0 +1,41 @@
+# source: /home/node/.claude/jobs/6f1c1373/tmp/am_ec2/logs/t0.1_fastest_a0.log
+# lines: 1-25 256-266
+# extracted: nl -ba | sed -n; Attention Matching's own code (R4, nonuniform t0.1_fastest export, article 0). Local copy is partial (2748 lines, ends during article 1).
+# ---- lines 1-25
+     1	Loaded algorithm config from: best
+     2	Available configs: ['highest_attn_keys_rms_nnls2_-3_3_lsq', 'highest_attn_keys_rms_nnls2_-3_3_lsq_on-policy', 'highest_attn_keys_max_nnls2_-3_3_lsq_on-policy', 'omp_nnls0_-inf_7_lsq', 'omp_nnls0_-inf_7_drop-7_lsq', 'omp_nnls0_-inf_7_drop-7_lsq_on-policy', 'omp_nnls0_-inf_7_drop-7_lsq_progressive', 'omp_nnls0_-inf_7_drop-7_lsq_progressive_on-policy', 'omp_nnls0_-inf_7_drop-7_lsq_k4int2', 'omp_nnls0_-inf_7_drop-7_lsq_k4int2_on-policy', 'omp_nnls0_-inf_7_drop-7_lsq_k4int4_on-policy']
+     3	Loaded query config from: ss-plus-repeat
+     4	  - methods: ['self_study']
+     5	  - fractions: [1.0]
+     6	  - max_query_vectors_per_kv_head: 50000
+     7	
+     8	Chunked compaction enabled:
+     9	  - strategy: longhealth
+    10	  - use_kv_based: True
+    11	Loading LongHealth data from: data/longhealth_benchmark_v5.json
+    12	Loaded 4 grouped articles (5 patients per article)
+    13	
+    14	============================================================
+    15	QA EVALUATION
+    16	============================================================
+    17	Methods: highest_attn_keys_rms_nnls2_-3_3_lsq_on-policy
+    18	Articles: 4
+    19	Target size: 0.1
+    20	Ignore article indices: False
+    21	Compute stats: False
+    22	Device: cuda
+    23	Query config: methods=[self_study(100.0%)], max_query_vectors_per_kv_head=50000
+    24	============================================================
+    25	
+# ---- lines 256-266
+   256	Self-study queries occupy range 0-50000 in final queries (total: 50000)
+   257	Generated 50000 original queries per KV head
+   258	Original queries shape: torch.Size([36, 8, 50000, 128])
+   259	Loading per-head budgets from head_budget_optimization/head_budgets/Qwen3-4B-Instruct-2507/optimized_agnostic.json...
+   260	Applied max ratio cap (max_ratio_per_head=0.75)
+   261	  Target ratio: 0.0999
+   262	  Max allowed proportion: 0.026063
+   263	  Original max proportion: 0.043472
+   264	  New max proportion: 0.026063
+   265	Per-head proportions sum to: 1.0000
+   266	Per-head budget distribution: total=352100, min=171, max=9180, mean=1222.6

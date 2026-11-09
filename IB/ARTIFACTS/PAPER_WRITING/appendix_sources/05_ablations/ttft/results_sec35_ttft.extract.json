@@ -1,0 +1,1209 @@
+{
+ "_source": "/workspace/IB/TMP/PAPER_SYSTEMS/results.json",
+ "_extracted": "for every main| config with engine=fast (the configs make_sec45_v4.py p_ttft reads, see ../excerpts/make_sec45_v4.excerpt.txt and its lines 299-314): per arm the ttft and stage medians (ms), n, and the ac_rows/side_tokens counts; plus results.json['meta'][config] without the template_check text and the sweep_phases encode counts (ac_rows vs side_tokens = the 0.1 ratio)",
+ "configs": {
+  "main|mode=in|encoder=Qwen/Qwen3-0.6B|weights=merged|engine=fast|pair=untrained|k=20": {
+   "ac": {
+    "name": "AC Input Emb.",
+    "ttft_median_ms": 48.409,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 7.183,
+     "encode": 26.581,
+     "write": 0.101,
+     "prefill": 21.718,
+     "ttft": 48.409,
+     "ttft_with_host": 55.475,
+     "decode": 317.325,
+     "tpot": 10.236,
+     "total": 365.428
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 218478080.0,
+     "reader_prefill_graph_ms": 18.194
+    }
+   },
+   "decode_select": {
+    "name": "Decode-select (selector -> 2 passages)",
+    "ttft_median_ms": 232.098,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.296,
+     "selector_prefill": 22.225,
+     "selector_decode": 187.886,
+     "glue": 1.277,
+     "prefill": 22.185,
+     "ttft": 232.098,
+     "ttft_with_host": 240.528,
+     "decode": 316.95,
+     "tpot": 10.224,
+     "total": 548.81
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2320.0,
+     "selector_tokens": 41.0,
+     "selected_parsed": 10.0,
+     "prompt_tokens": 305.0,
+     "prefill_rows": 305.0,
+     "kv_cache_bytes": 49545216.0,
+     "selector_kv_cache_bytes": 271753216.0,
+     "kv_cache_rows": 336.0,
+     "peak_bytes_above_resident": 97183232.0,
+     "reader_prefill_graph_ms": 18.215,
+     "selector_prefill_graph_ms": 19.921
+    }
+   },
+   "decode_summarize": {
+    "name": "Decode-summarize (forced mean-length note)",
+    "ttft_median_ms": 1176.573,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.223,
+     "selector_prefill": 22.057,
+     "selector_decode": 1132.12,
+     "glue": 1.386,
+     "prefill": 22.343,
+     "ttft": 1176.573,
+     "ttft_with_host": 1184.341,
+     "decode": 316.936,
+     "tpot": 10.224,
+     "total": 1493.327
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2309.0,
+     "selector_tokens": 240.0,
+     "prompt_tokens": 320.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "selector_kv_cache_bytes": 292225024.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 96568320.0,
+     "reader_prefill_graph_ms": 18.119,
+     "selector_prefill_graph_ms": 19.88
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (in process)",
+    "ttft_median_ms": 21.678,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.689,
+     "prefill": 21.678,
+     "ttft": 21.678,
+     "ttft_with_host": 22.367,
+     "decode": 315.439,
+     "tpot": 10.175,
+     "total": 337.011
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 9684992.0,
+     "reader_prefill_graph_ms": 11.878
+    }
+   },
+   "text": {
+    "name": "Text (in in process)",
+    "ttft_median_ms": 79.925,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.489,
+     "prefill": 79.925,
+     "ttft": 79.925,
+     "ttft_with_host": 86.462,
+     "decode": 334.777,
+     "tpot": 10.799,
+     "total": 414.971
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239318528.0,
+     "reader_prefill_graph_ms": 82.061
+    }
+   },
+   "_meta": {
+    "config": "main|mode=in|encoder=Qwen/Qwen3-0.6B|weights=merged|engine=fast|pair=untrained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 0,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 251891745,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 322961408,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 0.0,
+     "delta_layers": 0,
+     "total": 5120.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 110,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 258040,
+     "view_rows": 25848,
+     "encode_batches": 110,
+     "encode_seconds_total": 2.264,
+     "encode_seconds_max": 0.12,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=in|encoder=Qwen/Qwen3-1.7B|weights=merged|engine=fast|pair=untrained|k=20": {
+   "ac": {
+    "name": "AC Input Emb.",
+    "ttft_median_ms": 64.724,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 7.075,
+     "encode": 42.949,
+     "write": 0.108,
+     "prefill": 21.612,
+     "ttft": 64.724,
+     "ttft_with_host": 71.721,
+     "decode": 315.954,
+     "tpot": 10.192,
+     "total": 380.852
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 532312576.0,
+     "reader_prefill_graph_ms": 18.165
+    }
+   },
+   "decode_select": {
+    "name": "Decode-select (selector -> 2 passages)",
+    "ttft_median_ms": 142.022,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.247,
+     "selector_prefill": 37.87,
+     "selector_decode": 79.226,
+     "glue": 1.268,
+     "prefill": 22.03,
+     "ttft": 142.022,
+     "ttft_with_host": 149.522,
+     "decode": 316.198,
+     "tpot": 10.2,
+     "total": 456.578
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2320.0,
+     "selector_tokens": 14.0,
+     "selected_parsed": 4.0,
+     "prompt_tokens": 321.0,
+     "prefill_rows": 321.0,
+     "kv_cache_bytes": 51904512.0,
+     "selector_kv_cache_bytes": 267853824.0,
+     "kv_cache_rows": 352.0,
+     "peak_bytes_above_resident": 158296576.0,
+     "reader_prefill_graph_ms": 17.288,
+     "selector_prefill_graph_ms": 34.968
+    }
+   },
+   "decode_summarize": {
+    "name": "Decode-summarize (forced mean-length note)",
+    "ttft_median_ms": 1557.024,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.191,
+     "selector_prefill": 37.646,
+     "selector_decode": 1498.032,
+     "glue": 1.47,
+     "prefill": 22.352,
+     "ttft": 1557.024,
+     "ttft_with_host": 1564.7,
+     "decode": 316.14,
+     "tpot": 10.198,
+     "total": 1873.368
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2309.0,
+     "selector_tokens": 240.0,
+     "prompt_tokens": 327.0,
+     "prefill_rows": 327.0,
+     "kv_cache_bytes": 52789248.0,
+     "selector_kv_cache_bytes": 292225024.0,
+     "kv_cache_rows": 358.0,
+     "peak_bytes_above_resident": 157705728.0,
+     "reader_prefill_graph_ms": 18.144,
+     "selector_prefill_graph_ms": 34.923
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (in process)",
+    "ttft_median_ms": 21.634,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.693,
+     "prefill": 21.634,
+     "ttft": 21.634,
+     "ttft_with_host": 22.325,
+     "decode": 315.018,
+     "tpot": 10.162,
+     "total": 336.725
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10555392.0,
+     "reader_prefill_graph_ms": 11.921
+    }
+   },
+   "text": {
+    "name": "Text (in in process)",
+    "ttft_median_ms": 80.414,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.472,
+     "prefill": 80.414,
+     "ttft": 80.414,
+     "ttft_with_host": 87.038,
+     "decode": 334.779,
+     "tpot": 10.799,
+     "total": 415.209
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239930880.0,
+     "reader_prefill_graph_ms": 82.057
+    }
+   },
+   "_meta": {
+    "config": "main|mode=in|encoder=Qwen/Qwen3-1.7B|weights=merged|engine=fast|pair=untrained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 0,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 923203617,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 557842432,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 0.0,
+     "delta_layers": 0,
+     "total": 5120.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 110,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 258040,
+     "view_rows": 25848,
+     "encode_batches": 110,
+     "encode_seconds_total": 2.45,
+     "encode_seconds_max": 0.143,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=in|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20": {
+   "ac": {
+    "name": "AC Input Emb.",
+    "ttft_median_ms": 114.655,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 7.059,
+     "encode": 92.184,
+     "write": 0.111,
+     "prefill": 22.3,
+     "ttft": 114.655,
+     "ttft_with_host": 121.706,
+     "decode": 313.457,
+     "tpot": 10.112,
+     "total": 428.502
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 795569152.0,
+     "reader_prefill_graph_ms": 18.169
+    }
+   },
+   "ac_cached": {
+    "name": "AC Input Emb. (cached)",
+    "ttft_median_ms": 22.716,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.964,
+     "load": 0.055,
+     "write": 0.085,
+     "prefill": 22.577,
+     "ttft": 22.716,
+     "ttft_with_host": 29.61,
+     "decode": 316.214,
+     "tpot": 10.2,
+     "total": 338.891
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 39885056.0,
+     "reader_prefill_graph_ms": 18.179
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (in process)",
+    "ttft_median_ms": 22.311,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.686,
+     "prefill": 22.311,
+     "ttft": 22.311,
+     "ttft_with_host": 22.997,
+     "decode": 314.052,
+     "tpot": 10.131,
+     "total": 336.352
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10209280.0,
+     "reader_prefill_graph_ms": 11.782
+    }
+   },
+   "text": {
+    "name": "Text (in in process)",
+    "ttft_median_ms": 80.538,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.203,
+     "prefill": 80.538,
+     "ttft": 80.538,
+     "ttft_with_host": 86.925,
+     "decode": 332.077,
+     "tpot": 10.712,
+     "total": 412.911
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239714816.0,
+     "reader_prefill_graph_ms": 82.106
+    }
+   },
+   "_meta": {
+    "config": "main|mode=in|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 0,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 1416145953,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 1056964608,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 0.0,
+     "delta_layers": 0,
+     "total": 5120.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 217,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 506098,
+     "view_rows": 50698,
+     "encode_batches": 217,
+     "encode_seconds_total": 11.168,
+     "encode_seconds_max": 0.216,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=in|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=untrained|k=20": {
+   "decode_select": {
+    "name": "Decode-select (selector -> 2 passages)",
+    "ttft_median_ms": 184.033,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.55,
+     "selector_prefill": 78.695,
+     "selector_decode": 85.204,
+     "glue": 1.212,
+     "prefill": 21.405,
+     "ttft": 184.033,
+     "ttft_with_host": 191.488,
+     "decode": 313.248,
+     "tpot": 10.105,
+     "total": 496.113
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2316.0,
+     "selector_tokens": 9.0,
+     "selected_parsed": 2.0,
+     "prompt_tokens": 305.5,
+     "prefill_rows": 305.5,
+     "kv_cache_bytes": 49618944.0,
+     "kv_cache_rows": 336.5,
+     "peak_bytes_above_resident": 236157440.0,
+     "reader_prefill_graph_ms": 17.292,
+     "selector_prefill_graph_ms": 81.865
+    }
+   },
+   "decode_summarize": {
+    "name": "Decode-summarize (forced mean-length note)",
+    "ttft_median_ms": 2667.376,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.439,
+     "selector_prefill": 76.433,
+     "selector_decode": 2567.891,
+     "glue": 1.531,
+     "prefill": 21.819,
+     "ttft": 2667.376,
+     "ttft_with_host": 2675.064,
+     "decode": 313.247,
+     "tpot": 10.105,
+     "total": 2980.607
+    },
+    "counts_median": {
+     "selector_prompt_tokens": 2305.0,
+     "selector_tokens": 240.0,
+     "prompt_tokens": 325.5,
+     "prefill_rows": 325.5,
+     "kv_cache_bytes": 52568064.0,
+     "kv_cache_rows": 356.5,
+     "peak_bytes_above_resident": 235197184.0,
+     "reader_prefill_graph_ms": 18.17,
+     "selector_prefill_graph_ms": 81.75
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (in process)",
+    "ttft_median_ms": 21.159,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.694,
+     "prefill": 21.159,
+     "ttft": 21.159,
+     "ttft_with_host": 21.875,
+     "decode": 313.807,
+     "tpot": 10.123,
+     "total": 334.915
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10041344.0,
+     "reader_prefill_graph_ms": 11.779
+    }
+   },
+   "text": {
+    "name": "Text (in in process)",
+    "ttft_median_ms": 79.339,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.79,
+     "prefill": 79.339,
+     "ttft": 79.339,
+     "ttft_with_host": 86.409,
+     "decode": 332.02,
+     "tpot": 10.71,
+     "total": 411.575
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 240065536.0,
+     "reader_prefill_graph_ms": 82.19
+    }
+   },
+   "_meta": {
+    "config": "main|mode=in|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=untrained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 0,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 1416145953,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 1056964608,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": true,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 0.0,
+     "delta_layers": 0,
+     "total": 5120.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 1,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 3420,
+     "view_rows": 342,
+     "encode_batches": 1,
+     "encode_seconds_total": 0.214,
+     "encode_seconds_max": 0.214,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=kv|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20": {
+   "ac": {
+    "name": "AC All-Layer KVs",
+    "ttft_median_ms": 113.509,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.334,
+     "encode": 87.658,
+     "write": 2.054,
+     "prefill": 23.628,
+     "ttft": 113.509,
+     "ttft_with_host": 120.185,
+     "decode": 314.501,
+     "tpot": 10.145,
+     "total": 428.29
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 319296000.0,
+     "reader_prefill_graph_ms": 12.336
+    }
+   },
+   "ac_cached": {
+    "name": "AC All-Layer KVs (cached)",
+    "ttft_median_ms": 26.202,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.301,
+     "load": 0.798,
+     "write": 1.538,
+     "prefill": 23.801,
+     "ttft": 26.202,
+     "ttft_with_host": 32.681,
+     "decode": 317.081,
+     "tpot": 10.228,
+     "total": 343.235
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 172270080.0,
+     "reader_prefill_graph_ms": 12.297
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (kv process)",
+    "ttft_median_ms": 21.624,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.667,
+     "prefill": 21.624,
+     "ttft": 21.624,
+     "ttft_with_host": 22.295,
+     "decode": 314.158,
+     "tpot": 10.134,
+     "total": 335.733
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10166272.0,
+     "reader_prefill_graph_ms": 11.803
+    }
+   },
+   "text": {
+    "name": "Text (in kv process)",
+    "ttft_median_ms": 80.246,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 5.644,
+     "prefill": 80.246,
+     "ttft": 80.246,
+     "ttft_with_host": 86.02,
+     "decode": 332.544,
+     "tpot": 10.727,
+     "total": 413.183
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239393280.0,
+     "reader_prefill_graph_ms": 82.114
+    }
+   },
+   "_meta": {
+    "config": "main|mode=kv|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [],
+    "kv_transfer": true,
+    "drop_placeholders": true,
+    "maskless": false,
+    "reader_layer_pre_hooks": 0,
+    "reader_attention_pre_hooks": 36,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 1416156193,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 1056964608,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "kv_values": 147456.0,
+     "total": 147456.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 217,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 506098,
+     "view_rows": 50698,
+     "encode_batches": 217,
+     "encode_seconds_total": 10.703,
+     "encode_seconds_max": 0.135,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=res|encoder=Qwen/Qwen3-0.6B|weights=merged|engine=fast|pair=untrained|k=20": {
+   "ac": {
+    "name": "AC Hidden Res.",
+    "ttft_median_ms": 50.415,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 7.586,
+     "encode": 27.93,
+     "write": 0.336,
+     "prefill": 22.094,
+     "ttft": 50.415,
+     "ttft_with_host": 58.164,
+     "decode": 316.264,
+     "tpot": 10.202,
+     "total": 366.772
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 227188992.0,
+     "reader_prefill_graph_ms": 18.288
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (res process)",
+    "ttft_median_ms": 21.542,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.71,
+     "prefill": 21.542,
+     "ttft": 21.542,
+     "ttft_with_host": 22.247,
+     "decode": 314.86,
+     "tpot": 10.157,
+     "total": 336.578
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 9826304.0,
+     "reader_prefill_graph_ms": 12.012
+    }
+   },
+   "text": {
+    "name": "Text (in res process)",
+    "ttft_median_ms": 80.328,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.776,
+     "prefill": 80.328,
+     "ttft": 80.328,
+     "ttft_with_host": 87.261,
+     "decode": 334.409,
+     "tpot": 10.787,
+     "total": 414.701
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239719936.0,
+     "reader_prefill_graph_ms": 82.071
+    }
+   },
+   "_meta": {
+    "config": "main|mode=res|encoder=Qwen/Qwen3-0.6B|weights=merged|engine=fast|pair=untrained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [
+     3,
+     7,
+     11,
+     15,
+     19,
+     23,
+     27,
+     31,
+     35
+    ],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 54,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 322910241,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 322961408,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 46080.0,
+     "delta_layers": 9,
+     "total": 51200.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 110,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 258040,
+     "view_rows": 25848,
+     "encode_batches": 110,
+     "encode_seconds_total": 2.565,
+     "encode_seconds_max": 0.124,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=res|encoder=Qwen/Qwen3-1.7B|weights=merged|engine=fast|pair=untrained|k=20": {
+   "ac": {
+    "name": "AC Hidden Res.",
+    "ttft_median_ms": 66.892,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 7.455,
+     "encode": 44.522,
+     "write": 0.353,
+     "prefill": 21.853,
+     "ttft": 66.892,
+     "ttft_with_host": 74.451,
+     "decode": 315.934,
+     "tpot": 10.191,
+     "total": 382.593
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 641964544.0,
+     "reader_prefill_graph_ms": 18.26
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (res process)",
+    "ttft_median_ms": 21.247,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.705,
+     "prefill": 21.247,
+     "ttft": 21.247,
+     "ttft_with_host": 21.958,
+     "decode": 314.88,
+     "tpot": 10.157,
+     "total": 336.134
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10209280.0,
+     "reader_prefill_graph_ms": 11.947
+    }
+   },
+   "text": {
+    "name": "Text (in res process)",
+    "ttft_median_ms": 80.146,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.74,
+     "prefill": 80.146,
+     "ttft": 80.146,
+     "ttft_with_host": 86.892,
+     "decode": 334.728,
+     "tpot": 10.798,
+     "total": 415.01
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 240340480.0,
+     "reader_prefill_graph_ms": 82.124
+    }
+   },
+   "_meta": {
+    "config": "main|mode=res|encoder=Qwen/Qwen3-1.7B|weights=merged|engine=fast|pair=untrained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [
+     3,
+     7,
+     11,
+     15,
+     19,
+     23,
+     27,
+     31,
+     35
+    ],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 54,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 1159520289,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 557842432,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 46080.0,
+     "delta_layers": 9,
+     "total": 51200.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 110,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 258040,
+     "view_rows": 25848,
+     "encode_batches": 110,
+     "encode_seconds_total": 3.064,
+     "encode_seconds_max": 0.147,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  },
+  "main|mode=res|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20": {
+   "ac": {
+    "name": "AC Hidden Res.",
+    "ttft_median_ms": 116.918,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.663,
+     "encode": 94.494,
+     "write": 0.496,
+     "prefill": 22.019,
+     "ttft": 116.918,
+     "ttft_with_host": 123.819,
+     "decode": 313.48,
+     "tpot": 10.112,
+     "total": 430.802
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 922681088.0,
+     "reader_prefill_graph_ms": 18.267
+    }
+   },
+   "ac_cached": {
+    "name": "AC Hidden Res. (cached)",
+    "ttft_median_ms": 23.046,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.868,
+     "load": 0.268,
+     "write": 0.256,
+     "prefill": 22.482,
+     "ttft": 23.046,
+     "ttft_with_host": 29.695,
+     "decode": 316.26,
+     "tpot": 10.202,
+     "total": 339.011
+    },
+    "counts_median": {
+     "encode_tokenize_misses": 0.0,
+     "prompt_tokens": 320.5,
+     "ac_rows": 229.5,
+     "prefill_rows": 320.5,
+     "kv_cache_bytes": 51830784.0,
+     "kv_cache_rows": 351.5,
+     "peak_bytes_above_resident": 62908672.0,
+     "reader_prefill_graph_ms": 18.25
+    }
+   },
+   "q_only": {
+    "name": "Question only, no passages (res process)",
+    "ttft_median_ms": 21.299,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 0.671,
+     "prefill": 21.299,
+     "ttft": 21.299,
+     "ttft_with_host": 21.988,
+     "decode": 314.115,
+     "tpot": 10.133,
+     "total": 335.323
+    },
+    "counts_median": {
+     "prompt_tokens": 90.0,
+     "prefill_rows": 90.0,
+     "kv_cache_bytes": 17842176.0,
+     "kv_cache_rows": 121.0,
+     "peak_bytes_above_resident": 10733568.0,
+     "reader_prefill_graph_ms": 11.807
+    }
+   },
+   "text": {
+    "name": "Text (in res process)",
+    "ttft_median_ms": 80.206,
+    "n": 100,
+    "stage_medians_ms": {
+     "prep": 6.03,
+     "prefill": 80.206,
+     "ttft": 80.206,
+     "ttft_with_host": 86.413,
+     "decode": 332.119,
+     "tpot": 10.714,
+     "total": 412.389
+    },
+    "counts_median": {
+     "prompt_tokens": 2347.0,
+     "prefill_rows": 2347.0,
+     "kv_cache_bytes": 350650368.0,
+     "kv_cache_rows": 2378.0,
+     "peak_bytes_above_resident": 239410688.0,
+     "reader_prefill_graph_ms": 82.104
+    }
+   },
+   "_meta": {
+    "config": "main|mode=res|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=trained|k=20",
+    "meta": true,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "torch": "2.13.0+cu130",
+    "python": "3.14.7",
+    "attn_implementation": "sdpa",
+    "reader_dtype": "torch.bfloat16",
+    "intervention_layers": [
+     3,
+     7,
+     11,
+     15,
+     19,
+     23,
+     27,
+     31,
+     35
+    ],
+    "kv_transfer": false,
+    "drop_placeholders": false,
+    "maskless": false,
+    "reader_layer_pre_hooks": 54,
+    "reader_attention_pre_hooks": 0,
+    "peft_layers_in_reader": 0,
+    "static": {
+     "ac_module_bytes": 1770501153,
+     "reader_lora_bytes": 528482304,
+     "encoder_lora_bytes": 1056964608,
+     "reader_base_bytes": 8044936192,
+     "encoder_base_shared_with_reader": false,
+     "encoder_lora_dtype": "torch.float32"
+    },
+    "stored_per_row": {
+     "rows": 342,
+     "input_embeds": 5120.0,
+     "deltas": 46080.0,
+     "delta_layers": 9,
+     "total": 51200.0
+    },
+    "end": true,
+    "ac_stats": {
+     "encodes": 217,
+     "cache_hits": 0,
+     "cache_misses": 0,
+     "side_tokens": 506098,
+     "view_rows": 50698,
+     "encode_batches": 217,
+     "encode_seconds_total": 13.572,
+     "encode_seconds_max": 0.22,
+     "queue_batches": 0,
+     "queue_requests": 0
+    }
+   }
+  }
+ },
+ "sweep_phases": {
+  "sweep_phases|mode=in|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=untrained|k=20": {
+   "encode": 92.699,
+   "side_tokens": 2288.0,
+   "ac_rows": 229.5,
+   "stored_total": 5120.0
+  },
+  "sweep_phases|mode=kv|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=untrained|k=20": {
+   "encode": 87.185,
+   "side_tokens": 2288.0,
+   "ac_rows": 229.5,
+   "stored_total": 147456.0
+  },
+  "sweep_phases|mode=res|encoder=Qwen/Qwen3-4B-Instruct-2507|weights=merged|engine=fast|pair=untrained|k=20": {
+   "encode": 95.799,
+   "side_tokens": 2288.0,
+   "ac_rows": 229.5,
+   "stored_total": 51200.0
+  }
+ }
+}

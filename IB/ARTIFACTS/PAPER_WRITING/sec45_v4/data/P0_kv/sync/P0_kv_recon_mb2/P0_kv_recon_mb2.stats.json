@@ -1,0 +1,365 @@
+{
+ "name": "P0_kv_recon_mb2",
+ "kind": "recon",
+ "mode": "kv",
+ "timing": {
+  "updates": 23,
+  "seconds_per_update_median": 8.67,
+  "effective_seconds_per_update": 9.89,
+  "startup_seconds": 14.4,
+  "item_seconds_per_item": 0.00517,
+  "example_seconds_per_item": 0.00482,
+  "train_call_seconds": 241.6,
+  "longest_first_updates": 3,
+  "pair_gb": null,
+  "gpu_total_gb": 139.8,
+  "seconds_per_update_mean": 8.75,
+  "first_updates_seconds": [
+   8.4,
+   8.3,
+   8.7
+  ],
+  "baseline_panel_seconds": 8.6,
+  "placement_seconds": 5.4,
+  "reporting_seconds": 7.0,
+  "checkpoint_seconds": 0.0,
+  "peak_gb": 21.3,
+  "wall_seconds": 257,
+  "held_items": 32,
+  "micro_batch": 2,
+  "epu": 8,
+  "device": "NVIDIA H200"
+ },
+ "held": [
+  {
+   "update": 0,
+   "held_nll": 2.430307764559984,
+   "held_nll_token": 2.4370571254814517,
+   "token_accuracy": 0.49129605665802956,
+   "items": 32,
+   "wall_seconds": 30
+  },
+  {
+   "update": 23,
+   "held_nll": 2.2161363288760185,
+   "held_nll_token": 2.225931763632678,
+   "token_accuracy": 0.504527322947979,
+   "items": 32,
+   "wall_seconds": 248
+  }
+ ],
+ "loss": [
+  2.3966034501791,
+  2.314579740166664,
+  2.372204467654228,
+  2.597797840833664,
+  2.3778308629989624,
+  2.447254315018654,
+  2.276095539331436,
+  2.4996488243341446,
+  2.412317380309105,
+  2.5353331565856934,
+  2.1347965002059937,
+  2.280590295791626,
+  2.300458163022995,
+  2.437136232852936,
+  2.362804502248764,
+  2.3682608902454376,
+  2.3486681133508682,
+  2.3763291388750076,
+  1.9396259188652039,
+  2.4044421315193176,
+  2.608978897333145,
+  2.2397226840257645,
+  2.1012924164533615
+ ],
+ "step_seconds": [
+  8.444596683024429,
+  8.274578634067439,
+  8.74692095501814,
+  8.405273514101282,
+  8.444515938987024,
+  9.717251176945865,
+  9.299352403031662,
+  8.390231776051223,
+  8.308783581014723,
+  8.27896602905821,
+  7.70979875291232,
+  7.674894855008461,
+  9.007097269059159,
+  9.415042588952929,
+  8.455159679055214,
+  9.64353692997247,
+  9.431731739081442,
+  10.346985200070776,
+  8.888749387930147,
+  8.982213643961586,
+  7.514150575967506,
+  9.118751714006066,
+  7.930441271979362
+ ],
+ "grad_norm_ac": [
+  0.3527381718158722,
+  0.3533875644207001,
+  0.29641440510749817,
+  0.23799605667591095,
+  0.200802281498909,
+  1.406042218208313,
+  0.11389639973640442,
+  0.08885951340198517,
+  0.13016681373119354,
+  0.08191871643066406,
+  0.0820133164525032,
+  0.10476197302341461,
+  0.10965006053447723,
+  0.11640989780426025,
+  0.2953451871871948,
+  0.10425771027803421,
+  0.10929369181394577,
+  0.14446286857128143,
+  0.15647172927856445,
+  0.18173789978027344,
+  0.25324976444244385,
+  0.17876610159873962,
+  0.226908341050148
+ ],
+ "grad_norm_reader": [
+  1.7020719051361084,
+  1.6015865802764893,
+  1.4640430212020874,
+  1.2695233821868896,
+  0.8732937574386597,
+  3.050281524658203,
+  0.5422558784484863,
+  0.5564654469490051,
+  0.6547303199768066,
+  0.535363495349884,
+  0.47435763478279114,
+  0.4690588116645813,
+  0.8486925363540649,
+  1.7636096477508545,
+  0.7926955223083496,
+  1.023881196975708,
+  1.1092983484268188,
+  1.0953528881072998,
+  0.6974985003471375,
+  0.778559148311615,
+  0.5653446316719055,
+  0.7324060201644897,
+  0.6577523946762085
+ ],
+ "penalty": [
+  0.0,
+  0.0,
+  0.0,
+  0.004685253370553255,
+  0.010545479133725166,
+  0.018684804749985535,
+  0.024804584681987762,
+  0.04851619154214859,
+  0.05190662480890751,
+  0.06221747025847435,
+  0.06221747025847435,
+  0.06221747025847435,
+  0.08101490512490273,
+  0.12431360594928265,
+  0.06214785948395729,
+  0.0700083759923776,
+  0.06349445320665836,
+  0.06225298158824444,
+  0.06998692639172077,
+  0.06746858358383179,
+  0.06746858358383179,
+  0.04907673721512159,
+  0.04907673721512159
+ ],
+ "learning_rates": [
+  [
+   4.000000000000001e-06,
+   4.000000000000001e-06
+  ],
+  [
+   8.000000000000001e-06,
+   8.000000000000001e-06
+  ],
+  [
+   1.2e-05,
+   1.2e-05
+  ],
+  [
+   1.6000000000000003e-05,
+   1.6000000000000003e-05
+  ],
+  [
+   2e-05,
+   2e-05
+  ],
+  [
+   2e-05,
+   2e-05
+  ],
+  [
+   1.9863269777109875e-05,
+   1.9863269777109875e-05
+  ],
+  [
+   1.9457233587073177e-05,
+   1.9457233587073177e-05
+  ],
+  [
+   1.879422863405995e-05,
+   1.879422863405995e-05
+  ],
+  [
+   1.7894399988070804e-05,
+   1.7894399988070804e-05
+  ],
+  [
+   1.6785088487178857e-05,
+   1.6785088487178857e-05
+  ],
+  [
+   1.55e-05,
+   1.55e-05
+  ],
+  [
+   1.4078181289931021e-05,
+   1.4078181289931021e-05
+  ],
+  [
+   1.2562833599002376e-05,
+   1.2562833599002376e-05
+  ],
+  [
+   1.1000000000000001e-05,
+   1.1000000000000001e-05
+  ],
+  [
+   9.437166400997629e-06,
+   9.437166400997629e-06
+  ],
+  [
+   7.921818710068982e-06,
+   7.921818710068982e-06
+  ],
+  [
+   6.500000000000003e-06,
+   6.500000000000003e-06
+  ],
+  [
+   5.214911512821146e-06,
+   5.214911512821146e-06
+  ],
+  [
+   4.1056000119292e-06,
+   4.1056000119292e-06
+  ],
+  [
+   3.205771365940052e-06,
+   3.205771365940052e-06
+  ],
+  [
+   2.5427664129268253e-06,
+   2.5427664129268253e-06
+  ],
+  [
+   2.1367302228901282e-06,
+   2.1367302228901282e-06
+  ]
+ ],
+ "stop_reason": "complete",
+ "valid": true,
+ "saved_updates": [],
+ "final": null,
+ "order_trained": {
+  "first_updates": [
+   [
+    "reconstruct:fineweb_edu:2f0074166001403ec966",
+    "reconstruct:fineweb_edu:354deade1bb12ff3c258",
+    "reconstruct:fineweb_edu:6bdfe932702f695e6420",
+    "reconstruct:fineweb_edu:b68d95cb90cfdca7fc56",
+    "reconstruct:fineweb_edu:bd6b8dbff86fa9e7f5fb",
+    "reconstruct:fineweb_edu:d1a436b76ab128a3293b",
+    "reconstruct:fineweb_edu:f48edd75a421c62a94d8",
+    "reconstruct:fineweb_edu:f8b335194226e1b9f50e"
+   ],
+   [
+    "reconstruct:fineweb_edu:56858f935fbcfcc3285c",
+    "reconstruct:fineweb_edu:61161517b8d1ae15e589",
+    "reconstruct:fineweb_edu:647be090d4fd33c91fbd",
+    "reconstruct:fineweb_edu:7d672ec77ef4c88d989b",
+    "reconstruct:fineweb_edu:8d78d9a33cf8c1167af1",
+    "reconstruct:fineweb_edu:aab74b068f43a12bab36",
+    "reconstruct:fineweb_edu:f762614cd9f426d264df",
+    "reconstruct:fineweb_edu:fae6e9ee28df23aa1e02"
+   ],
+   [
+    "reconstruct:fineweb_edu:443f6ef47db729722e0b",
+    "reconstruct:fineweb_edu:48aba0a0c7f2faee98da",
+    "reconstruct:fineweb_edu:618ac97a899c52280cb1",
+    "reconstruct:fineweb_edu:8d9f4d25b8094e35f3f4",
+    "reconstruct:fineweb_edu:9de0505aeb0f1f6e730c",
+    "reconstruct:fineweb_edu:b18e196916299096900d",
+    "reconstruct:fineweb_edu:da8f233c5bbab31508d3",
+    "reconstruct:fineweb_edu:dddff4b22f49a012369d"
+   ],
+   [
+    "reconstruct:fineweb_edu:3284dfbb490f9eec28cf",
+    "reconstruct:fineweb_edu:639fd0f2068727e18d72",
+    "reconstruct:fineweb_edu:71bc6ce6394ca9dae547",
+    "reconstruct:fineweb_edu:8c8c4af76eb55f6eb89b",
+    "reconstruct:fineweb_edu:8fe4e7701d61acaf4e1c",
+    "reconstruct:fineweb_edu:c1e2a2ce25c02da151fb",
+    "reconstruct:fineweb_edu:ce666283894b8dd3d2b9",
+    "reconstruct:fineweb_edu:e8a15aeaa4ff68b18650"
+   ]
+  ],
+  "first_sha256": "8816c76990bd3d4911489b28beb04bb12bcfe9cb8e5f542083087a409f0d4e3b"
+ },
+ "order_predicted": {
+  "first_updates": [
+   [
+    "reconstruct:fineweb_edu:2f0074166001403ec966",
+    "reconstruct:fineweb_edu:354deade1bb12ff3c258",
+    "reconstruct:fineweb_edu:6bdfe932702f695e6420",
+    "reconstruct:fineweb_edu:b68d95cb90cfdca7fc56",
+    "reconstruct:fineweb_edu:bd6b8dbff86fa9e7f5fb",
+    "reconstruct:fineweb_edu:d1a436b76ab128a3293b",
+    "reconstruct:fineweb_edu:f48edd75a421c62a94d8",
+    "reconstruct:fineweb_edu:f8b335194226e1b9f50e"
+   ],
+   [
+    "reconstruct:fineweb_edu:56858f935fbcfcc3285c",
+    "reconstruct:fineweb_edu:61161517b8d1ae15e589",
+    "reconstruct:fineweb_edu:647be090d4fd33c91fbd",
+    "reconstruct:fineweb_edu:7d672ec77ef4c88d989b",
+    "reconstruct:fineweb_edu:8d78d9a33cf8c1167af1",
+    "reconstruct:fineweb_edu:aab74b068f43a12bab36",
+    "reconstruct:fineweb_edu:f762614cd9f426d264df",
+    "reconstruct:fineweb_edu:fae6e9ee28df23aa1e02"
+   ],
+   [
+    "reconstruct:fineweb_edu:443f6ef47db729722e0b",
+    "reconstruct:fineweb_edu:48aba0a0c7f2faee98da",
+    "reconstruct:fineweb_edu:618ac97a899c52280cb1",
+    "reconstruct:fineweb_edu:8d9f4d25b8094e35f3f4",
+    "reconstruct:fineweb_edu:9de0505aeb0f1f6e730c",
+    "reconstruct:fineweb_edu:b18e196916299096900d",
+    "reconstruct:fineweb_edu:da8f233c5bbab31508d3",
+    "reconstruct:fineweb_edu:dddff4b22f49a012369d"
+   ],
+   [
+    "reconstruct:fineweb_edu:3284dfbb490f9eec28cf",
+    "reconstruct:fineweb_edu:639fd0f2068727e18d72",
+    "reconstruct:fineweb_edu:71bc6ce6394ca9dae547",
+    "reconstruct:fineweb_edu:8c8c4af76eb55f6eb89b",
+    "reconstruct:fineweb_edu:8fe4e7701d61acaf4e1c",
+    "reconstruct:fineweb_edu:c1e2a2ce25c02da151fb",
+    "reconstruct:fineweb_edu:ce666283894b8dd3d2b9",
+    "reconstruct:fineweb_edu:e8a15aeaa4ff68b18650"
+   ]
+  ],
+  "first_sha256": "8816c76990bd3d4911489b28beb04bb12bcfe9cb8e5f542083087a409f0d4e3b"
+ },
+ "order_matches": true
+}

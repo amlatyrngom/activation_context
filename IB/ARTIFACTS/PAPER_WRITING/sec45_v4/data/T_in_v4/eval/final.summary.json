@@ -1,0 +1,24 @@
+{
+ "acc": 68.5,
+ "em": 61.0,
+ "f1": 76.12,
+ "answered": 100.0,
+ "n": 200,
+ "length_stops": 0,
+ "new_tokens_mean": 6.9,
+ "label": "T_in_v4_final",
+ "pair": [
+  "/root/sec45/runs/T_in_v4/sync/ckpt/final/ac",
+  "/root/sec45/runs/T_in_v4/sync/ckpt/final/reader"
+ ],
+ "mode": "in",
+ "decode": {
+  "items": 200,
+  "batches": 7,
+  "encodes": 200,
+  "cache_hits": 0,
+  "new_tokens": 1584,
+  "decode_seconds": 46.2
+ },
+ "seconds": 60
+}

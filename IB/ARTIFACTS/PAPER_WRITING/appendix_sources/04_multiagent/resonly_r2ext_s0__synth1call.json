@@ -1,0 +1,54 @@
+{
+ "args": {
+  "sync_root": "/root/activation_artifacts/SYNC",
+  "at3_id": "tqa_extres_solve_v1",
+  "summaries_tag": "tqa_synth_v1",
+  "out": "/root/activation_artifacts/SYNC/PAPER_TRAJ_QA/tqa_r2ext_res_s0",
+  "cap": 40000,
+  "max_tokens": 64000,
+  "max_model_len": 72000,
+  "seeds": 3,
+  "limit": null,
+  "shard": 0,
+  "shards": 1,
+  "seed": 0,
+  "deadline": "2026-10-16T13:58Z",
+  "dry": 0,
+  "conditions": "synth_result"
+ },
+ "instruction": {
+  "synth_result": "Three independent agents attempted this task. Their final answers are below. They may be wrong or disagree. No tools are available to you: reason about the task and their answers, then give the single best answer.",
+  "synth_summary_result": "Three independent agents attempted this task. Their summaries and final answers are below. They may be wrong or disagree. No tools are available to you: reason about the task, their summaries and their answers, then give the single best answer."
+ },
+ "task_edits": {
+  "musique": [
+   [
+    "Answer the question using the corpus behind semantic_search (Wikipedia paragraphs; some are unrelated distractors). ",
+    ""
+   ],
+   [
+    "When you are done, call submit_answer with the answer only: a short phrase, no explanation.",
+    ""
+   ]
+  ],
+  "deepmath": [
+   [
+    "When you are done, call submit_answer with the final answer only, in the form the problem asks for: a number, a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No. No explanation.",
+    ""
+   ]
+  ]
+ },
+ "final_rule": {
+  "musique": "End your reply with one last line of the form `Final answer: <answer>`, with the answer only: a short phrase, no explanation.",
+  "deepmath": "End your reply with one last line of the form `Final answer: <answer>`, with the final answer only, in the form the problem asks for: a number, a LaTeX expression (for example \\frac{3}{4}, \\sqrt{2}, x^2+1, an interval or a set), or Yes/No."
+ },
+ "sampling": {
+  "temperature": 1.0,
+  "top_p": 0.95,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 1.5
+ },
+ "system_prompt": null,
+ "enable_thinking": true
+}

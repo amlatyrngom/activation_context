@@ -1,0 +1,61 @@
+# source: /workspace/IB/TMP/PAPER_SEC45/kit/sec45_train.py
+# lines: 1-16 55-74 128-129 142-148 186-190
+# extracted: nl -ba | sed -n (docstring: SFT, cosine, penalty 1.0; argparse defaults; ActivationContextTrainingConfig built from args; run.json fields)
+# git commit: n/a: file is git-ignored (IB/TMP), not in repo HEAD 258fce6adf6e59ad54594b82863d7cb6169404fa; content as on disk 2026-10-28
+# sha256 of source: 8379019a225c7667
+
+----- lines 1-16 -----
+     1	"""
+     2	Section 4.5 training driver (one process, one GPU): reconstruction (R) or task training (S from a fresh pair, T from an R checkpoint)
+     3	in one of the three write modes (sec45_common.MODES). SFT, one pass over exactly --steps x --epu items, cosine schedule over
+     4	--steps after --warmup, encoder and reader learning rates given explicitly (the design: 2e-5 / 2e-5).
+     5	
+     6	  R  python sec45_train.py --kind recon --mode MODE --data FINEWEB_DIR --fresh --steps N --seconds S --ckpt-every K --name R_MODE
+     7	  S  python sec45_train.py --kind task  --mode MODE --data HOTPOT_DIR  --fresh --steps N --seconds S --ckpt-every N/4 --name S_MODE
+     8	  T  python sec45_train.py --kind task  --mode MODE --data HOTPOT_DIR  --pair R/ckpt/final/ac R/ckpt/final/reader --steps N ... --name T_MODE
+     9	  P0 the same with --steps 23 --longest-first 3 (the 24 longest items of the pool first, then random ones; no shuffle): the
+    10	     stats file holds the peak memory on the longest items and the effective seconds per update (sec45_probe_summary.py)
+    11	
+    12	Same order for S and T (review B1): a loaded pair's epoch counter is reset to 0, so both start at epoch 1 with the same shuffle
+    13	seed (seed + 1) and torch seed; run.json holds the predicted order hash (first 32 items), stats.json the trained one.
+    14	No-context penalty: weight 1.0 for recon and task alike (as in all earlier reconstruction training, rq_train default); --penalty-weight overrides.
+    15	A run that does not end with stop_reason "complete" (e.g. the --seconds backstop) is marked "valid": false in stats.json and
+    16	ckpt/final/meta.json.
+----- lines 55-74 -----
+    55	    p.add_argument("--name", required=True); p.add_argument("--steps", type=int, required=True, help="optimizer updates (items = steps x epu, one pass)")
+    56	    p.add_argument("--epu", type=int, default=8, help="examples per update"); p.add_argument("--seconds", type=float, help="time limit of the training call (the trainer saves and stops)")
+    57	    p.add_argument("--encoder-lr", type=float, required=True); p.add_argument("--reader-lr", type=float, required=True)
+    58	    p.add_argument("--warmup", type=int, default=50); p.add_argument("--schedule", default="cosine", choices=["cosine", "constant"])
+    59	    p.add_argument("--ckpt-every", type=int, help="save a pair every K updates (R: about an hour of updates; S/T: steps/4 -> 25/50/75 %%); the end is always saved")
+    60	    p.add_argument("--no-save", action="store_true", help="probe: no checkpoint at all")
+    61	    p.add_argument("--report-every", type=int, default=250, help="held-out panel every K updates (and before the first update)")
+    62	    p.add_argument("--held-panel", type=int, help="held items per report (default: all; recon 500 passages, task the 200 dev questions)")
+    63	    p.add_argument("--micro-batch", type=int, default=1, help="examples per padded reader forward")
+    64	    p.add_argument("--block-examples", type=int, default=64, help="no-context penalty references prepared per block of this many examples")
+    65	    p.add_argument("--penalty-weight", type=float, help="no-context penalty weight (default 1.0 for recon and task; applies while the reader LoRA trains)")
+    66	    p.add_argument("--longest-first", type=int, default=0, help="probe: the first K updates take the K x epu longest items of the pool, the rest random; no shuffle")
+    67	    p.add_argument("--seed", type=int, default=0); p.add_argument("--offset", type=int, default=0, help="skip the first N items of the pool")
+    68	    p.add_argument("--keep-optimizer", action="store_true", help="keep optimizer.pt in the trainer's folders (never in ckpt/)")
+    69	    p.add_argument("--resume-if-possible", action="store_true", help="continue from the published recovery slot under the sync root, if any")
+    70	    p.add_argument("--keep-steps", choices=["all", "final"], default="all", help="all: link every K-update pair into ckpt/; final: only ckpt/final")
+    71	    a = p.parse_args()
+    72	    started = time.monotonic()
+    73	    if a.penalty_weight is None:
+    74	        a.penalty_weight = 1.0
+----- lines 128-129 -----
+   128	    else:
+   129	        h = harness(None, None, summary_layout=S.LAYOUT, row_head_linear_skip=S.linear_skip())
+----- lines 142-148 -----
+   142	    config = ActivationContextTrainingConfig(
+   143	        loss_kind="sft", learning_rate_ac=a.encoder_lr, learning_rate_target_lora=a.reader_lr, warmup_updates=a.warmup, lr_schedule=a.schedule,
+   144	        examples_per_update=a.epu, num_epochs=1, schedule_total_updates=a.steps, seed=a.seed, micro_batch_examples=a.micro_batch,
+   145	        checkpoint_every_updates=None if a.no_save else a.ckpt_every, checkpoint_every_epoch=not a.no_save, completion_samples=0,
+   146	        reporting_interval=min(1.0, a.report_every / a.steps), max_duration_seconds=a.seconds, teacher_cache_top_k=32, max_example_tokens=72000,
+   147	        no_context_penalty_weight=a.penalty_weight, teacher_cache_block_examples=a.block_examples, gradient_checkpointing=True, distributed=False,
+   148	        shuffle_examples=not a.longest_first, resume_optimizer=bool(resume), resume_skip_steps=resume["step"] if resume else 0)
+----- lines 186-190 -----
+   186	    run = {"name": a.name, "args": {k: str(v) for k, v in vars(a).items()}, "train_items": len(items), "held_items": len(held_items), "planned_updates": a.steps,
+   187	           "models": {k: os.environ.get(k) for k in ("QA4B_READER", "QA4B_SIDE", "SEC45_ENCODER", "SEC45_LINEAR_SKIP", "QA4B_RANK", "QA4B_LAYERS", "QA4B_KV", "RQ_THINKING")},
+   188	           "ac_fields": {k: getattr(ac.config, k) for k in ("kv_transfer", "intervention_frequency", "intervention_layers", "summary_layout", "side_lora_rank", "max_view_rows")},
+   189	           "train_target_tokens_mean": round(sum(len(i.assistant_token_ids[0]) for i in items) / len(items), 1),
+   190	           "penalty_weight": a.penalty_weight, "penalty_fraction": config.no_context_penalty_fraction,
