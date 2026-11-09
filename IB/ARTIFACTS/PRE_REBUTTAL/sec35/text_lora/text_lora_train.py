@@ -38,7 +38,7 @@ sys.path.insert(0, os.environ.get("RQ_KIT", str(Path(__file__).resolve().parent)
 import rq_common as C  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "kit"))
-from sec45_common import row_passages  # noqa: E402  (§3.5 top20; retrieval top200[:k] with SEC45_K)
+from sec45_common import row_passages, target_replies  # noqa: E402  (§3.5 top20; retrieval top200[:k] with SEC45_K; SEC45_TARGETS)
 
 MODEL_ID = os.environ.get("TEXT_MODEL_ID", "Qwen/Qwen3-4B-Instruct-2507")   # retrieval: Qwen/Qwen3.5-9B
 
@@ -54,11 +54,14 @@ TARGETS = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down
 TARGET_REGEX = r"^(?!.*visual).*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)$"   # the language model only (Qwen3.5 has a vision tower)
 
 
+TARGETS_BY_ID = {}
+
+
 def encode(tok, corpus, row):
     """(prompt ids, target ids) for one row: the chat-templated READ prompt and 'Final answer: X' + end of turn."""
     user = C.READ.format(passages=C.passages_block(corpus, row_passages(row)), question=row["question"])
     prompt = tok.apply_chat_template([{"role": "user", "content": user}], tokenize=False, add_generation_prompt=True, enable_thinking=False)
-    full = tok.apply_chat_template([{"role": "user", "content": user}, {"role": "assistant", "content": f"Final answer: {row['answer']}"}],
+    full = tok.apply_chat_template([{"role": "user", "content": user}, {"role": "assistant", "content": TARGETS_BY_ID.get(row["id"], f"Final answer: {row['answer']}")}],
                                    tokenize=False, add_generation_prompt=False, enable_thinking=False)
     assert full.startswith(prompt), "the assistant turn does not extend the generation prompt"
     target = full[len(prompt):].rstrip("\n")                       # "Final answer: X<|im_end|>" (no trailing newline, as assistant_target_ids)
@@ -96,6 +99,7 @@ def main():
     order = list(range(len(rows)))
     random.Random(a.seed + 1).shuffle(order)                       # the trainer's epoch-1 order (seed + epoch number)
     held_rows = [json.loads(l) for l in open(a.data / "dev200.jsonl")][:a.held]
+    TARGETS_BY_ID.update(target_replies(rows + held_rows))
     corpus = C.load_corpus(a.data)
     tok = AutoTokenizer.from_pretrained(MODEL_ID)
     held = [encode(tok, corpus, r) for r in held_rows]

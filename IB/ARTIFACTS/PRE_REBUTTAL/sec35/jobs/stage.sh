@@ -11,7 +11,7 @@
 set -euo pipefail
 source "$(dirname "$0")/cluster_lib.sh"
 [ $# -ge 1 ] || { sed -n 2,11p "$0"; exit 2; }
-BUNDLE=${SEC45_BUNDLE:-sec35_code_v2.tar.gz}
+BUNDLE=${SEC45_BUNDLE:-sec35_code_v3.tar.gz}
 cluster $1
 stage_jobs() {
   echo "== $H: job scripts"

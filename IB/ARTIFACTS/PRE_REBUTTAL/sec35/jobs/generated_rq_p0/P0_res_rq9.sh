@@ -41,7 +41,7 @@ READER_ID=${SEC45_READER_ID:-Qwen/Qwen3.5-9B}   # §3.5: Qwen/Qwen3-4B-Instruct-
 RES_LAYERS="all"; TASK_K="20,100,200"; EVAL_K="100"; LINEAR_SKIP="1"   # retrieval (2026-11-09): reader layers of the res mode (all = every full-attention layer), passages per item (k or a mix), eval k, least-squares row head for a fresh pair
 ENCODER_ID=Qwen/Qwen3.5-2B                                    # v6: empty = the encoder is a copy of the reader; else a smaller encoder (SEC45_ENCODER; in/res only)
 S3=${SEC45_S3:-s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/sec35}
-BUNDLE=${SEC45_BUNDLE:-sec35_code_v1.tar.gz}                        # code bundle under $W/code/ (jobs/make_bundle.py; staged by jobs/stage.sh)
+BUNDLE=${SEC45_BUNDLE:-sec35_code_v2.tar.gz}                        # code bundle under $W/code/ (jobs/make_bundle.py; staged by jobs/stage.sh)
 RECON_DATA=fineweb_recon_v1; TASK_DATA=rq_tasks_v1  # under $W/data/ (hotpot_tasks_v2 = v1 + dev1000 + test1000; rq_tasks_v1 = retrieval rows with top200)
 # ========================================================================================================================
 no() { echo "$(date -u +%FT%TZ) REFUSED: $*" >&2; exit 2; }
@@ -257,10 +257,11 @@ if [ "$LINEAR_SKIP" = 1 ]; then export SEC45_LINEAR_SKIP=1; else unset SEC45_LIN
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 case $MODE in in) export QA4B_LAYERS=none QA4B_KV=0;; res) export QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0;; kv) export QA4B_LAYERS=none QA4B_KV=1;; *) no "MODE $MODE";; esac
 for MID in $READER_ID $ENCODER_ID; do        # v6: the encoder's weights too (unauthenticated downloads can stall: 3 tries of 15 min)
-if [ ! -d "$MID" ] && ! "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', local_files_only=True)" >/dev/null 2>&1; then
+CACHED="from huggingface_hub import try_to_load_from_cache as t; import sys; sys.exit(0 if all(isinstance(t('$MID', f), str) for f in ('config.json', 'tokenizer_config.json')) else 1)"   # docs-only gaps (LICENSE, README) do not matter
+if [ ! -d "$MID" ] && ! "${PYC[@]}" -c "$CACHED" >/dev/null 2>&1; then
   case $CL in csail|orcd) no "$MID is not in $HF_HOME (jobs/stage.sh puts it there)";; esac
   for try in 1 2 3; do timeout 900 "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', token=False)" && break; done
-  "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', local_files_only=True)" >/dev/null 2>&1 || no "cannot get $MID into $HF_HOME"
+  "${PYC[@]}" -c "$CACHED" >/dev/null 2>&1 || no "cannot get $MID into $HF_HOME"
 fi
 done
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1

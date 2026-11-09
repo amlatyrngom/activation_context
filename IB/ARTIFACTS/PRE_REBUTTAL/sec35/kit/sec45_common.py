@@ -146,13 +146,28 @@ def row_passages(row: dict) -> list[int]:
     return [int(x) for x in (row["top20"] if "top20" in row else row["top200"][:row_k(row)])]
 
 
+def target_replies(rows: list[dict]) -> dict:
+    """Retrieval target probe (2026-11-09): with SEC45_TARGETS=<gold_refs.py jsonl>, id -> the gold-view teacher's reply for rows whose
+    reply stopped and is correct (the rest keep the answer-only target). Unset: {} (answer-only for every row)."""
+    path = os.environ.get("SEC45_TARGETS")
+    if not path:
+        return {}
+    ids = {r["id"] for r in rows}
+    out = {}
+    for line in open(path):
+        r = json.loads(line)
+        if r["id"] in ids and r["correct"] and r["finish"] == "stop":
+            out[r["id"]] = r["text"].strip()
+    return out
+
+
 def task_items(study, corpus, rows: list[dict], ac_name: str):
     """HotpotQA items: question first, then the row's k passages as k/20 question-first encoder calls of 20 (§3.5: ONE call over
     the 20 with golds injected), target 'Final answer: <answer>'. Items come back in the order of `rows`."""
     import rq_common as C
     assert not C.THINK, "RQ_THINKING=0 must be set before rq_common is imported (setup_environment)"
     top = {r["id"]: row_passages(r) for r in rows}
-    replies = C.answer_replies(rows)
+    replies = C.answer_replies(rows) | target_replies(rows)
     ks = [len(top[r["id"]]) for r in rows]
     out = [None] * len(rows)
     for k in sorted(set(ks)):

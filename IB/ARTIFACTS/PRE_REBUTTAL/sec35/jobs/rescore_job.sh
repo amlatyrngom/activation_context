@@ -8,7 +8,7 @@
 #   CSAIL: cd /data/scratch-fast/ngom/sec35 && sbatch --export=NIL --account=quanta --partition=quanta-h200 --qos=quanta-main --gpus=1 jobs/rescore_job.sh
 set -uo pipefail
 export PATH=${PATH:-/usr/local/bin:/usr/bin:/bin}
-EVAL_SPLIT=${EVAL_SPLIT:-dev1000}; BUNDLE=${SEC45_BUNDLE:-sec35_code_v1.tar.gz}
+EVAL_SPLIT=${EVAL_SPLIT:-dev1000}; BUNDLE=${SEC45_BUNDLE:-sec35_code_v3.tar.gz}
 if [ -d /data/scratch-fast/ngom ]; then W=/data/scratch-fast/ngom/sec35; PY=/data/scratch/ngom/activation/venv/bin/python; HF=/data/scratch-fast/ngom/sec45/hf; export HOME=$W/home
 elif [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/sec35; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf
 else W=$HOME/sec35; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi

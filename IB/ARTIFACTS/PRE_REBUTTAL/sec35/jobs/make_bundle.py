@@ -23,7 +23,7 @@ from pathlib import Path
 
 SEC45 = Path(__file__).resolve().parents[1]           # IB/ARTIFACTS/PRE_REBUTTAL/sec35
 REPO = SEC45.parents[3]
-FILES = {"kit": sorted((SEC45 / "kit").glob("*.py")), "text_lora": sorted((SEC45 / "text_lora").glob("*.py")),
+FILES = {"kit": sorted((SEC45 / "kit").glob("*.py")), "text_lora": sorted((SEC45 / "text_lora").glob("*.py")), "retrieval": sorted((SEC45.parent / "retrieval").glob("*.py")),
          "rq_kit": [REPO / "IB/TMP/PAPER_RETRIEVAL_QA/kit" / n for n in ("rq_common.py", "rq_train.py", "rq_teacher.py")],
          "bench": [REPO / "IB/TMP/PAPER_CORPUS_QA/kit/bench" / n for n in ("run_qa.py", "run_qa_9b.py")]}
 

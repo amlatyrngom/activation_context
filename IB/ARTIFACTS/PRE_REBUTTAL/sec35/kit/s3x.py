@@ -14,7 +14,7 @@ import os
 import sys
 from pathlib import Path
 
-NEVER = {"optimizer.pt"}
+NEVER = set() if os.environ.get("S3X_ALLOW_OPTIMIZER") == "1" else {"optimizer.pt"}   # EC2 spot resume uploads the recovery slot
 
 
 def split(url):

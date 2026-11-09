@@ -35,7 +35,7 @@ REPORT_EVERY=${SEC45_REPORT_EVERY:-200}                 # held-out panel every N
 STEP0_EVAL=${SEC45_STEP0_EVAL:-1}                       # T only: accuracy of the starting pair (update 0) before training
 ENC_LR=@ENC_LR@; READER_LR=@READER_LR@; EPU=8; WARMUP=50   # pre-rebuttal (2026-11-09): rates are recipe choices (hill-climbing allowed); READER_LR 0 = frozen reader
 PENALTY=@PENALTY@; SEED=@SEED@                          # no-context penalty weight (applies only while the reader trains); data order / sampling seed
-EVAL_SPLIT=${SEC45_EVAL_SPLIT:-@EVAL_SPLIT@}; EVAL_MAX_NEW=256      # pre-rebuttal: one scorer for every arm (dev1000 for choices, test1000 for reported numbers), cap 256
+EVAL_SPLIT=${SEC45_EVAL_SPLIT:-@EVAL_SPLIT@}; EVAL_MAX_NEW=${SEC45_EVAL_MAX_NEW:-256}      # pre-rebuttal: one scorer for every arm (dev1000 for choices, test1000 for reported numbers), cap 256
 #   (user 10-27: a truly frozen reader, never a tiny rate like 1e-12; the trainer then skips its gradients and the no-context penalty)
 READER_ID=${SEC45_READER_ID:-@READER@}   # §3.5: Qwen/Qwen3-4B-Instruct-2507; retrieval: Qwen/Qwen3.5-9B
 RES_LAYERS="@RES_LAYERS@"; TASK_K="@K@"; EVAL_K="@EVAL_K@"; LINEAR_SKIP="@LINEAR_SKIP@"   # retrieval (2026-11-09): reader layers of the res mode (all = every full-attention layer), passages per item (k or a mix), eval k, least-squares row head for a fresh pair
@@ -147,10 +147,11 @@ if [ "$LINEAR_SKIP" = 1 ]; then export SEC45_LINEAR_SKIP=1; else unset SEC45_LIN
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 case $MODE in in) export QA4B_LAYERS=none QA4B_KV=0;; res) export QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0;; kv) export QA4B_LAYERS=none QA4B_KV=1;; *) no "MODE $MODE";; esac
 for MID in $READER_ID $ENCODER_ID; do        # v6: the encoder's weights too (unauthenticated downloads can stall: 3 tries of 15 min)
-if [ ! -d "$MID" ] && ! "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', local_files_only=True)" >/dev/null 2>&1; then
+CACHED="from huggingface_hub import try_to_load_from_cache as t; import sys; sys.exit(0 if all(isinstance(t('$MID', f), str) for f in ('config.json', 'tokenizer_config.json')) else 1)"   # docs-only gaps (LICENSE, README) do not matter
+if [ ! -d "$MID" ] && ! "${PYC[@]}" -c "$CACHED" >/dev/null 2>&1; then
   case $CL in csail|orcd) no "$MID is not in $HF_HOME (jobs/stage.sh puts it there)";; esac
   for try in 1 2 3; do timeout 900 "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', token=False)" && break; done
-  "${PYC[@]}" -c "from huggingface_hub import snapshot_download as s; s('$MID', local_files_only=True)" >/dev/null 2>&1 || no "cannot get $MID into $HF_HOME"
+  "${PYC[@]}" -c "$CACHED" >/dev/null 2>&1 || no "cannot get $MID into $HF_HOME"
 fi
 done
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1

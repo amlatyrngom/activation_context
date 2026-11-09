@@ -12,7 +12,7 @@ set -uo pipefail
 export PATH=${PATH:-/usr/local/bin:/usr/bin:/bin}
 : "${RUN:?RUN}" "${STEPS:?STEPS}" "${CKPT_EVERY:?CKPT_EVERY}"; LR=${LR:-2e-5}; SEED=${SEED:-0}; EVAL_SPLIT=${EVAL_SPLIT:-dev1000}
 TASK_DATA=${TASK_DATA:-hotpot_tasks_v2}; TEXT_MODEL_ID=${TEXT_MODEL_ID:-Qwen/Qwen3-4B-Instruct-2507}; K=${K:-}; EVAL_K=${EVAL_K:-}   # retrieval: rq_tasks_v1, Qwen/Qwen3.5-9B, K=20,100,200, EVAL_K=100
-BUNDLE=${SEC45_BUNDLE:-sec35_code_v1.tar.gz}
+BUNDLE=${SEC45_BUNDLE:-sec35_code_v3.tar.gz}
 if [ -d /data/scratch-fast/ngom ]; then W=/data/scratch-fast/ngom/sec35; PY=/data/scratch/ngom/activation/venv/bin/python; HF=/data/scratch-fast/ngom/sec45/hf; export HOME=$W/home
 elif [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/sec35; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf
 else W=$HOME/sec35; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi
@@ -35,7 +35,7 @@ unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 GPU=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)
 say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$GPU' code $C; model $TEXT_MODEL_ID data $TASK_DATA k ${K:-20} steps $STEPS ckpt $CKPT_EVERY lr $LR seed $SEED eval $EVAL_SPLIT ${EVAL_K:+k $EVAL_K}"
 FREE_GB=$(df -Pk $W | awk 'NR==2{printf "%d", $4/1048576}'); [ "$FREE_GB" -ge 30 ] || { say "only $FREE_GB GB free under $W"; exit 2; }
-EVAL=($PY $C/text_lora/text_lora_eval_hf.py --data $TD --split $EVAL_SPLIT --max-new 256 --batch ${EVAL_BATCH:-32} ${EVAL_K:+--k $EVAL_K})
+EVAL=($PY $C/text_lora/text_lora_eval_hf.py --data $TD --split $EVAL_SPLIT --max-new ${EVAL_MAX_NEW:-256} --batch ${EVAL_BATCH:-32} ${EVAL_K:+--k $EVAL_K})
 eval_pending() { local Q U rc=0
   for Q in $D/ckpt/step_[0-9][0-9][0-9][0-9][0-9]; do [ -d "$Q" ] || continue; U=${Q##*_}
     [ -f $D/eval/u$U.summary.json ] && continue

@@ -53,7 +53,7 @@ def from_probes(paths: list[Path]) -> tuple[str, dict]:
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--values", type=Path); p.add_argument("--gpu"); p.add_argument("--probes", type=Path, nargs="+")
-    p.add_argument("--out", type=Path); p.add_argument("--bundle", default="sec35_code_v2.tar.gz")
+    p.add_argument("--out", type=Path); p.add_argument("--bundle", default="sec35_code_v3.tar.gz")
     p.add_argument("--values-out", type=Path, help="with --probes: where the merged values go (default jobs/values_<gpu>.json)")
     p.add_argument("--tag", default="", help="run-name suffix (v4: '_v4' -> R_in_v4, S_in_v4, T_in_v4 starting from R_in_v4); keeps new runs apart from old folders")
     p.add_argument("--reader-lr", default="2e-5", help="reader LoRA learning rate; 0 = frozen reader (exactly 0, never a tiny rate)")
