@@ -107,6 +107,27 @@ hyperparameter process with reruns where settings were missing; fairer baselines
 decoding settings); rerun of `S_kv_v4fr`. Minor caption/wording issues are ignored. Compute: this
 host has no GPU, so GPUs come from SkyPilot/EC2, CSAIL or ORCD.
 
+## Progress (2026-11-09)
+
+- **M2 done.** SSH config/key/known hosts installed (`~/.ssh/config` now uses `ControlPath ~/.ssh/cm/%r@%h:%p`, because
+  OpenSSH 10 folds the guard's `ProxyJump`/`ProxyCommand` overrides into `%C`); wrappers moved to
+  `IB/CANON/CANON_ARTIFACTS/cluster_access/` and validated on CSAIL and ORCD. AWS CLI via `uv tool install awscli`.
+  `.env`, AWS credentials, `gh`, git identity, SkyPilot state needed nothing. TinyTeX installed (plus `courier`,
+  `helvetic`, `times`, `psnfss`, which the build's auto-installer misses); the paper builds: 15 pages, body ends
+  on page 10, appendix 3 pages, no errors or undefined references. The build script needed no repointing.
+  CSAIL held job 2741502 cancelled (user); ORCD had no jobs (23493337 is gone).
+- **M1 done.** `main` = `5b48032` (paper branch + container patch + live IB + `paper` submodule at `16a0260`, with
+  old main merged in by `-s ours`), pushed as a fast-forward; tag `archive/main-20260921`; remote branches
+  `paper-mvp-20261013` and `ac-recon-night-20260917` deleted. Drift from the plan: `IB/REPOS/vllm` stays
+  git-ignored as on the paper branch (not a submodule). `compileall` passes; CPU tests: 4 passed, 21 GPU-gated
+  skipped, `test_trajectory_dataset_loading` fails: one streamed Open-SWE trajectory loses message text when chunked
+  (line 229 content check). The old main (`archive/main-20260921`) fails identically, so it predates the consolidation;
+  left as a known issue in STATE.
+- **M4 done.** STATE archived + digest, new STATE, `PAPER_CANON.md`, ROOT_CANON guardrails/preferences/lessons,
+  Claude memory pointer. Commit `c351ae6`.
+- **M3 in progress.** Container data copied (41 GB) to `IB/TMP/CONTAINER_FINAL_20261109` and syncing to S3, then
+  `IB/TMP`; verify per folder with `verify_prune.py`, then prune and remove the container.
+
 ## Decisions (accepted by the user, 2026-11-09)
 
 - **D1 — Old main's code:** the paper code wins entirely; the old main stays only as tag

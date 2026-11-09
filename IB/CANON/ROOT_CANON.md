@@ -32,7 +32,7 @@ Dropped on 2026-11-09: "never touch ORCD reservation 23493337" (it was an agent'
 
 - **Edits to the user's writing:** keep their text and framing. Propose each edit with exact before/after text and apply it only after they OK it. Prefer simplicity; don't add details that raise questions without answering them; don't frame results as wins unless they are.
 - **Overleaf:** the paper repo (`paper/` submodule, github.com/amlatyrngom/activation_context_paper) is git-synced with Overleaf and the user edits there concurrently. Pull before any paper edit; while they are editing, hand them the fix instead of pushing.
-- **Dictation:** interpret transcription slips sensibly ("Office 5.5" = Opus 5.5, "MLCC" = MLSys, "overlive" = Overleaf, "Irkut" = IRCoT, "tresor" = Tressoir, "DO" = Duo).
+- **Dictation:** interpret transcription slips sensibly ("Office 5.5" = Opus 5.5, "MLCC" = MLSys, "overlive" = Overleaf, "Irkut" = IRCoT, "tresor" = Tressoir, "DO" = Duo, "carfist / Court Fus compression" = corpus compression, "TextPlusLara" = text + LoRA, "Dawkins" = tokens). When a garbled word could change what gets done, restate your reading and ask.
 - **Reporting:** show large changes as a readable HTML diff (`IB/ARTIFACTS/PAPER_WRITING/diff_html/make_diff_v2.py`); report body length and page fit after every paper build (`IB/ARTIFACTS/PAPER_WRITING/build_pdf.sh`); never state a number you did not read from a file. In the Claude desktop app, HTML reports can be shown in the side panel; `.tressoir.md`/`.tressoir.html` are VS Code-only and are not used outside VS Code.
 - **Pronouns:** they/them for the user.
 

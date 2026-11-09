@@ -65,10 +65,14 @@ Next step: write the pre-rebuttal plan (`IB/ARTIFACTS/PRE_REBUTTAL/PLAN.md`), st
 - Paper trim candidates for a camera-ready: §2.5 Engine Implementation; the select → text baseline
   in §3.1 ("KEEP for now, but a good candidate for removal"); the §4.5 decode-baseline bullets.
 - Strict vs lenient answer parsing per workload (recommended lenient in October; part of item 3 above).
+- Known failing CPU test: `test_basic_dataset_loading.py::test_trajectory_dataset_loading` — a streamed Open-SWE
+  trajectory loses message text when chunked (content check at line 229). Fails on the old main too (2026-11-09).
 - Residual every-4th vs every layer for the Input + Residuals arm; unused v2 corpus data (v2s2 19,916
   items; v2s3 raw on ORCD only).
 
 ## Rules
+
+The user often dictates: expect garbled words and read them sensibly (examples in ROOT_CANON "Working with the user").
 
 The guardrails, autonomy rule and the user's working preferences are in `ROOT_CANON.md`
 ("Autonomy", "Machines, access and guardrails", "Working with the user"). In short: don't block on the
