@@ -35,8 +35,10 @@ provenance, the "No Context" arm intro) can be ignored. The full list of gaps wi
 `PAPER_CANON.md`, sections "Settings that differ between arms or are undocumented" and "Also from the
 October log". Reviews arrive 2027-01-18; responses are due 2027-01-21.
 
-Next step: write the pre-rebuttal plan (`IB/ARTIFACTS/PRE_REBUTTAL/PLAN.md`), starting from those two
-`PAPER_CANON.md` sections.
+**Green-lit 2026-11-09 ≈21:30Z; plan: `IB/ARTIFACTS/PRE_REBUTTAL/PLAN.md`** (priority order: §3.5 KV vs text+LoRA,
+then §3.5 in/res with least-squares init; retrieval 2B→9B text+LoRA and one recipe; uncapped compaction summary
+rerun on any free GPU; math last). Hill-climbing is allowed as long as the final recipe is clean and explainable.
+Corpus compression stays as submitted (user correction: "compaction needs no further work" meant corpus).
 
 ## Setup (2026-11-09)
 
@@ -56,8 +58,8 @@ Next step: write the pre-rebuttal plan (`IB/ARTIFACTS/PRE_REBUTTAL/PLAN.md`), st
 - Done: SSH and cluster access; held CSAIL job 2741502 cancelled (ORCD had none); AWS CLI; one `main`
   pushed (remote branches `paper-mvp-20261013` and `ac-recon-night-20260917` deleted, both inside
   `main`); paper submodule and TeX build; STATE archived and condensed; canon updated.
-- In progress: S3 archive of the old container's unique data and of `IB/TMP`, then local deletion and
-  removal of the container.
+- Also done: old container's unique data and all of `IB/TMP` archived to S3 and verified file by file
+  (`IB/ARTIFACTS/HANDOFF_EC2/S3_INDEX.md`); container removed; pre-paper folders pruned; disk 402 → 248 GB used.
 
 ## Open items inherited from October (never settled; decide when relevant)
 

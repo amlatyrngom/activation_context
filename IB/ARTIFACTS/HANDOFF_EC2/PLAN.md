@@ -125,8 +125,7 @@ host has no GPU, so GPUs come from SkyPilot/EC2, CSAIL or ORCD.
   left as a known issue in STATE.
 - **M4 done.** STATE archived + digest, new STATE, `PAPER_CANON.md`, ROOT_CANON guardrails/preferences/lessons,
   Claude memory pointer. Commit `c351ae6`.
-- **M3 in progress.** Container data copied (41 GB) to `IB/TMP/CONTAINER_FINAL_20261109` and syncing to S3, then
-  `IB/TMP`; verify per folder with `verify_prune.py`, then prune and remove the container.
+- **M3 done.** Container data (46.8 GB) and all of `IB/TMP` (265.9 GB) on S3, verified file by file; container removed; pre-paper folders pruned (≈64 GB). Disk 402 → 248 GB used. See `S3_INDEX.md`; checker: `IB/CANON/CANON_ARTIFACTS/s3_archive/verify_prune.py`.
 
 ## Decisions (accepted by the user, 2026-11-09)
 
