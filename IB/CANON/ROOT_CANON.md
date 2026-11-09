@@ -23,6 +23,16 @@ Since 2026-11-09 agents work directly on the EC2 host `i-0918b8f73e9a0fe03` (t3.
 - **Hard limit — Never stop or terminate this host.** It is the workstation. Every other EC2/SkyPilot resource is the project's own to create and tear down.
 - **Credentials stay on this host.** `.env`, `~/.aws`, `~/.ssh` are never committed, printed or copied elsewhere; remote jobs get secrets through SkyPilot `--secret-file` as before.
 - **Practice — Cancel Slurm jobs by id** after checking `squeue`; never by user or `--all`.
+- **User preference — Use our CSAIL priority; interrupt as needed (user, repeated; written down 2026-11-09).** Our `quanta` account's
+  QoS `quanta-main` (priority 100) preempts `lab-free` and `shared-if-available` jobs (`PreemptMode=REQUEUE`). Other groups' shared
+  jobs often sit on `quanta-h200-1` through `csail-shared-h200`, so "all GPUs allocated" in `sinfo` does **not** mean full for us:
+  check `squeue -w quanta-h200-1 -o "%u %q %b"`, and if `shared-if-available`/`lab-free` jobs hold GPUs there, submit with
+  `--account=quanta --partition=quanta-h200 --qos=quanta-main` anyway; Slurm requeues them. Only jobs of our own group (`quanta-main`,
+  same priority) cannot be preempted; never scancel other users' jobs. `quanta-gh200` admits `quanta-main` only. Our own shared-tier
+  jobs (`csail-shared-h200`) are preemptible in the same way (keep resumable checkpoints).
+- **User preference — Free our cluster scratch when needed (2026-11-09).** CSAIL `/data/scratch-fast` is often 100 % full; our
+  `/data/scratch-fast/ngom` held 856 GB on 2026-11-09. Delete old run data whenever space is needed, after checking it is on S3
+  (relay through this host: clusters have no S3 credentials) or was already superseded.
 - **Commits — Agents commit to `main` and push at milestone boundaries without asking** (one branch, `main`; old histories are tags under `archive/`).
 - **`IB/TASK.md`** stays human-only (Tressoir rule).
 

@@ -49,7 +49,7 @@ Corpus compression stays as submitted (user correction: "compaction needs no fur
 | Paper | `paper/` submodule → github.com/amlatyrngom/activation_context_paper (git-synced with Overleaf; pull first). Build: `IB/ARTIFACTS/PAPER_WRITING/build_pdf.sh [--pages]` (TinyTeX in `~/.TinyTeX`). Submitted build: body 10 pages (references from page 11), 15 pages total; appendix 3 pages. |
 | Python | `.venv` from `uv.lock`; CPU tests: `.venv/bin/python -m pytest activation/tests` (GPU tests need `--gpu`). |
 | GPUs | SkyPilot/EC2 (`.venv/bin/sky`), CSAIL, ORCD. No cluster or cloud job of ours is running. |
-| Clusters | `IB/CANON/CANON_ARTIFACTS/cluster_access/{csail,orcd}_ssh.sh` over the shared connections the user opens with Duo (`ssh csail echo ok`, `ssh orcd echo ok`; up to 7 days). |
+| Clusters | `IB/CANON/CANON_ARTIFACTS/cluster_access/{csail,orcd}_ssh.sh` over the shared connections the user opens with Duo (`ssh csail echo ok`, `ssh orcd echo ok`; up to 7 days). **CSAIL: our `quanta-main` QoS preempts `shared-if-available`/`lab-free` jobs on `quanta-h200-1`; submit there even when it looks full (ROOT_CANON).** |
 | S3 | `s3://general-bucket-aln/activation-context-data/` (`aws` CLI installed via uv). See `S3_INDEX.md` for what moved there on 2026-11-09. |
 | Credentials | `~/.aws`, `~/.ssh`, `.env` (with `HF_TOKEN`, `GITHUB_TOKEN`), `gh` login. Never commit or print them. |
 

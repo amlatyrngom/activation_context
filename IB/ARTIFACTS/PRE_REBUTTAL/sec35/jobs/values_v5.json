@@ -1,0 +1,115 @@
+{
+ "NVIDIA H200": {
+  "in": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   }
+  },
+  "res": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.618,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.618,
+    "opt_gb": 6.5
+   }
+  },
+  "kv": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   }
+  }
+ },
+ "NVIDIA RTX PRO 6000 Blackwell Server Edition": {
+  "in": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   }
+  },
+  "res": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.618,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.618,
+    "opt_gb": 6.5
+   }
+  },
+  "kv": {
+   "R": {
+    "steps": 2000,
+    "ckpt_every": 200,
+    "micro_batch": 2,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   },
+   "S_T": {
+    "steps": 4000,
+    "ckpt_every": 400,
+    "micro_batch": 4,
+    "seconds": 864000,
+    "pair_gb": 3.288,
+    "opt_gb": 6.5
+   }
+  }
+ },
+ "_note": "v5 (Oct 27, user): R 2000 x 8 = 16,000 FineWeb passages, S/T 4000 x 8 = 32,000 HotpotQA questions; recovery slot every 200 (R) / 400 (S/T, also the eval points); seconds = backstop of one attempt (off: the cluster's job limit stops a job, the next resumes); micro-batches from P0; opt_gb from the resume test. opt_gb 4.2 from the resume test (4.18 GB). Raised to 6.5: the task/in case measured 6.14 GB."
+}
