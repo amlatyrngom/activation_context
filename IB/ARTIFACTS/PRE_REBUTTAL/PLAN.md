@@ -162,3 +162,11 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   cross-model head starts from a weak fit, cosine 0.36, and may need a faster rate than §3.5's identity-skip pair).
 - ~15:00Z: **T_res_rq9fr done** (valid; frozen reader, 1,000 updates, 19.4 s/update): u200/400/600/800/final = 27.5 / 37.0 / 44.0 / 46.5 / **48.0**
   (dev200 k=100), still rising as the LR decayed. T_res_rq9Lge (encoder 1e-4) started on rqd.
+- ~17:30Z: **§3.5 S_kv_fr90k u8000 75.6, u8800 77.0** (new peak; X_text_90k u8000 75.8, u8800 75.2, u9600 74.7): KV AC now level with or above text at
+  the same update. **ORCD T_res_fr90k failed** at its first slot (u800, 13:48Z): `torch.save` of optimizer.pt raised
+  `basic_ios::clear: iostream error` (T_in_fr90k wrote the same-size slot in the same minute fine; scratch 18% used → transient write
+  error). Broken slot moved to `runs/T_res_fr90k/broken_slot_u800_iostream`, resubmitted as 28594453 (fresh start; u0 = 0.0, 987/1000 length
+  stops). T_in_fr90k u800 19.0 (u0 8.9) — far behind S_kv_fr90k's u800 64.4.
+- **rqd spot-reclaimed** (us-west-2b, third time) with T_res_rq9Lge before its first slot (S3 had only u0) → relaunched fresh on rqd2.
+  Retrieval 4,000-update arms at u400 (dev200 k=100): T_res_rq9Lg (gold) **36.5**, T_res_rq9L (answer-only) **38.5** (frozen T_res_rq9fr at
+  u400: 37.0); both still at full LR. X_rq9_text_gold4k at u250 (35 s/update).
