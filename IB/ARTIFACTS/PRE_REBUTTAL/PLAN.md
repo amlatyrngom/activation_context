@@ -142,3 +142,10 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
 - X_rq9_text_ans not resumed (the S3 slot was update 250: ~7 h for one u1000 point; its u250/u500/u750 already answer the target question,
   and the final text arm is rerun with 3 seeds under the final recipe). rqc2 (us-east-1d) runs T_res_rq9L instead.
 - T_res_rq9fr (frozen reader) u600 44.0 (u400 37.0).
+- ~11:40Z: **rqb spot-reclaimed** too (us-west-2b, ~10:50Z, T_res_rq9 at update ~640; S3 holds slots 200/400 and evals u0–u400). Not resumed:
+  the 4,000-update T_res_rq9L/Lg supersede it. Fixed s3x verified on rqd: one manual putdir refreshed T_res_rq9fr's pointer to step 600.
+- **Target probe result (9B text + LoRA, dev200 k=100):** gold-view ref u250/500/750/1000 = 60.5 / 58.5 / 62.5 / **61.0** (final, valid);
+  answer-only u250/500/750 = 58.0 / 57.5 / 59.5 (u1000 lost to the reclaim). Gold ahead at every shared checkpoint (+2.5 / +1.0 / +3.0),
+  each within one-seed n=200 noise; replies 27–61 tokens vs 7. Working choice: **gold-view reference targets**, confirmed on AC with
+  T_res_rq9Lg vs T_res_rq9L (4,000 updates each).
+- rqe: X_rq9_text_gold4k (text + LoRA, gold targets, 4,000 updates = T_res_rq9Lg's 32,000 questions; ~37 h) — the data-matched text baseline.

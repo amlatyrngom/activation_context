@@ -27,5 +27,8 @@ gold)
   until $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/DONE $W/refs/DONE > /dev/null 2>&1; do echo "$(date -u +%FT%TZ) waiting for the gold refs"; sleep 300; done
   $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
   bash $J/ec2_run.sh X_rq9_text_gold env RUN=X_rq9_text_gold SEC45_TARGETS=$W/refs/refs_train.jsonl $PROBE bash $J/text_lora_job.sh;;
-*) echo "role refs|ans|gold"; exit 2;;
+gold4k)                                   # data-matched text baseline for T_res_rq9Lg: 4,000 updates = the 32,000 questions the refs cover
+  mkdir -p $W/refs; [ -f $W/refs/refs_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  bash $J/ec2_run.sh X_rq9_text_gold4k env RUN=X_rq9_text_gold4k SEC45_TARGETS=$W/refs/refs_train.jsonl $PROBE STEPS=4000 CKPT_EVERY=500 bash $J/text_lora_job.sh;;
+*) echo "role refs|ans|gold|gold4k"; exit 2;;
 esac
