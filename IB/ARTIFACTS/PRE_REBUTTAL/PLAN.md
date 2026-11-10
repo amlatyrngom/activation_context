@@ -129,3 +129,7 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
 - ~09:00Z dev200 k=100: text answer-only u750 59.5; text gold-ref u500 58.5, u750 62.5 (27.4 reply tokens). AC T_res_rq9 u0 12.5 → u200 36.5;
   T_res_rq9fr (frozen) u200 27.5. Paper (eval500, old scorer): AC Arm G 52.87, untuned text 49.2, no context 23.07. AC is far from level at u200;
   next levers if the slope stays flat: gold-view reference targets for AC (Arm G's key stage was KL to the gold-view teacher), longer T.
+- ~10:00Z: T_res_rq9 u400 44.0 (u200 36.5), T_res_rq9fr u400 37.0 (27.5): ~+7.5 per 200 updates, reader LoRA ahead. Queued behind the text
+  probes (start when they finish): T_res_rq9Lg on rqa (4,000 updates = the 32,000 questions the gold refs cover, gold-view reference
+  targets via RQ_TARGETS=1) and T_res_rq9L on rqc (same, answer-only), both reader LoRA 2e-5, from R_res_rq9's pair, evals every 400.
+  sec45_train's pool order (raw train.jsonl, Random(seed 0).shuffle, first N) = gold_refs.py's, so every training row has a ref.

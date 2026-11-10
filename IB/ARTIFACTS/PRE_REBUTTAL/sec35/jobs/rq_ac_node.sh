@@ -3,12 +3,17 @@
 # row head, FineWeb reconstruction, 2,000 updates) then T_res_rq9 (task from R's final pair: 1,000 updates x 8, k in {20,100,200}, reader
 # LoRA 2e-5 + no-context penalty, encoder 5e-5; dev200 at k=100, cap 1024 like the text probe). Each run folder is mirrored on S3.
 #   .venv/bin/python -m activation.cloud.sky exec NODE -- [env RQ_GEN=generated_rq9fr_rtx RQ_TAG=_rq9fr] bash /root/rq_ac_node.sh [R,T | S | T]
+# RQ_TARGETS=1: gold-view reference targets (SEC45_TARGETS = runs/rq9_gold_refs/refs_train.jsonl from S3; first 32,000 of the seed-0 pool).
 # A T run starts from R_res_rq9's final pair: linked locally when R ran on this node, else fetched from S3 (runs/R_res_rq9/sync/ckpt/final).
 set -uo pipefail
 W=/root/sec35; G=$W/jobs/${RQ_GEN:-generated_rq9_rtx}; TAG=${RQ_TAG:-_rq9}; S3PY=/root/s3venv/bin/python
 S3=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/sec35
 bash /root/ec2_prep.sh || { echo "prep failed"; exit 2; }
 export SEC45_EVAL_MAX_NEW=1024
+if [ "${RQ_TARGETS:-0}" = 1 ]; then
+  mkdir -p $W/refs; [ -f $W/refs/refs_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  export SEC45_TARGETS=$W/refs/refs_train.jsonl
+fi
 for r in $(echo ${1:-R,T} | tr , ' '); do
   if [ $r = T ]; then
     I=$W/init/R_res_rq9_final; export SEC45_INIT_PAIR=$I
