@@ -186,3 +186,11 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   (fresh), X_text_90k_s2 28610380. Canon "Quotas you cannot see" records the symptoms and the ≥100 GB headroom rule.
 - **First test1000 numbers (single scorer):** X_text_90k final (u11200) **76.1** (dev1000 75.7); untuned 4B **26.2** (dev1000 29.7).
   §3.5 dev1000: S_kv_fr90k u10400 75.3 (u8800 77.0, u9600 75.4); T_in_fr90k u800 19.0.
+- ~18:40Z: **S_kv_fr90k done** (valid, 1 attempt, final sha 1309adaa…): final **75.2** (dev1000; text 90k final 75.7). KV recipe fixed (fresh pair,
+  frozen reader, encoder 2e-5, 90k × 1 pass, final checkpoint) → CSAIL: test1000 score of its final (3021416, `RESCORE_DIR=final_test`),
+  seeds S_kv_fr90k_s1 / _s2 (3021417 / 3021418, `jobs/generated_p1s`, make_jobs `--seed`, bundle v1 like seed 0); all pending on Priority.
+  ORCD: X_text_90k_s1 u800 70.1 (seed 0: 71.3); T_in_fr90k resumed, T_res_fr90k and X_text_90k_s2 running.
+- Retrieval: the eval watcher's u800 evals **OOMed** on T_res_rq9Lg and T_res_rq9L (training ≈54 GB + 9B eval at k=100, cap 1024, ≈41 GB on
+  one 96 GB card); u400 had fit. The pairs are kept and the watcher's final pass retries each failed eval once on the free GPU.
+  T_res_rq9Lge u400 **36.5** (encoder 1e-4; Lg at u400 36.5, L 38.5). X_rq9_text_gold4k u500 **62.5** (u0 53.0; the 1,000-update probe
+  had 58.5 at u500).
