@@ -119,3 +119,5 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
 - 4th spot slot: rqd runs S_res_rq9 (retrieval AC from a fresh pair, no reconstruction; same task settings as T_res_rq9).
 - §3.5 probes at ≈02:50Z (dev1000 acc): X_text_90k u800 71.3, u1600 70.3 (untuned 29.6); S_kv_fr90k u800 64.4, u1600 68.8, u2400 70.8 (still
   climbing); S_kv_fr_e1e4 u400 58.5, u800 60.3; S_kv_pen0 u400 55.8, u800 58.9. Text peaks early, frozen-reader KV climbs; encoder 1e-4 trails 2e-5 so far.
+- Retrieval target probe u250 (dev200, k=100, n=200): answer-only 58.0 / EM 55.5 / F1 66.94 (6.7 reply tokens); gold-view ref 60.5 / 57.0 /
+  68.07 (53.9 tokens); untuned 53.0. +2.5 for gold (5 questions; noise level). R_res_rq9 at update ~700/2000 (8.5 s); S_res_rq9 started 02:54Z on rqd.
