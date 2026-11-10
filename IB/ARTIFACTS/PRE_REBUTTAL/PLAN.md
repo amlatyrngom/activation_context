@@ -175,3 +175,14 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   (28599473 / 28599474, pinned to bundle v1 like seed 0; v3 differs only in retrieval support) and the test1000 score of seed 0's final
   adapter + the untuned 4B (28599416, `rescore_job.sh` with the new `RESCORE_DIR=$W/final_test`, so the paper checkpoints staged in
   `rescore/` are not scored on test). Retrieval u400 unchanged; Lg u686, L u740, Lge u130, text gold4k u375.
+- ~17:40Z: **ORCD scratch quota full (≈1.0 TB).** T_res_fr90k (twice: `iostream error` at the u800 save, then `Errno 122 Disk quota exceeded`),
+  T_in_fr90k (truncated optimizer.pt at the u1600 save) and X_text_90k_s2 (exit 0:53 in 4 s) all failed on it; df shows 18 % (the
+  filesystem, not the quota). Inventory by `du` in `srun -p mit_normal`: `~/orcd/scratch/hf` 241 G (not ours to prune: other models),
+  `activation/` 758 G (KEEP 170, paper_corpus_qa_v1 163, hf 145, sec35 75, trajectory_compaction 43, rag_arms_v1 35, …). **Pruned (≈110 GB):**
+  `paper_corpus_qa_v1/runs/{R15b,D15b}/packet/SNAPSHOTS` (42 + 40 GB, intermediate %-snapshots; their evals, final pairs and D15b's
+  u400/u650 pairs are on S3 `corpus_qa_20261019/`; recovery slots and fresh pairs kept); `sec35/rescore/{ac/*,text/T_text_lora_u01000}`
+  (≈22 GB, staged copies of the paper pairs, byte sizes equal to S3 `sec45_20261026/runs/*/sync/ckpt/final`; rescore outputs kept);
+  the two truncated slots (T_in u1600, T_res u800; 5.6 GB). Resubmitted: T_in_fr90k 28610377 (resumes from u800), T_res_fr90k 28610379
+  (fresh), X_text_90k_s2 28610380. Canon "Quotas you cannot see" records the symptoms and the ≥100 GB headroom rule.
+- **First test1000 numbers (single scorer):** X_text_90k final (u11200) **76.1** (dev1000 75.7); untuned 4B **26.2** (dev1000 29.7).
+  §3.5 dev1000: S_kv_fr90k u10400 75.3 (u8800 77.0, u9600 75.4); T_in_fr90k u800 19.0.
