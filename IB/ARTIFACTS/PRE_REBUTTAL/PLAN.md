@@ -149,3 +149,11 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   each within one-seed n=200 noise; replies 27–61 tokens vs 7. Working choice: **gold-view reference targets**, confirmed on AC with
   T_res_rq9Lg vs T_res_rq9L (4,000 updates each).
 - rqe: X_rq9_text_gold4k (text + LoRA, gold targets, 4,000 updates = T_res_rq9Lg's 32,000 questions; ~37 h) — the data-matched text baseline.
+- ~12:30Z §3.5 (dev1000): X_text_90k u5600 76.0 (peak) / u7200 74.3; S_kv_fr90k u6400 74.7 (peak) / u7200 74.4; S_kv_fr_e1e4 final 72.8;
+  S_kv_pen0 final 72.1 (both 4,000 updates). 90k data: +~2 for both arms; at u7200 level; text peak 1.3 above AC peak.
+- **§3.5 in/res "least-squares init" (plan 1c):** for the same-model 4B→4B pair the side→reader embedding map is the identity, and the row head
+  already starts as the identity skip at equal widths (ac_model.py: row_head_linear_skip is only for unequal widths), so the paper's
+  T_in_v4 / T_res_v4 already had it. 1c is therefore "in/res under the same recipe": T_in_fr90k and T_res_fr90k (frozen reader, encoder 2e-5,
+  11,200 × 8, dev1000 every 800 = S_kv_fr90k's recipe, from the paper's frozen-reader R pairs R_{in,res}_v4fr_final, relayed CSAIL → host →
+  ORCD, pair hashes checked against DONE) on ORCD 28583999 / 28584000 (`jobs/generated_p3_rtx`). CSAIL's H200 node was full of our own
+  group's quanta-main jobs (not preemptible by us), so ORCD.
