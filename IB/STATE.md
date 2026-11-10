@@ -40,6 +40,13 @@ then §3.5 in/res with least-squares init; retrieval 2B→9B text+LoRA and one r
 rerun on any free GPU; math last). Hill-climbing is allowed as long as the final recipe is clean and explainable.
 Corpus compression stays as submitted (user correction: "compaction needs no further work" meant corpus).
 
+**Status 2026-11-10 ≈02:00Z** (details and launch commands: PRE_REBUTTAL `PLAN.md` log):
+- §3.5 rescore under the single scorer (dev1000, n = 1,000, greedy, cap 256, strict parse): text+LoRA u1000 74.1 / u2000 72.6 /
+  u3000 72.8 / u4000 (final) 72.3; AC `S_kv_v4fr` 73.5, `T_in_v4` 73.4, `S_kv_v4` 72.6, `T_kv_v4fr` 71.7, `T_kv_v4` 71.5, `T_res_v4` 71.5;
+  untuned 4B 29.7. The paper's 4-point gap (68.5 vs 72.5) is mostly scorer / eval-set noise: AC final ≥ text final, text peak 0.6 above.
+- Running: CSAIL `S_kv_fr90k`; ORCD `X_text_90k`, `S_kv_fr_e1e4`, `S_kv_pen0`; EC2 spot rqa / rqc (retrieval 9B text arm, gold-ref vs
+  answer-only target), rqb (retrieval AC R_res_rq9 → T_res_rq9), cmpsum2 (uncapped compaction summary: s2 140/200, s3 136/200 solved).
+
 ## Setup (2026-11-09)
 
 | What | Where / how |
@@ -48,7 +55,7 @@ Corpus compression stays as submitted (user correction: "compaction needs no fur
 | Git | One branch, `main` (= the paper code + container patch + IB, merged over the old main). Old main = tag `archive/main-20260921`. Agents commit and push at milestones. |
 | Paper | `paper/` submodule → github.com/amlatyrngom/activation_context_paper (git-synced with Overleaf; pull first). Build: `IB/ARTIFACTS/PAPER_WRITING/build_pdf.sh [--pages]` (TinyTeX in `~/.TinyTeX`). Submitted build: body 10 pages (references from page 11), 15 pages total; appendix 3 pages. |
 | Python | `.venv` from `uv.lock`; CPU tests: `.venv/bin/python -m pytest activation/tests` (GPU tests need `--gpu`). |
-| GPUs | SkyPilot/EC2 (`.venv/bin/sky`), CSAIL, ORCD. No cluster or cloud job of ours is running. |
+| GPUs | SkyPilot/EC2 (`.venv/bin/sky`; up to 4 spot RTX PRO 6000; long work runs as `python -m activation.cloud.sky exec`, so idle autodown cleans up), CSAIL, ORCD. Running jobs: status block above. |
 | Clusters | `IB/CANON/CANON_ARTIFACTS/cluster_access/{csail,orcd}_ssh.sh` over the shared connections the user opens with Duo (`ssh csail echo ok`, `ssh orcd echo ok`; up to 7 days). **CSAIL: our `quanta-main` QoS preempts `shared-if-available`/`lab-free` jobs on `quanta-h200-1`; submit there even when it looks full (ROOT_CANON).** |
 | S3 | `s3://general-bucket-aln/activation-context-data/` (`aws` CLI installed via uv). See `S3_INDEX.md` for what moved there on 2026-11-09. |
 | Credentials | `~/.aws`, `~/.ssh`, `.env` (with `HF_TOKEN`, `GITHUB_TOKEN`), `gh` login. Never commit or print them. |
