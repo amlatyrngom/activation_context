@@ -126,3 +126,6 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   — about the no-passages level, so a fresh cross-model res pair needs the reconstruction stage. Both rows use the least-squares head (fit cosine 0.361).
 - Now: T_res_rq9 (reader LoRA 2e-5, penalty 1.0) on rqb and T_res_rq9fr (frozen reader; `jobs/generated_rq9fr_rtx`, R's pair fetched from S3)
   on rqd, both from R_res_rq9's final pair. Text probe u500: answer-only 57.5 (u250 58.0).
+- ~09:00Z dev200 k=100: text answer-only u750 59.5; text gold-ref u500 58.5, u750 62.5 (27.4 reply tokens). AC T_res_rq9 u0 12.5 → u200 36.5;
+  T_res_rq9fr (frozen) u200 27.5. Paper (eval500, old scorer): AC Arm G 52.87, untuned text 49.2, no context 23.07. AC is far from level at u200;
+  next levers if the slope stays flat: gold-view reference targets for AC (Arm G's key stage was KL to the gold-view teacher), longer T.
