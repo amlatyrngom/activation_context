@@ -4,7 +4,7 @@
 #SBATCH --output=s35_rescore_%j.out
 # Pre-rebuttal: rescore the paper's §3.5 checkpoints under the single scorer (greedy HF decode, cap 256, strict "Final answer:" parse)
 # on EVAL_SPLIT (default dev1000). Inputs staged under $W/rescore/: ac/<RUN>/{ac,reader,MODE} (MODE file: in|res|kv) and
-# text/<RUN>_uNNNNN/ (PEFT adapters). Outputs: $W/rescore/out/<name>.jsonl + .summary.json (a rerun skips finished ones).
+# text/<RUN>_uNNNNN/ (PEFT adapters); RESCORE_DIR overrides $W/rescore. Outputs: $W/rescore/out/<name>.jsonl + .summary.json (a rerun skips finished ones).
 #   CSAIL: cd /data/scratch-fast/ngom/sec35 && sbatch --export=NIL --account=quanta --partition=quanta-h200 --qos=quanta-main --gpus=1 jobs/rescore_job.sh
 set -uo pipefail
 export PATH=${PATH:-/usr/local/bin:/usr/bin:/bin}
@@ -13,7 +13,8 @@ if [ -d /data/scratch-fast/ngom ]; then W=/data/scratch-fast/ngom/sec35; PY=/dat
 elif [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/sec35; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf
 else W=$HOME/sec35; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi
 PY=${SEC45_PY:-$PY}
-R=$W/rescore; O=$R/out; TD=$W/data/hotpot_tasks_v2; mkdir -p $O $R/logs
+R=${RESCORE_DIR:-$W/rescore}; O=$R/out;   # RESCORE_DIR: a separate staging root (e.g. $W/final_test for the reported test1000 runs)
+ TD=$W/data/hotpot_tasks_v2; mkdir -p $O $R/logs
 exec > >(tee -a $R/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [rescore] $*"; }
 STEM=${BUNDLE%.tar.gz}; C=$W/code/$STEM

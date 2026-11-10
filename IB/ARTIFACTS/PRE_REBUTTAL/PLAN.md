@@ -170,3 +170,8 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
 - **rqd spot-reclaimed** (us-west-2b, third time) with T_res_rq9Lge before its first slot (S3 had only u0) → relaunched fresh on rqd2.
   Retrieval 4,000-update arms at u400 (dev200 k=100): T_res_rq9Lg (gold) **36.5**, T_res_rq9L (answer-only) **38.5** (frozen T_res_rq9fr at
   u400: 37.0); both still at full LR. X_rq9_text_gold4k at u250 (35 s/update).
+- ~15:40Z: **X_text_90k done** (valid, 3 attempts): final u11200 **75.7** (u10400 76.3; dev1000). S_kv_fr90k u9600 75.4 (u8800 77.0).
+  Text recipe fixed (90k rows, 11,200 × 8, LR 2e-5, final checkpoint), so its replicates start now on ORCD: X_text_90k_s1 / _s2
+  (28599473 / 28599474, pinned to bundle v1 like seed 0; v3 differs only in retrieval support) and the test1000 score of seed 0's final
+  adapter + the untuned 4B (28599416, `rescore_job.sh` with the new `RESCORE_DIR=$W/final_test`, so the paper checkpoints staged in
+  `rescore/` are not scored on test). Retrieval u400 unchanged; Lg u686, L u740, Lge u130, text gold4k u375.
