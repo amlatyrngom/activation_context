@@ -121,3 +121,8 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   climbing); S_kv_fr_e1e4 u400 58.5, u800 60.3; S_kv_pen0 u400 55.8, u800 58.9. Text peaks early, frozen-reader KV climbs; encoder 1e-4 trails 2e-5 so far.
 - Retrieval target probe u250 (dev200, k=100, n=200): answer-only 58.0 / EM 55.5 / F1 66.94 (6.7 reply tokens); gold-view ref 60.5 / 57.0 /
   68.07 (53.9 tokens); untuned 53.0. +2.5 for gold (5 questions; noise level). R_res_rq9 at update ~700/2000 (8.5 s); S_res_rq9 started 02:54Z on rqd.
+- 2026-11-10 ~07:00Z: R_res_rq9 done (valid, 2,000 updates; held-out reconstruction token accuracy 0.918 @200 → 0.990 @1000 → 0.995 @1600;
+  final pair sha 8e26e806…, on S3). S_res_rq9 (fresh pair, no reconstruction) stopped at update 641: dev200 21.5 @200, 22.5 @400, 23.0 @600
+  — about the no-passages level, so a fresh cross-model res pair needs the reconstruction stage. Both rows use the least-squares head (fit cosine 0.361).
+- Now: T_res_rq9 (reader LoRA 2e-5, penalty 1.0) on rqb and T_res_rq9fr (frozen reader; `jobs/generated_rq9fr_rtx`, R's pair fetched from S3)
+  on rqd, both from R_res_rq9's final pair. Text probe u500: answer-only 57.5 (u250 58.0).
