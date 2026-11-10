@@ -133,3 +133,12 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   probes (start when they finish): T_res_rq9Lg on rqa (4,000 updates = the 32,000 questions the gold refs cover, gold-view reference
   targets via RQ_TARGETS=1) and T_res_rq9L on rqc (same, answer-only), both reader LoRA 2e-5, from R_res_rq9's pair, evals every 400.
   sec45_train's pool order (raw train.jsonl, Random(seed 0).shuffle, first N) = gold_refs.py's, so every training row has a ref.
+- ~11:00Z **rqc spot-reclaimed** (us-west-2b) at text update ~950, its queued T_res_rq9L lost with it. **Bug found:** `s3x putdir` skipped
+  files whose S3 copy had the same size, so fixed-size slot files never refreshed: the text slot on S3 was still update 250
+  (`resume/state.json`, adapter, optimizer.pt; local 750), and AC runs' `partial_epoch.json` stayed at the first slot's.
+  Fixed in `sec35/kit/s3x.py` (skip only when same size AND the other side is at least as new; slot pointers state.json /
+  partial_epoch.json uploaded after the slot files; DONE last); pushed to rqa/rqb/rqd's `/root/sec35/s3x.py` (their 15-min mirror
+  picks it up) and to S3 `jobs/s3x.py`; `ec2_prep.sh` now always refreshes it. Generated job scripts embed an older s3x but run with S3 off.
+- X_rq9_text_ans not resumed (the S3 slot was update 250: ~7 h for one u1000 point; its u250/u500/u750 already answer the target question,
+  and the final text arm is rerun with 3 seeds under the final recipe). rqc2 (us-east-1d) runs T_res_rq9L instead.
+- T_res_rq9fr (frozen reader) u600 44.0 (u400 37.0).

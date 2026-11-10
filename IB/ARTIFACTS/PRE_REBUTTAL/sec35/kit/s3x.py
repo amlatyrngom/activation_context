@@ -1,7 +1,9 @@
 """
 Minimal S3 transfer for the section 4.5 jobs (boto3, default credential chain: environment, ~/.aws, instance profile; nothing is
-printed about credentials). Every transfer skips files that already match by size, and NEVER uploads optimizer.pt; putdir skips
-*.tmp / *.part files and folders and uploads a DONE file last.
+printed about credentials). A transfer skips a file only when the other side has the same size AND is at least as new (2026-11-10 fix:
+size alone left same-size files stale on S3, e.g. a recovery slot's state.json / partial_epoch.json / optimizer.pt, so a reclaimed spot
+node resumed from an old slot). NEVER uploads optimizer.pt unless S3X_ALLOW_OPTIMIZER=1; putdir skips *.tmp / *.part files and
+folders, uploads the slot pointers (state.json, partial_epoch.json) after everything else and a DONE file last.
 
   python s3x.py get    s3://BUCKET/KEY        LOCAL_FILE
   python s3x.py getdir s3://BUCKET/PREFIX/    LOCAL_DIR          (every object under the prefix, same relative paths)
@@ -37,20 +39,29 @@ def client():
     return session.client("s3"), TransferConfig(multipart_threshold=64 * 2**20, multipart_chunksize=64 * 2**20, max_concurrency=8)
 
 
-def size_of(s3, bucket, key):
+POINTERS = {"state.json", "partial_epoch.json"}                  # recovery-slot pointers: uploaded after the slot they point to
+
+
+def head(s3, bucket, key):
+    """(size, last-modified epoch seconds) of an object, or (None, None)."""
     try:
-        return s3.head_object(Bucket=bucket, Key=key)["ContentLength"]
+        h = s3.head_object(Bucket=bucket, Key=key)
+        return h["ContentLength"], h["LastModified"].timestamp()
     except Exception:
-        return None
+        return None, None
+
+
+def size_of(s3, bucket, key):
+    return head(s3, bucket, key)[0]
 
 
 def get(s3, config, url, local):
     bucket, key = split(url)
     local = Path(local)
-    remote = size_of(s3, bucket, key)
+    remote, modified = head(s3, bucket, key)
     if remote is None:
         raise SystemExit(f"s3x: missing {url}")
-    if local.is_file() and local.stat().st_size == remote:
+    if local.is_file() and local.stat().st_size == remote and local.stat().st_mtime >= modified:
         return 0
     local.parent.mkdir(parents=True, exist_ok=True)
     temporary = local.with_name(local.name + ".part")
@@ -93,12 +104,13 @@ def main():
                     if name in exclude or path.is_symlink() or not path.is_file() or name.endswith((".part", ".tmp")):
                         continue
                     files.append((path, prefix + str(path.relative_to(source))))
-        files.sort(key=lambda entry: entry[0].name == "DONE")       # the DONE marker goes last: its presence on S3 implies everything else is there
+        files.sort(key=lambda entry: (entry[0].name == "DONE", entry[0].name in POINTERS))   # pointers after their slots; DONE last (its presence implies the rest)
         sent = 0
         for path, key in files:
             if path.name in NEVER:
                 continue
-            if size_of(s3, bucket, key) == path.stat().st_size:
+            remote, modified = head(s3, bucket, key)
+            if remote == path.stat().st_size and modified >= path.stat().st_mtime:
                 continue
             s3.upload_file(str(path), bucket, key, Config=config)
             sent += 1
