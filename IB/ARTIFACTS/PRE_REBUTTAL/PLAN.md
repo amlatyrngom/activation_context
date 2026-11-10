@@ -157,3 +157,6 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   11,200 × 8, dev1000 every 800 = S_kv_fr90k's recipe, from the paper's frozen-reader R pairs R_{in,res}_v4fr_final, relayed CSAIL → host →
   ORCD, pair hashes checked against DONE) on ORCD 28583999 / 28584000 (`jobs/generated_p3_rtx`). CSAIL's H200 node was full of our own
   group's quanta-main jobs (not preemptible by us), so ORCD.
+- ~14:00Z: T_res_rq9fr (frozen, 1,000) u800 46.5 (u600 44.0). 4,000-update arms at u167–210; X_rq9_text_gold4k at u50 (33.8 s/update);
+  ORCD T_in_fr90k / T_res_fr90k running. Queued on rqd after T_res_rq9fr: T_res_rq9Lge (= T_res_rq9Lg with encoder LR 1e-4; the fresh
+  cross-model head starts from a weak fit, cosine 0.36, and may need a faster rate than §3.5's identity-skip pair).
