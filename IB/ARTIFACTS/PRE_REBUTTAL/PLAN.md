@@ -117,3 +117,5 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   solved 140 / 136 / 139 of 200 (mean 69.17 % vs capped 68.67 %), mean continuation tokens 22.01k / 21.21k / 20.44k (mean 21.22k vs 21.17k),
   summary write 435 / 577 / 552 tokens. Removing the 500-word cap changes the text arm by +0.5 point; AC 5× 71.33 and 10× 71.0 stay above.
 - 4th spot slot: rqd runs S_res_rq9 (retrieval AC from a fresh pair, no reconstruction; same task settings as T_res_rq9).
+- §3.5 probes at ≈02:50Z (dev1000 acc): X_text_90k u800 71.3, u1600 70.3 (untuned 29.6); S_kv_fr90k u800 64.4, u1600 68.8, u2400 70.8 (still
+  climbing); S_kv_fr_e1e4 u400 58.5, u800 60.3; S_kv_pen0 u400 55.8, u800 58.9. Text peaks early, frozen-reader KV climbs; encoder 1e-4 trails 2e-5 so far.
