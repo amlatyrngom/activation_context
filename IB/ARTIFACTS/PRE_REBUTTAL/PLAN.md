@@ -160,3 +160,5 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
 - ~14:00Z: T_res_rq9fr (frozen, 1,000) u800 46.5 (u600 44.0). 4,000-update arms at u167–210; X_rq9_text_gold4k at u50 (33.8 s/update);
   ORCD T_in_fr90k / T_res_fr90k running. Queued on rqd after T_res_rq9fr: T_res_rq9Lge (= T_res_rq9Lg with encoder LR 1e-4; the fresh
   cross-model head starts from a weak fit, cosine 0.36, and may need a faster rate than §3.5's identity-skip pair).
+- ~15:00Z: **T_res_rq9fr done** (valid; frozen reader, 1,000 updates, 19.4 s/update): u200/400/600/800/final = 27.5 / 37.0 / 44.0 / 46.5 / **48.0**
+  (dev200 k=100), still rising as the LR decayed. T_res_rq9Lge (encoder 1e-4) started on rqd.
