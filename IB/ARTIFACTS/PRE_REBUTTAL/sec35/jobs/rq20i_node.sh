@@ -29,5 +29,9 @@ lora)
 text)
   bash $J/ec2_run.sh X_rq9_text_20I env RUN=X_rq9_text_20I TEXT_MODEL_ID=Qwen/Qwen3.5-9B TASK_DATA=hotpot_tasks_v2 EVAL_SPLIT=dev1000 \
     EVAL_MAX_NEW=1024 EVAL_BATCH=16 STEPS=5600 CKPT_EVERY=800 LR=2e-5 SEED=0 bash $J/text_lora_job.sh;;
-*) echo "role frozen|lora|text"; exit 2;;
+frozen_kl)                                # probe (2026-11-12): frozen reader + KL to the gold-view teacher (= the untuned 9B reading the gold passages)
+  init R_res_rq9fr || exit 2
+  mkdir -p $W/refs; [ -f $W/refs/refs_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  bash $J/ec2_run.sh T_res_rq9fr_20I_kl bash $J/generated_rq9_20Iprobe_rtx/T_res_rq9fr_20I_kl.sh;;
+*) echo "role frozen|lora|text|frozen_kl"; exit 2;;
 esac

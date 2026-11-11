@@ -286,3 +286,7 @@ Decision rules (act on them without asking; log each decision here):
 - ~23:05Z **20I (dev1000)**: text u3200 / u4000 = 75.7 / **76.2**; AC reader LoRA u4000 / u4800 = **70.6 / 70.8** (picked up as the LR decays);
   AC frozen u1600 / u2400 = 61.3 / **70.1**; KL probe u800 **61.9** (main 58.7; the other probes also led at u800 and not at u1600). 4B-encoder R running
   (~9 s/update). §3.5: T_res_fr90k u8000 73.6; T_in_L90k u2400 70.3. BM25 reference X_rq9_text_gold4k u3500 65.0 (dev200 k=100).
+- ~23:55Z: **T_res_rq9L_20I done** (valid; reader LoRA, encoder 5e-5, 5,600 × 8 on 20I): u800–u4800 = 58.7 / 65.7 / 67.8 / 67.8 / 70.6 / 70.8, **final 72.3**
+  (dev1000). Text u4000 76.2 → gap ≈ 4: gate not passed. Frozen 20I u3200 68.5 (u2400 70.1). rqg now runs **T_res_rq9fr_20I_kl** (frozen reader + KL to
+  the gold-view teacher = the untuned 9B reading the gold passages; from R_res_rq9fr; `rq20i_node.sh frozen_kl`, bundle v5), kept only if the KL probe
+  (reader LoRA) still leads at u1600. §3.5 T_res_fr90k u8800 **76.5** (text 90k final 75.7).
