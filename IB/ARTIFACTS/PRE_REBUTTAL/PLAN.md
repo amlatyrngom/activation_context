@@ -279,3 +279,7 @@ Decision rules (act on them without asking; log each decision here):
   KL to the gold-view teacher (the reader at the start reading only the gold passages, top-32) along the gold-view reference replies
   (26,836 of the first 32,000 questions; the rest answer-only). On 20I the golds are in the student's input too (user's concern does not apply).
   §3.5 T_in_L90k u1600 65.9; T_res_fr90k u7200 72.4.
+- ~21:45Z: ratio 0.2 probe u1600 **65.2** (main 65.7) → no gain, stopped (28707392). Frozen 20I T_res_rq9fr_20I u800 **58.9** (reader LoRA 58.7).
+  Both rate and ratio levers land on the main arm by u1600, so the next question is encoder capacity: **Qwen3.5-4B → 9B** (R_res_rq9e4 → T_res_rq9e4,
+  same recipe as the main arm, LS head, `jobs/generated_rq9e4_rtx`; ORCD 28727321 → 28727322 afterok). A bigger encoder changes AC's encode cost
+  (paper TTFT used the 2B encoder): a story decision for the user if it wins. KL probe 28723308 training.
