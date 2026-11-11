@@ -64,6 +64,8 @@ def main():
     p.add_argument("--res-layers", default="", help="res mode reader layers (SEC45_RES_LAYERS; retrieval 9B: all)")
     p.add_argument("--k", default="", help="retrieval rows: passages per item, one k or a mix (SEC45_K, e.g. 20,100,200)")
     p.add_argument("--eval-k", default="", help="retrieval rows: k of the accuracy evals during training")
+    p.add_argument("--loss", default="", help="task loss: empty = sft, kl = to the gold-view teacher")
+    p.add_argument("--targets", default="", help="target replies jsonl under W (e.g. refs/refs_train.jsonl); empty = answer-only")
     p.add_argument("--ratio", default="", help="compression ratio (SEC45_RATIO); empty = 0.1")
     p.add_argument("--linear-skip", action="store_true", help="fresh smaller-encoder pair: least-squares row head (SEC45_LINEAR_SKIP=1)")
     p.add_argument("--task-data", default="hotpot_tasks_v2", help="task data folder under W/data")
@@ -129,7 +131,7 @@ def main():
             if float(a.reader_lr) != 0 and float(a.reader_lr) < 1e-7:
                 raise SystemExit(f"--reader-lr {a.reader_lr}: a tiny rate is not a frozen reader; pass 0")
             fill |= {"RUN": f"{run}_{mode}{a.tag}", "MODE": mode, "READER_LR": a.reader_lr, "WHAT": f"{WHAT[run]}; write mode {NAMES[mode]}" + (f"; encoder {a.encoder}" if a.encoder else ""), "S3": S3, "BUNDLE": a.bundle, "ENC_LR": a.encoder_lr, "PENALTY": a.penalty, "SEED": a.seed, "EVAL_SPLIT": a.eval_split, "READER": a.reader, "RES_LAYERS": a.res_layers,
-                     "K": a.k, "EVAL_K": a.eval_k, "LINEAR_SKIP": "1" if a.linear_skip else "", "RATIO": a.ratio, "TASK_DATA": a.task_data,
+                     "K": a.k, "EVAL_K": a.eval_k, "LINEAR_SKIP": "1" if a.linear_skip else "", "RATIO": a.ratio, "LOSS": a.loss, "TARGETS": a.targets, "TASK_DATA": a.task_data,
                      "ENCODER": a.encoder}
             text = template
             for key, value in fill.items():

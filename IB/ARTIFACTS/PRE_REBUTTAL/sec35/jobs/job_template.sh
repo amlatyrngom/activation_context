@@ -35,6 +35,7 @@ REPORT_EVERY=${SEC45_REPORT_EVERY:-200}                 # held-out panel every N
 STEP0_EVAL=${SEC45_STEP0_EVAL:-1}                       # T only: accuracy of the starting pair (update 0) before training
 ENC_LR=@ENC_LR@; READER_LR=@READER_LR@; EPU=8; WARMUP=50   # pre-rebuttal (2026-11-09): rates are recipe choices (hill-climbing allowed); READER_LR 0 = frozen reader
 PENALTY=@PENALTY@; SEED=@SEED@                          # no-context penalty weight (applies only while the reader trains); data order / sampling seed
+LOSS="@LOSS@"; TARGETS="@TARGETS@"   # 2026-11-11: task loss (empty = sft; kl = to the gold-view teacher: the reader at the start reading the gold passages); target replies file under $W (empty = answer-only)
 EVAL_SPLIT=${SEC45_EVAL_SPLIT:-@EVAL_SPLIT@}; EVAL_MAX_NEW=${SEC45_EVAL_MAX_NEW:-256}      # pre-rebuttal: one scorer for every arm (dev1000 for choices, test1000 for reported numbers), cap 256
 #   (user 10-27: a truly frozen reader, never a tiny rate like 1e-12; the trainer then skips its gradients and the no-context penalty)
 READER_ID=${SEC45_READER_ID:-@READER@}   # §3.5: Qwen/Qwen3-4B-Instruct-2507; retrieval: Qwen/Qwen3.5-9B
@@ -146,6 +147,7 @@ if [ -n "$RES_LAYERS" ]; then export SEC45_RES_LAYERS=$RES_LAYERS; else unset SE
 if [ -n "$TASK_K" ]; then export SEC45_K=$TASK_K; else unset SEC45_K; fi
 if [ "$LINEAR_SKIP" = 1 ]; then export SEC45_LINEAR_SKIP=1; else unset SEC45_LINEAR_SKIP; fi
 if [ -n "$RATIO" ]; then export SEC45_RATIO=$RATIO; else unset SEC45_RATIO; fi
+if [ -n "$TARGETS" ]; then [ -f $W/$TARGETS ] || no "target replies $W/$TARGETS missing"; export SEC45_TARGETS=$W/$TARGETS; fi   # unset: an inherited SEC45_TARGETS (rq_ac_node.sh RQ_TARGETS=1) still applies
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 case $MODE in in) export QA4B_LAYERS=none QA4B_KV=0;; res) export QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0;; kv) export QA4B_LAYERS=none QA4B_KV=1;; *) no "MODE $MODE";; esac
 for MID in $READER_ID $ENCODER_ID; do        # v6: the encoder's weights too (unauthenticated downloads can stall: 3 tries of 15 min)
@@ -160,7 +162,7 @@ export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 UPLOADER=
 [ "$USE_S3" = 1 ] && { ( while sleep 900; do upload > /dev/null 2>&1; done ) & UPLOADER=$!; }
 trap '[ -n "$UPLOADER" ] && kill $UPLOADER 2>/dev/null; [ "$USE_S3" = 1 ] && { say "final upload"; upload; }' EXIT
-TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --penalty-weight $PENALTY --seed $SEED)
+TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --penalty-weight $PENALTY --seed $SEED ${LOSS:+--loss $LOSS})
 EVAL=("${PYC[@]}" $C/kit/sec45_eval.py --mode $MODE --data $TD --split $EVAL_SPLIT --batch 32 --max-new $EVAL_MAX_NEW ${EVAL_K:+--k $EVAL_K})
 FAILED=0
 # ---- run ----

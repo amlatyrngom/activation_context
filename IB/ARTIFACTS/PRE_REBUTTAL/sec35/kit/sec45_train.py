@@ -61,6 +61,7 @@ def main():
     p.add_argument("--report-every", type=int, default=250, help="held-out panel every K updates (and before the first update)")
     p.add_argument("--held-panel", type=int, help="held items per report (default: all; recon 500 passages, task the 200 dev questions)")
     p.add_argument("--micro-batch", type=int, default=1, help="examples per padded reader forward")
+    p.add_argument("--loss", default="sft", choices=("sft", "kl"), help="task loss: sft on the target, or kl to the teacher view (the reader at the start, reading the gold passages)")
     p.add_argument("--block-examples", type=int, default=64, help="no-context penalty references prepared per block of this many examples")
     p.add_argument("--penalty-weight", type=float, help="no-context penalty weight (default 1.0 for recon and task; applies while the reader LoRA trains)")
     p.add_argument("--longest-first", type=int, default=0, help="probe: the first K updates take the K x epu longest items of the pool, the rest random; no shuffle")
@@ -140,7 +141,7 @@ def main():
     assert len(items) == needed, (len(items), needed)
     item_seconds = time.monotonic() - phase
     config = ActivationContextTrainingConfig(
-        loss_kind="sft", learning_rate_ac=a.encoder_lr, learning_rate_target_lora=a.reader_lr, warmup_updates=a.warmup, lr_schedule=a.schedule,
+        loss_kind=a.loss, learning_rate_ac=a.encoder_lr, learning_rate_target_lora=a.reader_lr, warmup_updates=a.warmup, lr_schedule=a.schedule,
         examples_per_update=a.epu, num_epochs=1, schedule_total_updates=a.steps, seed=a.seed, micro_batch_examples=a.micro_batch,
         checkpoint_every_updates=None if a.no_save else a.ckpt_every, checkpoint_every_epoch=not a.no_save, completion_samples=0,
         reporting_interval=min(1.0, a.report_every / a.steps), max_duration_seconds=a.seconds, teacher_cache_top_k=32, max_example_tokens=72000,
@@ -184,7 +185,7 @@ def main():
     trainer._save_partial = keep(trainer._save_partial)
     trainer._save_epoch = keep(trainer._save_epoch)
     run = {"name": a.name, "args": {k: str(v) for k, v in vars(a).items()}, "train_items": len(items), "held_items": len(held_items), "planned_updates": a.steps,
-           "models": {k: os.environ.get(k) for k in ("QA4B_READER", "QA4B_SIDE", "SEC45_ENCODER", "SEC45_LINEAR_SKIP", "QA4B_RANK", "QA4B_LAYERS", "QA4B_KV", "RQ_THINKING", "SEC45_RATIO")},
+           "models": {k: os.environ.get(k) for k in ("QA4B_READER", "QA4B_SIDE", "SEC45_ENCODER", "SEC45_LINEAR_SKIP", "QA4B_RANK", "QA4B_LAYERS", "QA4B_KV", "RQ_THINKING", "SEC45_RATIO", "SEC45_TARGETS")},
            "ac_fields": {k: getattr(ac.config, k) for k in ("kv_transfer", "intervention_frequency", "intervention_layers", "summary_layout", "side_lora_rank", "max_view_rows")},
            "train_target_tokens_mean": round(sum(len(i.assistant_token_ids[0]) for i in items) / len(items), 1),
            "penalty_weight": a.penalty_weight, "penalty_fraction": config.no_context_penalty_fraction,
