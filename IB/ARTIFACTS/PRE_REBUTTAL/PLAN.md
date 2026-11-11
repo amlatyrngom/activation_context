@@ -254,3 +254,6 @@ Decision rules (act on them without asking; log each decision here):
   had been cancelled at start (no log), resubmitted as 3028881.
 - ~16:00Z: **§3.5 text + LoRA final numbers (test1000, 3 seeds, final u11200):** 76.1 / 77.4 / 76.0 (mean **76.5**; dev1000 75.7 / 76.2 / 75.3).
   T_in_L90k submitted on ORCD (28697294). R_res_rq9fr started on rqf (15:57Z).
+- ~16:20Z: **20I baselines (2B→9B retrieval setup, dev1000 20I, greedy cap 1024; ORCD 28695819):** untuned 9B text **68.8**; text + LoRA trained on
+  BM25 mixes (X_rq9_text_gold u1000) **73.9**; AC trained on BM25 mixes: T_res_rq9fr final 59.5, T_res_rq9Lg u1200 61.4. Speeds: R_res_rq9fr ≈4 s/update,
+  X_rq9_text_20I 5.3 s/update (≈8 h for 5,600).
