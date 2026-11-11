@@ -261,3 +261,7 @@ Decision rules (act on them without asking; log each decision here):
   20I questions (5,600 × 8, same order) as the AC 20I arms. Stage 2 (BM25 k = 20 → 100 → 200 on the other 45,647) starts for BOTH arms only after
   the 20I gate passes, each continuing from its own 20I final on identical blocks. X_rq9_text_gold4k (BM25 mix, 4,000 on the first 32k) is a
   reference only, not the final text arm.
+- User (16:40Z): **stage 2 waits for the user's feedback** once the 20I gate passes; if no reply by then, run **both** variants (plain BM25 and golds
+  injected at k = 20/100/200), each for AC and text + LoRA. The user is wary of targets that need passages the input lacks (gold-view references,
+  or KL to the gold-view teacher, on questions whose golds are not retrieved): on 20I the golds are always in the input, so the 20I arms and the
+  20I hill-climb levers are unaffected; for plain-BM25 stage 2 use answer-only targets and no gold-view teacher.
