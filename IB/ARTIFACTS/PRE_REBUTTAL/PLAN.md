@@ -252,3 +252,5 @@ Decision rules (act on them without asking; log each decision here):
   text gold u1000, AC T_res_rq9fr final, T_res_rq9Lg u1200); test1000 of text seeds 1–2 finals 28696121; T_in_L90k (`generated_p4_rtx`: Input only,
   reader LoRA 2e-5, penalty 1.0, from R_in_v4, 90k recipe). CSAIL: S_kv_fr90k_s1 / _s2 at u4800 (71.8 / 74.7); the KV test1000 rescore 3021416
   had been cancelled at start (no log), resubmitted as 3028881.
+- ~16:00Z: **§3.5 text + LoRA final numbers (test1000, 3 seeds, final u11200):** 76.1 / 77.4 / 76.0 (mean **76.5**; dev1000 75.7 / 76.2 / 75.3).
+  T_in_L90k submitted on ORCD (28697294). R_res_rq9fr started on rqf (15:57Z).
