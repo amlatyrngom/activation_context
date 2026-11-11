@@ -184,7 +184,7 @@ def main():
     trainer._save_partial = keep(trainer._save_partial)
     trainer._save_epoch = keep(trainer._save_epoch)
     run = {"name": a.name, "args": {k: str(v) for k, v in vars(a).items()}, "train_items": len(items), "held_items": len(held_items), "planned_updates": a.steps,
-           "models": {k: os.environ.get(k) for k in ("QA4B_READER", "QA4B_SIDE", "SEC45_ENCODER", "SEC45_LINEAR_SKIP", "QA4B_RANK", "QA4B_LAYERS", "QA4B_KV", "RQ_THINKING")},
+           "models": {k: os.environ.get(k) for k in ("QA4B_READER", "QA4B_SIDE", "SEC45_ENCODER", "SEC45_LINEAR_SKIP", "QA4B_RANK", "QA4B_LAYERS", "QA4B_KV", "RQ_THINKING", "SEC45_RATIO")},
            "ac_fields": {k: getattr(ac.config, k) for k in ("kv_transfer", "intervention_frequency", "intervention_layers", "summary_layout", "side_lora_rank", "max_view_rows")},
            "train_target_tokens_mean": round(sum(len(i.assistant_token_ids[0]) for i in items) / len(items), 1),
            "penalty_weight": a.penalty_weight, "penalty_fraction": config.no_context_penalty_fraction,

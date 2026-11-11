@@ -34,7 +34,7 @@ RES_LAYERS = "3,7,11,15,19,23,27,31,35"
 MODES = {"in": {"QA4B_LAYERS": "none", "QA4B_KV": "0"},
          "res": {"QA4B_LAYERS": RES_LAYERS, "QA4B_KV": "0"},
          "kv": {"QA4B_LAYERS": "none", "QA4B_KV": "1"}}
-RATIO = 0.1
+RATIO = float(os.environ.get("SEC45_RATIO") or 0.1)   # rows per input token; 2026-11-11: SEC45_RATIO knob (retrieval 20I probe), unset = 0.1 as before
 LAYOUT = "interleaved"
 PER_CALL = 20                     # the task's 20 passages, read in ONE encoder call
 
