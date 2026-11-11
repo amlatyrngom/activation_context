@@ -110,7 +110,8 @@ STEM=${BUNDLE%.tar.gz}; C=$W/code/$STEM
 if [ ! -f $C/MANIFEST.json ]; then
   [ -f $W/code/$BUNDLE ] || { s3 get $S3/code/$BUNDLE $W/code/$BUNDLE && s3 get $S3/code/$BUNDLE.sha256 $W/code/$BUNDLE.sha256; }
   (cd $W/code && sha256sum -c $BUNDLE.sha256) || no "code bundle $W/code/$BUNDLE missing or its sha256 does not match (jobs/stage.sh)"
-  rm -rf $C.tmp; mkdir -p $C.tmp && tar -xzf $W/code/$BUNDLE -C $C.tmp && mv $C.tmp $C || no "cannot unpack the code bundle"
+  rm -rf $C.tmp.$$; mkdir -p $C.tmp.$$ && tar -xzf $W/code/$BUNDLE -C $C.tmp.$$ && { mv -T $C.tmp.$$ $C 2>/dev/null || rm -rf $C.tmp.$$; }   # per-job temp dir: two jobs starting together on a new bundle raced on one $C.tmp (2026-11-11)
+  [ -f $C/MANIFEST.json ] || no "cannot unpack the code bundle"
 fi
 say "code $C (git $(grep -o '"git_head": "[0-9a-f]*' $C/MANIFEST.json | cut -c14-25))"
 # ---- data ----
