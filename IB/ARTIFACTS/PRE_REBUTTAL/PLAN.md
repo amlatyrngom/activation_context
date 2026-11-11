@@ -272,3 +272,10 @@ Decision rules (act on them without asking; log each decision here):
 - ~19:15Z **20I u1600 (dev1000):** AC T_res_rq9L_20I **65.7** (u800 58.7); text X_rq9_text_20I **76.3** (73.7). Gap 15.0 → 10.6, the 4B §3.5 shape
   (12.5 → ~9 → ~2 at u5600). §3.5 T_in_L90k (Input only, reader LoRA) u800 **60.4** (frozen Input: 19.0) → Input needs the trained reader.
   Probes r02 / e2 running on ORCD (u0: 16.1 / 19.6).
+- ~21:10Z **20I (dev1000):** main AC T_res_rq9L_20I u2400 / u3200 = **67.8 / 67.8** (flat; untuned 9B 68.8); text u2400 **76.3** (u1600 76.3). Probes at
+  u800 / u1600: encoder 2e-5 (e2) 62.9 / **64.9** (main 58.7 / 65.7: faster start, no gain → stopped, ORCD 28707393 cancelled); ratio 0.2 (r02)
+  **61.8** at u800. R_res_rq9fr done (valid; held-out token accuracy 0.991 at u1600 vs 0.995 with a trained reader); T_res_rq9fr_20I u0 9.2.
+  **KL probe** T_res_rq9L_20I_kl (ORCD 28723308; bundle v5 = v4 + `sec45_train --loss kl` + a TARGETS setting): main arm's settings with
+  KL to the gold-view teacher (the reader at the start reading only the gold passages, top-32) along the gold-view reference replies
+  (26,836 of the first 32,000 questions; the rest answer-only). On 20I the golds are in the student's input too (user's concern does not apply).
+  §3.5 T_in_L90k u1600 65.9; T_res_fr90k u7200 72.4.
