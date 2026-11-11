@@ -244,3 +244,11 @@ Decision rules (act on them without asking; log each decision here):
 - Infrastructure: spot reclaim → relaunch and resume from S3; ORCD quota ≥ 100 GB headroom; CSAIL priority first; exit 97 (Duo) →
   move the work to EC2 or the other cluster, never wait. Up to 4 EC2 spot GPUs.
 - Report: result tables in chat and this log at each milestone; commit and push. Math multi-agent stays last (not in this window).
+- 2026-11-11 ~16:00Z, on the green light: spot nodes rqa / rqc2 / rqd2 had been **reclaimed overnight** (T_res_rq9Lg, T_res_rq9L, T_res_rq9Lge
+  stopped with them; superseded, not relaunched). rqe keeps X_rq9_text_gold4k to its end (u2850/4000; dev200 k=100 u500–u2500 = 62.5 / 65.0 /
+  62.5 / 59.5 / 64.0), then becomes the probe node. **Launched** (`jobs/rq20i_node.sh`, scripts `generated_rq9fr20I_rtx`, `generated_rq9L20I_rtx`;
+  micro-batch 4 for 20I task items, 2 for R): rqf `frozen` (R_res_rq9fr → T_res_rq9fr_20I), rqg `lora` (T_res_rq9L_20I from R_res_rq9),
+  rqh `text` (X_rq9_text_20I). ORCD: 20I eval-only baselines 28695819 (`rq_eval_job.sh` with RQ_EVAL_DATA=hotpot_tasks_v2, dev1000: untuned 9B,
+  text gold u1000, AC T_res_rq9fr final, T_res_rq9Lg u1200); test1000 of text seeds 1–2 finals 28696121; T_in_L90k (`generated_p4_rtx`: Input only,
+  reader LoRA 2e-5, penalty 1.0, from R_in_v4, 90k recipe). CSAIL: S_kv_fr90k_s1 / _s2 at u4800 (71.8 / 74.7); the KV test1000 rescore 3021416
+  had been cancelled at start (no log), resubmitted as 3028881.

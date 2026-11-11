@@ -17,7 +17,7 @@ if [ -d /data/scratch-fast/ngom ]; then W=/data/scratch-fast/ngom/sec35; PY=/dat
 elif [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/sec35; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf; export HOME=${HOME:-/home/ngom}
 else W=$HOME/sec35; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi
 PY=${SEC45_PY:-$PY}
-R=${RQ_EVAL_DIR:-$W/rq_eval}; O=$R/out; TD=$W/data/rq_tasks_v1; mkdir -p $O $R/logs
+R=${RQ_EVAL_DIR:-$W/rq_eval}; O=$R/out; TD=$W/data/${RQ_EVAL_DATA:-rq_tasks_v1}; mkdir -p $O $R/logs   # 20I (2026-11-11): RQ_EVAL_DATA=hotpot_tasks_v2 (rows carry top20, golds injected; k is ignored), EVAL_SPLIT=dev1000
 exec > >(tee -a $R/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [rq_eval] $*"; }
 STEM=${BUNDLE%.tar.gz}; C=$W/code/$STEM
@@ -28,7 +28,7 @@ export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$
 export SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_K=20,100,200 SEC45_LINEAR_SKIP=1 QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
-say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' split $EVAL_SPLIT code $C"
+say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' data $TD split $EVAL_SPLIT code $C"
 FAIL=0
 for P in $R/*_u[0-9][0-9][0-9][0-9][0-9]/; do [ -d "$P/ac" ] || continue; N=$(basename $P)
   for k in $(cat $P/KS 2>/dev/null || echo 100); do T=$N.$EVAL_SPLIT.k$k; [ -f $O/$T.summary.json ] && continue
