@@ -194,3 +194,18 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   one 96 GB card); u400 had fit. The pairs are kept and the watcher's final pass retries each failed eval once on the free GPU.
   T_res_rq9Lge u400 **36.5** (encoder 1e-4; Lg at u400 36.5, L 38.5). X_rq9_text_gold4k u500 **62.5** (u0 53.0; the 1,000-update probe
   had 58.5 at u500).
+- 2026-11-11 ~00:30Z: **Retrieval k-diagnostic** (user: "diagnose first"; `jobs/rq_eval_job.sh` on ORCD 28631062, the runs' exact eval env; pairs
+  from S3; a passage set of k is k/20 encoder calls of 20, question first, each its own compressed part). dev200 acc:
+
+  | | k=20 (1 call) | k=100 (5) | k=200 (10) |
+  |---|---|---|---|
+  | untuned 9B, text | 48.5 | 53.0 | 55.0 |
+  | text + LoRA, gold targets, u1000 (X_rq9_text_gold) | 60.0 | 61.0 (= in-run) | 66.0 |
+  | AC T_res_rq9fr (frozen reader), final u1000 | 43.5 | 48.0 (= in-run) | 51.5 |
+  | AC T_res_rq9Lg (gold), u1200 of 4000 | 44.0 | 46.0 | 47.5 |
+  | AC T_res_rq9L (answer-only), u1200 of 4000 | 42.5 | 45.0 | 47.0 |
+
+  The AC − text+LoRA gap is ~15 points at every k (16.5 / 13 / 14.5 for the best AC), and AC at k=20 is below the untuned 9B reading
+  text. So the loss is in compressing ONE 20-passage call (2B encoder → 9B reader, ratio 0.1, LS-skip head), not in reading 5–10
+  parts: a 20→100→200 curriculum would not reach the gap's cause. k=100 trajectory: L 38.5 / 39.5 / 45.0 (u400/800/1200),
+  Lg 36.5 / 44.5 / 46.0. Text seed 2 paused at its u3200 slot for the eval (dependency resubmit 28638532, now running).
