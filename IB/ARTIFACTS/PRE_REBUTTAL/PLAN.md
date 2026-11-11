@@ -269,3 +269,6 @@ Decision rules (act on them without asking; log each decision here):
   Probes started early on ORCD's two free GPUs (cheap; the decision rule's first levers), same schedule as the main arm (5,600 planned, compared at
   u800 / u1600, then stopped unless they lead): T_res_rq9L_20I_r02 (**ratio 0.2**, from R_res_rq9 trained at 0.1) and T_res_rq9L_20I_e2 (**encoder LR 2e-5**,
   as 4B). Code bundle v4 = v3 + `SEC45_RATIO` knob (unset = 0.1) + the s3x fix; scripts `jobs/generated_rq9_20Iprobe_rtx`.
+- ~19:15Z **20I u1600 (dev1000):** AC T_res_rq9L_20I **65.7** (u800 58.7); text X_rq9_text_20I **76.3** (73.7). Gap 15.0 → 10.6, the 4B §3.5 shape
+  (12.5 → ~9 → ~2 at u5600). §3.5 T_in_L90k (Input only, reader LoRA) u800 **60.4** (frozen Input: 19.0) → Input needs the trained reader.
+  Probes r02 / e2 running on ORCD (u0: 16.1 / 19.6).
