@@ -214,3 +214,33 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   58.8 / 64.0 / 70.9 / 68.1 / 71.8 / 69.7 / **73.2**, resubmitted as 28694217 (resumes from the u5600 slot). T_in_fr90k (frozen reader, Input only)
   is flat at 19–20 from u800 to u6400: Input rows need a trained reader (the paper's T_in_v4, reader LoRA, 73.4); not resubmitted.
   User (retrieval): first get 2B→9B AC level on **20I** (top 20 with both golds injected at seeded positions = the §3.5 data) before BM25 k mixes.
+
+### 2026-11-11 ~16:00Z: retrieval 20I phase (user green light, 12–24 h+ autonomy; do NOT block on the user)
+
+Aligned with the user: get 2B→9B AC level on **20I** first (the §3.5 data `hotpot_tasks_v2`: BM25 top 20, both golds injected at
+seeded positions; choices on dev1000, reported on test1000), then plain BM25 k = 20 → 100 → 200. The 90,447 train questions (fixed
+seed-0 order) are split so no question is trained twice: **first 44,800 (5,600 × 8) for 20I**, the remaining **45,647 for the BM25 stage**.
+Text + LoRA always gets the same blocks in the same order. Target: answer-only "Final answer: X" (as §3.5). Single scorer (greedy, cap 1024).
+
+Runs:
+- A. Eval only (ORCD, `rq_eval_job.sh` on 20I dev1000): untuned 9B text; current AC pairs T_res_rq9fr final and T_res_rq9Lg u1200; the
+  paper's Arm G if the old kit's pair loads (skip it if not; note why).
+- B1. **R_res_rq9fr**: R_res_rq9 with the reader frozen (2B→9B Input + Residuals, LS head, 2,000 × 8 FineWeb, encoder 5e-5, reader LR 0).
+  Check: held-out reconstruction token accuracy vs R_res_rq9's 0.995 (4B: frozen R loses some, res still worked).
+- B2. **T_res_rq9fr_20I**: from R_res_rq9fr, reader frozen, encoder 5e-5, 5,600 × 8, dev1000 every 800.
+- B3. **T_res_rq9L_20I**: from R_res_rq9, reader LoRA 2e-5, encoder 5e-5, penalty 1.0, 5,600 × 8, dev1000 every 800.
+- B4. **X_rq9_text_20I**: 9B text + LoRA r128, LR 2e-5, the same 44,800 items in the same order, dev1000 every 800.
+- Stopped to free spot GPUs (pairs/adapters stay on S3): T_res_rq9L, T_res_rq9Lg, T_res_rq9Lge, X_rq9_text_gold4k (BM25-mix recipe, superseded).
+
+Decision rules (act on them without asking; log each decision here):
+- **Gate** (dev1000, final u5600): best AC ≥ text + LoRA − 1 → level. Then the BM25 stage from each arm's 20I final on the 45,647 questions,
+  three equal blocks at k = 20 → 100 → 200, text + LoRA the same; evals at k = 20/100/200 on dev200 BM25.
+- AC behind by > 3 at u2400 (or flat over two evals): probes of 1,600 updates on dev1000, one lever at a time, keep the winner:
+  encoder LR (2e-5 as 4B, 1e-4); KL to the gold-view 9B teacher (top-32 log-probs; wire the trainer's teacher cache); ratio 0.2 (env knob
+  for `RATIO`). The main arms keep running.
+- R_res_rq9fr reconstruction poor: still run B2 (4B's frozen res recovered at task time); add a fresh-pair frozen arm only if B2 is flat.
+- §3.5 alongside: T_res_fr90k to final (28694217) → test1000; S_kv_fr90k test1000 + seeds 1–2 (CSAIL); text seeds 1–2 test1000;
+  T_in_L90k (Input only, reader LoRA 2e-5, penalty 1.0, from R_in_v4, 90k recipe) when a GPU is free (frozen Input stays at 20).
+- Infrastructure: spot reclaim → relaunch and resume from S3; ORCD quota ≥ 100 GB headroom; CSAIL priority first; exit 97 (Duo) →
+  move the work to EC2 or the other cluster, never wait. Up to 4 EC2 spot GPUs.
+- Report: result tables in chat and this log at each milestone; commit and push. Math multi-agent stays last (not in this window).
