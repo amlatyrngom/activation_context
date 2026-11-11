@@ -257,3 +257,7 @@ Decision rules (act on them without asking; log each decision here):
 - ~16:20Z: **20I baselines (2B→9B retrieval setup, dev1000 20I, greedy cap 1024; ORCD 28695819):** untuned 9B text **68.8**; text + LoRA trained on
   BM25 mixes (X_rq9_text_gold u1000) **73.9**; AC trained on BM25 mixes: T_res_rq9fr final 59.5, T_res_rq9Lg u1200 61.4. Speeds: R_res_rq9fr ≈4 s/update,
   X_rq9_text_20I 5.3 s/update (≈8 h for 5,600).
+- User (16:30Z): the 9B text + LoRA must get the same data as AC, so it can go in the figure. Status: X_rq9_text_20I already trains on the same 44,800
+  20I questions (5,600 × 8, same order) as the AC 20I arms. Stage 2 (BM25 k = 20 → 100 → 200 on the other 45,647) starts for BOTH arms only after
+  the 20I gate passes, each continuing from its own 20I final on identical blocks. X_rq9_text_gold4k (BM25 mix, 4,000 on the first 32k) is a
+  reference only, not the final text arm.
