@@ -209,3 +209,8 @@ Same driver, data rules and scorer as §3.5, so both workloads share one explain
   text. So the loss is in compressing ONE 20-passage call (2B encoder → 9B reader, ratio 0.1, LS-skip head), not in reading 5–10
   parts: a 20→100→200 curriculum would not reach the gap's cause. k=100 trajectory: L 38.5 / 39.5 / 45.0 (u400/800/1200),
   Lg 36.5 / 44.5 / 46.0. Text seed 2 paused at its u3200 slot for the eval (dependency resubmit 28638532, now running).
+- 2026-11-11 ~15:40Z: §3.5 status (dev1000 acc). Text seeds done: X_text_90k_s1 final **76.2**, _s2 final **75.3** (seed 0 75.7). ORCD cancelled
+  T_in_fr90k and T_res_fr90k together at 13:12Z (not by us; not requeued). T_res_fr90k (frozen reader, Input + Residuals) u800–u5600 =
+  58.8 / 64.0 / 70.9 / 68.1 / 71.8 / 69.7 / **73.2**, resubmitted as 28694217 (resumes from the u5600 slot). T_in_fr90k (frozen reader, Input only)
+  is flat at 19–20 from u800 to u6400: Input rows need a trained reader (the paper's T_in_v4, reader LoRA, 73.4); not resubmitted.
+  User (retrieval): first get 2B→9B AC level on **20I** (top 20 with both golds injected at seeded positions = the §3.5 data) before BM25 k mixes.
