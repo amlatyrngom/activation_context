@@ -283,6 +283,6 @@ Decision rules (act on them without asking; log each decision here):
   Both rate and ratio levers land on the main arm by u1600, so the next question is encoder capacity: **Qwen3.5-4B → 9B** (R_res_rq9e4 → T_res_rq9e4,
   same recipe as the main arm, LS head, `jobs/generated_rq9e4_rtx`; ORCD 28727321 → 28727322 afterok). A bigger encoder changes AC's encode cost
   (paper TTFT used the 2B encoder): a story decision for the user if it wins. KL probe 28723308 training.
-- ~00:45Z (11-12) **20I (dev1000)**: text u3200 / u4000 = 75.7 / **76.2**; AC reader LoRA u4000 / u4800 = **70.6 / 70.8** (picked up as the LR decays);
+- ~23:05Z **20I (dev1000)**: text u3200 / u4000 = 75.7 / **76.2**; AC reader LoRA u4000 / u4800 = **70.6 / 70.8** (picked up as the LR decays);
   AC frozen u1600 / u2400 = 61.3 / **70.1**; KL probe u800 **61.9** (main 58.7; the other probes also led at u800 and not at u1600). 4B-encoder R running
   (~9 s/update). §3.5: T_res_fr90k u8000 73.6; T_in_L90k u2400 70.3. BM25 reference X_rq9_text_gold4k u3500 65.0 (dev200 k=100).
