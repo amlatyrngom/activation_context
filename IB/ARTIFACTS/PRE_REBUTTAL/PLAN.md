@@ -265,3 +265,7 @@ Decision rules (act on them without asking; log each decision here):
   injected at k = 20/100/200), each for AC and text + LoRA. The user is wary of targets that need passages the input lacks (gold-view references,
   or KL to the gold-view teacher, on questions whose golds are not retrieved): on 20I the golds are always in the input, so the 20I arms and the
   20I hill-climb levers are unaffected; for plain-BM25 stage 2 use answer-only targets and no gold-view teacher.
+- ~17:45Z **20I u800 (dev1000):** AC T_res_rq9L_20I **58.7** (u0 19.6); text + LoRA X_rq9_text_20I **73.7** (u0 68.4). Gap 15 (4B at u800: 12.5, closed to ~2).
+  Probes started early on ORCD's two free GPUs (cheap; the decision rule's first levers), same schedule as the main arm (5,600 planned, compared at
+  u800 / u1600, then stopped unless they lead): T_res_rq9L_20I_r02 (**ratio 0.2**, from R_res_rq9 trained at 0.1) and T_res_rq9L_20I_e2 (**encoder LR 2e-5**,
+  as 4B). Code bundle v4 = v3 + `SEC45_RATIO` knob (unset = 0.1) + the s3x fix; scripts `jobs/generated_rq9_20Iprobe_rtx`.
