@@ -350,3 +350,12 @@ Decision rules (act on them without asking; log each decision here):
   test 73.4/79.4 %), and the 90,447 train questions with k ∈ {100, 200} per row by the SEC45_K=100,200 crc32 rule (45,160 / 45,287 rows).
   **Zero-training read** (`jobs/rq_kI_eval_node.sh`): text (untuned 9B + X_rq9_text_20I u5600) on rql now; AC (T_res_rq9L_20I and
   T_res_rq9fr_20I u5600 pairs) on rqg after its 90k run. Stage-2 base (44.8k vs 90k 20I finals) asked of the user.
+- ~15:30Z (11-12): **User correction of the MVP:** TRUE BM25 (no injection) AC at k = 100 / 200 should match or beat text at k = 20 —
+  definitely untuned, preferably tuned. Built `hotpot_tasks_bm25e_v1` (`sec35/build_bm25_eval.py`): the 20I dev1000/test1000 questions with
+  plain BM25 top 200 (same ranking as 20I: check 1000/1000). Both golds in top 20 / 100 / 200: dev **55.5 / 71.3 / 75.7 %**, test 57.4 / 73.4 / 79.4 %
+  (the MVP's headroom: k = 200 sees both golds for +20 points of questions). The read now runs plain BM25 first (text k = 20, 100, then 100I,
+  200, 200I; AC k = 100, 200, 20, then 100I, 200I). First text attempt on rql failed (rq_eval_job.sh missing on S3 jobs/; uploaded), relaunched.
+- **User: "KL to gold — is that not the main thing?"** Yes: Arm G's decisive stage was KL to the gold-view teacher; recipe v1 replaced it
+  with answer-only SFT and the 20I hill-climb treated KL as a lever, stopped at u1600 (12,800 of 44,800 questions) on 65.5 vs 65.7 — before the
+  LR decay where every other effect appeared. Not a real test. The gold-view teacher (untuned 9B reading only the 2 golds) is correct on
+  26,836 / 32,000 = 83.9 % of the train refs, above text + LoRA at 20I (77.1).
