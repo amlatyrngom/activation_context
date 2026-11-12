@@ -344,3 +344,9 @@ Decision rules (act on them without asking; log each decision here):
 - ~12:45Z (11-12): rqi reclaimed at the u8800 eval → T_res_rq9fr_20I_90k resumed on **rqk** (attempt 3, from the u8000 slot). **X_rq9_text_20I_90k**
   (text + LoRA 9B, 11,200 × 8, same order/LR as the 44.8k text arm) started on **rqj** for data parity with the 90k AC runs.
   T_in_L90k u6400 72.0 (resumed fine). §3.5 seed 1 u1600 **49.8** (u800 20.1; seed 0 u1600 64.0): escaping.
+- ~14:35Z (11-12): **User: MVP = AC at 200I beating text + LoRA at 20I (and maybe untuned text at 200I); defer 20I hill-climbing.** Built
+  `hotpot_tasks_kI_v1` (`sec35/build_kI_sets.py`): the 20I dev1000/test1000 questions with BM25 top 100 / 200 and both golds injected
+  (rebuilt 20I rows identical to hotpot_tasks_v2 1000/1000 on both; both golds in BM25 top 100/200 before injection: dev 71.3/75.7 %,
+  test 73.4/79.4 %), and the 90,447 train questions with k ∈ {100, 200} per row by the SEC45_K=100,200 crc32 rule (45,160 / 45,287 rows).
+  **Zero-training read** (`jobs/rq_kI_eval_node.sh`): text (untuned 9B + X_rq9_text_20I u5600) on rql now; AC (T_res_rq9L_20I and
+  T_res_rq9fr_20I u5600 pairs) on rqg after its 90k run. Stage-2 base (44.8k vs 90k 20I finals) asked of the user.
