@@ -337,3 +337,7 @@ Decision rules (act on them without asking; log each decision here):
   Usage after cleanup (sbatch du): sec35 ≈ 115 GB (runs 73, init 23, rq_eval 13); `quota` reads only /home (75 G of 195 G), the scratch quota is not
   readable (no lfs). Extra margin: deleted the 13 intermediate text adapters per seed (u800–u10400, all dev-scored) of X_text_90k{,_s1,_s2}
   (~39 GB); the step_11200 finals (used by final_test) kept.
+- ~13:30Z (11-12): **90k diagnostics say AC on 20I is data-limited**: T_res_rq9L_20I_90k u8800 **75.6** (u7200 72.1, u8000 71.8; 44.8k final 72.3);
+  T_res_rq9fr_20I_90k u8000 **72.8** (u7200 70.0; 44.8k final 71.9). Gate (text 77.1 at 44.8k − 1) = 76.1. If a 90k AC number is used, the text arm
+  needs the same 90k (data parity, user rule): X_rq9_text_20I_90k (11,200 × 8) to be launched on a spot node when the AC finals land — stage 2 would
+  then have no fresh questions left, which is the user's call (stage 1 = 90k vs 2 passes over 44.8k).
