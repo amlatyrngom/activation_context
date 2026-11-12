@@ -14,6 +14,7 @@ ROLE=$1; SPLIT=${2:-dev1000}; W=/root/sec35; J=$W/jobs; S3PY=/root/s3venv/bin/py
 S3=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/sec35
 bash /root/ec2_prep.sh || { echo "prep failed"; exit 2; }
 X() { $S3PY $W/s3x.py "$@"; }
+export SEC45_PY=/opt/activation/.venv/bin/python   # the EC2 venv (ec2_prep.sh, ec2_run.sh); rq_eval_job.sh's EC2 default path does not exist
 for d in hotpot_tasks_kI_v1 hotpot_tasks_bm25e_v1; do X getdir $S3/data/$d/ $W/data/$d/ || exit 2; done
 R=$W/rq_eval_kI_$ROLE; mkdir -p $R
 case $ROLE in
