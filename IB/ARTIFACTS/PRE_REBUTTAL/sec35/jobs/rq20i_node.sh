@@ -36,5 +36,8 @@ frozen_kl)                                # probe (2026-11-12): frozen reader + 
 lora90k)                                  # diagnostic (2026-11-12): the lora arm on all 90k 20I questions (11,200 x 8, the §3.5 data amount)
   init R_res_rq9 || exit 2
   bash $J/ec2_run.sh T_res_rq9L_20I_90k bash $J/generated_rq9L20I_rtx/T_res_rq9L_20I_90k.sh;;
-*) echo "role frozen|lora|text|frozen_kl|lora90k"; exit 2;;
+frozen90k)                                # diagnostic (2026-11-12): the frozen arm on all 90k 20I questions (11,200 x 8; the 4B frozen res needed this amount)
+  init R_res_rq9fr || exit 2
+  bash $J/ec2_run.sh T_res_rq9fr_20I_90k bash $J/generated_rq9fr20I_rtx/T_res_rq9fr_20I_90k.sh;;
+*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k"; exit 2;;
 esac

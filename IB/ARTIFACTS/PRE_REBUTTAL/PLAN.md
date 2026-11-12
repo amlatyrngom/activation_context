@@ -295,3 +295,6 @@ Decision rules (act on them without asking; log each decision here):
   training length (main arm 67.8 flat at u2400–u3200, then 70.6 / 70.8 / 72.3 as the LR decayed; 4B res reached text only with 90k). Diagnostic on rqg:
   **T_res_rq9L_20I_90k** = the main arm on all 90,447 20I questions (11,200 × 8, the §3.5 amount; bundle v3 like the main arm). It uses the stage-2
   questions, so whether stage 1 takes more data is the user's call; this run only answers whether AC is data-limited on 20I. 4B-encoder probe R running.
+- ~01:30Z (11-12): **X_rq9_text_20I final (u5600, 44,800 questions) dev1000 77.1** (u4800 76.0). Gate = 76.1. Best AC final T_res_rq9L_20I 72.3 → gap 4.8.
+  Frozen 20I u4800 69.9 (still running to u5600). rqh now free → **T_res_rq9fr_20I_90k** (frozen arm, all 90,447 questions, 11,200 × 8; the 4B frozen
+  res reached 76.5 only with 90k) as the second data-amount diagnostic alongside T_res_rq9L_20I_90k on rqg. Same caveat: uses the stage-2 questions; diagnostic only.
