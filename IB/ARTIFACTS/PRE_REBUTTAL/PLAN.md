@@ -298,3 +298,7 @@ Decision rules (act on them without asking; log each decision here):
 - ~01:30Z (11-12): **X_rq9_text_20I final (u5600, 44,800 questions) dev1000 77.1** (u4800 76.0). Gate = 76.1. Best AC final T_res_rq9L_20I 72.3 → gap 4.8.
   Frozen 20I u4800 69.9 (still running to u5600). rqh now free → **T_res_rq9fr_20I_90k** (frozen arm, all 90,447 questions, 11,200 × 8; the 4B frozen
   res reached 76.5 only with 90k) as the second data-amount diagnostic alongside T_res_rq9L_20I_90k on rqg. Same caveat: uses the stage-2 questions; diagnostic only.
+- ~02:15Z (11-12): **T_res_rq9fr_20I final (frozen reader, 44,800 questions) dev1000 71.9.** Gate at 44.8k **not passed** by either AC arm:
+  text+LoRA 77.1 vs AC reader LoRA 72.3 / AC frozen 71.9 (gate 76.1). Stage 2 stays parked. Both 90k diagnostics running (rqg reader-LoRA u800 58.9,
+  rqh frozen started). rqf left idle to autodown. Next lever, only if 90k helps: 2 passes over the same 44,800 (11,200 updates), to tell
+  "more updates" apart from "more unique questions" (it needs a duplicated-pool data folder; the trainer runs one epoch only), so that stage 1 need not use the stage-2 questions.
