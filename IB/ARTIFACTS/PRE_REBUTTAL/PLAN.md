@@ -407,3 +407,5 @@ Decision rules (act on them without asking; log each decision here):
   snapshots (T_res_rq9L_20I_KL, T_res_rq9L_QA_KL) uploaded by hand. KL vs SFT at u1600 (20I dev1000): LoRA 63.4 vs 65.7, frozen 65.0 vs 61.3.
   ORCD usage ≈ 943 GB of ≈1.0 TB (activation 692 G, hf 241 G) → no new ORCD staging (≥100 GB rule); T_res_rq9fr_kI queued on rqm after the
   SFT-LoRA stage-2 and text runs.
+- ~20:40Z (11-12): **User: one run per number is fine here** (variation is low priority; maybe for §3.1, and only once the training recipe is
+  settled). §3.5 reports single runs: AC seed 0 test1000 75.4 vs text seed 0 76.1 (text seeds 1–2 exist: 77.4 / 76.0, not needed).
