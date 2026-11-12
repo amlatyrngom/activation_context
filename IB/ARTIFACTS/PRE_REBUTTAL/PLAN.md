@@ -359,3 +359,5 @@ Decision rules (act on them without asking; log each decision here):
   with answer-only SFT and the 20I hill-climb treated KL as a lever, stopped at u1600 (12,800 of 44,800 questions) on 65.5 vs 65.7 — before the
   LR decay where every other effect appeared. Not a real test. The gold-view teacher (untuned 9B reading only the 2 golds) is correct on
   26,836 / 32,000 = 83.9 % of the train refs, above text + LoRA at 20I (77.1).
+- ~15:45Z (11-12): §3.5 seed 1 u2400 **61.2** (u800 20.1, u1600 49.8; seed 0 u2400 70.9): escaped, still 10 behind → kept to the final, no recipe
+  change; all 3 seeds reported. Text kI read relaunched on rql (2nd failure: rq_eval_job.sh's EC2 python path; node script now sets SEC45_PY).
