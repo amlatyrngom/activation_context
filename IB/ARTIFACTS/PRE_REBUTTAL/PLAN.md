@@ -313,3 +313,7 @@ Decision rules (act on them without asking; log each decision here):
 - ~06:25Z (11-12): **§3.5 AC frozen Input + Residuals, final pair, test1000: 75.4** (seed 0; dev1000 73.8). Text + LoRA test1000 76.1 / 77.4 / 76.0
   (mean 76.5): AC is −0.7 vs text seed 0 and −1.1 vs the text mean. Seeds 1–2 of the same recipe submitted on ORCD
   (`generated_p3s/T_res_fr90k_s{1,2}.sh`, SEED 1/2, same R_res_fr90k init; 28776489 / 28776490, mit_preemptable) → 3-seed AC test1000 mean.
+- ~09:20Z (11-12): **T_res_rq9e4 (4B encoder, enc 5e-5) diverged ~u1100**: held NLL 0.33 (u1000) → 0.97 (u1200), stuck at 0.92 by u1600; dev1000 u800 60.2
+  → u1600 25.1 (answered 100, no length stops: the pair is wrong, not the format). Cancelled (28727322). Rerun **T_res_rq9e4_e2** from the same
+  R_res_rq9e4 pair with encoder LR 2e-5 (stable on the 2B encoder; everything else equal), ORCD 28787956. Also: T_in_L90k u5600 72.7;
+  rqg 90k reader-LoRA u5600 69.9; rqi 90k frozen u4800 65.3; §3.5 seeds 1–2 training.
