@@ -327,3 +327,10 @@ Decision rules (act on them without asking; log each decision here):
 - ~10:00Z (11-12): **ORCD scratch write error** (`basic_ios::clear: iostream error` in torch.save, both at 09:52Z during checkpoint writes; disk 18% used):
   T_in_L90k failed at the u6400 save (recovery slot u5600 kept) and T_res_fr90k_s2 at its first slot (none published). Resubmitted the same scripts:
   T_in_L90k 28797183 (resumes from u5600), T_res_fr90k_s2 28797184 (fresh start; loses ~2 h).
+- ~10:40Z (11-12): **The 09:52Z ORCD failures were the scratch user quota** ("Disk quota exceeded"; the 18% was the filesystem, not the quota). It
+  killed T_in_L90k (u5600 slot kept), T_res_fr90k_s2 (twice), T_res_fr90k_s1 (u800 slot kept), T_res_rq9e4_e2 (no slot). Freed space by deleting
+  only the **model weights** (sync/AC_MODELS, LORAS, ckpt, AUTOTUNE) of dead runs: T_res_rq9e4 (diverged), T_res_rq9L_20I_{e2,r02,kl} (stopped
+  probes), T_in_fr90k (abandoned, flat at 20), plus the sync/ of the 8 `.prev_*` dirs of earlier attempts; logs, evals, run.json kept; the
+  reported T_res_fr90k final pair untouched; no other project dir touched. A 2 GB test write then succeeded. Resubmitted: T_in_L90k 28797183
+  (running, resumes u5600), T_res_fr90k_s1 28799112 (resumes u800), T_res_fr90k_s2 28799113 (fresh), T_res_rq9e4_e2 28799114 (fresh).
+  rqg 90k reader-LoRA u7200 **72.1** (44.8k final 72.3).
