@@ -400,3 +400,10 @@ Decision rules (act on them without asking; log each decision here):
   held-back questions, eval every 400** (all four AC arms and the text arm alike; ~18–20 h each). T finals as INIT: checked OK (DONE valid).
   Untuned 9B text plain BM25 **k=100 54.8**. AC zero-training read (20I finals): LoRA k=20 **52.0**, k=200 **49.8**, 100I **61.5**, 200I **56.1**;
   frozen k=20 **52.7**, 100I **63.7**. First KL point: **T_res_rq9fr_20I_KL u800 63.0** (frozen SFT u800 58.9).
+- ~20:30Z (11-12): **User: "seeds" meant evaluations, not training runs** → §3.5 T_res_fr90k_s1 (u4000 68.6) and _s2 (u2400 68.5) cancelled
+  (28799112/3, resume slots kept). Evals are greedy (deterministic); variation for §3.5 to be shown by a bootstrap CI on test1000 (pending the
+  user's pick). rqk reclaimed → rqn; T_res_rq9fr_20I_KL could NOT resume (ec2_run.sh excluded `teacher_snapshots` from S3; the KL trainer refuses
+  a resumed reader as teacher) → restarted fresh (old folder S3 `.prev_noteacher`); ec2_run.sh now uploads teacher_snapshots; the live KL runs'
+  snapshots (T_res_rq9L_20I_KL, T_res_rq9L_QA_KL) uploaded by hand. KL vs SFT at u1600 (20I dev1000): LoRA 63.4 vs 65.7, frozen 65.0 vs 61.3.
+  ORCD usage ≈ 943 GB of ≈1.0 TB (activation 692 G, hf 241 G) → no new ORCD staging (≥100 GB rule); T_res_rq9fr_kI queued on rqm after the
+  SFT-LoRA stage-2 and text runs.

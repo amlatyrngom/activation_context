@@ -9,7 +9,8 @@ W=/root/sec35; PY=/opt/activation/.venv/bin/python; RUN=$1; shift
 D=$W/runs/$RUN; mkdir -p $D; S3PY=/root/s3venv/bin/python   # made by ec2_prep.sh
 export S3X_ALLOW_OPTIMIZER=1 SEC45_WORK=$W SEC45_PY=$PY SEC45_HF_HOME=${HF_HOME:-/root/.cache/huggingface} SEC45_USE_S3=0
 $S3PY $W/s3x.py getdir $S3/runs/$RUN/ $D/ || true
-up() { $S3PY $W/s3x.py putdir $D $S3/runs/$RUN/ --exclude teacher_snapshots AUTOTUNE > /dev/null 2>&1; }
+up() { $S3PY $W/s3x.py putdir $D $S3/runs/$RUN/ --exclude AUTOTUNE > /dev/null 2>&1; }
+# 2026-11-12: teacher_snapshots ARE uploaded (KL resume needs the frozen teacher adapter; T_res_rq9fr_20I_KL could not resume without it)
 ( while sleep 900; do up; done ) & LOOP=$!
 "$@"; RC=$?
 kill $LOOP 2>/dev/null; up; echo "$(date -u +%FT%TZ) ec2_run $RUN exit $RC (uploaded to $S3/runs/$RUN/)"
