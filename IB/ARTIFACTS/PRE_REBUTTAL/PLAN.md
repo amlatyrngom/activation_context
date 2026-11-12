@@ -409,3 +409,9 @@ Decision rules (act on them without asking; log each decision here):
   SFT-LoRA stage-2 and text runs.
 - ~20:40Z (11-12): **User: one run per number is fine here** (variation is low priority; maybe for §3.1, and only once the training recipe is
   settled). §3.5 reports single runs: AC seed 0 test1000 75.4 vs text seed 0 76.1 (text seeds 1–2 exist: 77.4 / 76.0, not needed).
+- ~21:20Z (11-12): **ORCD cleanup (user: delete what we don't need):** deleted HF caches never used by these runs — scratch/hf: Qwen3.6-27B,
+  RedHatAI gemma-4-31B-FP8, Qwen3-8B, google gemma-4-31B-it / -12b-it / -31B-qat (user: never used); activation/hf: Qwen3.5-27B,
+  Qwen3.8-27B-FP8, Llama-3.1-8B — plus the weights (sync/) of the cancelled §3.5 seed runs. ≈312 GB freed (≈943 → ≈630 GB). Untouched:
+  KEEP/ (170 G), paper_corpus_qa_v1/runs (74 G), other project dirs, the Qwen3.5 9B/4B/2B + Qwen3-4B-Instruct caches.
+  **T_res_rq9fr_kI (stage 2, SFT, frozen) moved to ORCD** (28861329, micro 2, from T_res_rq9fr_20I staged at init/); rqm's queued copy cancelled.
+  T_res_rq9L_20I_KL u2400 66.8 (SFT 67.8: level). T_res_rq9L_QA_KL (2Wiki+MuSiQue only) HotpotQA 20I u800 **43.3** (u0 19.6).
