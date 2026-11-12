@@ -415,3 +415,9 @@ Decision rules (act on them without asking; log each decision here):
   KEEP/ (170 G), paper_corpus_qa_v1/runs (74 G), other project dirs, the Qwen3.5 9B/4B/2B + Qwen3-4B-Instruct caches.
   **T_res_rq9fr_kI (stage 2, SFT, frozen) moved to ORCD** (28861329, micro 2, from T_res_rq9fr_20I staged at init/); rqm's queued copy cancelled.
   T_res_rq9L_20I_KL u2400 66.8 (SFT 67.8: level). T_res_rq9L_QA_KL (2Wiki+MuSiQue only) HotpotQA 20I u800 **43.3** (u0 19.6).
+- ~22:50Z (11-12): **Stage-2 evals cannot run beside training** (eval loads 9B + 2B ≈ 23 GB + activations; stage-2 training holds ≈ 66 GB of 95):
+  the u400 eval OOMed at batch 32 and again at batch 8 (rqm). Stage-2 scripts now skip in-training evals (`SEC45_EVAL_DURING_TRAIN`, default 0)
+  and score every kept pair (400 … 2400, plain BM25 k=100, batch 8) in the final pass after training; live signal = the dev200 held panel every
+  200 updates (watcher reports it every 400). Running T_res_rq9L_kI (rqm, resumed at u400) and T_res_rq9fr_kI (ORCD 28866202, fresh, u0 52.2
+  at batch 8; 52.0 at batch 32) got skip markers for 400–2000. T_res_rq9L_20I_KL u3200 68.0 (SFT 67.8); T_res_rq9fr_20I_KL (restart) u800 62.2;
+  QA KL HotpotQA u2400 51.2, u3200 55.1.
