@@ -39,5 +39,8 @@ lora90k)                                  # diagnostic (2026-11-12): the lora ar
 frozen90k)                                # diagnostic (2026-11-12): the frozen arm on all 90k 20I questions (11,200 x 8; the 4B frozen res needed this amount)
   init R_res_rq9fr || exit 2
   bash $J/ec2_run.sh T_res_rq9fr_20I_90k bash $J/generated_rq9fr20I_rtx/T_res_rq9fr_20I_90k.sh;;
-*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k"; exit 2;;
+text90k)                                  # parity (2026-11-12): the text + LoRA arm on all 90k 20I questions (11,200 x 8), same as the 90k AC runs
+  bash $J/ec2_run.sh X_rq9_text_20I_90k env RUN=X_rq9_text_20I_90k TEXT_MODEL_ID=Qwen/Qwen3.5-9B TASK_DATA=hotpot_tasks_v2 EVAL_SPLIT=dev1000 \
+    EVAL_MAX_NEW=1024 EVAL_BATCH=16 STEPS=11200 CKPT_EVERY=800 LR=2e-5 SEED=0 bash $J/text_lora_job.sh;;
+*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k|text90k"; exit 2;;
 esac
