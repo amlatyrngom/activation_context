@@ -364,3 +364,7 @@ Decision rules (act on them without asking; log each decision here):
 - ~15:40Z (11-12): **T_res_rq9L_20I_90k final (u11200) dev1000 20I 75.0** (44.8k final 72.3: +2.7 from doubling the data; text 44.8k 77.1).
   Frozen 90k u10400 74.5. **Plain BM25 k = 20, text + LoRA 20I final: 56.3** (the MVP comparator; both golds in BM25 top 20 for 55.5 %).
   AC kI / plain-BM25 read started on rqg. User (≈15:50Z): hold new launches (KL arm) until a planning session.
+- ~16:15Z (11-12): **User decisions (planning session):** 90k is dropped (stage 1 stays at 44.8k; the 45.6k rest is for stage 2); KL to the
+  gold-view teacher is the main configuration (not a lever); KL arm on 20I 44.8k with **both** readers (LoRA and frozen); general-QA tuning
+  phase on **2WikiMultiHopQA + MuSiQue** (one continuous run, one config, HotpotQA 20I dev1000 checked periodically); X_rq9_text_20I_90k
+  **stopped** (rqj sky job 2 cancelled at ≈u2400). Stage-2 data (plain BM25 vs golds injected) still under discussion.
