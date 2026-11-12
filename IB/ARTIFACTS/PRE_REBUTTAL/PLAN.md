@@ -308,3 +308,5 @@ Decision rules (act on them without asking; log each decision here):
   ORCD: R_res_rq9e4 at 1827/2000 (T_res_rq9e4 afterok); T_in_L90k u4000 67.4 (u2400 70.3, u3200 68.7; let it run to final, LR still high).
 - ~04:30Z (11-12): rqh reclaimed at u1600 of T_res_rq9fr_20I_90k → relaunched on **rqi**, attempt 2 RESUMED from the u1600 recovery slot (no work lost beyond the last slot).
   R_res_rq9e4 DONE valid (2 attempts) → T_res_rq9e4 queued on ORCD. T_res_fr90k u10400 73.8. rqg 90k reader-LoRA u2400 65.6 (44.8k arm 67.8); rqi frozen u1600 60.8 (44.8k 61.3).
+- ~06:40Z (11-12): **T_res_fr90k (§3.5 frozen Input + Residuals, 90k × 1) final u11200 dev1000 73.8** (u8800 76.5, u9600 74.1, u10400 73.8). test1000 of the final
+  pair: ORCD 28775667 (`final_test/ac/T_res_fr90k_final`, rescore_job.sh, test1000; text_base already scored there). rqg 90k reader-LoRA u4000 67.0.
