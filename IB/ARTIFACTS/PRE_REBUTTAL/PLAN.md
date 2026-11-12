@@ -317,3 +317,8 @@ Decision rules (act on them without asking; log each decision here):
   → u1600 25.1 (answered 100, no length stops: the pair is wrong, not the format). Cancelled (28727322). Rerun **T_res_rq9e4_e2** from the same
   R_res_rq9e4 pair with encoder LR 2e-5 (stable on the 2B encoder; everything else equal), ORCD 28787956. Also: T_in_L90k u5600 72.7;
   rqg 90k reader-LoRA u5600 69.9; rqi 90k frozen u4800 65.3; §3.5 seeds 1–2 training.
+- ~10:45Z (11-12): **§3.5 seed 1 (T_res_fr90k_s1) stuck in a bad basin**: same R_res_fr90k pair (sha 0b9ed4…) as seeds 0/2, but held NLL
+  1.135 (u200) → 1.059 (u800) vs seed 0 0.709 → 0.489 and seed 2 0.651 → 0.594 (u400); dev1000 u800 **20.1** (seed 0 58.8). With a frozen reader the
+  seed only changes the data order (no penalty), so the recipe is order-sensitive early: it looks like the T_in_fr90k "flat at 20" mode
+  (answers without using the memory). Kept running to u2400 to see whether it escapes (nothing is queued behind it); **no seed swap**: all seeds
+  get reported. If it stays stuck, the candidate fix is a longer warmup (50 → 500) or a lower encoder LR in the first updates, rerun on all 3 seeds.
