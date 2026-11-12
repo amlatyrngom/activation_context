@@ -341,3 +341,6 @@ Decision rules (act on them without asking; log each decision here):
   T_res_rq9fr_20I_90k u8000 **72.8** (u7200 70.0; 44.8k final 71.9). Gate (text 77.1 at 44.8k − 1) = 76.1. If a 90k AC number is used, the text arm
   needs the same 90k (data parity, user rule): X_rq9_text_20I_90k (11,200 × 8) to be launched on a spot node when the AC finals land — stage 2 would
   then have no fresh questions left, which is the user's call (stage 1 = 90k vs 2 passes over 44.8k).
+- ~12:45Z (11-12): rqi reclaimed at the u8800 eval → T_res_rq9fr_20I_90k resumed on **rqk** (attempt 3, from the u8000 slot). **X_rq9_text_20I_90k**
+  (text + LoRA 9B, 11,200 × 8, same order/LR as the 44.8k text arm) started on **rqj** for data parity with the 90k AC runs.
+  T_in_L90k u6400 72.0 (resumed fine). §3.5 seed 1 u1600 **49.8** (u800 20.1; seed 0 u1600 64.0): escaping.
