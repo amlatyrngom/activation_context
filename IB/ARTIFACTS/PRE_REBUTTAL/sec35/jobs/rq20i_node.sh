@@ -33,5 +33,8 @@ frozen_kl)                                # probe (2026-11-12): frozen reader + 
   init R_res_rq9fr || exit 2
   mkdir -p $W/refs; [ -f $W/refs/refs_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
   bash $J/ec2_run.sh T_res_rq9fr_20I_kl bash $J/generated_rq9_20Iprobe_rtx/T_res_rq9fr_20I_kl.sh;;
-*) echo "role frozen|lora|text|frozen_kl"; exit 2;;
+lora90k)                                  # diagnostic (2026-11-12): the lora arm on all 90k 20I questions (11,200 x 8, the §3.5 data amount)
+  init R_res_rq9 || exit 2
+  bash $J/ec2_run.sh T_res_rq9L_20I_90k bash $J/generated_rq9L20I_rtx/T_res_rq9L_20I_90k.sh;;
+*) echo "role frozen|lora|text|frozen_kl|lora90k"; exit 2;;
 esac

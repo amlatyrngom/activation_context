@@ -290,3 +290,8 @@ Decision rules (act on them without asking; log each decision here):
   (dev1000). Text u4000 76.2 → gap ≈ 4: gate not passed. Frozen 20I u3200 68.5 (u2400 70.1). rqg now runs **T_res_rq9fr_20I_kl** (frozen reader + KL to
   the gold-view teacher = the untuned 9B reading the gold passages; from R_res_rq9fr; `rq20i_node.sh frozen_kl`, bundle v5), kept only if the KL probe
   (reader LoRA) still leads at u1600. §3.5 T_res_fr90k u8800 **76.5** (text 90k final 75.7).
+- ~00:20Z (11-12): KL probe (reader LoRA) u1600 **65.5** (main 65.7) → no gain; stopped (ORCD 28723308) and the frozen + KL arm on rqg cancelled (sky job 3).
+  **All three levers** (encoder 2e-5, ratio 0.2, KL to the gold-view teacher) lead at u800 and land on the main arm by u1600. What still moves AC is
+  training length (main arm 67.8 flat at u2400–u3200, then 70.6 / 70.8 / 72.3 as the LR decayed; 4B res reached text only with 90k). Diagnostic on rqg:
+  **T_res_rq9L_20I_90k** = the main arm on all 90,447 20I questions (11,200 × 8, the §3.5 amount; bundle v3 like the main arm). It uses the stage-2
+  questions, so whether stage 1 takes more data is the user's call; this run only answers whether AC is data-limited on 20I. 4B-encoder probe R running.
