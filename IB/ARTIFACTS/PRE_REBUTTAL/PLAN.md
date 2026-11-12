@@ -310,3 +310,6 @@ Decision rules (act on them without asking; log each decision here):
   R_res_rq9e4 DONE valid (2 attempts) → T_res_rq9e4 queued on ORCD. T_res_fr90k u10400 73.8. rqg 90k reader-LoRA u2400 65.6 (44.8k arm 67.8); rqi frozen u1600 60.8 (44.8k 61.3).
 - ~06:40Z (11-12): **T_res_fr90k (§3.5 frozen Input + Residuals, 90k × 1) final u11200 dev1000 73.8** (u8800 76.5, u9600 74.1, u10400 73.8). test1000 of the final
   pair: ORCD 28775667 (`final_test/ac/T_res_fr90k_final`, rescore_job.sh, test1000; text_base already scored there). rqg 90k reader-LoRA u4000 67.0.
+- ~06:25Z (11-12): **§3.5 AC frozen Input + Residuals, final pair, test1000: 75.4** (seed 0; dev1000 73.8). Text + LoRA test1000 76.1 / 77.4 / 76.0
+  (mean 76.5): AC is −0.7 vs text seed 0 and −1.1 vs the text mean. Seeds 1–2 of the same recipe submitted on ORCD
+  (`generated_p3s/T_res_fr90k_s{1,2}.sh`, SEED 1/2, same R_res_fr90k init; 28776489 / 28776490, mit_preemptable) → 3-seed AC test1000 mean.
