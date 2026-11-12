@@ -304,3 +304,5 @@ Decision rules (act on them without asking; log each decision here):
   "more updates" apart from "more unique questions" (it needs a duplicated-pool data folder; the trainer runs one epoch only), so that stage 1 need not use the stage-2 questions.
 - ~03:10Z (11-12): BM25 reference X_rq9_text_gold4k (rqe, dev200 k=100) **final u4000 63.5** (u3000 63.5, u3500 65.0); done, rqe left to autodown.
   90k diagnostics: rqg reader-LoRA u1600 60.9 (44.8k arm 65.7 at the same point; its LR is still near the peak on the 11,200 schedule); rqh frozen u800 59.7 (44.8k 58.9).
+- ~03:50Z (11-12): **CSAIL shared ssh connection down (exit 97)**: needs one interactive login by the user (`ssh csail echo ok`); no retry. Only CSAIL item: KV test1000 rescore 3028881 (was PENDING Priority).
+  ORCD: R_res_rq9e4 at 1827/2000 (T_res_rq9e4 afterok); T_in_L90k u4000 67.4 (u2400 70.3, u3200 68.7; let it run to final, LR still high).
