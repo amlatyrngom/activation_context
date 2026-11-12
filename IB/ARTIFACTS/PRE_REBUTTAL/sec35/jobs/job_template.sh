@@ -39,6 +39,7 @@ LOSS="@LOSS@"; TARGETS="@TARGETS@"   # 2026-11-11: task loss (empty = sft; kl = 
 EVAL_SPLIT=${SEC45_EVAL_SPLIT:-@EVAL_SPLIT@}; EVAL_MAX_NEW=${SEC45_EVAL_MAX_NEW:-256}      # pre-rebuttal: one scorer for every arm (dev1000 for choices, test1000 for reported numbers), cap 256
 #   (user 10-27: a truly frozen reader, never a tiny rate like 1e-12; the trainer then skips its gradients and the no-context penalty)
 READER_ID=${SEC45_READER_ID:-@READER@}   # §3.5: Qwen/Qwen3-4B-Instruct-2507; retrieval: Qwen/Qwen3.5-9B
+OFFSET="@OFFSET@"   # 2026-11-12: skip the first N questions of the seed-0 train order (stage 2: 44800 = the questions stage 1 never saw)
 RES_LAYERS="@RES_LAYERS@"; TASK_K="@K@"; EVAL_K="@EVAL_K@"; LINEAR_SKIP="@LINEAR_SKIP@"; RATIO="@RATIO@"   # RATIO (2026-11-11): compression ratio, empty = 0.1; retrieval (2026-11-09): reader layers of the res mode (all = every full-attention layer), passages per item (k or a mix), eval k, least-squares row head for a fresh pair
 ENCODER_ID=@ENCODER@                                    # v6: empty = the encoder is a copy of the reader; else a smaller encoder (SEC45_ENCODER; in/res only)
 S3=${SEC45_S3:-@S3@}
@@ -162,7 +163,7 @@ export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 UPLOADER=
 [ "$USE_S3" = 1 ] && { ( while sleep 900; do upload > /dev/null 2>&1; done ) & UPLOADER=$!; }
 trap '[ -n "$UPLOADER" ] && kill $UPLOADER 2>/dev/null; [ "$USE_S3" = 1 ] && { say "final upload"; upload; }' EXIT
-TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --penalty-weight $PENALTY --seed $SEED ${LOSS:+--loss $LOSS})
+TRAIN=("${PYC[@]}" $C/kit/sec45_train.py --mode $MODE --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --penalty-weight $PENALTY --seed $SEED ${LOSS:+--loss $LOSS} ${OFFSET:+--offset $OFFSET})
 EVAL=("${PYC[@]}" $C/kit/sec45_eval.py --mode $MODE --data $TD --split $EVAL_SPLIT --batch 32 --max-new $EVAL_MAX_NEW ${EVAL_K:+--k $EVAL_K})
 FAILED=0
 # ---- run ----

@@ -68,6 +68,8 @@ def main():
     p.add_argument("--targets", default="", help="target replies jsonl under W (e.g. refs/refs_train.jsonl); empty = answer-only")
     p.add_argument("--ratio", default="", help="compression ratio (SEC45_RATIO); empty = 0.1")
     p.add_argument("--linear-skip", action="store_true", help="fresh smaller-encoder pair: least-squares row head (SEC45_LINEAR_SKIP=1)")
+    p.add_argument("--offset", default="", help="skip the first N questions of the train order (stage 2: 44800)")
+    p.add_argument("--init", default="", help="T: the starting run (default R_<mode><tag>; stage 2: a T run, e.g. T_res_rq9L_20I)")
     p.add_argument("--task-data", default="hotpot_tasks_v2", help="task data folder under W/data")
     p.add_argument("--p0-gpu", default="H200", help="P0 probe: a text the GPU name must contain")
     p.add_argument("--eval-split", default="dev1000", help="accuracy evals during training: dev1000 (choices) or test1000 (reported)")
@@ -121,7 +123,7 @@ def main():
                 key = "R" if run == "R" else "ST"
                 fill = {"STEPS": str(entry.get("steps", f"__P0_{key}_STEPS__")), "SECONDS": str(entry.get("seconds", f"__P0_{key}_SECONDS__")),
                         "CKPT_EVERY": str(entry.get("ckpt_every", f"__P0_{key}_CKPT_EVERY__")), "MICRO": str(entry.get("micro_batch", f"__P0_{key}_MICRO__")),
-                        "KIND": "recon" if run == "R" else "task", "HOURS": "96", "INIT": f"R_{mode}{a.tag}" if run == "T" else "fresh",
+                        "KIND": "recon" if run == "R" else "task", "HOURS": "96", "INIT": (a.init or f"R_{mode}{a.tag}") if run == "T" else "fresh",
                         "GPU": "exact:" + "|".join([gpu, *a.also_gpu]) if gpu else "__P0_GPU__", "PAIR_GB": str(entry.get("pair_gb") or 3),
                         "OPT_GB": str(entry.get("opt_gb", f"__P0_{key}_OPT_GB__"))}
                 if "ckpt_every" in entry and entry["ckpt_every"] % 8:
@@ -131,7 +133,7 @@ def main():
             if float(a.reader_lr) != 0 and float(a.reader_lr) < 1e-7:
                 raise SystemExit(f"--reader-lr {a.reader_lr}: a tiny rate is not a frozen reader; pass 0")
             fill |= {"RUN": f"{run}_{mode}{a.tag}", "MODE": mode, "READER_LR": a.reader_lr, "WHAT": f"{WHAT[run]}; write mode {NAMES[mode]}" + (f"; encoder {a.encoder}" if a.encoder else ""), "S3": S3, "BUNDLE": a.bundle, "ENC_LR": a.encoder_lr, "PENALTY": a.penalty, "SEED": a.seed, "EVAL_SPLIT": a.eval_split, "READER": a.reader, "RES_LAYERS": a.res_layers,
-                     "K": a.k, "EVAL_K": a.eval_k, "LINEAR_SKIP": "1" if a.linear_skip else "", "RATIO": a.ratio, "LOSS": a.loss, "TARGETS": a.targets, "TASK_DATA": a.task_data,
+                     "K": a.k, "EVAL_K": a.eval_k, "LINEAR_SKIP": "1" if a.linear_skip else "", "RATIO": a.ratio, "LOSS": a.loss, "TARGETS": a.targets, "TASK_DATA": a.task_data, "OFFSET": a.offset,
                      "ENCODER": a.encoder}
             text = template
             for key, value in fill.items():

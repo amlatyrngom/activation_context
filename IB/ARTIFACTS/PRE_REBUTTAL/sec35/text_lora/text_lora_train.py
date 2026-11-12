@@ -83,6 +83,8 @@ def main():
     p.add_argument("--seed", type=int, default=0); p.add_argument("--rank", type=int, default=128); p.add_argument("--alpha", type=int, default=256)
     p.add_argument("--ckpt-every", type=int, help="save the adapter (and the recovery slot) every K updates; default: at 25/50/75/100%%")
     p.add_argument("--name", default="T_text_lora")
+    p.add_argument("--offset", type=int, default=0, help="2026-11-12 stage 2: skip the first N questions of the seed order (sec45_train --offset)")
+    p.add_argument("--init-adapter", type=Path, help="2026-11-12 stage 2: start from this saved adapter (same rank / targets) instead of a fresh LoRA")
     a = p.parse_args()
     N = a.name
     import torch
@@ -93,6 +95,7 @@ def main():
     needed = a.steps * a.epu
     pool = C.load_tasks(a.data, "train") if hasattr(C, "load_tasks") else [json.loads(l) for l in open(a.data / "train.jsonl")]
     random.Random(a.seed).shuffle(pool)                            # sec45_train: the same seed -> the same questions as S and T
+    pool = pool[a.offset:]                                         # sec45_train: pool = pool[offset:] after the seed shuffle
     if needed > len(pool):
         raise SystemExit(f"{needed} items needed, the pool holds {len(pool)}")
     rows = pool[:needed]
@@ -103,7 +106,8 @@ def main():
     corpus = C.load_corpus(a.data)
     tok = AutoTokenizer.from_pretrained(MODEL_ID)
     held = [encode(tok, corpus, r) for r in held_rows]
-    run = {"name": N, "model": MODEL_ID, "args": {k: str(v) for k, v in vars(a).items()}, "penalty": None,
+    args = {k: str(v) for k, v in vars(a).items() if not (k == "offset" and v == 0) and not (k == "init_adapter" and v is None)}   # older runs' run.json still matches
+    run = {"name": N, "model": MODEL_ID, "args": args, "penalty": None,
            "first_items": [rows[i]["id"] for i in order[:32]], "items": needed, "lora": {"r": a.rank, "alpha": a.alpha, "targets": TARGETS}}
     resume_dir = a.out / "resume"
     resume = json.loads((resume_dir / "state.json").read_text()) if (resume_dir / "state.json").exists() else None
@@ -129,6 +133,15 @@ def main():
         set_peft_model_state_dict(model, load_file(str(resume_dir / "adapter" / "adapter_model.safetensors"), device=device))
         opt.load_state_dict(torch.load(resume_dir / "optimizer.pt", map_location=device))
         first_update = resume["update"]
+    elif a.init_adapter:                                           # stage 2: the stage-1 adapter's weights, a fresh optimizer and schedule
+        from peft import set_peft_model_state_dict
+        from safetensors.torch import load_file
+        cfg = json.loads((a.init_adapter / "adapter_config.json").read_text())
+        assert cfg["r"] == a.rank and cfg["lora_alpha"] == a.alpha, (cfg["r"], cfg["lora_alpha"], a.rank, a.alpha)
+        res = set_peft_model_state_dict(model, load_file(str(a.init_adapter / "adapter_model.safetensors"), device=device))
+        bad = [k for k in getattr(res, "unexpected_keys", []) or []]
+        assert not bad, bad[:5]
+        print(f"text_lora_train: initial adapter {a.init_adapter}", flush=True)
 
     def rate(update):                                              # warm-up, then cosine to final_fraction (ac_model_training "cosine")
         if update < a.warmup:

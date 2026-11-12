@@ -11,7 +11,7 @@
 set -uo pipefail
 export PATH=${PATH:-/usr/local/bin:/usr/bin:/bin}
 : "${RUN:?RUN}" "${STEPS:?STEPS}" "${CKPT_EVERY:?CKPT_EVERY}"; LR=${LR:-2e-5}; SEED=${SEED:-0}; EVAL_SPLIT=${EVAL_SPLIT:-dev1000}
-TASK_DATA=${TASK_DATA:-hotpot_tasks_v2}; TEXT_MODEL_ID=${TEXT_MODEL_ID:-Qwen/Qwen3-4B-Instruct-2507}; K=${K:-}; EVAL_K=${EVAL_K:-}   # retrieval: rq_tasks_v1, Qwen/Qwen3.5-9B, K=20,100,200, EVAL_K=100
+TASK_DATA=${TASK_DATA:-hotpot_tasks_v2}; TEXT_MODEL_ID=${TEXT_MODEL_ID:-Qwen/Qwen3-4B-Instruct-2507}; K=${K:-}; EVAL_K=${EVAL_K:-}; OFFSET=${OFFSET:-}; INIT_ADAPTER=${INIT_ADAPTER:-}   # stage 2 (2026-11-12): OFFSET=44800, INIT_ADAPTER=<stage-1 adapter dir>; retrieval: rq_tasks_v1, Qwen/Qwen3.5-9B, K=20,100,200, EVAL_K=100
 BUNDLE=${SEC45_BUNDLE:-sec35_code_v3.tar.gz}
 if [ -d /data/scratch-fast/ngom ]; then W=/data/scratch-fast/ngom/sec35; PY=/data/scratch/ngom/activation/venv/bin/python; HF=/data/scratch-fast/ngom/sec45/hf; export HOME=$W/home
 elif [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/sec35; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf
@@ -43,10 +43,11 @@ eval_pending() { local Q U rc=0
     "${EVAL[@]}" --adapter $Q --out $D/eval/u$U.jsonl --label ${RUN}_u$U > $D/logs/eval_u$U.log 2>&1 || { say "eval u$U FAILED"; rc=1; continue; }
     say "u$U: $(head -c 160 $D/eval/u$U.summary.json | tr -d '\n ')"
   done; return $rc; }
-if [ ! -f $D/eval/u00000.summary.json ]; then say "accuracy of the untuned 4B (update 0)"; "${EVAL[@]}" --base --out $D/eval/u00000.jsonl --label ${RUN}_u0 > $D/logs/eval_u00000.log 2>&1 || say "base eval FAILED"; fi
+if [ -n "$INIT_ADAPTER" ]; then [ -f $INIT_ADAPTER/adapter_model.safetensors ] || { say "initial adapter $INIT_ADAPTER missing"; exit 2; }; U0=(--adapter $INIT_ADAPTER); else U0=(--base); fi
+if [ ! -f $D/eval/u00000.summary.json ]; then say "accuracy at update 0 (${INIT_ADAPTER:-the untuned model})"; "${EVAL[@]}" "${U0[@]}" --out $D/eval/u00000.jsonl --label ${RUN}_u0 > $D/logs/eval_u00000.log 2>&1 || say "base eval FAILED"; fi
 ATT=$(( $(ls $D/logs/train_a*.log 2>/dev/null | wc -l) + 1 ))
 if [ ! -f $D/TRAINED ]; then
-  $PY $C/text_lora/text_lora_train.py --data $TD --out $D --name $RUN --steps $STEPS --ckpt-every $CKPT_EVERY --lr $LR --seed $SEED --report-every 200 > $D/logs/train_a$ATT.log 2>&1 &
+  $PY $C/text_lora/text_lora_train.py --data $TD --out $D --name $RUN --steps $STEPS --ckpt-every $CKPT_EVERY --lr $LR --seed $SEED --report-every 200 ${OFFSET:+--offset $OFFSET} ${INIT_ADAPTER:+--init-adapter $INIT_ADAPTER} > $D/logs/train_a$ATT.log 2>&1 &
   TP=$!; while kill -0 $TP 2>/dev/null; do eval_pending || true; sleep 60; done; wait $TP; RC=$?
   say "training exit $RC: $(tail -n 1 $D/logs/train_a$ATT.log | cut -c1-300)"
 fi

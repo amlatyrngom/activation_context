@@ -383,3 +383,15 @@ Decision rules (act on them without asking; log each decision here):
   **Zero-training read so far (dev1000, plain BM25):** untuned 9B text k=20 **49.6**; text + LoRA (20I) k=20 **56.3**, k=100 **61.3**;
   AC 20I finals at k=100: reader-LoRA **51.9**, frozen **52.0** (AC > untuned text-20 by 2.3 with no multi-call training).
   4B→9B encoder (T_res_rq9e4_e2, SFT, enc 2e-5): u800/1600/2400 = 66.0 / 70.7 / **74.6** vs 2B 58.7 / 65.7 / 67.8 — a story decision for the user.
+- ~16:20Z (11-12): **Stage 2 set up and queued** (all start from the 20I final of the same arm; 5,600 × 8 of the 45,647 held-back questions,
+  `--offset 44800` on the seed-0 order; fresh warm-up + cosine; in-run eval = PLAIN BM25 dev1000).
+  - Data: `hotpot_tasks_kI_v2` (`sec35/build_kI_v2.py`: kI_v1 train/dev200 + bm25e dev1000/test1000 + the 100I/200I sets);
+    `hotpot_tasks_t2_v1` (`--text`: v2 20I train/dev200 + bm25e dev1000/test1000) for the text arm.
+  - Scripts `jobs/generated_rq9kI_rtx/` (from the v5 KL 20I scripts; TASK_K 100,200, EVAL_K 100, OFFSET 44800): T_res_rq9L_kI (SFT, LoRA),
+    T_res_rq9fr_kI (SFT, frozen), T_res_rq9L_kI_KL, T_res_rq9fr_kI_KL. job_template.sh / make_jobs.py gained OFFSET and `--init`.
+  - Text parity X_rq9_text_t2: text_lora_train.py `--offset` / `--init-adapter` (bundle v6 = v5 + that file only), from X_rq9_text_20I u5600,
+    20I train rows, eval plain BM25 k=20.
+  - Queues: rql — after the untuned-text k=100 pass (remaining text 100I/200I/k=200 passes deferred), kI_probe (48 updates on the longest
+    k=200 items, micro 4 → 2) → **T_res_rq9L_kI** → **X_rq9_text_t2**. rqj — after T_res_rq9L_20I_KL: refs to all 90,447 → **T_res_rq9L_kI_KL**.
+    rqk — after T_res_rq9fr_20I_KL and the full refs: **T_res_rq9fr_kI_KL**. T_res_rq9fr_kI (SFT frozen): first free GPU.
+  - T_res_rq9fr_20I_90k final 73.2 (u10400 74.5; 90k deprecated).
