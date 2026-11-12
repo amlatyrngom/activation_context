@@ -322,3 +322,5 @@ Decision rules (act on them without asking; log each decision here):
   seed only changes the data order (no penalty), so the recipe is order-sensitive early: it looks like the T_in_fr90k "flat at 20" mode
   (answers without using the memory). Kept running to u2400 to see whether it escapes (nothing is queued behind it); **no seed swap**: all seeds
   get reported. If it stays stuck, the candidate fix is a longer warmup (50 → 500) or a lower encoder LR in the first updates, rerun on all 3 seeds.
+- ~09:50Z (11-12): seed 1 escaping: held NLL 1.059 (u800) → 1.024 (u1000) → **0.798 (u1200)**. Seed 2 u600 0.535 (on track). T_res_rq9e4_e2 u400 held
+  0.333 (diverged run 0.412 at u400). rqg 90k reader-LoRA u6400 70.3; rqi 90k frozen u6400 70.0. All 4 ORCD jobs ~9 s/update.
