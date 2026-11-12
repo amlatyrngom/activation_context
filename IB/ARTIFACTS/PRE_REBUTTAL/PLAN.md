@@ -395,3 +395,8 @@ Decision rules (act on them without asking; log each decision here):
     k=200 items, micro 4 → 2) → **T_res_rq9L_kI** → **X_rq9_text_t2**. rqj — after T_res_rq9L_20I_KL: refs to all 90,447 → **T_res_rq9L_kI_KL**.
     rqk — after T_res_rq9fr_20I_KL and the full refs: **T_res_rq9fr_kI_KL**. T_res_rq9fr_kI (SFT frozen): first free GPU.
   - T_res_rq9fr_20I_90k final 73.2 (u10400 74.5; 90k deprecated).
+- ~18:10Z (11-12): rql reclaimed during the stage-2 probe → **rqm**. Probe (48 updates, longest k=200 items first, `kI_probe`): micro 4 OOM;
+  **micro 2 OK, peak 64 GB, 26.5 s/update median** (20I: ~4–5). 5,600 updates would be ~42 h per arm → **stage 2 = 2,400 × 8 = 19,200
+  held-back questions, eval every 400** (all four AC arms and the text arm alike; ~18–20 h each). T finals as INIT: checked OK (DONE valid).
+  Untuned 9B text plain BM25 **k=100 54.8**. AC zero-training read (20I finals): LoRA k=20 **52.0**, k=200 **49.8**, 100I **61.5**, 200I **56.1**;
+  frozen k=20 **52.7**, 100I **63.7**. First KL point: **T_res_rq9fr_20I_KL u800 63.0** (frozen SFT u800 58.9).

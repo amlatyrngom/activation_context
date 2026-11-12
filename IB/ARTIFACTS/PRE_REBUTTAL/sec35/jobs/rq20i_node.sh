@@ -76,7 +76,7 @@ qa_kl)                                    # 2026-11-12: general-QA phase, ONE co
   bash $J/ec2_run.sh T_res_rq9L_QA_KL bash $J/generated_rq9QA_rtx/T_res_rq9L_QA_KL.sh;;
 kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen)   # 2026-11-12 STAGE 2 (user-approved): from the 20I final of the same arm, train on
   # golds-injected 100I / 200I rows (k = 100 or 200 per question, crc32(id) % 2) of the 45,647 questions stage 1 never saw (--offset 44800;
-  # 5,600 x 8 = 44,800 of them); the run's own eval: PLAIN BM25 dev1000 at k = 100 (hotpot_tasks_kI_v2 = kI train + bm25e dev/test)
+  # 2,400 x 8 = 19,200 of them: 26.5 s/update at k 100/200); the run's own eval: PLAIN BM25 dev1000 at k = 100 (hotpot_tasks_kI_v2 = kI train + bm25e dev/test)
   case $ROLE in kI_sft_lora) N=T_res_rq9L_kI;; kI_sft_frozen) N=T_res_rq9fr_kI;; kI_kl_lora) N=T_res_rq9L_kI_KL;; kI_kl_frozen) N=T_res_rq9fr_kI_KL;; esac
   init $(grep -oP "^INIT=\K\S+" $J/generated_rq9kI_rtx/$N.sh) || exit 2      # the 20I final of the same arm (ec2_run.sh: no S3 in the job)
   $S3PY $W/s3x.py getdir $S3/data/hotpot_tasks_kI_v2/ $W/data/hotpot_tasks_kI_v2/ || exit 2
@@ -84,15 +84,16 @@ kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen)   # 2026-11-12 STAGE 2 (user-
     mkdir -p $W/refs; $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs_all/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
     [ $(wc -l < $W/refs/refs_train.jsonl) -ge 90447 ] || { echo "refs cover fewer than 90,447 questions (run refs_all first)"; exit 2; };; esac
   bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
+  export SEC45_MICRO_BATCH=2              # kI_probe: micro 4 runs out of memory on the longest k=200 items, micro 2 peaks at 64 GB (26.5 s/update)
   bash $J/ec2_run.sh $N bash $J/generated_rq9kI_rtx/$N.sh;;
 kI_text)                                  # 2026-11-12 STAGE 2 parity for the text arm: X_rq9_text_20I's final adapter (u5600) trained on the SAME
-  # 45,647 held-back questions (--offset 44800, 5,600 x 8) at its own operating point, 20I (hotpot_tasks_v2 rows); eval PLAIN BM25 dev1000 at k=20
+  # 45,647 held-back questions (--offset 44800, 2,400 x 8 = 19,200, as the AC stage-2 arms) at its own operating point, 20I (hotpot_tasks_v2 rows); eval PLAIN BM25 dev1000 at k=20
   # (hotpot_tasks_t2_v1 = v2 train + bm25e dev/test); fresh warm-up + cosine as the AC stage-2 arms; code v6 (text_lora_train --offset / --init-adapter)
   $S3PY $W/s3x.py getdir $S3/data/hotpot_tasks_t2_v1/ $W/data/hotpot_tasks_t2_v1/ || exit 2
   A=$W/init/X_rq9_text_20I_u05600; [ -f $A/adapter_model.safetensors ] || { rm -rf $A; $S3PY $W/s3x.py getdir $S3/runs/X_rq9_text_20I/ckpt/step_05600/ $A/ || exit 2; }
   bash $J/ec2_prep.sh sec35_code_v6.tar.gz > /dev/null || exit 2
   bash $J/ec2_run.sh X_rq9_text_t2 env RUN=X_rq9_text_t2 TEXT_MODEL_ID=Qwen/Qwen3.5-9B TASK_DATA=hotpot_tasks_t2_v1 EVAL_SPLIT=dev1000 \
-    EVAL_MAX_NEW=1024 EVAL_BATCH=16 STEPS=5600 CKPT_EVERY=800 LR=2e-5 SEED=0 OFFSET=44800 INIT_ADAPTER=$A SEC45_BUNDLE=sec35_code_v6.tar.gz bash $J/text_lora_job.sh;;
+    EVAL_MAX_NEW=1024 EVAL_BATCH=16 STEPS=2400 CKPT_EVERY=400 LR=2e-5 SEED=0 OFFSET=44800 INIT_ADAPTER=$A SEC45_BUNDLE=sec35_code_v6.tar.gz bash $J/text_lora_job.sh;;
 kI_probe)                                 # timing / memory: 48 updates of the stage-2 SFT LoRA arm on the LONGEST k=200 items, no save
   $S3PY $W/s3x.py getdir $S3/data/hotpot_tasks_kI_v2/ $W/data/hotpot_tasks_kI_v2/ || exit 2
   bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
