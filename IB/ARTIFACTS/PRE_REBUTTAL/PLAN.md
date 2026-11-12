@@ -302,3 +302,5 @@ Decision rules (act on them without asking; log each decision here):
   text+LoRA 77.1 vs AC reader LoRA 72.3 / AC frozen 71.9 (gate 76.1). Stage 2 stays parked. Both 90k diagnostics running (rqg reader-LoRA u800 58.9,
   rqh frozen started). rqf left idle to autodown. Next lever, only if 90k helps: 2 passes over the same 44,800 (11,200 updates), to tell
   "more updates" apart from "more unique questions" (it needs a duplicated-pool data folder; the trainer runs one epoch only), so that stage 1 need not use the stage-2 questions.
+- ~03:10Z (11-12): BM25 reference X_rq9_text_gold4k (rqe, dev200 k=100) **final u4000 63.5** (u3000 63.5, u3500 65.0); done, rqe left to autodown.
+  90k diagnostics: rqg reader-LoRA u1600 60.9 (44.8k arm 65.7 at the same point; its LR is still near the peak on the 11,200 schedule); rqh frozen u800 59.7 (44.8k 58.9).
