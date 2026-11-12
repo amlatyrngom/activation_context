@@ -368,3 +368,18 @@ Decision rules (act on them without asking; log each decision here):
   gold-view teacher is the main configuration (not a lever); KL arm on 20I 44.8k with **both** readers (LoRA and frozen); general-QA tuning
   phase on **2WikiMultiHopQA + MuSiQue** (one continuous run, one config, HotpotQA 20I dev1000 checked periodically); X_rq9_text_20I_90k
   **stopped** (rqj sky job 2 cancelled at ≈u2400). Stage-2 data (plain BM25 vs golds injected) still under discussion.
+- ~16:30Z (11-12): **User go for the batch; proceed autonomously; hill-climb only on noticeable differences (≈2–3 points, judged by significance).**
+  Launched / chained:
+  - rqj: gold-view replies for train questions 32,000–44,800 (`rq20i_node.sh refs_all`, REFS_UPTO 44800; S3 runs/rq9_gold_refs_all) →
+    **T_res_rq9L_20I_KL** (KL to the gold-view teacher, reader LoRA 2e-5, encoder 5e-5, from R_res_rq9, 44,800 = 5,600 × 8, bundle v5).
+  - rqk (after its 90k run + the 44.8k refs): **T_res_rq9fr_20I_KL** (same, frozen reader, from R_res_rq9fr).
+  - rqg (after its AC read): gold-view replies for qa_tune_v1 (100,000) → **T_res_rq9L_QA_KL** (general-QA phase: KL, reader LoRA, from
+    R_res_rq9, 12,500 × 8 one pass, HotpotQA 20I dev1000 every 800).
+  - Data `qa_tune_v1` (`sec35/build_qa_tune.py`): 19,938 MuSiQue-Ans + 80,062 2Wiki train questions, each with its own 10–20 paragraphs as
+    ONE encoder call (order shuffled per id), golds = supporting paragraphs; corpus = HotpotQA's (same ids) + 514,777 new paragraphs;
+    dev1000 = HotpotQA 20I dev1000; qa_dev1000 = 500 + 500 in-domain.
+  - **Stage 2 decided: train on injected 100I/200I** (the held-back 45.6k, k ∈ {100, 200} per row = hotpot_tasks_kI_v1), evaluate on plain BM25
+    k = 20/100/200 (the figure) + 100I/200I. SFT from SFT 20I finals, KL from KL 20I finals; text + LoRA parity continues on the same 45.6k at 20I.
+  **Zero-training read so far (dev1000, plain BM25):** untuned 9B text k=20 **49.6**; text + LoRA (20I) k=20 **56.3**, k=100 **61.3**;
+  AC 20I finals at k=100: reader-LoRA **51.9**, frozen **52.0** (AC > untuned text-20 by 2.3 with no multi-call training).
+  4B→9B encoder (T_res_rq9e4_e2, SFT, enc 2e-5): u800/1600/2400 = 66.0 / 70.7 / **74.6** vs 2B 58.7 / 65.7 / 67.8 — a story decision for the user.

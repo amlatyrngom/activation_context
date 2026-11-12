@@ -42,5 +42,37 @@ frozen90k)                                # diagnostic (2026-11-12): the frozen 
 text90k)                                  # parity (2026-11-12): the text + LoRA arm on all 90k 20I questions (11,200 x 8), same as the 90k AC runs
   bash $J/ec2_run.sh X_rq9_text_20I_90k env RUN=X_rq9_text_20I_90k TEXT_MODEL_ID=Qwen/Qwen3.5-9B TASK_DATA=hotpot_tasks_v2 EVAL_SPLIT=dev1000 \
     EVAL_MAX_NEW=1024 EVAL_BATCH=16 STEPS=11200 CKPT_EVERY=800 LR=2e-5 SEED=0 bash $J/text_lora_job.sh;;
-*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k|text90k"; exit 2;;
+refs_all)                                 # 2026-11-12: gold-view replies (gold_refs.py, base 9B greedy over the golds) for the rest of train's seed-0
+  # order: first up to 44,800 (the 20I KL arms), then all 90,447 (stage 2 KL); appended to the 32,000 of rq9_gold_refs; S3 after every chunk
+  D=$W/runs/rq9_gold_refs_all; mkdir -p $D; cd $D; C=$W/code/sec35_code_v3; PY=/opt/activation/.venv/bin/python
+  [ -s refs_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs_all/refs_train.jsonl refs_train.jsonl 2>/dev/null || $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs/refs_train.jsonl refs_train.jsonl || exit 2
+  for N in 44800 52000 60000 68000 76000 84000 90447; do
+    RQ_KIT=$C/rq_kit RQ_THINKING=0 TEXT_MODEL_ID=Qwen/Qwen3.5-9B PYTHONPATH=$C/rq_kit $PY $C/retrieval/gold_refs.py --data $W/data/rq_tasks_v1 --split train --first $N --seed 0 --out refs_train.jsonl || exit 1
+    $S3PY $W/s3x.py put refs_train.jsonl $S3/runs/rq9_gold_refs_all/refs_train.jsonl && echo "refs: first $N done ($(wc -l < refs_train.jsonl) rows) -> S3"
+    [ "${REFS_UPTO:-90447}" -le $N ] && break
+  done;;
+kl_lora|kl_frozen)                        # 2026-11-12 (user: KL to the gold-view teacher is the main configuration): 20I, 44,800, both readers
+  [ $ROLE = kl_lora ] && { N=T_res_rq9L_20I_KL; I=R_res_rq9; } || { N=T_res_rq9fr_20I_KL; I=R_res_rq9fr; }
+  init $I || exit 2
+  mkdir -p $W/refs; $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs_all/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  [ $(wc -l < $W/refs/refs_train.jsonl) -ge 44800 ] || { echo "refs cover fewer than 44,800 questions"; exit 2; }
+  bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
+  bash $J/ec2_run.sh $N bash $J/generated_rq9KL20I_rtx/$N.sh;;
+qa_refs)                                  # 2026-11-12: gold-view replies for the general-QA phase (qa_tune_v1 = 2Wiki + MuSiQue, 100,000; seed-0 order)
+  D=$W/runs/qa_gold_refs; mkdir -p $D; cd $D; C=$W/code/sec35_code_v3; PY=/opt/activation/.venv/bin/python
+  $S3PY $W/s3x.py getdir $S3/data/qa_tune_v1/ $W/data/qa_tune_v1/ || exit 2
+  [ -s refs_qa_train.jsonl ] || $S3PY $W/s3x.py get $S3/runs/qa_gold_refs/refs_qa_train.jsonl refs_qa_train.jsonl 2>/dev/null || true
+  for N in 12500 25000 50000 75000 100000; do
+    RQ_KIT=$C/rq_kit RQ_THINKING=0 TEXT_MODEL_ID=Qwen/Qwen3.5-9B PYTHONPATH=$C/rq_kit $PY $C/retrieval/gold_refs.py --data $W/data/qa_tune_v1 --split train --first $N --seed 0 --out refs_qa_train.jsonl || exit 1
+    $S3PY $W/s3x.py put refs_qa_train.jsonl $S3/runs/qa_gold_refs/refs_qa_train.jsonl && echo "qa refs: first $N done ($(wc -l < refs_qa_train.jsonl) rows) -> S3"
+  done;;
+qa_kl)                                    # 2026-11-12: general-QA phase, ONE continuous run: KL to the gold-view teacher on 2Wiki + MuSiQue (100,000 = 12,500 x 8),
+  # from R_res_rq9 (reader LoRA), HotpotQA 20I dev1000 every 800 updates (the eval split of qa_tune_v1 is hotpot_tasks_v2's dev1000)
+  init R_res_rq9 || exit 2
+  $S3PY $W/s3x.py getdir $S3/data/qa_tune_v1/ $W/data/qa_tune_v1/ || exit 2
+  mkdir -p $W/refs; $S3PY $W/s3x.py get $S3/runs/qa_gold_refs/refs_qa_train.jsonl $W/refs/refs_qa_train.jsonl || exit 2
+  [ $(wc -l < $W/refs/refs_qa_train.jsonl) -ge 100000 ] || { echo "qa refs incomplete"; exit 2; }
+  bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
+  bash $J/ec2_run.sh T_res_rq9L_QA_KL bash $J/generated_rq9QA_rtx/T_res_rq9L_QA_KL.sh;;
+*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k|text90k|refs_all|kl_lora|kl_frozen|qa_refs|qa_kl"; exit 2;;
 esac
