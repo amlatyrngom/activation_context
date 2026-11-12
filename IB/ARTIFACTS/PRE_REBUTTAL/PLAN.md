@@ -334,3 +334,6 @@ Decision rules (act on them without asking; log each decision here):
   reported T_res_fr90k final pair untouched; no other project dir touched. A 2 GB test write then succeeded. Resubmitted: T_in_L90k 28797183
   (running, resumes u5600), T_res_fr90k_s1 28799112 (resumes u800), T_res_fr90k_s2 28799113 (fresh), T_res_rq9e4_e2 28799114 (fresh).
   rqg 90k reader-LoRA u7200 **72.1** (44.8k final 72.3).
+  Usage after cleanup (sbatch du): sec35 ≈ 115 GB (runs 73, init 23, rq_eval 13); `quota` reads only /home (75 G of 195 G), the scratch quota is not
+  readable (no lfs). Extra margin: deleted the 13 intermediate text adapters per seed (u800–u10400, all dev-scored) of X_text_90k{,_s1,_s2}
+  (~39 GB); the step_11200 finals (used by final_test) kept.
