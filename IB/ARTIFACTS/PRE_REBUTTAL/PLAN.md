@@ -324,3 +324,6 @@ Decision rules (act on them without asking; log each decision here):
   get reported. If it stays stuck, the candidate fix is a longer warmup (50 → 500) or a lower encoder LR in the first updates, rerun on all 3 seeds.
 - ~09:50Z (11-12): seed 1 escaping: held NLL 1.059 (u800) → 1.024 (u1000) → **0.798 (u1200)**. Seed 2 u600 0.535 (on track). T_res_rq9e4_e2 u400 held
   0.333 (diverged run 0.412 at u400). rqg 90k reader-LoRA u6400 70.3; rqi 90k frozen u6400 70.0. All 4 ORCD jobs ~9 s/update.
+- ~10:00Z (11-12): **ORCD scratch write error** (`basic_ios::clear: iostream error` in torch.save, both at 09:52Z during checkpoint writes; disk 18% used):
+  T_in_L90k failed at the u6400 save (recovery slot u5600 kept) and T_res_fr90k_s2 at its first slot (none published). Resubmitted the same scripts:
+  T_in_L90k 28797183 (resumes from u5600), T_res_fr90k_s2 28797184 (fresh start; loses ~2 h).
