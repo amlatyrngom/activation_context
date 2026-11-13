@@ -72,3 +72,7 @@
   (+5.8 / +9.2 / +4.0): the bigger encoder also cuts the long-context drop (20I→200I: 4B -10.0, 2B -16.2). Untuned text 65.6 / 64.9 / 54.8.
   Stage-2 midpoints (u1200): 20I LoRA SFT 68.4 (start 72.3), LoRA KL 67.3 (70.5); 200I LoRA SFT 64.3 (56.1), frozen SFT 63.9 (59.3), LoRA KL 65.4 (67.1).
   Frozen SFT stage 2 final plain k=100 57.1 (b8; start 52.0). Text stage 2 flat (k20 56.1 → 55.3 at u2000). 1/4-LR KL stage 2 u0 59.0 (b8), running.
+- ~22:15Z: **Stage-2 SFT finals (late gains as LR decays):** frozen SFT final 100I **70.1** (start 63.7, u1200 65.2), plain k=100 57.1 (b8);
+  LoRA SFT final 200I **71.7** (start 56.1, u1200 64.3), plain k=100 58.8 (b8; start 51.9). Text stage-2 final 100I 76.1 (stage-1 text 75.9), plain k=20 56.3 (start 56.1): flat.
+  Frozen KL stage 2 u1200 100I 65.6 (start 66.2), plain k=100 / 200 56.5 / 57.7. LoRA KL stage 2 u2000 k=100 / 200 58.5 / 60.3.
+  4B KL 20I u800 66.3 (2B KL 62.2). rqp torn down (text done); rqo gone after its run (final already sent).
