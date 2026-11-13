@@ -421,3 +421,7 @@ Decision rules (act on them without asking; log each decision here):
   200 updates (watcher reports it every 400). Running T_res_rq9L_kI (rqm, resumed at u400) and T_res_rq9fr_kI (ORCD 28866202, fresh, u0 52.2
   at batch 8; 52.0 at batch 32) got skip markers for 400–2000. T_res_rq9L_20I_KL u3200 68.0 (SFT 67.8); T_res_rq9fr_20I_KL (restart) u800 62.2;
   QA KL HotpotQA u2400 51.2, u3200 55.1.
+- ~00:30Z (11-13): **4B→9B encoder (T_res_rq9e4_e2, SFT 20I, enc 2e-5) final dev1000 75.3** vs 2B encoder 72.3 (+3.0, ≈2 SE; text + LoRA 77.1)
+  — a story decision for the user. KL vs SFT, 20I dev1000: LoRA u4800 70.7 vs 70.8 (level since u2400); frozen u2400 67.5 vs 70.1 (KL's early
+  lead gone). QA KL HotpotQA flat ≈55 since u1600 (u4800 55.6). T_in_L90k u10400 73.3. Freed ORCD GPU: the deferred text passes (untuned +
+  X_rq9_text_20I on plain k=200, 100I, 200I; `jobs/rq_text_kI_orcd.sh`, data hotpot_tasks_kI_v2).
