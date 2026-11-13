@@ -25,3 +25,16 @@
 - QA KL final plain BM25 k=20/100/200: 46.1 / 49.0 / 49.1 (general-QA KL alone gives no large-k gain).
 - QA->20I KL (T_res_rq9L_QA20I_KL) 20I: u0 60.0, u800 64.1, u1600 67.7 vs from-base 19.6 / 62.2 / 63.4 (+4.3 at u1600).
 - Stage-2 frozen SFT plain BM25: k=100 u800 51.5, k=200 u800 52.5. LoRA KL held answer_nll u400/u800 1.026 / 1.024.
+
+### 2026-11-13 ~16:20Z — ORCD link restored; CSAIL incident check; stage-2 mid-run; rqm/rqn reclaimed
+- ORCD/CSAIL shared ssh: dead ControlPath symlinks (~/.ssh/cm/ngom@{10.1.221.10,slurm-login.csail.mit.edu}:22 -> missing sockets) blocked the user's logins from becoming masters; removed; user logged in again.
+- CSAIL security incident (TIG emails, Nov 11-12: backdoors in .bashrc, CLAUDE.md, shared scripts, conda envs on CSAIL NFS). Read-only check, nothing found:
+  host startup files unchanged since 2026-08-25; no hooks in ~/.claude or repo .claude; CLAUDE.md / TRESSOIR.md last changed 2026-09-14; all 87 commits since Nov 9 ours;
+  no file pulled CSAIL -> host this session (all transfers host -> CSAIL); every §3.1 checkpoint trained on EC2 (DONE hosts); CSAIL home has no startup/agent files and
+  .ssh unchanged since 2026-09-18; CSAIL job scripts md5-identical to host copies or to commit 8070764; nothing in the CSAIL venv or code dirs newer than our Nov 9 pushes.
+  Caveat: the code loads ac_modules.pt with torch.load(weights_only=False), so CSAIL-produced pairs (incl. the S3 archive csail_scratch_20261109/) must not be loaded unvetted.
+- Stage-2 plain BM25 (side scorer b32), k=100 / k=200:
+  LoRA SFT u1600 55.4 / 56.9, u2000 57.9 / 59.1; frozen SFT u1200 54.3 / 55.5, u1600 54.9 / -;
+  LoRA KL u400 55.4 / 56.1, u800 57.1 / 58.5 (u0 59.6 / 60.9); frozen KL u400 54.8 / 57.3, u800 56.3 / 57.6 (u0 57.5 / 57.5).
+- Frozen KL 20I final 200I k=200 63.9 (frozen SFT 59.3). QA->20I KL final 70.6 on 20I (from-base 70.5).
+- rqm (T_res_rq9L_kI at u2000 slot) and rqn (T_res_rq9fr_kI_KL at u800 slot) reclaimed: frozen KL resumed on rqg (sky job), new rqo resumes LoRA SFT, new rqp runs the text stage-2 arm (X_rq9_text_t2).
