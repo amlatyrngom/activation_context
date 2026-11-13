@@ -428,3 +428,5 @@ Decision rules (act on them without asking; log each decision here):
 - ~01:30Z (11-13): **T_res_rq9L_20I_KL final dev1000 70.5** (SFT T_res_rq9L_20I 72.3; −1.8 ≈ 1.3 SE, not significant). KL leads early
   (u800 +3.5) and is level/slightly behind from u2400 on; frozen pair the same so far (u3200 KL 68.2 vs SFT 68.5). rqj → refs to 90,447 →
   T_res_rq9L_kI_KL. Stage-2 SFT LoRA held panel u800: held_nll 0.352 / answer_nll 0.765 (u0 0.380 / 0.823). QA KL HotpotQA u6400 56.3.
+- ~01:50Z (11-13): **T_in_L90k (§3.5 Input only, reader LoRA, 90k) final dev1000 73.5** → test1000 rescore ORCD 28893834 (`final_test/ac/T_in_L90k_final`).
+  Text + LoRA (20I) plain BM25 dev1000 **k=200 64.2** (k=20 56.3, k=100 61.3): text keeps gaining with k; AC without stage 2 does not.
