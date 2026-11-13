@@ -45,7 +45,7 @@ for s, q in QS.items():
 PRI = {"orcd_rq_eval_fin": 5, "orcd_rq_eval_fin20i": 5, "orcd_rq_eval_s2": 4, "orcd_rq_eval_kI_ac": 4, "orcd_rq_eval_kI_text": 4,
        "orcd_rq_eval20i": 4, "orcd_rq_eval_e4": 4, "s3_kI_eval_ac": 3, "s3_kI_eval_text": 3}
 STAGE1_FINAL = {"T_res_rq9e4_e2": 5600, "T_res_rq9L_20I": 5600, "T_res_rq9fr_20I": 5600, "T_res_rq9L_20I_KL": 5600, "T_res_rq9fr_20I_KL": 5600}
-STAGE2 = {"T_res_rq9L_kI": 2400, "T_res_rq9fr_kI": 2400, "T_res_rq9L_kI_KL": 2400, "T_res_rq9fr_kI_KL": 2400}
+STAGE2 = {"T_res_rq9L_kI_KL_lr4": 2400, "T_res_rq9L_kI": 2400, "T_res_rq9fr_kI": 2400, "T_res_rq9L_kI_KL": 2400, "T_res_rq9fr_kI_KL": 2400}
 found = {}
 
 
@@ -160,6 +160,7 @@ SYSTEMS = [  # (label, system name, stage-1 fixed step or None = latest)
     ("AC SFT stage 2, frozen", "T_res_rq9fr_kI", None),
     ("AC KL stage 2, LoRA", "T_res_rq9L_kI_KL", None),
     ("AC KL stage 2, frozen", "T_res_rq9fr_kI_KL", None),
+    ("AC KL stage 2, LoRA, 1/4 LR", "T_res_rq9L_kI_KL_lr4", None),
 ]
 IDEAL = ["20I", "100I", "200I"]
 BM25 = ["bm25_k20", "bm25_k100", "bm25_k200"]

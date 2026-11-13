@@ -63,3 +63,8 @@
   ENC_LR 2e-5 (5e-5 diverged on 4B); only differences from T_res_rq9e4_e2 = LOSS kl + TARGETS. ORCD 28964211 (mit_preemptable, rtx_pro_6000, --time 48:00:00).
   ORCD refs/refs_train.jsonl replaced by the S3 rq9_gold_refs_all copy (90,447 rows, md5 b4d6f8a2…; old 32,000-row copy kept as .32000_bak).
 - First stage-2 ideal read: LoRA KL stage 2 u1200 100I 66.1 (start 67.9).
+- ~19:30Z: **Stage-2 KL dips and recovers slowly** (LoRA KL u1200: plain k100/k200 57.5 / 58.0, 100I 66.1, 200I 65.4 vs start 59.6 / 60.9 / 67.9 / 67.1),
+  while SFT rises toward KL's start (LoRA SFT u1200 100I 65.7 from 61.5; frozen 65.2 from 63.7). The text stage-2 arm dips too (k20 56.1 → 53.8 at u400).
+  Cause hypothesis: stage 2 restarts at the FULL stage-1 peak LR (enc 5e-5, reader 2e-5, warm-up 50) on a converged model.
+  User asked whether another stage-2 config is worth trying → **T_res_rq9L_kI_KL_lr4** (1/4 peak: enc 1.25e-5, reader 5e-6; else = T_res_rq9L_kI_KL),
+  ORCD 28970512 (init T_res_rq9L_20I_KL final staged to $W/init). Checkpoints handed to the side scorer / final reads by host `jobs/rq_orcd_link.sh`.
