@@ -74,6 +74,12 @@ qa_kl)                                    # 2026-11-12: general-QA phase, ONE co
   [ $(wc -l < $W/refs/refs_qa_train.jsonl) -ge 100000 ] || { echo "qa refs incomplete"; exit 2; }
   bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
   bash $J/ec2_run.sh T_res_rq9L_QA_KL bash $J/generated_rq9QA_rtx/T_res_rq9L_QA_KL.sh;;
+qa_20i_kl)                                # 2026-11-13: QA -> 20I chain: HotpotQA 20I KL (as kl_lora) from the general-QA KL final T_res_rq9L_QA_KL
+  init T_res_rq9L_QA_KL || exit 2
+  mkdir -p $W/refs; $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs_all/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  [ $(wc -l < $W/refs/refs_train.jsonl) -ge 44800 ] || { echo "refs cover fewer than 44,800 questions"; exit 2; }
+  bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
+  bash $J/ec2_run.sh T_res_rq9L_QA20I_KL bash $J/generated_rq9QA_rtx/T_res_rq9L_QA20I_KL.sh;;
 kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen)   # 2026-11-12 STAGE 2 (user-approved): from the 20I final of the same arm, train on
   # golds-injected 100I / 200I rows (k = 100 or 200 per question, crc32(id) % 2) of the 45,647 questions stage 1 never saw (--offset 44800;
   # 2,400 x 8 = 19,200 of them: 26.5 s/update at k 100/200); the run's own eval: PLAIN BM25 dev1000 at k = 100 (hotpot_tasks_kI_v2 = kI train + bm25e dev/test)
