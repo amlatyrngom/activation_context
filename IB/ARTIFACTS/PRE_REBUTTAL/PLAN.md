@@ -430,3 +430,5 @@ Decision rules (act on them without asking; log each decision here):
   T_res_rq9L_kI_KL. Stage-2 SFT LoRA held panel u800: held_nll 0.352 / answer_nll 0.765 (u0 0.380 / 0.823). QA KL HotpotQA u6400 56.3.
 - ~01:50Z (11-13): **T_in_L90k (§3.5 Input only, reader LoRA, 90k) final dev1000 73.5** → test1000 rescore ORCD 28893834 (`final_test/ac/T_in_L90k_final`).
   Text + LoRA (20I) plain BM25 dev1000 **k=200 64.2** (k=20 56.3, k=100 61.3): text keeps gaining with k; AC without stage 2 does not.
+- ~02:00Z (11-13): **§3.5 test1000 (single runs, final checkpoints): T_in_L90k 75.1, T_res_fr90k 75.4, X_text_90k (seed 0) 76.1** (text seeds
+  1–2: 77.4 / 76.0; untuned 4B 26.2 under the strict parse). AC within 0.7–1.0 of text+LoRA (≈ 0.5 SE: level).
