@@ -436,3 +436,7 @@ Decision rules (act on them without asking; log each decision here):
   delete) until stage 2 is decided. §3.5 results good enough; §3.1 needs more experiments. Stage-2 ETAs (accuracy only after training):
   T_res_rq9L_kI (rqm, u935/2400) ≈ 15Z; T_res_rq9fr_kI (ORCD, u511) ≈ 19Z; T_res_rq9L_kI_KL (rqj, started 01:50Z) ≈ 24Z; T_res_rq9fr_kI_KL
   (rqn, after its 20I KL) ≈ 11-14 02Z; X_rq9_text_t2 after T_res_rq9L_kI on rqm.
+- ~02:35Z (11-13): **Stage-2 side scorer** (user: stage 2 needs intermediate accuracies): ORCD `jobs/rq_s2_eval_loop.sh` (28897399, own GPU,
+  loops every 10 min) scores every stage-2 K-update pair on plain BM25 dev1000 at **k=100 and k=200** (rq_eval_job.sh, batch 32, cap 1024, code
+  v5); host feeder `jobs/rq_s2_feed.sh` (nohup here) moves the EC2 runs' pairs S3 → ORCD `rq_eval_s2/`; the ORCD run's pairs are linked in place.
+  These side scores are the reported stage-2 curves (the end-of-run batch-8 evals are duplicates). §3.1 = the 2B→9B retrieval experiment.
