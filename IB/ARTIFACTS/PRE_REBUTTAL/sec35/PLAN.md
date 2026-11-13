@@ -38,3 +38,14 @@
   LoRA KL u400 55.4 / 56.1, u800 57.1 / 58.5 (u0 59.6 / 60.9); frozen KL u400 54.8 / 57.3, u800 56.3 / 57.6 (u0 57.5 / 57.5).
 - Frozen KL 20I final 200I k=200 63.9 (frozen SFT 59.3). QA->20I KL final 70.6 on 20I (from-base 70.5).
 - rqm (T_res_rq9L_kI at u2000 slot) and rqn (T_res_rq9fr_kI_KL at u800 slot) reclaimed: frozen KL resumed on rqg (sky job), new rqo resumes LoRA SFT, new rqp runs the text stage-2 arm (X_rq9_text_t2).
+
+### 2026-11-13 ~17:00Z — user: drop general-QA pre-training; the §3.1 key comparisons; scoreboard
+- **User decision: drop the general-QA phase** (QA KL, QA -> 20I) unless something later justifies it (e.g. faster tuning). Basis: QA->20I KL final 70.6 = from-base 70.5; QA KL alone plain BM25 46.1 / 49.0 / 49.1.
+- **User: the key §3.1 numbers.** (A) ideal retrieval (golds injected): AC vs UNTUNED text at the same setting; (B) plain BM25: AC at k=100 / 200 vs text at k=20
+  (and higher), untuned and LoRA. Expectation: AC at least matches untuned text; vs LoRA text, compare AC k=100 with LoRA text k=20. Not expected to beat LoRA text at equal k.
+- `sec35/scoreboard.py` (+ `scoreboard_fetch.sh`): re-scores every per-question output with rq_common.score (all match their summaries), paired deltas with
+  95% bootstrap CI and exact McNemar p; writes `sec35/SCOREBOARD.md`. Stage-2 rows = latest scored checkpoint.
+- Current (dev1000): A. KL 20I LoRA vs untuned: 20I +1.7 (p=0.11), 100I +2.3 (p=0.04), 200I +2.2 (p=0.07); SFT 20I LoRA 20I +3.5 (p=0.01) but 100I -4.1, 200I -8.8.
+  B. KL 20I LoRA k=100 / 200 vs untuned k=20: +10.0 / +11.3; vs LoRA text k=20: +3.3 (p=0.02) / +4.6 (p=0.002); vs LoRA text same k: -1.7 / -3.3.
+- Stage-2 ideal-retrieval reads: ORCD 28961025 `jobs/rq_fin_loop.sh` (u01200 midpoints + u02400 finals: 20I, 100I, 200I, plain k=20/100/200; text stage-2 final too);
+  host `jobs/rq_fin_feed.sh` sends the EC2 finals (log IB/TMP/PRE_REBUTTAL/fin_feed.log).
