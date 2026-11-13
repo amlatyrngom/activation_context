@@ -432,3 +432,7 @@ Decision rules (act on them without asking; log each decision here):
   Text + LoRA (20I) plain BM25 dev1000 **k=200 64.2** (k=20 56.3, k=100 61.3): text keeps gaining with k; AC without stage 2 does not.
 - ~02:00Z (11-13): **§3.5 test1000 (single runs, final checkpoints): T_in_L90k 75.1, T_res_fr90k 75.4, X_text_90k (seed 0) 76.1** (text seeds
   1–2: 77.4 / 76.0; untuned 4B 26.2 under the strict parse). AC within 0.7–1.0 of text+LoRA (≈ 0.5 SE: level).
+- ~02:15Z (11-13): **User: keep the 2B encoder for now; KEEP the 4B→9B results** (ORCD runs/T_res_rq9e4_e2 + init/R_res_rq9e4_final — do not
+  delete) until stage 2 is decided. §3.5 results good enough; §3.1 needs more experiments. Stage-2 ETAs (accuracy only after training):
+  T_res_rq9L_kI (rqm, u935/2400) ≈ 15Z; T_res_rq9fr_kI (ORCD, u511) ≈ 19Z; T_res_rq9L_kI_KL (rqj, started 01:50Z) ≈ 24Z; T_res_rq9fr_kI_KL
+  (rqn, after its 20I KL) ≈ 11-14 02Z; X_rq9_text_t2 after T_res_rq9L_kI on rqm.
