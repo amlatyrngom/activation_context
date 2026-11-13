@@ -76,3 +76,7 @@
   LoRA SFT final 200I **71.7** (start 56.1, u1200 64.3), plain k=100 58.8 (b8; start 51.9). Text stage-2 final 100I 76.1 (stage-1 text 75.9), plain k=20 56.3 (start 56.1): flat.
   Frozen KL stage 2 u1200 100I 65.6 (start 66.2), plain k=100 / 200 56.5 / 57.7. LoRA KL stage 2 u2000 k=100 / 200 58.5 / 60.3.
   4B KL 20I u800 66.3 (2B KL 62.2). rqp torn down (text done); rqo gone after its run (final already sent).
+- ~22:30Z **User framing (durable): a competitive FROZEN-reader AC is a strong paper argument** — frozen AC only changes the reader's INPUT, while
+  text + LoRA modifies the reader's weights; so the like-for-like comparison for frozen AC is untuned text, and text + LoRA above us is acceptable.
+  Consequences: show frozen arms beside LoRA arms in every table and plot; frame frozen AC against untuned text first. Current: frozen KL 20I final
+  within 0.9-3.4 of the LoRA-reader KL; frozen SFT stage-2 final 100I 70.1 vs untuned 65.6. Open: a frozen-reader 4B chain (frozen-reader 4B R, then KL 20I).
