@@ -440,3 +440,7 @@ Decision rules (act on them without asking; log each decision here):
   loops every 10 min) scores every stage-2 K-update pair on plain BM25 dev1000 at **k=100 and k=200** (rq_eval_job.sh, batch 32, cap 1024, code
   v5); host feeder `jobs/rq_s2_feed.sh` (nohup here) moves the EC2 runs' pairs S3 → ORCD `rq_eval_s2/`; the ORCD run's pairs are linked in place.
   These side scores are the reported stage-2 curves (the end-of-run batch-8 evals are duplicates). §3.1 = the 2B→9B retrieval experiment.
+- ~03:40Z (11-13): **KL's real effect is on plain BM25 with many passages, not on 20I.** T_res_rq9L_20I_KL final, plain BM25 dev1000 **k=100
+  59.6** (side scorer, batch 32; in-run batch 8: 59.1) vs SFT T_res_rq9L_20I **51.9** (+7.7, ≈5 SE) — before any stage 2; already above
+  text + LoRA k=20 (56.3) and untuned text k=100 / k=200 (54.8 / **56.1**). On 20I the two are level (70.5 vs 72.3). Stage-2 side scores so far:
+  T_res_rq9fr_kI u400 k=100 50.0, k=200 51.2 (start 52.0 / 51.4). T_res_rq9fr_20I_KL u4800 68.4 (SFT 69.9). QA KL HotpotQA u8800 58.9.
