@@ -43,8 +43,8 @@ for s, q in QS.items():
 
 # ---- collect outputs: (system, step, setting) -> (path, source priority)
 PRI = {"orcd_rq_eval_fin": 5, "orcd_rq_eval_fin20i": 5, "orcd_rq_eval_s2": 4, "orcd_rq_eval_kI_ac": 4, "orcd_rq_eval_kI_text": 4,
-       "orcd_rq_eval20i": 4, "s3_kI_eval_ac": 3, "s3_kI_eval_text": 3}
-STAGE1_FINAL = {"T_res_rq9L_20I": 5600, "T_res_rq9fr_20I": 5600, "T_res_rq9L_20I_KL": 5600, "T_res_rq9fr_20I_KL": 5600}
+       "orcd_rq_eval20i": 4, "orcd_rq_eval_e4": 4, "s3_kI_eval_ac": 3, "s3_kI_eval_text": 3}
+STAGE1_FINAL = {"T_res_rq9e4_e2": 5600, "T_res_rq9L_20I": 5600, "T_res_rq9fr_20I": 5600, "T_res_rq9L_20I_KL": 5600, "T_res_rq9fr_20I_KL": 5600}
 STAGE2 = {"T_res_rq9L_kI": 2400, "T_res_rq9fr_kI": 2400, "T_res_rq9L_kI_KL": 2400, "T_res_rq9fr_kI_KL": 2400}
 found = {}
 
@@ -59,8 +59,8 @@ for p in glob.glob(str(OUTS / "*/*.jsonl")):
     src, name = Path(p).parent.name, Path(p).name
     if not Path(p[:-len(".jsonl")] + ".summary.json").exists():
         continue                                        # still being written (the summary is written last)
-    if src.startswith("s3_run_"):                        # in-run evals: <uNNNNN|final>.jsonl
-        run = src[len("s3_run_"):]
+    if src.startswith(("s3_run_", "orcd_run_")):         # in-run evals: <uNNNNN|final>.jsonl
+        run = src.split("_run_", 1)[1]
         m = re.fullmatch(r"(u(\d+)|final)\.jsonl", name)
         if not m:
             continue
@@ -153,6 +153,7 @@ SYSTEMS = [  # (label, system name, stage-1 fixed step or None = latest)
     ("Text + LoRA stage 2", "text_X_rq9_text_t2", None),
     ("AC SFT 20I, LoRA reader", "T_res_rq9L_20I", 5600),
     ("AC SFT 20I, frozen reader", "T_res_rq9fr_20I", 5600),
+    ("AC SFT 20I, LoRA reader, 4B encoder", "T_res_rq9e4_e2", 5600),
     ("AC KL 20I, LoRA reader", "T_res_rq9L_20I_KL", 5600),
     ("AC KL 20I, frozen reader", "T_res_rq9fr_20I_KL", 5600),
     ("AC SFT stage 2, LoRA", "T_res_rq9L_kI", None),

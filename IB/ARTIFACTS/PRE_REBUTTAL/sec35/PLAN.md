@@ -49,3 +49,12 @@
   B. KL 20I LoRA k=100 / 200 vs untuned k=20: +10.0 / +11.3; vs LoRA text k=20: +3.3 (p=0.02) / +4.6 (p=0.002); vs LoRA text same k: -1.7 / -3.3.
 - Stage-2 ideal-retrieval reads: ORCD 28961025 `jobs/rq_fin_loop.sh` (u01200 midpoints + u02400 finals: 20I, 100I, 200I, plain k=20/100/200; text stage-2 final too);
   host `jobs/rq_fin_feed.sh` sends the EC2 finals (log IB/TMP/PRE_REBUTTAL/fin_feed.log).
+
+### 2026-11-13 ~18:00Z — user: MVP tentatively met (table B); drive the recipe to the end; hill-climb on ideal retrieval vs text + LoRA first
+- User: treat the scoreboard (esp. B) as MVP met; drive the recipe to its end with plots; the remaining gap = AC vs text + LoRA on ideal retrieval; any
+  hill-climbing targets that first, without affecting what is running. Question: why did §3.5 (4B→4B) match text + LoRA and 2B→9B not — encoder capacity, or 45k vs 90k?
+- Evidence (20I dev1000, SFT, reader LoRA; text + LoRA 77.1): 2B enc 44.8k 72.3 (-4.8, p<0.001); 2B enc 90k 75.0 (-2.1; text 90k stopped at u1600 75.1, flat);
+  4B enc 44.8k 75.3 (-1.8, p=0.066, paired, scoreboard). §3.5 4B→4B (encoder = reader) 90k: dev 73.8 / test 75.4 vs text 75.7 / 76.1.
+  => at 20I both levers each close ~60% of the gap; §3.5 had both (encoder as large as the reader, 90k). At 100I / 200I the gap is mostly length
+  generalization (text + LoRA keeps 76-77 at 100I/200I; AC KL drops 2.6 / 3.4 from 20I, SFT 11 / 16) - stage 2 targets that.
+- Zero-training 100I / 200I / plain read of the 4B-encoder SFT final: ORCD 28962078 (`jobs/rq_e4_kI_orcd.sh`; rq_eval_job.sh gained RQ_ENCODER, default 2B).

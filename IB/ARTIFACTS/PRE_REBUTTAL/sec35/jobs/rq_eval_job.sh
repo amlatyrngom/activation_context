@@ -22,10 +22,11 @@ exec > >(tee -a $R/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [rq_eval] $*"; }
 STEM=${BUNDLE%.tar.gz}; C=$W/code/$STEM
 [ -f $C/MANIFEST.json ] || { say "bundle $C not unpacked"; exit 2; }
+# RQ_ENCODER (2026-11-13): encoder model id, default Qwen/Qwen3.5-2B (Qwen/Qwen3.5-4B for the T_res_rq9e4_e2 pair)
 # ---- the retrieval job's environment (generated_rq9*_rtx: READER Qwen3.5-9B, ENCODER Qwen3.5-2B, RES_LAYERS all, LINEAR_SKIP 1) ----
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
-export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit RQ_THINKING=0 QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128
-export SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_K=20,100,200 SEC45_LINEAR_SKIP=1 QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0
+export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit RQ_THINKING=0 QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=${RQ_ENCODER:-Qwen/Qwen3.5-2B} QA4B_RANK=128
+export SEC45_ENCODER=${RQ_ENCODER:-Qwen/Qwen3.5-2B} SEC45_RES_LAYERS=all SEC45_K=20,100,200 SEC45_LINEAR_SKIP=1 QA4B_LAYERS=3,7,11,15,19,23,27,31,35 QA4B_KV=0
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' data $TD split $EVAL_SPLIT code $C"
