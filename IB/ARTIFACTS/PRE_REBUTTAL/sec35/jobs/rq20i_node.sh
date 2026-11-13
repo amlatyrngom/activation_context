@@ -80,6 +80,14 @@ qa_20i_kl)                                # 2026-11-13: QA -> 20I chain: HotpotQ
   [ $(wc -l < $W/refs/refs_train.jsonl) -ge 44800 ] || { echo "refs cover fewer than 44,800 questions"; exit 2; }
   bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
   bash $J/ec2_run.sh T_res_rq9L_QA20I_KL bash $J/generated_rq9QA_rtx/T_res_rq9L_QA20I_KL.sh;;
+e4_frozen_kl)                             # 2026-11-13 (user: frozen arms beside LoRA arms): FROZEN-reader 4B chain = R_res_rq9e4fr (R_res_rq9e4
+  # with READER_LR 0, 2,000 x 8 FineWeb, micro 2) then T_res_rq9e4fr_20I_KL (T_res_rq9e4_20I_KL with READER_LR 0, micro 1 as on ORCD)
+  bash $J/ec2_prep.sh sec35_code_v5.tar.gz > /dev/null || exit 2
+  SEC45_MICRO_BATCH=2 bash $J/ec2_run.sh R_res_rq9e4fr bash $J/generated_rq9e4_rtx/R_res_rq9e4fr.sh || { echo "R_res_rq9e4fr failed"; exit 1; }
+  init R_res_rq9e4fr || exit 2
+  mkdir -p $W/refs; $S3PY $W/s3x.py get $S3/runs/rq9_gold_refs_all/refs_train.jsonl $W/refs/refs_train.jsonl || exit 2
+  [ $(wc -l < $W/refs/refs_train.jsonl) -ge 44800 ] || { echo "refs cover fewer than 44,800 questions"; exit 2; }
+  SEC45_MICRO_BATCH=1 bash $J/ec2_run.sh T_res_rq9e4fr_20I_KL bash $J/generated_rq9e4_rtx/T_res_rq9e4fr_20I_KL.sh;;
 kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen)   # 2026-11-12 STAGE 2 (user-approved): from the 20I final of the same arm, train on
   # golds-injected 100I / 200I rows (k = 100 or 200 per question, crc32(id) % 2) of the 45,647 questions stage 1 never saw (--offset 44800;
   # 2,400 x 8 = 19,200 of them: 26.5 s/update at k 100/200); the run's own eval: PLAIN BM25 dev1000 at k = 100 (hotpot_tasks_kI_v2 = kI train + bm25e dev/test)
@@ -115,5 +123,5 @@ kI_probe)                                 # timing / memory: 48 updates of the s
     echo "probe mb$mb exit $?: $(tail -n 1 $D/mb$mb.log | cut -c1-600)"
   done
   $S3PY $W/s3x.py putdir $D/ $S3/runs/kI_probe/;;
-*) echo "role frozen|lora|text|frozen_kl|lora90k|frozen90k|text90k|refs_all|kl_lora|kl_frozen|qa_refs|qa_kl|kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen|kI_text|kI_probe"; exit 2;;
+*) echo "role e4_frozen_kl|frozen|lora|text|frozen_kl|lora90k|frozen90k|text90k|refs_all|kl_lora|kl_frozen|qa_refs|qa_kl|kI_sft_lora|kI_sft_frozen|kI_kl_lora|kI_kl_frozen|kI_text|kI_probe"; exit 2;;
 esac

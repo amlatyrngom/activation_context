@@ -80,3 +80,7 @@
   text + LoRA modifies the reader's weights; so the like-for-like comparison for frozen AC is untuned text, and text + LoRA above us is acceptable.
   Consequences: show frozen arms beside LoRA arms in every table and plot; frame frozen AC against untuned text first. Current: frozen KL 20I final
   within 0.9-3.4 of the LoRA-reader KL; frozen SFT stage-2 final 100I 70.1 vs untuned 65.6. Open: a frozen-reader 4B chain (frozen-reader 4B R, then KL 20I).
+- ~22:45Z **Frozen-reader 4B chain started (user: "starting now is better")** on new spot node rqq (role `e4_frozen_kl` in jobs/rq20i_node.sh):
+  R_res_rq9e4fr (= R_res_rq9e4 with READER_LR 0; 2,000 x 8 FineWeb, micro 2) then T_res_rq9e4fr_20I_KL (= T_res_rq9e4_20I_KL with READER_LR 0,
+  INIT R_res_rq9e4fr; ENC_LR 2e-5, KL, 20I, 44.8k, micro 1). Only difference from the LoRA-reader 4B chain: the reader is frozen. Est. R ~5 h + T ~14 h.
+  LoRA KL stage 2 (rqj) finished training 22:26Z; its final reads follow via rq_fin_feed.sh.
