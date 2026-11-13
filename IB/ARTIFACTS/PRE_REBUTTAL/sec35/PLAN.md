@@ -18,3 +18,10 @@
 - Stage-2 LoRA SFT plain BM25 k=200 u1200 55.4 (u0 49.8).
 - Text injected reads done: untuned 100I/k100 65.6, 200I/k200 64.9; tuned 75.9 / 76.5.
 - ORCD 28927579 (jobs/rq_kl_kI_orcd.sh): 100I k=100 and 200I k=200 for both KL 20I finals and the QA KL final.
+
+### 2026-11-13 ~09:50Z — injected reads of KL finals; QA KL plain BM25; QA->20I KL early lead
+- Frozen KL 20I final plain BM25 k=20 53.6 (frozen SFT 52.7). Full: frozen KL 53.6 / 57.5 / 57.5 at k=20/100/200.
+- 100I k=100: LoRA KL 67.9 (SFT 61.5), frozen KL 66.2 (SFT 63.7), QA KL 56.0. 200I k=200: LoRA KL 67.1 (SFT 56.1). Text untuned 65.6 / 64.9, tuned 75.9 / 76.5.
+- QA KL final plain BM25 k=20/100/200: 46.1 / 49.0 / 49.1 (general-QA KL alone gives no large-k gain).
+- QA->20I KL (T_res_rq9L_QA20I_KL) 20I: u0 60.0, u800 64.1, u1600 67.7 vs from-base 19.6 / 62.2 / 63.4 (+4.3 at u1600).
+- Stage-2 frozen SFT plain BM25: k=100 u800 51.5, k=200 u800 52.5. LoRA KL held answer_nll u400/u800 1.026 / 1.024.
