@@ -58,3 +58,8 @@
   => at 20I both levers each close ~60% of the gap; §3.5 had both (encoder as large as the reader, 90k). At 100I / 200I the gap is mostly length
   generalization (text + LoRA keeps 76-77 at 100I/200I; AC KL drops 2.6 / 3.4 from 20I, SFT 11 / 16) - stage 2 targets that.
 - Zero-training 100I / 200I / plain read of the 4B-encoder SFT final: ORCD 28962078 (`jobs/rq_e4_kI_orcd.sh`; rq_eval_job.sh gained RQ_ENCODER, default 2B).
+- ~18:30Z: user: own judgment on the 4B-encoder KL hill-climb → launched (likely to help: 4B SFT 20I 75.3 = within 1.8 of text + LoRA, not significant).
+  **T_res_rq9e4_20I_KL** = T_res_rq9L_20I_KL (KL to the gold-view teacher, 20I, 44.8k, 5,600 × 8, reader LoRA) with ENCODER Qwen3.5-4B, INIT R_res_rq9e4,
+  ENC_LR 2e-5 (5e-5 diverged on 4B); only differences from T_res_rq9e4_e2 = LOSS kl + TARGETS. ORCD 28964211 (mit_preemptable, rtx_pro_6000, --time 48:00:00).
+  ORCD refs/refs_train.jsonl replaced by the S3 rq9_gold_refs_all copy (90,447 rows, md5 b4d6f8a2…; old 32,000-row copy kept as .32000_bak).
+- First stage-2 ideal read: LoRA KL stage 2 u1200 100I 66.1 (start 67.9).
