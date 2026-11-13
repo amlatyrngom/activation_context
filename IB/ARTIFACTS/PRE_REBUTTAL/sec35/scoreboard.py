@@ -215,6 +215,21 @@ for label, sy, st in AC:
         cells = [cell_cmp(a[0], (lambda g: g and g[0])(val(ref[0], c, ref[1]))) for ref in (base, lora) for c in BM25]
         w(f"| {label}{'' if st is not None else f' (u{a[1]})'} | {kk[6:]} | " + " | ".join(cells) + " |")
 
+PAIRS_AC = [  # (label, system A, step A, system B, step B): A − B, paired, every setting
+    ("4B SFT − 2B SFT (LoRA reader)", "T_res_rq9e4_e2", 5600, "T_res_rq9L_20I", 5600),
+    ("4B SFT − 2B KL (LoRA reader)", "T_res_rq9e4_e2", 5600, "T_res_rq9L_20I_KL", 5600),
+]
+w("\n## C. AC − AC (same questions, every setting)\n")
+w("| Comparison | 20I | 100I | 200I | plain k=20 | plain k=100 | plain k=200 |")
+w("|---|---|---|---|---|---|---|")
+for label, sa, ta, sb, tb in PAIRS_AC:
+    cells = []
+    for c in IDEAL + BM25:
+        a, b = val(sa, c, ta), val(sb, c, tb)
+        cells.append(cell_cmp(a and a[0], b and b[0]))
+    if any(x != "–" for x in cells):
+        w(f"| {label} | " + " | ".join(cells) + " |")
+
 if checks:
     w("\n**Rescore mismatches:** " + "; ".join(checks))
 else:
