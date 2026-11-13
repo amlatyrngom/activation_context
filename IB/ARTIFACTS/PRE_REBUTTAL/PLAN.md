@@ -425,3 +425,6 @@ Decision rules (act on them without asking; log each decision here):
   — a story decision for the user. KL vs SFT, 20I dev1000: LoRA u4800 70.7 vs 70.8 (level since u2400); frozen u2400 67.5 vs 70.1 (KL's early
   lead gone). QA KL HotpotQA flat ≈55 since u1600 (u4800 55.6). T_in_L90k u10400 73.3. Freed ORCD GPU: the deferred text passes (untuned +
   X_rq9_text_20I on plain k=200, 100I, 200I; `jobs/rq_text_kI_orcd.sh`, data hotpot_tasks_kI_v2).
+- ~01:30Z (11-13): **T_res_rq9L_20I_KL final dev1000 70.5** (SFT T_res_rq9L_20I 72.3; −1.8 ≈ 1.3 SE, not significant). KL leads early
+  (u800 +3.5) and is level/slightly behind from u2400 on; frozen pair the same so far (u3200 KL 68.2 vs SFT 68.5). rqj → refs to 90,447 →
+  T_res_rq9L_kI_KL. Stage-2 SFT LoRA held panel u800: held_nll 0.352 / answer_nll 0.765 (u0 0.380 / 0.823). QA KL HotpotQA u6400 56.3.
