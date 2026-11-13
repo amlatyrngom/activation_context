@@ -68,3 +68,7 @@
   Cause hypothesis: stage 2 restarts at the FULL stage-1 peak LR (enc 5e-5, reader 2e-5, warm-up 50) on a converged model.
   User asked whether another stage-2 config is worth trying → **T_res_rq9L_kI_KL_lr4** (1/4 peak: enc 1.25e-5, reader 5e-6; else = T_res_rq9L_kI_KL),
   ORCD 28970512 (init T_res_rq9L_20I_KL final staged to $W/init). Checkpoints handed to the side scorer / final reads by host `jobs/rq_orcd_link.sh`.
+- ~20:00Z: **4B-encoder SFT 20I final, zero-training reads** (ORCD 28962078): 100I **67.3**, 200I **65.3**, plain k=100 **55.9** vs 2B SFT 61.5 / 56.1 / 51.9
+  (+5.8 / +9.2 / +4.0): the bigger encoder also cuts the long-context drop (20I→200I: 4B -10.0, 2B -16.2). Untuned text 65.6 / 64.9 / 54.8.
+  Stage-2 midpoints (u1200): 20I LoRA SFT 68.4 (start 72.3), LoRA KL 67.3 (70.5); 200I LoRA SFT 64.3 (56.1), frozen SFT 63.9 (59.3), LoRA KL 65.4 (67.1).
+  Frozen SFT stage 2 final plain k=100 57.1 (b8; start 52.0). Text stage 2 flat (k20 56.1 → 55.3 at u2000). 1/4-LR KL stage 2 u0 59.0 (b8), running.
