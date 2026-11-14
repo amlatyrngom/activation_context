@@ -9,7 +9,7 @@ only; untuned text as the comparison; NO text + LoRA line yet).
     scorer and have no dev1000 read yet.
 (b) TTFT at k = 200 (paper's systems measurement, unchanged: IB/TMP/PAPER_SYSTEMS setup B), Text and AC only; accuracy annotations are
     the new BM25 k = 200 numbers.
-Run: uv run --no-project --python 3.13 --with matplotlib python make_fig_retrieval_s31.py
+Run: uv run --no-project --python 3.13 --with matplotlib python make_fig_retrieval_s31.py [test]   (default dev1000 draft)
 """
 import json
 import sys
@@ -27,8 +27,11 @@ R, F = V.R, V.F
 R.OUT = HERE
 DASH = (0, (3, 1.5))
 
-SB = json.loads((HERE.parent / "scoreboard.json").read_text())["systems"]
-AC_RUN, TEXT_RUN = "T_res_rq9fr_kI_KL", "text_base"
+SPLIT = "test" if "--split=test" in sys.argv or "test" in sys.argv[1:] else "dev"   # test: held-out test1000 (test_table.py -> test.json)
+if SPLIT == "test":
+    SB = json.loads((HERE.parent / "test.json").read_text())["systems"]; AC_RUN, TEXT_RUN = "ac", "text_base"
+else:
+    SB = json.loads((HERE.parent / "scoreboard.json").read_text())["systems"]; AC_RUN, TEXT_RUN = "T_res_rq9fr_kI_KL", "text_base"
 K = [20, 100, 200]
 TOK = dict(text_bm25=[2.396, 11.996, 24.351], text_ideal=[2.402, 11.996, 24.350], ac=[0.331, 1.306, 2.559])
 
@@ -71,4 +74,4 @@ if __name__ == "__main__":
     panel_acc(f.add_subplot(gs[0]))
     V.panel_ttft(f.add_subplot(gs[1]), "(b) Latency (2B encoder, 9B reader)", xmax=3000)
     f.subplots_adjust(left=0.17, right=0.985, bottom=0.11, top=0.94)
-    R.save(f, "fig_retrieval_s31_draft")
+    R.save(f, "fig_retrieval_s31_test" if SPLIT == "test" else "fig_retrieval_s31_draft")
