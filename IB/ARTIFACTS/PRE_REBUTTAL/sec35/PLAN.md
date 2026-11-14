@@ -102,3 +102,5 @@
   (significant vs untuned at 100I/200I, +2.2 n.s. at 20I) but not significant vs untuned at the same k on plain BM25 (+2.1, +2.3).
   RECOMMENDATION (for the user to confirm): KL stage 2 as the main frozen row — it is the declared main configuration (gold-view teacher), it is
   the frozen arm that significantly beats untuned text on BOTH ideal retrieval (100I/200I) and plain BM25 at the same k, and the 4B frozen chain is KL.
+- 2026-11-14 ~12:00Z **USER DECISION: KL stage 2 (frozen reader, T_res_rq9fr_kI_KL) is the §3.1 main row.** Frozen SFT stage 2 (statistical tie) is an ablation
+  beside it. Scoreboard: main row listed first after the text rows.

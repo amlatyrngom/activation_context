@@ -151,6 +151,7 @@ SYSTEMS = [  # (label, system name, stage-1 fixed step or None = latest)
     ("Text, untuned", "text_base", 0),
     ("Text + LoRA (20I)", "text_X_rq9_text_20I", 5600),
     ("Text + LoRA stage 2", "text_X_rq9_text_t2", None),
+    ("**MAIN: AC KL stage 2, frozen reader**", "T_res_rq9fr_kI_KL", None),   # user 2026-11-14: the §3.1 main row
     ("AC SFT 20I, LoRA reader", "T_res_rq9L_20I", 5600),
     ("AC SFT 20I, frozen reader", "T_res_rq9fr_20I", 5600),
     ("AC SFT 20I, LoRA reader, 4B encoder", "T_res_rq9e4_e2", 5600),
@@ -161,7 +162,6 @@ SYSTEMS = [  # (label, system name, stage-1 fixed step or None = latest)
     ("AC SFT stage 2, LoRA", "T_res_rq9L_kI", None),
     ("AC SFT stage 2, frozen", "T_res_rq9fr_kI", None),
     ("AC KL stage 2, LoRA", "T_res_rq9L_kI_KL", None),
-    ("AC KL stage 2, frozen", "T_res_rq9fr_kI_KL", None),
     ("AC KL stage 2, LoRA, 1/4 LR", "T_res_rq9L_kI_KL_lr4", None),
 ]
 IDEAL = ["20I", "100I", "200I"]
@@ -176,6 +176,7 @@ def val(sysname, setting, step):
 out = []
 w = out.append
 w("# §3.1 scoreboard (2B encoder → 9B reader, HotpotQA dev1000)\n")
+w("Main result (user, 2026-11-14): FROZEN-reader AC, KL to the gold-view teacher, stage 2 (T_res_rq9fr_kI_KL). Reader-LoRA AC rows are ablations; text + LoRA is a higher reference.\n")
 w("Re-scored from per-question outputs; deltas are paired on the same 1,000 questions: Δ points [95% bootstrap CI], exact McNemar p; "
   "**bold** = p < 0.05. Stage-2 rows show the latest scored checkpoint (uNNNN) per column.\n")
 for title, cols, heads in (("A. Ideal retrieval (golds injected)", IDEAL, ["20I (k=20)", "100I (k=100)", "200I (k=200)"]),
