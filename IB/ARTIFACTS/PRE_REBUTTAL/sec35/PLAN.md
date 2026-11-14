@@ -104,3 +104,6 @@
   the frozen arm that significantly beats untuned text on BOTH ideal retrieval (100I/200I) and plain BM25 at the same k, and the 4B frozen chain is KL.
 - 2026-11-14 ~12:00Z **USER DECISION: KL stage 2 (frozen reader, T_res_rq9fr_kI_KL) is the §3.1 main row.** Frozen SFT stage 2 (statistical tie) is an ablation
   beside it. Scoreboard: main row listed first after the text rows.
+- 2026-11-14 ~15:30Z **4B LoRA-reader KL 20I final (T_res_rq9e4_20I_KL): no gain over 2B KL.** 20I 71.3 / 100I 68.4 / 200I 67.0; plain k=20 52.4, k=100 58.4, k=200 59.1.
+  4B − 2B KL (LoRA reader): +0.8 / +0.5 / -0.1 / +1.5 / -1.2 / -1.8 (only k=200 significant, p=0.047, against 4B). Under SFT the 4B encoder gave +3.0 at 20I;
+  under KL it does not — consistent with KL being bounded by its teacher (the untuned reader on the golds). Frozen 4B KL (rqq) at u4000: 69.6 (u3200 70.2).
