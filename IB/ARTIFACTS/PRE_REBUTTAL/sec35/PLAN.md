@@ -84,3 +84,9 @@
   R_res_rq9e4fr (= R_res_rq9e4 with READER_LR 0; 2,000 x 8 FineWeb, micro 2) then T_res_rq9e4fr_20I_KL (= T_res_rq9e4_20I_KL with READER_LR 0,
   INIT R_res_rq9e4fr; ENC_LR 2e-5, KL, 20I, 44.8k, micro 1). Only difference from the LoRA-reader 4B chain: the reader is frozen. Est. R ~5 h + T ~14 h.
   LoRA KL stage 2 (rqj) finished training 22:26Z; its final reads follow via rq_fin_feed.sh.
+- 2026-11-14 ~01:20Z **USER DECISION (durable): §3.1 reports FROZEN-reader AC as the main result.** The reader-LoRA AC arms move to the ablations;
+  text + LoRA is shown (if at all) as a higher reference, not the comparison — the reader is not tuned, so "why not tune the reader other ways"
+  no longer applies. MVP considered reached. The frozen 4B chain (rqq) stays valuable: matching text + LoRA (even at k=100/200) would be a bonus.
+  Frozen SFT stage-2 final (u2400) complete: 20I 71.0 / 100I 70.1 / 200I 68.4 (vs untuned +2.2 p=0.105 / +4.5 p=0.001 / +3.5 p=0.016);
+  plain k=20 52.0, k=100 56.9, k=200 58.4 (k=200 vs untuned k=20 +8.8, vs LoRA text k=20 +2.1 p=0.133).
+  Frozen KL 20I (no stage 2): ideal retrieval matches untuned (+0.8 / +0.6 / -1.0, all n.s.); plain k=100 vs untuned k=20 +7.9, vs untuned k=100 +2.7 (p=0.023), vs LoRA text k=20 +1.2 (n.s.).
