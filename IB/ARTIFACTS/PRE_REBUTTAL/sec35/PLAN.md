@@ -90,3 +90,8 @@
   Frozen SFT stage-2 final (u2400) complete: 20I 71.0 / 100I 70.1 / 200I 68.4 (vs untuned +2.2 p=0.105 / +4.5 p=0.001 / +3.5 p=0.016);
   plain k=20 52.0, k=100 56.9, k=200 58.4 (k=200 vs untuned k=20 +8.8, vs LoRA text k=20 +2.1 p=0.133).
   Frozen KL 20I (no stage 2): ideal retrieval matches untuned (+0.8 / +0.6 / -1.0, all n.s.); plain k=100 vs untuned k=20 +7.9, vs untuned k=100 +2.7 (p=0.023), vs LoRA text k=20 +1.2 (n.s.).
+- 2026-11-14 ~01:45Z **User: prioritize the 4B FROZEN runs over the LoRA ones; wait for the frozen KL stage-2 final before choosing KL vs SFT.**
+  The frozen 4B chain has its own spot node (rqq) and is not slowed by the ORCD 4B LoRA run. Reads of both 4B KL finals (they need RQ_ENCODER 4B, so
+  the 2B final-reads loop cannot do them): jobs/rq_e4_read_orcd.sh PAIR (100I, 200I, plain k=100/200/20; one eval dir per pair, $W/rq_eval_e4x/PAIR),
+  submitted by the host loop jobs/rq_e4_feed.sh (frozen checked and submitted first). Scoreboard: 4B KL rows (LoRA, frozen), 4B-vs-2B KL pairs, and
+  frozen stage-2 SFT/KL vs frozen KL 20I pairs.
