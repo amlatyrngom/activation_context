@@ -110,3 +110,9 @@
 - 2026-11-14 ~20:10Z **1/4-LR stage-2 KL (LoRA reader, T_res_rq9L_kI_KL_lr4) final = same endpoint as full LR.** 20I 70.4 / 100I 69.0 / 200I 68.6;
   plain k=20 52.2, k=100 58.2, k=200 60.6 (full LR: 69.5 / 69.7 / 68.3; 52.0 / 58.9 / 60.1). Shallower early dip (u400 -1.9 vs -4.2 at k=100), no gain at the end:
   stage-2 LR is not a lever. rqq (frozen 4B KL) was reclaimed at ~u5400; resumed on rqr from the S3 u4800 slot at 19:40Z.
+- 2026-11-14 ~22:00Z **User: the original plan, frozen reader only; no LR variants or 4B in §3.1.** Draft §3.1 figure = adapted copy of the paper's
+  fig_retrieval_v3 (figs/make_fig_retrieval_s31.py -> figs/fig_retrieval_s31_draft.{png,pdf}): (a) frozen KL stage 2 vs untuned text, BM25 and ideal
+  recall, dev1000; (b) the paper's TTFT bars (Text, AC) with the new k=200 accuracies. No text + LoRA line (user deciding). Left out until re-read
+  under the new scorer: gold-reference / no-context lines, Select -> text. x = the paper's eval500 token means (dev1000 means not computed).
+  scoreboard.py now also writes scoreboard.json (acc + paired deltas vs untuned) for the figures.
+  Reported numbers must come from the held-out test1000 (dev1000 was used for every choice): test1000 / test1000_100I / test1000_200I exist on S3.

@@ -244,4 +244,17 @@ else:
     w(f"\nAll {len(cache)} outputs re-scored to their summary accuracy (±0.05).")
 text = "\n".join(out) + "\n"
 MD.write_text(text)
+# machine-readable copy for the figures (2026-11-14): accuracy + step per (system, setting), and paired deltas vs untuned text
+data = {"systems": {}, "paired_vs_untuned": {}}
+for label, sy, st in SYSTEMS:
+    for c in IDEAL + BM25:
+        g = val(sy, c, st)
+        if g is not None:
+            data["systems"].setdefault(sy, {"label": label})[c] = {"acc": round(acc(g[0]), 2), "step": g[1], "n": len(g[0])}
+    for c in IDEAL + BM25:
+        a, b = val(sy, c, st), val("text_base", c, 0)
+        if a is not None and b is not None and sy != "text_base":
+            d, lo, hi, p = paired(a[0], b[0])
+            data["paired_vs_untuned"].setdefault(sy, {})[c] = {"delta": round(d, 2), "lo": round(lo, 2), "hi": round(hi, 2), "p": p}
+(MD.parent / "scoreboard.json").write_text(json.dumps(data, indent=1) + "\n")
 print(text)
