@@ -107,3 +107,6 @@
 - 2026-11-14 ~15:30Z **4B LoRA-reader KL 20I final (T_res_rq9e4_20I_KL): no gain over 2B KL.** 20I 71.3 / 100I 68.4 / 200I 67.0; plain k=20 52.4, k=100 58.4, k=200 59.1.
   4B − 2B KL (LoRA reader): +0.8 / +0.5 / -0.1 / +1.5 / -1.2 / -1.8 (only k=200 significant, p=0.047, against 4B). Under SFT the 4B encoder gave +3.0 at 20I;
   under KL it does not — consistent with KL being bounded by its teacher (the untuned reader on the golds). Frozen 4B KL (rqq) at u4000: 69.6 (u3200 70.2).
+- 2026-11-14 ~20:10Z **1/4-LR stage-2 KL (LoRA reader, T_res_rq9L_kI_KL_lr4) final = same endpoint as full LR.** 20I 70.4 / 100I 69.0 / 200I 68.6;
+  plain k=20 52.2, k=100 58.2, k=200 60.6 (full LR: 69.5 / 69.7 / 68.3; 52.0 / 58.9 / 60.1). Shallower early dip (u400 -1.9 vs -4.2 at k=100), no gain at the end:
+  stage-2 LR is not a lever. rqq (frozen 4B KL) was reclaimed at ~u5400; resumed on rqr from the S3 u4800 slot at 19:40Z.
