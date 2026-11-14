@@ -95,3 +95,10 @@
   the 2B final-reads loop cannot do them): jobs/rq_e4_read_orcd.sh PAIR (100I, 200I, plain k=100/200/20; one eval dir per pair, $W/rq_eval_e4x/PAIR),
   submitted by the host loop jobs/rq_e4_feed.sh (frozen checked and submitted first). Scoreboard: 4B KL rows (LoRA, frozen), 4B-vs-2B KL pairs, and
   frozen stage-2 SFT/KL vs frozen KL 20I pairs.
+- 2026-11-14 ~08:40Z **Frozen KL stage-2 final complete; frozen KL vs frozen SFT (both stage 2, u2400) = statistical tie.**
+  KL − SFT: 20I -2.5 (p=0.063), 100I -1.4 (p=0.32), 200I -1.0 (p=0.51), plain k=20 +0.9, k=100 +1.6 (p=0.26), k=200 +1.0 (p=0.50); none significant, all under the 2-3 pt bar.
+  Frozen KL stage 2: 20I 68.5 / 100I 68.7 / 200I 67.4 (vs untuned -0.3 / +3.1 p=0.005 / +2.5 p=0.030); plain k=20 52.9, k=100 58.5, k=200 59.4
+  (vs untuned at the same k: +3.7 p<0.001, +3.3 p=0.003; k=200 vs LoRA text k=20 +3.1 p=0.036). Frozen SFT stage 2 is stronger on ideal retrieval
+  (significant vs untuned at 100I/200I, +2.2 n.s. at 20I) but not significant vs untuned at the same k on plain BM25 (+2.1, +2.3).
+  RECOMMENDATION (for the user to confirm): KL stage 2 as the main frozen row — it is the declared main configuration (gold-view teacher), it is
+  the frozen arm that significantly beats untuned text on BOTH ideal retrieval (100I/200I) and plain BM25 at the same k, and the 4B frozen chain is KL.
