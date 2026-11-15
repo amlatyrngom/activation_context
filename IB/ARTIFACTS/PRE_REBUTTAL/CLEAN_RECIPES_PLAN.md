@@ -131,3 +131,22 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
 3. **Math teacher:** decided by M1 (KL to the 9B reading full trajectories vs SFT on 27B syntheses); confirm
    the rule.
 4. **Math data:** DeepMath only, dropping the MuSiQue replay (recommended).
+
+## 7. User answers and new findings (2026-11-15, second round)
+
+- **Math data:** DeepMath only; the MuSiQue replay is dropped (user).
+- **Math teacher:** measure both before deciding (user): the untuned 9B and the 27B, each reading the three 9B solver
+  trajectories in full as text, scored like the synthesis arms. The 27B is a candidate teacher because the synthesis gap
+  (any-of-3 vs single solver) is what the AC should close.
+- **Synthesis repeats:** the paper read 3 synthesis runs per problem on the 6–8 bucket (dmext) and 5 on the ≥ 8.5 bucket
+  (dmhard) (PAPER_CANON §3.4). The rerun uses one count for every bucket and arm.
+- **Write mode vs vLLM:** frozen reader + input rows alone is not acceptable (user: it consistently leaves too much on the
+  table). The agent path needs Hidden Residuals at serving time. Findings:
+  - HF path: the residual write is one per-request scatter-add at the input of the named reader layers
+    (`activation/harness/hf_utils.py`, `install_intervention_hooks`), so it is easy to express anywhere.
+  - vLLM 0.28: prompt embeddings already travel per request and per position, are written into a runner buffer whose width
+    is a config value (`ModelConfig.get_inputs_embeds_size`), and are hashed for prefix caching. A width check pins them to
+    the hidden size (`vllm/renderers/embed_utils.py`). Qwen3-VL's "deepstack" already adds extra per-position vectors to the
+    residual stream at chosen decoder layers (`vllm/model_executor/models/qwen3_vl.py`); Qwen3.5's text model does not.
+  - Options and ratings are in the chat reply of 2026-11-15; recommended: residual writes inside vLLM (custom model class
+    + widened prompt embeddings), time-boxed, with an equivalence test against the HF hooks.
