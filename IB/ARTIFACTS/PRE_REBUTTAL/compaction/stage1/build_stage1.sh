@@ -1,0 +1,48 @@
+#!/bin/bash
+# Compaction stage 1 (CLEAN_RECIPES_PLAN §3 C3): material + KL packet from every training-side 9B pool cache. Run on this host (CPU).
+#
+#   bash build_stage1.sh NAME [CUTS]        NAME: a new packet name (never reused);  CUTS: cut points in thousands (default "20")
+#     bash build_stage1.sh s1kl_c20_v1                  the main packet: the eval cut rule at 20k
+#     bash build_stage1.sh s1kl_c162024_v1 "16 20 24"   the hill-climbing variant: the same runs also cut at 16k and 24k
+#
+# Pools: every $POOLS/<cache id>/rollouts.jsonl (default IB/TMP/PRE_REBUTTAL/compaction_stage1/pools/: the six seed-0 training
+# pools pc_pool9_h6_trA/_trB/_trC1/_trC4, pc_pool9_h8_D1/_D2). New seeds of the same tasks (new cache ids) are added by putting
+# their rollouts.jsonl there and re-running with a new NAME: one line per (task, pool seed, cut), so nothing collides.
+# Cut rule (each cut c): run of at least c tokens and under 50,000 (head included), not ended by the trajectory cap / error /
+# task_unavailable, cut at the first non-assistant step boundary at or past c, something to predict after it; unsolved runs kept.
+# Packet: loss "kl" (top-k KL to the starting reader reading head + full prefix, on the run's own continuation tokens), sizes r
+# drawn per item from {1/5, 1/10} (rows = 20,000 x r: 4,000 / 2,000, as the benchmark's ac_4000 / ac_2000), training side only,
+# the 322 eval-200 / dev-75 / frozen-100 tasks excluded again, no training-side held panel (the held-out check is dev-75:
+# build_dev_panel.py), recipe fields encoder 5e-5, reader 0, warm-up 50, batch 8, one pass. Starting pair: R_res_rq9fr.
+# Outputs: $T/material/<NAME>_c<c>.jsonl (+ .summary.json), $T/packets/<NAME>/ (items.pkl is what sec45_train --kind packet reads);
+# both mirrored to $S3/.
+set -euo pipefail
+NAME=${1:?usage: build_stage1.sh NAME [CUTS]}; CUTS=${2:-20}
+HERE=$(cd "$(dirname "$0")" && pwd); REPO=$(cd $HERE/../../../../.. && pwd)
+T=${CMP_STAGE1_ROOT:-$REPO/IB/TMP/PRE_REBUTTAL/compaction_stage1}; POOLS=${POOLS:-$T/pools}
+NS=$REPO/IB/TMP/PAPER_COMPACTION/node_sync
+EXCLUDE=($NS/prefixes_dev9_75/index.json $NS/pc-a_live/pc/prefixes_eval9c_200/index.json $NS/prefixes_eval_100/index.json)
+I=$T/init/R_res_rq9fr_final                     # s3://.../pre_rebuttal_20261109/sec35/runs/R_res_rq9fr/sync/ckpt/final (+ DONE)
+S3=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/compaction/stage1
+PY=$REPO/.venv/bin/python
+[ -e $T/packets/$NAME ] && { echo "$T/packets/$NAME exists: use a new NAME" >&2; exit 2; }
+[ -f $I/ac/ac_modules.pt ] || { mkdir -p $I && aws s3 cp --recursive --quiet ${S3%/compaction/stage1}/sec35/runs/R_res_rq9fr/sync/ckpt/final/ $I/ && \
+  aws s3 cp --quiet ${S3%/compaction/stage1}/sec35/runs/R_res_rq9fr/DONE $I/DONE; }
+ROLLOUTS=($POOLS/*/rollouts.jsonl); mkdir -p $T/material $T/packets $T/logs
+echo "$(date -u +%FT%TZ) $NAME: ${#ROLLOUTS[@]} pool caches: $(for r in "${ROLLOUTS[@]}"; do basename $(dirname $r); done | tr '\n' ' ')"
+MATERIAL=()
+for c in $CUTS; do
+  M=$T/material/${NAME}_c$c.jsonl; L=$((c * 1000))
+  PYTHONPATH= $PY $HERE/export_pool_material.py --rollouts "${ROLLOUTS[@]}" --out $M --lower $L --window-min-total $L --min-total $L \
+    --upper 50000 --no-solved-only --exclude-tasks "${EXCLUDE[@]}" > $T/logs/${NAME}_export_c$c.log 2>&1
+  echo "  cut ${c}k: $($PY -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['usable'], 'runs,', d['solved'], 'solved, seeds', d['by_seed'])" ${M%.jsonl}.summary.json)"
+  MATERIAL+=($M)
+done
+CUDA_VISIBLE_DEVICES= PYTHONPATH=$REPO CONTINUATION_BENCH_DIR=$REPO/IB/TMP/PAPER_CORPUS_QA/kit/bench $PY $HERE/prepare_agent_continuation.py \
+  --material "${MATERIAL[@]}" --output $T/packets/$NAME --loss kl --sides training --exclude-tasks "${EXCLUDE[@]}" \
+  --initial-ac $I/ac --initial-reader $I/reader --held-repos 0 --r-values 0.2 0.1 \
+  --lr-ac 5e-5 --lr-reader 0 --train warmup_updates=50 --workers 6 > $T/logs/${NAME}_prepare.log 2>&1
+$PY -c "import json,sys; d=json.load(open(sys.argv[1])); print('  packet:', d['training']['items'], 'items,', d['training_runs'], 'runs,', d['training_tasks'], 'tasks,', d['updates_per_pass'], 'updates per pass (batch 8), r', d['training_r_counts'], 'dropped', d['dropped'], 'excluded', d['excluded'])" $T/packets/$NAME/continuation_build.json
+for m in "${MATERIAL[@]}"; do aws s3 cp --quiet $m $S3/material/$(basename $m); aws s3 cp --quiet ${m%.jsonl}.summary.json $S3/material/$(basename ${m%.jsonl}).summary.json; done
+aws s3 cp --recursive --quiet $T/packets/$NAME/ $S3/packets/$NAME/
+echo "$(date -u +%FT%TZ) $NAME: done; $S3/packets/$NAME/"
