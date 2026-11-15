@@ -99,3 +99,11 @@ Qwen3.5-9B reader via an out-of-tree model (`activation/vllm_residuals/`, plugin
 13/16 compiled, 15/16 eager; eager zero-delta = upstream bit for bit), prefix cache keys on deltas, throughput −8 % (tokens/s) at 4,000
 rows but a 9× request payload (304 MB). Branch `worktree-agent-a9ce275374672303c` (not merged); details
 `IB/ARTIFACTS/PRE_REBUTTAL/vllm_res/README.md`.
+
+**2026-11-15 ~23:30Z compaction stage 1 set up (not launched).** Code `IB/ARTIFACTS/PRE_REBUTTAL/compaction/stage1/` (+ `sec45_train
+--kind packet`); data S3 `pre_rebuttal_20261109/compaction/stage1/`. Packets: `s1kl_c20_v1` (eval cut rule at 20k, 1,261 runs = items,
+157 whole updates) and `s1kl_c162024_v1` (16k/20k/24k cuts, 3,796 items, 474 updates; not trained). New seed caches: drop their
+rollouts.jsonl into `IB/TMP/PRE_REBUTTAL/compaction_stage1/pools/<cache id>/` and rerun `build_stage1.sh <new name>`. Dev-75 proxy
+(`cmp_proxy_eval.py`): NLL full 0.5057, none 0.6449; start pair R_res_rq9fr gap closed −0.49 (1/10) / −0.72 (1/5); ORCD smoke (20
+updates) +0.078 / +0.076. 69 s/update median, 100 s effective (teacher blocks included), peak 57.1 GB. Launch (ORCD):
+`cd /home/ngom/orcd/scratch/activation/cmp1 && sbatch --export=NIL --partition=mit_preemptable --requeue --gres=gpu:rtx_pro_6000:1 jobs/cmp_stage1_job.sh S1_res_kl_c20 s1kl_c20_v1`.
