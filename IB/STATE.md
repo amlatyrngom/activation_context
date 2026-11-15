@@ -88,3 +88,7 @@ The guardrails, autonomy rule and the user's working preferences are in `ROOT_CA
 user except for important things; never start Duo; never stop this host; print main result tables in
 chat; never state a number you did not read from a file; one job per GPU; back up checkpoints to S3 as
 they appear.
+
+**2026-11-15:** §3.1 done (frozen-reader KL stage 2 = main row; held-out test1000 in `PRE_REBUTTAL/sec35/TEST.md`, figure
+`sec35/figs/fig_retrieval_s31_test.*`). Next (user): clean linear recipes for compaction (frozen reader only) and math synthesis
+(frozen first, reader-LoRA hedge). Draft plan awaiting the user: `IB/ARTIFACTS/PRE_REBUTTAL/CLEAN_RECIPES_PLAN.md`.
