@@ -150,3 +150,14 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
     residual stream at chosen decoder layers (`vllm/model_executor/models/qwen3_vl.py`); Qwen3.5's text model does not.
   - Options and ratings are in the chat reply of 2026-11-15; recommended: residual writes inside vLLM (custom model class
     + widened prompt embeddings), time-boxed, with an equivalence test against the HF hooks.
+
+## 8. Started 2026-11-15 ~21:30Z (user: go; CSAIL reopened; LR not hill-climbed)
+
+- Starting pair for both workloads: §3.1's `R_res_rq9fr` (FineWeb reconstruction, 2,000 × 8, frozen reader, 2B → 9B, Hidden
+  Residuals; S3 `pre_rebuttal_20261109/sec35/runs/R_res_rq9fr/`), described as one shared warm-up.
+- Learning rate is not hill-climbed (user; evidence: §3.1 stage 2 at 1/4 LR ended level, §3.5 encoder 1e-4 trailed 2e-5):
+  encoder 5e-5, reader frozen (math LoRA arm: reader 2e-5 as before).
+- Parallel streams: vLLM residual prototype (agent, own worktree, 1 EC2 spot GPU); compaction data inventory (agent);
+  math data inventory (agent); CSAIL check (done: `CSAIL_AUDIT_20261115.md`; new CSAIL jobs use a fresh environment).
+- Priority runs (math teacher tests, math frozen/LoRA arms, compaction main variant) go on ORCD / EC2 first; extra compaction
+  hill-climbing variants (loss, continuation span, data amount) fill CSAIL when it has room.
