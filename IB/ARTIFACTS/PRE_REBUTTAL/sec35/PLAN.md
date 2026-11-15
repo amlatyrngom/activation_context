@@ -116,3 +116,8 @@
   under the new scorer: gold-reference / no-context lines, Select -> text. x = the paper's eval500 token means (dev1000 means not computed).
   scoreboard.py now also writes scoreboard.json (acc + paired deltas vs untuned) for the figures.
   Reported numbers must come from the held-out test1000 (dev1000 was used for every choice): test1000 / test1000_100I / test1000_200I exist on S3.
+
+- 2026-11-15: test1000 text reads at k=200 (200I and plain k=200) OOMed at text batch 8 (SDPA tried 27.8 GiB on a long batch; dev1000 k=200 had fit).
+  rq_eval_job.sh now takes RQ_TEXT_BATCH (default 8); rq_test_orcd.sh takes it as 2nd arg. Resubmitted text + LoRA at batch 2 (job 29133206);
+  untuned text is resubmitted at batch 2 once job 29121104 ends (its 200I already failed; resume skips finished questions/outputs).
+  Batch size only changes padding under greedy decoding.

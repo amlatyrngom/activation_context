@@ -22,6 +22,7 @@ exec > >(tee -a $R/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [rq_eval] $*"; }
 STEM=${BUNDLE%.tar.gz}; C=$W/code/$STEM
 [ -f $C/MANIFEST.json ] || { say "bundle $C not unpacked"; exit 2; }
+# RQ_TEXT_BATCH (2026-11-15): text batch size, default 8 (2 for the test1000 k=200 reads, which OOMed at 8 on a long batch; resumes per question)
 # RQ_ENCODER (2026-11-13): encoder model id, default Qwen/Qwen3.5-2B (Qwen/Qwen3.5-4B for the T_res_rq9e4_e2 pair)
 # ---- the retrieval job's environment (generated_rq9*_rtx: READER Qwen3.5-9B, ENCODER Qwen3.5-2B, RES_LAYERS all, LINEAR_SKIP 1) ----
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
@@ -43,7 +44,7 @@ for P in $R/text/*/; do [ -d "$P" ] || continue; N=text_$(basename $P); A=(--ada
   for k in $(cat $P/KS 2>/dev/null || echo 100); do T=$N.$EVAL_SPLIT.k$k; [ -f $O/$T.summary.json ] && continue
     say "text $N k=$k"
     PYTHONPATH=$C:$C/rq_kit RQ_KIT=$C/rq_kit TEXT_MODEL_ID=Qwen/Qwen3.5-9B $PY $C/text_lora/text_lora_eval_hf.py --data $TD --split $EVAL_SPLIT \
-      --max-new 1024 --batch 8 --k $k "${A[@]}" --out $O/$T.jsonl --label ${N}_k$k > $R/logs/$T.log 2>&1 || { FAIL=1; say "FAILED $T"; continue; }
+      --max-new 1024 --batch ${RQ_TEXT_BATCH:-8} --k $k "${A[@]}" --out $O/$T.jsonl --label ${N}_k$k > $R/logs/$T.log 2>&1 || { FAIL=1; say "FAILED $T"; continue; }
     say "$T: $(head -c 140 $O/$T.summary.json | tr -d '\n ')"
   done
 done

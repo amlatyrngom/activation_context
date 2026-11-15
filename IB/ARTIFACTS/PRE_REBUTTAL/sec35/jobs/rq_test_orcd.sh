@@ -12,7 +12,7 @@
 # finished outputs are skipped, so a requeue resumes.
 #   ORCD: cd /home/ngom/orcd/scratch/activation/sec35 && sbatch --export=NIL --time=24:00:00 --partition=mit_preemptable --requeue --gres=gpu:rtx_pro_6000:1 jobs/rq_test_orcd.sh WHAT
 set -uo pipefail
-WHAT=${1:?ac|text_base|text_lora}
+WHAT=${1:?ac|text_base|text_lora}; export RQ_TEXT_BATCH=${2:-8}   # 2nd arg: text batch (2026-11-15: 2 for the k=200 retries)
 W=/home/ngom/orcd/scratch/activation/sec35; R=$W/rq_eval_test_$WHAT; R20=${R}_20i; FAIL=0
 mkdir -p $R/text $R20/text
 case $WHAT in
