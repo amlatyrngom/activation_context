@@ -161,3 +161,8 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   math data inventory (agent); CSAIL check (done: `CSAIL_AUDIT_20261115.md`; new CSAIL jobs use a fresh environment).
 - Priority runs (math teacher tests, math frozen/LoRA arms, compaction main variant) go on ORCD / EC2 first; extra compaction
   hill-climbing variants (loss, continuation span, data amount) fill CSAIL when it has room.
+- 2026-11-15 ~22:30Z compaction inventory done (`compaction/DATA_INVENTORY.md`): 2,676 training-side tasks with one 9B run each;
+  1,261 qualify under the eval cut rule (≈160 updates at batch 8; ≈5,000 items with extra 16k/24k cuts). Data-starved, so two
+  more 9B seeds of the same training tasks are being generated (agent, ≤2 EC2 spot GPUs, S3 `compaction/pool_seeds/`). Stage-1
+  pipeline (material, KL packet from `R_res_rq9fr` with frozen reader, dev-75 "gap closed" proxy, smoke on ORCD) is being set
+  up by a second agent. The old H5–H8 material is not reused (selected samples; part evaluation-side).
