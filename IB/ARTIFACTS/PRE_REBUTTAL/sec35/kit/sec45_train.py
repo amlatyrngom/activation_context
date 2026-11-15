@@ -6,6 +6,9 @@ in one of the three write modes (sec45_common.MODES). SFT, one pass over exactly
   R  python sec45_train.py --kind recon --mode MODE --data FINEWEB_DIR --fresh --steps N --seconds S --ckpt-every K --name R_MODE
   S  python sec45_train.py --kind task  --mode MODE --data HOTPOT_DIR  --fresh --steps N --seconds S --ckpt-every N/4 --name S_MODE
   T  python sec45_train.py --kind task  --mode MODE --data HOTPOT_DIR  --pair R/ckpt/final/ac R/ckpt/final/reader --steps N ... --name T_MODE
+  C  python sec45_train.py --kind packet --mode res --data PACKET --pair R/ckpt/final/ac R/ckpt/final/reader --loss kl --held-items PANEL.pkl ...
+     (compaction stage 1, 2026-11-15: the training items of a prepare_agent_continuation.py packet, PACKET/items.pkl; the held
+     panel is a pickle {"items": [...]} of the same kind, e.g. compaction/stage1/build_dev_panel.py's dev-75 panel_ac.pkl)
   P0 the same with --steps 23 --longest-first 3 (the 24 longest items of the pool first, then random ones; no shuffle): the
      stats file holds the peak memory on the longest items and the effective seconds per update (sec45_probe_summary.py)
 
@@ -47,8 +50,9 @@ import sec45_common as S  # noqa: E402
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--kind", choices=["recon", "task"], required=True); p.add_argument("--mode", choices=sorted(S.MODES), required=True)
-    p.add_argument("--data", type=Path, required=True, help="recon: build_fineweb_recon.py's folder; task: build_hotpot_tasks.py's folder")
+    p.add_argument("--kind", choices=["recon", "task", "packet"], required=True); p.add_argument("--mode", choices=sorted(S.MODES), required=True)
+    p.add_argument("--data", type=Path, required=True, help="recon: build_fineweb_recon.py's folder; task: build_hotpot_tasks.py's folder; packet: a packet folder (items.pkl)")
+    p.add_argument("--held-items", type=Path, help="packet: the held panel, a pickle {'items': [ActivationContextTrainingItem, ...]} (default: no panel)")
     start = p.add_mutually_exclusive_group(required=True)
     start.add_argument("--fresh", action="store_true", help="fresh AC modules + zero adapters on the mode's models (run_qa.harness without a pair)")
     start.add_argument("--pair", nargs=2, metavar=("AC_DIR", "READER_DIR"), help="start from this pair (T: the final R checkpoint)")
@@ -84,6 +88,15 @@ def main():
     needed = a.steps * a.epu
     if a.kind == "recon":
         pool, held_rows = S.load_recon(a.data)
+    elif a.kind == "packet":                               # the items are built already (prepare_agent_continuation.py); seeded order as for task
+        import pickle
+        with open(a.data / "items.pkl", "rb") as f:
+            pool = list(pickle.load(f)["train"])
+        random.Random(a.seed).shuffle(pool)
+        held_rows = []
+        if a.held_items:
+            with open(a.held_items, "rb") as f:
+                held_rows = list(pickle.load(f)["items"])
     else:
         import rq_common as C
         pool, held_rows = S.load_tasks(a.data, "train"), S.load_tasks(a.data, "dev200")
@@ -93,7 +106,8 @@ def main():
     if needed > len(pool):
         raise SystemExit(f"--steps {a.steps} x --epu {a.epu} = {needed} items, the pool holds {len(pool)} (rebuild the data larger)")
     if a.longest_first:                                    # probe: peak memory on the longest items (reader / encoder lengths grow with these)
-        size = (lambda r: r["tokens"]) if a.kind == "recon" else (lambda r: len(r["question"]) + sum(len(corpus[i][0]) + len(corpus[i][1]) for i in S.row_passages(r)))
+        size = ((lambda r: r["tokens"]) if a.kind == "recon" else (lambda r: r.info["reader_tokens"] + r.info["side_tokens"]) if a.kind == "packet"
+                else (lambda r: len(r["question"]) + sum(len(corpus[i][0]) + len(corpus[i][1]) for i in S.row_passages(r))))
         ranked = sorted(range(len(pool)), key=lambda i: -size(pool[i]))
         head = set(ranked[:a.longest_first * a.epu])
         train_rows = [pool[i] for i in ranked[:a.longest_first * a.epu]] + [r for i, r in enumerate(pool) if i not in head][:needed - len(head)]
@@ -136,6 +150,8 @@ def main():
     phase = time.monotonic()
     if a.kind == "recon":
         items, held_items = S.recon_items(study, train_rows, a.seed), S.recon_items(study, held_rows, a.seed)
+    elif a.kind == "packet":
+        items, held_items = train_rows, held_rows
     else:
         items, held_items = S.task_items(study, corpus, train_rows, AC), S.task_items(study, corpus, held_rows, AC)
     assert len(items) == needed, (len(items), needed)
@@ -220,6 +236,8 @@ def main():
                "token_accuracy": summary.get("token_accuracy"), "items": summary.get("items"), "wall_seconds": round(time.monotonic() - started)}
         if a.kind == "task":
             row |= answer_scores(summary.get("per_item") or [], prefix_tokens)
+        if a.kind == "packet":                    # token-weighted KL / NLL per panel group (e.g. dev75/r5, dev75/r10)
+            row["groups"] = S.group_metrics(summary.get("per_item") or [], {i.item_id: i.info.get("panel_group", "all") for i in held_items})
         held_log.append(row)
         if row["update"] in held_seen:                    # a resume re-reports the panel at the slot's update: logged once only
             print(f"sec45_train held (already logged by the previous attempt): {json.dumps(row)}", flush=True)

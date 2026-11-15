@@ -7,6 +7,7 @@ with each file's sha256 and the git HEAD it sits on. Uploaded next to the data s
                          kit/       IB/TMP/PAPER_SEC45/kit/*.py
                          rq_kit/    rq_common.py rq_train.py rq_teacher.py   (PAPER_RETRIEVAL_QA/kit; read only, unchanged)
                          bench/     run_qa.py run_qa_9b.py                   (PAPER_CORPUS_QA/kit/bench; read only, unchanged)
+                         compaction/ cmp_*.py                                (PRE_REBUTTAL/compaction/stage1)
                          MANIFEST.json
 
   python make_bundle.py --out BUNDLE.tar.gz [--upload s3://.../code/]
@@ -25,7 +26,8 @@ SEC45 = Path(__file__).resolve().parents[1]           # IB/ARTIFACTS/PRE_REBUTTA
 REPO = SEC45.parents[3]
 FILES = {"kit": sorted((SEC45 / "kit").glob("*.py")), "text_lora": sorted((SEC45 / "text_lora").glob("*.py")), "retrieval": sorted((SEC45.parent / "retrieval").glob("*.py")),
          "rq_kit": [REPO / "IB/TMP/PAPER_RETRIEVAL_QA/kit" / n for n in ("rq_common.py", "rq_train.py", "rq_teacher.py")],
-         "bench": [REPO / "IB/TMP/PAPER_CORPUS_QA/kit/bench" / n for n in ("run_qa.py", "run_qa_9b.py")]}
+         "bench": [REPO / "IB/TMP/PAPER_CORPUS_QA/kit/bench" / n for n in ("run_qa.py", "run_qa_9b.py")],
+         "compaction": sorted((SEC45.parent / "compaction/stage1").glob("cmp_*.py"))}       # compaction stage 1 (2026-11-15): the proxy evaluator
 
 
 def main():

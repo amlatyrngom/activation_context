@@ -180,6 +180,23 @@ def task_items(study, corpus, rows: list[dict], ac_name: str):
     return out
 
 
+def group_metrics(per_item: list[dict], groups: dict) -> dict:
+    """Token-weighted means per group of an evaluation's per-item rows (ActivationContextTrainer._evaluate): KL to the stored
+    teacher (KL runs), the student's NLL of the target tokens, and the stored teacher's NLL of the same tokens."""
+    out = {}
+    for row in per_item:
+        g = out.setdefault(groups.get(row["item_id"], "other"), {"items": 0, "tokens": 0, "kl": 0.0, "nll": 0.0, "teacher_nll": 0.0, "teacher_tokens": 0})
+        g["items"] += 1
+        g["tokens"] += len(row["target_logp"])
+        g["nll"] -= sum(row["target_logp"])
+        g["kl"] += sum(row.get("target_kl") or [])
+        if row.get("teacher_target_logp") is not None:
+            g["teacher_nll"] -= sum(row["teacher_target_logp"])
+            g["teacher_tokens"] += len(row["teacher_target_logp"])
+    return {name: {"items": g["items"], "tokens": g["tokens"], "kl_token": g["kl"] / max(1, g["tokens"]), "nll_token": g["nll"] / max(1, g["tokens"]),
+                   "teacher_nll_token": g["teacher_nll"] / g["teacher_tokens"] if g["teacher_tokens"] else None} for name, g in sorted(out.items())}
+
+
 def link_pair(ac_folder, reader_folder, destination: Path) -> bool:
     """Hard-link a saved pair into destination/{ac,reader} without optimizer.pt (never copied around). False when it exists."""
     import shutil
