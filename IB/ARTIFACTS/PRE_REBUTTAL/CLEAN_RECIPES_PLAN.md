@@ -166,3 +166,7 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   more 9B seeds of the same training tasks are being generated (agent, ≤2 EC2 spot GPUs, S3 `compaction/pool_seeds/`). Stage-1
   pipeline (material, KL packet from `R_res_rq9fr` with frozen reader, dev-75 "gap closed" proxy, smoke on ORCD) is being set
   up by a second agent. The old H5–H8 material is not reused (selected samples; part evaluation-side).
+- 2026-11-15 ~23:00Z math inventory done (`math/DATA_INVENTORY.md`): 1,500 training problems with three 9B runs (1,000 at >= 8.5 in
+  `tqa_m1_train_v2`), 0 overlap with dmext/dmhard; three runs together: median ≈9.0k tokens, max 92.4k. The 27B
+  (`unsloth/Qwen3.8-27B-NVFP4`) shares the 9B's vocabulary, so KL from the 27B is possible. Teacher test started (agent, 1 EC2
+  spot GPU): 9B full trajectories vs 27B full trajectories vs 9B results-only, 200 training problems >= 8.5, 3 repeats.
