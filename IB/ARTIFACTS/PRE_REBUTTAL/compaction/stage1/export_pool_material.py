@@ -20,6 +20,11 @@ run's own outcome and the cut.
     python export_pool_material.py --rollouts ROLLOUTS/pc_pool9_eval_v3/rollouts.jsonl --out material_pool9_v3.jsonl \
         [--exclude-tasks prefixes_eval9c_200/index.json prefixes_dev9_75/index.json prefixes_eval_100/index.json]
 
+Stage 1 of the clean compaction recipe (2026-11-15) adds: --upper (runs of at least this many tokens are left out, the
+evaluation's 50,000 rule) and one line per (task, pool seed, cut): `run_key` = "<task id>#s<seed>#c<lower>", so the
+same task from another seed's cache (a new caching id) or cut at another --lower is a separate line. Each --rollouts file
+is one pool cache; a run seen twice under the same key (a rewritten cache line, or a cache listed twice) keeps its last line.
+
 Left out (each counted): error / task_unavailable / trajectory_cap runs; compactions, subagents, injected input, an adapter
 or an AC model; unsolved runs (--solved-only, the default); runs under --min-total tokens; nothing to predict after the cut;
 fewer than --min-target-tokens target tokens; --exclude-tasks tasks (the packet build excludes them again).
@@ -54,6 +59,8 @@ def material_of(row: dict, tokenizer, args) -> tuple[dict | None, str]:
     total = len(row["prompt_token_ids"]) + sum(len(step["token_ids"]) for step in steps)
     if total < args.min_total:
         return None, f"run under {args.min_total} tokens"
+    if args.upper is not None and total >= args.upper:
+        return None, f"run of {args.upper} tokens or more"
 
     fraction = random.Random(f"{args.seed}:cut:{task_id}").uniform(*args.fraction_range)
     window = args.window_min_total is not None and total >= args.window_min_total
@@ -100,7 +107,7 @@ def material_of(row: dict, tokenizer, args) -> tuple[dict | None, str]:
         return None, "the head does not render to the recorded prompt tokens"
     prompt_tokens = len(head_ids(tokenizer, head + prefix, tools, kwargs))
     return {
-        "task_id": task_id, "config_key": row.get("config_key"), "benchmark": metadata.get("benchmark"), "repo": metadata.get("repo"),
+        "task_id": task_id, "run_key": f"{task_id}#s{row.get('seed')}#c{args.lower}", "seed": row.get("seed"), "config_key": row.get("config_key"), "benchmark": metadata.get("benchmark"), "repo": metadata.get("repo"),
         "language": metadata.get("language"), "side": metadata.get("side"), "official_test": metadata.get("official_test"),
         "solved": solved, "score": row.get("score"), "finish_reason": row.get("finish_reason"), "answer": row.get("answer"),
         "head_messages": head, "prefix_messages": prefix, "continuation_messages": continuation, "target_token_ids": targets,
@@ -126,6 +133,7 @@ def main() -> int:
     parser.add_argument("--fraction-range", type=float, nargs=2, default=(0.5, 0.8), help="or at this share of its length, if that comes first")
     parser.add_argument("--window-min-total", type=int, default=None, help="runs at least this long are cut at --lower whatever f is (the evaluation's window cut)")
     parser.add_argument("--min-total", type=int, default=6_000, help="leave out runs shorter than this (head included)")
+    parser.add_argument("--upper", type=int, default=None, help="leave out runs of at least this many tokens (head included; the evaluation's 50,000)")
     parser.add_argument("--seed", type=int, default=20261014)
     parser.add_argument("--reader-tokenizer", default="Qwen/Qwen3.5-9B")
     parser.add_argument("--solved-only", action=argparse.BooleanOptionalAction, default=True)
@@ -144,13 +152,13 @@ def main() -> int:
                 row = json.loads(line)
                 task = row["agent_config"].get("dataset_task") or {}
                 task_id = task.get("task_id") if isinstance(task, dict) else None
-                key = row.get("config_key") or task_id
+                key = (task_id, row.get("seed"))                       # one run per task and pool seed (config_key is the same for every seed)
                 latest[key] = (None, "an evaluation or development task") if task_id in excluded else material_of(row, tokenizer, args)
 
     kept = sorted((record for record, _ in latest.values() if record is not None), key=lambda record: (record["benchmark"] or "", record["task_id"] or ""))
     why = Counter(reason for record, reason in latest.values() if record is None)
-    if len({record["task_id"] for record in kept}) != len(kept):
-        raise ValueError("two usable runs share a task id")
+    if len({record["run_key"] for record in kept}) != len(kept):
+        raise ValueError("two usable runs share a run key")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w") as handle:
@@ -161,7 +169,8 @@ def main() -> int:
         return round(sum(record["tokens"][name] for record in kept) / len(kept), 1) if kept else None
 
     summary = {
-        "rollouts": args.rollouts, "runs_read": len(latest), "usable": len(kept), "left_out": dict(why), "excluded_task_files": args.exclude_tasks,
+        "rollouts": args.rollouts, "runs_read": len(latest), "usable": len(kept), "left_out": dict(why), "excluded_task_files": args.exclude_tasks, "upper": args.upper,
+        "by_seed": dict(Counter(str(record["seed"]) for record in kept)), "solved": sum(record["solved"] for record in kept),
         "lower": args.lower, "window_min_total": args.window_min_total, "fraction_range": args.fraction_range, "min_total": args.min_total, "seed": args.seed, "solved_only": args.solved_only,
         "repositories": len({record["repo"] for record in kept}), "by_language": dict(Counter(record["language"] for record in kept)),
         "by_side": dict(Counter(record["side"] for record in kept)), "cut_rule": dict(Counter(record["teacher"]["cut_rule"] for record in kept)),

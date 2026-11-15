@@ -44,6 +44,16 @@ updates) unless set with --train KEY=JSON.
     python prepare_agent_continuation.py --material material.jsonl --output PACKETS/cont_v1 --loss sft kl \
         --initial-ac PAIR/ac --initial-reader PAIR/reader --held-repos 8 --ratios-per-prefix 4 --updates 1000
 
+Clean compaction recipe, stage 1 (2026-11-15):
+  --r-values 0.2 0.1   each training item draws its size from these values (seeded by --seed, run key, item number) instead of
+                       the --r-range draw: one model for the two reported sizes.
+  --held-repos 0       no training-side held panel (the held-out check is dev-75, compaction/stage1/build_dev_panel.py).
+  run keys             a material line's `run_key` (export_pool_material.py: task, pool seed, cut) names the run: one item set per
+                       run key, so later seeds of the same tasks and extra cuts of the same runs add items. Lines without one
+                       (older material) are keyed by task id as before.
+  CONTINUATION_BENCH_DIR  set it to IB/TMP/PAPER_CORPUS_QA/kit/bench (the sec35 bundle's bench): its run_qa.harness builds
+                       the pair's own models and write mode from ac_modules.pt (2B encoder -> 9B reader, Hidden Residuals).
+
 Which runs may train: --sides (default: training). Two exclusion levels:
   --evaluation-index  (repository level, the rule until Oct 14) a run from any repository holding an evaluation prefix is refused;
   --exclude-tasks     (task level, the user's rule from Oct 14 ≈16:30Z: same-repository training is allowed, since the paper
@@ -172,7 +182,7 @@ def build_item(record: dict, view: list[dict], side_tokens: int, r: float, item_
         assistant_token_ids=[list(ids) for ids in record["target_token_ids"]],
         tools=tools, weight=1.0, dataset_id=record.get("benchmark") or FAMILY, doc_ids=[record["task_id"]],
         info={"family": FAMILY, "source": FAMILY, "panel_group": group, "chat_template_kwargs": dict(record["chat_template_kwargs"]),
-              "task_id": record["task_id"], "repo": record["repo"], "language": record.get("language"), "benchmark": record.get("benchmark"),
+              "task_id": record["task_id"], "run_key": record.get("run_key") or record["task_id"], "seed": record.get("seed"), "repo": record["repo"], "language": record.get("language"), "benchmark": record.get("benchmark"),
               "side": record.get("side"), "solved": record.get("solved"), "finish_reason": record.get("finish_reason"),
               "r": r, "ratio": target, "rows_wanted": rows_wanted, "rows": rows, "clamped": rows_wanted > ac.config.max_view_rows,
               "side_tokens": side_tokens, "prefix_tokens": record["prefix_tokens"], "head_tokens": record["tokens"]["head"], "assistant_turns": len(record["target_token_ids"])})
@@ -212,6 +222,7 @@ def main() -> int:
     p.add_argument("--ratios-per-prefix", type=int, default=1, help="training items per prefix, each at its own size")
     p.add_argument("--r-range", type=float, nargs=2, default=(1 / 20, 1 / 5), metavar=("LOW", "HIGH"), help="training sizes, as fractions of the prefix")
     p.add_argument("--r-draw", choices=("log_uniform", "uniform"), default="log_uniform")
+    p.add_argument("--r-values", type=float, nargs="+", default=None, help="training sizes drawn from these values instead of --r-range (e.g. 0.2 0.1)")
     p.add_argument("--nominal-prefix-tokens", type=int, default=20_000, help="sizes are fractions of this length, as in the benchmark (rows = 20,000 x r); 0: of each prefix's own length")
     p.add_argument("--held-repos", type=int, required=True, help="repositories whose runs form the held panel (never trained)")
     p.add_argument("--sides", nargs="+", default=["training"], help="split sides whose runs may be used (other runs are left out and counted)")
@@ -226,8 +237,8 @@ def main() -> int:
         p.error("--loss names a recipe twice")
     if a.epochs is not None and a.updates is not None:
         p.error("give --epochs or --updates, not both")
-    if not 0 < a.r_range[0] <= a.r_range[1] or a.ratios_per_prefix < 1 or a.held_repos < 1:
-        p.error("--r-range needs 0 < LOW <= HIGH; --ratios-per-prefix and --held-repos are at least 1")
+    if not 0 < a.r_range[0] <= a.r_range[1] or a.ratios_per_prefix < 1 or a.held_repos < 0 or any(not 0 < r <= 1 for r in a.r_values or []):
+        p.error("--r-range needs 0 < LOW <= HIGH; --r-values in (0, 1]; --ratios-per-prefix at least 1; --held-repos at least 0")
     overrides = {}
     for entry in a.train:
         key, _, value = entry.partition("=")
@@ -266,10 +277,10 @@ def main() -> int:
                     excluded["task is an evaluation or development prefix"] += 1
                 elif not record.get("repo"):
                     excluded["no repository recorded (the held split is by repository)"] += 1
-                elif record["task_id"] in records:
-                    excluded["task already taken from an earlier line"] += 1
+                elif (record.get("run_key") or record["task_id"]) in records:
+                    excluded["run key already taken from an earlier line"] += 1
                 else:
-                    records[record["task_id"]] = record
+                    records[record.get("run_key") or record["task_id"]] = record
         sources.append({"path": str(path.resolve()), "sha256": file_sha(path), "runs": count})
     if not records:
         raise ValueError(f"no usable run in the material: {dict(excluded)}")
@@ -299,12 +310,16 @@ def main() -> int:
         if side_tokens > AC_FLAT_MAX_TOKENS:                             # a live flattened view would drop its oldest messages: not this view
             excluded["prefix view over the flattened-view budget"] += 1
             continue
+        key = record.get("run_key") or record["task_id"]
         if record["repo"] in held_repos:
-            sizes = [(f"panel:continuation/{label}:{record['task_id']}", f"continuation/{label}", r) for label, r in HELD_SIZES]
+            sizes = [(f"panel:continuation/{label}:{key}", f"continuation/{label}", r) for label, r in HELD_SIZES]
             panel_count += len(sizes)
+        elif a.r_values:
+            sizes = [(f"{FAMILY}:{key}:{number}", "continuation/train",
+                      a.r_values[random.Random(f"{a.seed}:r:{key}:{number}").randrange(len(a.r_values))]) for number in range(a.ratios_per_prefix)]
         else:
-            sizes = [(f"{FAMILY}:{record['task_id']}:{number}", "continuation/train",
-                      draw_r(a.seed, record["task_id"], number, a.ratios_per_prefix, low, high, a.r_draw)) for number in range(a.ratios_per_prefix)]
+            sizes = [(f"{FAMILY}:{key}:{number}", "continuation/train",
+                      draw_r(a.seed, key, number, a.ratios_per_prefix, low, high, a.r_draw)) for number in range(a.ratios_per_prefix)]
         for item_id, group, r in sizes:
             item = build_item(record, view, side_tokens, r, item_id, group, ac, study.ac_name, a.nominal_prefix_tokens or None)
             if group != "continuation/train":
@@ -376,12 +391,14 @@ def main() -> int:
         return {"items": len(chosen), "clamped_to_max_view_rows": sum(item.info["clamped"] for item in chosen)}
 
     report = {
-        "material": sources, "runs": len(records), "excluded": dict(excluded), "training_runs": len({item.info["task_id"] for item in train_items}),
+        "material": sources, "runs": len(records), "excluded": dict(excluded), "training_runs": len({item.info["run_key"] for item in train_items}),
+        "training_tasks": len({item.info["task_id"] for item in train_items}), "training_seeds": dict(Counter(str(item.info["seed"]) for item in train_items)),
+        "training_r_counts": {str(r): n for r, n in sorted(Counter(round(item.info["r"], 4) for item in train_items).items())},
         "held_runs": len({item.info["task_id"] for item in panel_items}), "held_repositories": held_repos,
         "training_repositories": len({item.info["repo"] for item in train_items}),
         "training": clamp_counts(train_items), "held": {name: clamp_counts([item for item in panel_items if item.info["panel_group"] == name]) for name in sorted(panel_groups)},
         "dropped": dict(dropped), "max_view_rows": ac.config.max_view_rows, "limits": {"reader_tokens": READER_TOKENS, "encoder_tokens": ENCODER_TOKENS},
-        "r_range": [low, high], "r_draw": a.r_draw, "ratios_per_prefix": a.ratios_per_prefix,
+        "r_range": [low, high], "r_draw": a.r_draw, "r_values": a.r_values, "ratios_per_prefix": a.ratios_per_prefix,
         "training_r": sorted(round(item.info["r"], 4) for item in train_items),
         "updates_per_pass": steps, "epochs": epochs, "updates": steps * epochs, "updates_requested": a.updates,
         "training_target_tokens": target_tokens, "mean_reader_tokens": round(sum(item.info["reader_tokens"] for item in train_items) / len(train_items)),
@@ -413,7 +430,7 @@ def main() -> int:
                 link_or_copy(first / name, out / name)
         config = config_of(loss, steps, epochs)
         arm = {"task": "agent continuation after a compacted prefix", "loss": loss, "lr_ac": config.learning_rate_ac, "lr_reader": config.learning_rate_target_lora,
-               "r_range": [low, high], "r_draw": a.r_draw, "ratios_per_prefix": a.ratios_per_prefix, "held_sizes": [r for _, r in HELD_SIZES],
+               "r_range": [low, high], "r_draw": a.r_draw, "r_values": a.r_values, "ratios_per_prefix": a.ratios_per_prefix, "held_sizes": [r for _, r in HELD_SIZES],
                **({"match_weight": a.match_weight} if loss == "sft_match" else {}), **({"train_overrides": overrides} if overrides else {})}
         recipe = {"seed": a.seed, "epochs": epochs, "phase": "Agent continuation after a compacted prefix (%s): %s" % (loss, json.dumps(arm, sort_keys=True)),
                   "arm": arm, "counts": {"wanted": {group: len(train_runs) * a.ratios_per_prefix}}, "actual_train": {group: len(train_items)},
