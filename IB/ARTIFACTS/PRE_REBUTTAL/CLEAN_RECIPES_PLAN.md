@@ -176,3 +176,8 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   requests: prefill 20,880 vs 22,781 prompt tok/s rows-only. Cost to watch for compaction evals: each 4,000-row request is
   304 MB (9× rows-only) and is resent every agent turn, so 40 agents per GPU may need more host RAM or fewer agents; an
   engine-side cache of packed rows would remove it. Nodes need `uv sync` to install the plugin entry point.
+- 2026-11-16 stage-1 pipeline ready (`compaction/stage1/`; packets on S3 `compaction/stage1/packets/`). Dev-75 proxy (token-weighted,
+  497,993 target tokens): untuned full prefix NLL 0.5057, no context 0.6449; start pair `R_res_rq9fr` gap closed −0.493 (1/10) /
+  −0.717 (1/5), i.e. worse than no context; after 20 smoke updates +0.078 / +0.076. Smoke: 100 s/update incl. teacher passes,
+  57 GB peak. Launched on ORCD: `S1_res_kl_c20` (main: 20k cut, 1,261 items, 157 updates; job 29242839) and
+  `S1_res_kl_c162024` (variant: 16k+20k+24k cuts, 3,796 items, 474 updates; job 29242840, time limit raised to 24 h).
