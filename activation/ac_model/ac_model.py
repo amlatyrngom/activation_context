@@ -29,6 +29,7 @@ fp32; the bases stay bf16. Checkpoints: `AC_MODELS/<name>/round_NNN` (+ `latest`
 from __future__ import annotations
 
 import dataclasses
+import functools
 import hashlib
 import json
 import math
@@ -495,10 +496,11 @@ class ActivationContextModel:
 
     def encode_async(self, messages: list[dict] | str, compression_ratio: float | None = None, is_recursive: bool = False,
                      tools: list[dict] | None = None) -> Future:
-        """Rollout mode: the rows through the encode queue (concurrent callers share batches)."""
+        """Rollout mode: the rows through the encode queue (concurrent callers share batches). A deep model's future resolves
+        to the whole ACOutput (rows and per-layer deltas)."""
         assert self.mode == ROLLOUT, "the encode queue serves rollout mode only"
         if self.queue is None:
-            self.queue = EncodeQueue(self.encode_batch)
+            self.queue = EncodeQueue(functools.partial(self.encode_batch, with_layers=True) if self.is_deep else self.encode_batch)
         ratio = self.config.default_compression_ratio if compression_ratio is None else float(compression_ratio)
         return self.queue.submit(EncodeRequest(normalize_messages(messages), ratio, is_recursive, tools or None))
 

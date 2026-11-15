@@ -265,6 +265,12 @@ class LoadedModel:
                 print(f"{self.model_config.model_name} - Engine memory share lowered by {reservation} for the AC side model.")
             if self.harness.module_manager.ac_models:
                 engine_kwargs.setdefault("enable_prompt_embeds", True)   # AC rows travel as prompt embeddings (mixed prompts)
+            deep = sorted({tuple(ac.intervention_layers) for ac in self.harness.module_manager.ac_models.values()
+                           if ac.is_deep and ac.config.target_model_name == self.model_config.model_name})
+            if deep:                                                     # Hidden Residuals: rows carry per-layer deltas (activation.vllm_residuals)
+                from activation.vllm_residuals import engine_overrides
+                assert len(deep) == 1, f"AC models with different residual layers {deep} cannot share one reader engine"
+                engine_kwargs.setdefault("hf_overrides", engine_overrides(self.model_config.model_description.d_model, deep[0]))
             self.model_config.engine_kwargs = engine_kwargs
             self.vllm_model = VLLMWrapper(tokenizer=self.tokenizer, **engine_kwargs)
             self.current_engine_device = device

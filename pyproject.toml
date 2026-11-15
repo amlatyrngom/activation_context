@@ -19,6 +19,9 @@ dependencies = [
 [project.scripts]
 sky = "activation.cloud.sky:main"
 
+[project.entry-points."vllm.general_plugins"]
+ac_residuals = "activation.vllm_residuals:register"   # Hidden Residuals reader architecture, registered in every vLLM process
+
 [dependency-groups]
 dev = [
     "pytest",

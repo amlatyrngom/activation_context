@@ -1,0 +1,55 @@
+{
+ "engine": "stock",
+ "kwargs": {
+  "model": "Qwen/Qwen3.5-9B",
+  "dtype": "bfloat16",
+  "enable_prompt_embeds": true,
+  "kv_cache_dtype": "auto",
+  "max_model_len": 16384,
+  "gpu_memory_utilization": 0.85,
+  "limit_mm_per_prompt": {
+   "image": 0,
+   "video": 0
+  },
+  "max_num_seqs": 128,
+  "enable_prefix_caching": true,
+  "seed": 0,
+  "max_logprobs": 20
+ },
+ "load_seconds": 19.8,
+ "arch": [
+  "Qwen3_5ForConditionalGeneration"
+ ],
+ "inputs_embeds_size": 4096,
+ "block_size": 528,
+ "mamba_cache_mode": "align",
+ "max_num_batched_tokens": 16384,
+ "cudagraph_mode": "FULL_AND_PIECEWISE",
+ "throughput": {
+  "requests": 32,
+  "prompt_tokens": 4126,
+  "rows": 4000,
+  "payload_width": 4096,
+  "payload_bytes_per_request": 33800192,
+  "cpu_sha256_seconds_per_request": 0.0179,
+  "cpu_msgpack_encode_seconds": 0.0001,
+  "cpu_frame_copy_seconds": 0.0043,
+  "cpu_msgpack_decode_seconds": 0.0001,
+  "prefill_only": {
+   "seconds": 5.8,
+   "generated_tokens": 32,
+   "cached_tokens_max": 0,
+   "requests_per_second": 5.521,
+   "prompt_tokens_per_second": 22781,
+   "generated_tokens_per_second": 5.5
+  },
+  "end_to_end_256": {
+   "seconds": 10.37,
+   "generated_tokens": 8192,
+   "cached_tokens_max": 0,
+   "requests_per_second": 3.086,
+   "prompt_tokens_per_second": 12732,
+   "generated_tokens_per_second": 790.0
+  }
+ }
+}

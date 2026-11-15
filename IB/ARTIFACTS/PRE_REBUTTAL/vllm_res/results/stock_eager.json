@@ -1,0 +1,29 @@
+{
+ "engine": "stock",
+ "kwargs": {
+  "model": "Qwen/Qwen3.5-9B",
+  "dtype": "bfloat16",
+  "enable_prompt_embeds": true,
+  "kv_cache_dtype": "auto",
+  "max_model_len": 16384,
+  "gpu_memory_utilization": 0.85,
+  "limit_mm_per_prompt": {
+   "image": 0,
+   "video": 0
+  },
+  "max_num_seqs": 128,
+  "enable_prefix_caching": true,
+  "seed": 0,
+  "max_logprobs": 20,
+  "enforce_eager": true
+ },
+ "load_seconds": 65.4,
+ "arch": [
+  "Qwen3_5ForConditionalGeneration"
+ ],
+ "inputs_embeds_size": 4096,
+ "block_size": 528,
+ "mamba_cache_mode": "align",
+ "max_num_batched_tokens": 16384,
+ "cudagraph_mode": "NONE"
+}

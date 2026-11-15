@@ -1,0 +1,5 @@
+agent_smoke: engine hf_overrides {"architectures": ["Qwen3_5ResForConditionalGeneration"], "text_config": {"projection_size": 36864, "ac_residual_layers": [3, 7, 11, 15, 19, 23, 27, 31]}} enable_lora True architecture ['Qwen3_5ResForConditionalGeneration'] inputs_embeds_size 36864
+agent_smoke: deep True layers [3, 7, 11, 15, 19, 23, 27, 31]; prompt 3208 tokens, rows at 1977 positions, request tensor (3208, 36864) torch.bfloat16 (225.6 MiB); recorded span rows (1977, 36864)
+agent_smoke: cached 0 -> 3168; same reply True; reply 'Based on Passage 1, Tiko is a retired Spanish footballer. The passage states that his club, **Atlético Granadilla**, holds home games at the **Francisco Suárez Stadium**.\n\nFinal answer: Francisco Suárez Stadium'; gold 'Estadio de López Cortázar'
+agent_smoke: ok
+after exit: GPU memory.used 0 MiB (engine shut down by engine_to_device(FREE_DEVICE))

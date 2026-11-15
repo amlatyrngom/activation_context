@@ -1,0 +1,184 @@
+{
+ "pair": [
+  "/root/vllm_res/pair/ac",
+  "/root/vllm_res/pair/reader"
+ ],
+ "layers": [
+  3,
+  7,
+  11,
+  15,
+  19,
+  23,
+  27,
+  31
+ ],
+ "max_new": 64,
+ "items": [
+  {
+   "index": 0,
+   "id": "5ac403c45542997ea680c9b5",
+   "k": 200,
+   "prompt_tokens": 2095,
+   "rows": 2005,
+   "res_text": "Based on Passage 1, Tiko is the assistant manager of CD Basconia. According to Passage 2, CD Basconia holds home games at the \"Estadio de L\u00f3pez Cort\u00e1zar\".\n\nFinal answer: Estadio de L\u00f3pez Cort\u00e1zar",
+   "rows_text": "Based on the passages provided, Tiko (Roberto Mart\u00ednez R\u00edpodas) is associated with **CD Basconia**. The text states that CD Basconia holds its home games at the **\"Estadio de Campo Municipal\"**.\n\nFinal answer: Estadio de Campo Municipal",
+   "seconds": 7.1
+  },
+  {
+   "index": 1,
+   "id": "5a8b231055429949d91db4c9",
+   "k": 20,
+   "prompt_tokens": 334,
+   "rows": 237,
+   "res_text": "Based on Passage 1, Bradley Thompson started working on \"The Strain\" in 2014. According to Passage 2, the series \"Shall We Gather at the River\" (the first episode of \"The Strain\") originally aired on TNT.\n\nFinal answer: TNT",
+   "rows_text": "Based on the passages provided, Bradley Thompson started working on the series *The Strain* in 2014. The text states that *The Strain* \"premiered on the Syfy network.\"\n\nFinal answer: Syfy",
+   "seconds": 4.6
+  },
+  {
+   "index": 2,
+   "id": "5adde16a5542997dc7907084",
+   "k": 20,
+   "prompt_tokens": 336,
+   "rows": 244,
+   "res_text": "Based on Passage 1, North Hoyle Offshore Wind Farm is Wales's first offshore wind farm. Passage 2 states that this wind farm is situated in Liverpool Bay.\n\nFinal answer: Liverpool Bay",
+   "rows_text": "Based on the provided passages, the **North Hoyle** Offshore Wind Farm is identified as \"Wales' first offshore wind farm\" and is described as being \"situated in **Liverpool Bay**.\"\n\nFinal answer: Liverpool Bay",
+   "seconds": 3.8
+  },
+  {
+   "index": 3,
+   "id": "5a7f5c9f55429969796c1a0f",
+   "k": 100,
+   "prompt_tokens": 1272,
+   "rows": 1179,
+   "res_text": "Based on Passage 1, Kunming is also called the **Spring city** due to its weather. Passage 2 confirms that the Yunnan Provincial Museum is located in Kunming.\n\nFinal answer: Spring city",
+   "rows_text": "Based on the provided passages, the Yunnan Provincial Museum is located in **Kunming**. The text states that Kunming is also called the **Spring City** due to its weather.\n\nFinal answer: Spring City",
+   "seconds": 4.3
+  },
+  {
+   "index": 4,
+   "id": "5a75f0ea5542994ccc91866c",
+   "k": 20,
+   "prompt_tokens": 326,
+   "rows": 238,
+   "res_text": "Based on the provided passages, there is no mention of a \"major truck road\" located in Backford Cross. Passage 1 describes the A5117 as a major road, but Passage 2 only states that Backford Cross is located near the A41/A5117 junction and serves as",
+   "rows_text": "The provided passages contain significant repetition and appear to be corrupted or generated with errors, as they repeatedly mention \"Backford Cross\" in the context of \"Backford\" and \"Strawberry Park\" in Wirral, England, but do not mention any \"major truck road\" located there. The text discusses roads like",
+   "seconds": 5.2
+  },
+  {
+   "index": 5,
+   "id": "5abc546b554299700f9d786c",
+   "k": 20,
+   "prompt_tokens": 432,
+   "rows": 334,
+   "res_text": "Based on Passage 1, Square Enix (the co-developer of *Kingdom Hearts 358/2 Days* mentioned in Passage 2) has its headquarters in the Shinjuku Eastside Square Building in **Shinjuku**, Tokyo.\n\nFinal answer: Shinjuku",
+   "rows_text": "Based on the provided passages, the game *Kingdom Hearts 358/2 Days* was developed by h.a.n.d. and Square Enix. The text states that the headquarters of Square Enix are located in the **Shinjuku** Eastside Building in Shinjuku, Tokyo.\n\nFinal",
+   "seconds": 5.2
+  },
+  {
+   "index": 6,
+   "id": "5a734f4455429901807dafba",
+   "k": 200,
+   "prompt_tokens": 2857,
+   "rows": 2731,
+   "res_text": "Based on Passage 1, the woman executed by a German firing squad for treason was Edith Cavell. Passage 2 confirms that Traugott von Sauberzweig was the Military Governor of Brussels in 1915 and that the Cavell case was the reason he was supplanted.\n\nFinal answer",
+   "rows_text": "Based on the provided passages, the text repeatedly mentions that **Traugott von Sauberzweig** was the Prussian Generalleutnant who served as Military Governor of Brussels. It states that his position was supplanted (replaced) due to the \"Edith Cavell case\" and the \"execution of",
+   "seconds": 6.9
+  },
+  {
+   "index": 7,
+   "id": "5ab960d6554299743d22eb21",
+   "k": 20,
+   "prompt_tokens": 284,
+   "rows": 191,
+   "res_text": "Based on Passage 1, Thomas Francis Murphy appeared in the 2008 comedy film \"Meet Me Again\".\n\nFinal answer: Meet Me Again",
+   "rows_text": "Based on the provided text, Thomas Francis Murphy is described as having roles in \"Leatherheads,\" \"Ghost Shark,\" and \"Tracks.\" The text explicitly identifies \"Leatherheads\" as a \"2008 American comedy-drama film.\" Although the text contains some garbled sentences regarding other films like \"The",
+   "seconds": 4.0
+  },
+  {
+   "index": 8,
+   "id": "5ae1384355429920d5234329",
+   "k": 200,
+   "prompt_tokens": 2591,
+   "rows": 2500,
+   "res_text": "Both Tim Conlon and Kehinde Wiley are artists.\n\nFinal answer: artists",
+   "rows_text": "Based on the provided passages, Tim Conlon is described as an \"artist and graffiti writer,\" and Kehinde Wiley is described as a \"painter.\" Both of these roles fall under the general occupation of an artist.\n\nFinal answer: artist",
+   "seconds": 4.4
+  },
+  {
+   "index": 9,
+   "id": "5ab7f2d05542993667794064",
+   "k": 100,
+   "prompt_tokens": 1548,
+   "rows": 1445,
+   "res_text": "Based on Passage 1, the Van cat is described as having \"odd-eyed\" eyes, meaning one eye is blue and the other is amber. Passage 2 defines \"odd-eyed cat\" as a feline form of complete heterochromia. Therefore, the specific form of heterochromia is odd-eyed",
+   "rows_text": "Based on the provided passages, the text repeatedly states that the Van cat has \"blue or amber eyes\" or \"odd eyes\" and describes this as a \"feline form of complete heterochromia.\" While the text mentions that this condition occurs in other animals like white cats, it does not name a specific *",
+   "seconds": 6.1
+  },
+  {
+   "index": 10,
+   "id": "5a7bbb64554299042af8f7cc",
+   "k": 200,
+   "prompt_tokens": 2095,
+   "rows": 2008,
+   "res_text": "Annie Morton was born on October 8, 1970, and Terry Richardson was born on August 14, 1965. Since 1965 is earlier than 1970, Terry Richardson is older.\n\nFinal answer: Terry Richardson",
+   "rows_text": "Based on the provided passages, Annie Morton was born on October 8, 1970, and Terry Richardson was born on August 14, 1965. Since 1965 is earlier than 1970, Terry Richardson is older.\n\nFinal answer: Terry Richardson",
+   "seconds": 6.3
+  },
+  {
+   "index": 11,
+   "id": "5a714de95542994082a3e7a8",
+   "k": 200,
+   "prompt_tokens": 2387,
+   "rows": 2277,
+   "res_text": "Based on Passage 1, Alexander Young is the younger brother of Stevie Young. Passage 2 states that Stevie Young is the Scottish musician who replaced Malcolm Young in AC/DC in September 2014. Therefore, Alexander Young is the uncle of Stevie Young.\n\nFinal answer: Stevie Young",
+   "rows_text": "Based on the provided passages, Alexander Young (also known as George Young) is the uncle of **Stevie Young** (Stevie Crawford Young). The text states that Stevie Young is a Scottish musician who joined AC/DC in September 2014 to replace his uncle, Malcolm Young, who",
+   "seconds": 6.7
+  },
+  {
+   "index": 12,
+   "id": "5a873ec75542996432c57244",
+   "k": 100,
+   "prompt_tokens": 1474,
+   "rows": 1373,
+   "res_text": "Based on Passage 2, Bo\u0159e\u0148 is similar to the Devils Tower in Wyoming. According to Passage 1, the summit of Devils Tower is 5,112 feet above sea level.\n\nFinal answer: 5112",
+   "rows_text": "Based on the passages provided, the structure in Wyoming that Bo\u0159e\u0148 is similar to is **Devils Tower**. The text states that Devils Tower's summit is **5,112 feet** above sea level.\n\nFinal answer: 5112",
+   "seconds": 5.0
+  },
+  {
+   "index": 13,
+   "id": "5a8e4e7855429917b4a5bd92",
+   "k": 100,
+   "prompt_tokens": 1051,
+   "rows": 959,
+   "res_text": "Yes, both Papa John's Pizza and Papa Gino's specialize in pizza. Passage 1 states that Papa John's is the \"third largest take-out and pizza delivery restaurant chain,\" and Passage 2 describes Papa Gino's as a chain \"specializing in American-style pizza.\"\n\nFinal answer: Yes",
+   "rows_text": "Yes, both Papa John's Pizza and Papa Gino's are described as specializing in American-style pizza.\n\nFinal answer: Yes",
+   "seconds": 4.2
+  },
+  {
+   "index": 14,
+   "id": "5abee2df5542994516f4546a",
+   "k": 100,
+   "prompt_tokens": 1078,
+   "rows": 980,
+   "res_text": "Based on Passage 1, the director of the film *Secret of the Chateau* is Richard Thorpe. Passage 2 states that Richard Thorpe was an American film director based in Britain known for his work with the **Superman** series in the 1980s.\n\nFinal answer: Superman",
+   "rows_text": "Based on the provided passages, the American crime film *Secret of the Chateau* was directed by Richard Thorpe. The text states that the film was released by Universal Pictures, but it does not explicitly state that Richard Thorpe worked *at* that company (as opposed to just releasing the film). However, in",
+   "seconds": 5.7
+  },
+  {
+   "index": 15,
+   "id": "5a84973e5542992a431d1a67",
+   "k": 100,
+   "prompt_tokens": 1388,
+   "rows": 1289,
+   "res_text": "Based on Passage 1, the home that serves as the residence of the Mayor of New York City is Gracie Mansion. Passage 2 confirms that Stokely Webster has paintings in the permanent collections of Gracie Mansion.\n\nFinal answer: Gracie Mansion",
+   "rows_text": "Based on the provided passages, Stokely Webster's paintings are found in several locations, including the Metropolitan Museum of Art, the National Museum of American Art, the Smithsonian Institution, the Senate Office Building, and the Museum of the City of New York. The text explicitly states that **Gracie Mansion** is the official",
+   "seconds": 5.5
+  }
+ ],
+ "reader_lora_B_max_abs": 0.0,
+ "eos_ids": [
+  248044,
+  248046
+ ]
+}

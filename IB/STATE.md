@@ -92,3 +92,10 @@ they appear.
 **2026-11-15:** §3.1 done (frozen-reader KL stage 2 = main row; held-out test1000 in `PRE_REBUTTAL/sec35/TEST.md`, figure
 `sec35/figs/fig_retrieval_s31_test.*`). Next (user): clean linear recipes for compaction (frozen reader only) and math synthesis
 (frozen first, reader-LoRA hedge). Draft plan awaiting the user: `IB/ARTIFACTS/PRE_REBUTTAL/CLEAN_RECIPES_PLAN.md`.
+
+**2026-11-15 (vLLM Hidden Residuals):** deep AC inputs (rows + per-layer residual deltas) now run in vLLM 0.28 for the
+Qwen3.5-9B reader via an out-of-tree model (`activation/vllm_residuals/`, plugin entry point; `engine_to_device` adds the
+`hf_overrides` when a deep AC model targets the reader). Validated against HF hooks on `T_res_rq9fr_kI_KL` (top-1 16/16, greedy
+13/16 compiled, 15/16 eager; eager zero-delta = upstream bit for bit), prefix cache keys on deltas, throughput −8 % (tokens/s) at 4,000
+rows but a 9× request payload (304 MB). Branch `worktree-agent-a9ce275374672303c` (not merged); details
+`IB/ARTIFACTS/PRE_REBUTTAL/vllm_res/README.md`.

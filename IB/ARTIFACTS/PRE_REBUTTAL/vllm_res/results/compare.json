@@ -1,0 +1,352 @@
+{
+ "items": [
+  {
+   "id": "5ac403c45542997ea680c9b5",
+   "k": 200,
+   "prompt_tokens": 2095,
+   "rows": 2005
+  },
+  {
+   "id": "5a8b231055429949d91db4c9",
+   "k": 20,
+   "prompt_tokens": 334,
+   "rows": 237
+  },
+  {
+   "id": "5adde16a5542997dc7907084",
+   "k": 20,
+   "prompt_tokens": 336,
+   "rows": 244
+  },
+  {
+   "id": "5a7f5c9f55429969796c1a0f",
+   "k": 100,
+   "prompt_tokens": 1272,
+   "rows": 1179
+  },
+  {
+   "id": "5a75f0ea5542994ccc91866c",
+   "k": 20,
+   "prompt_tokens": 326,
+   "rows": 238
+  },
+  {
+   "id": "5abc546b554299700f9d786c",
+   "k": 20,
+   "prompt_tokens": 432,
+   "rows": 334
+  },
+  {
+   "id": "5a734f4455429901807dafba",
+   "k": 200,
+   "prompt_tokens": 2857,
+   "rows": 2731
+  },
+  {
+   "id": "5ab960d6554299743d22eb21",
+   "k": 20,
+   "prompt_tokens": 284,
+   "rows": 191
+  },
+  {
+   "id": "5ae1384355429920d5234329",
+   "k": 200,
+   "prompt_tokens": 2591,
+   "rows": 2500
+  },
+  {
+   "id": "5ab7f2d05542993667794064",
+   "k": 100,
+   "prompt_tokens": 1548,
+   "rows": 1445
+  },
+  {
+   "id": "5a7bbb64554299042af8f7cc",
+   "k": 200,
+   "prompt_tokens": 2095,
+   "rows": 2008
+  },
+  {
+   "id": "5a714de95542994082a3e7a8",
+   "k": 200,
+   "prompt_tokens": 2387,
+   "rows": 2277
+  },
+  {
+   "id": "5a873ec75542996432c57244",
+   "k": 100,
+   "prompt_tokens": 1474,
+   "rows": 1373
+  },
+  {
+   "id": "5a8e4e7855429917b4a5bd92",
+   "k": 100,
+   "prompt_tokens": 1051,
+   "rows": 959
+  },
+  {
+   "id": "5abee2df5542994516f4546a",
+   "k": 100,
+   "prompt_tokens": 1078,
+   "rows": 980
+  },
+  {
+   "id": "5a84973e5542992a431d1a67",
+   "k": 100,
+   "prompt_tokens": 1388,
+   "rows": 1289
+  }
+ ],
+ "reader_lora_B_max_abs": 0.0,
+ "res_vs_hf_res": {
+  "logprob_max_abs_diff": 0.49481,
+  "logprob_mean_abs_diff": 0.07124,
+  "per_item_max": [
+   0.1838,
+   0.2436,
+   0.4153,
+   0.2351,
+   0.2474,
+   0.1871,
+   0.2482,
+   0.1292,
+   0.4948,
+   0.0789,
+   0.1197,
+   0.143,
+   0.1254,
+   0.3266,
+   0.2419,
+   0.1596
+  ],
+  "top1_agree": "16/16",
+  "greedy_exact_match": "13/16",
+  "first_divergence": [
+   null,
+   null,
+   null,
+   12,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   2,
+   null,
+   null,
+   39,
+   null
+  ]
+ },
+ "rows_vs_hf_rows": {
+  "logprob_max_abs_diff": 1.43071,
+  "logprob_mean_abs_diff": 0.10946,
+  "per_item_max": [
+   0.4214,
+   0.5127,
+   1.4307,
+   0.2041,
+   0.1821,
+   0.371,
+   0.0991,
+   0.2549,
+   0.2176,
+   0.3592,
+   0.2855,
+   0.2499,
+   0.1248,
+   0.429,
+   0.2461,
+   0.3616
+  ],
+  "top1_agree": "16/16",
+  "greedy_exact_match": "10/16",
+  "first_divergence": [
+   3,
+   null,
+   11,
+   null,
+   29,
+   43,
+   null,
+   58,
+   null,
+   null,
+   null,
+   null,
+   3,
+   null,
+   null,
+   null
+  ]
+ },
+ "res_vs_hf_rows (wrong pairing, for scale)": {
+  "logprob_max_abs_diff": 8.1378,
+  "logprob_mean_abs_diff": 1.82138,
+  "per_item_max": [
+   8.1378,
+   4.3087,
+   4.9747,
+   5.1759,
+   3.4468,
+   5.6299,
+   3.9719,
+   5.3553,
+   4.1574,
+   2.9725,
+   4.6608,
+   5.0528,
+   5.0281,
+   5.2275,
+   6.8661,
+   5.3251
+  ],
+  "top1_agree": "13/16",
+  "greedy_exact_match": "0/16",
+  "first_divergence": [
+   2,
+   2,
+   2,
+   2,
+   0,
+   2,
+   2,
+   2,
+   0,
+   2,
+   0,
+   3,
+   2,
+   12,
+   2,
+   2
+  ]
+ },
+ "zero_vs_stock_rows": {
+  "bit_exact_items": "0/16",
+  "max_abs_logprob_diff": 0.99689,
+  "greedy_exact_match": "11/16"
+ },
+ "eager: zero_vs_stock_rows": {
+  "bit_exact_items": "16/16",
+  "max_abs_logprob_diff": 0.0,
+  "greedy_exact_match": "16/16"
+ },
+ "eager: res_vs_hf_res": {
+  "logprob_max_abs_diff": 0.36964,
+  "logprob_mean_abs_diff": 0.06799,
+  "per_item_max": [
+   0.1273,
+   0.3055,
+   0.1336,
+   0.223,
+   0.2451,
+   0.128,
+   0.1251,
+   0.1254,
+   0.3696,
+   0.0793,
+   0.1959,
+   0.2304,
+   0.1235,
+   0.1893,
+   0.2,
+   0.1368
+  ],
+  "top1_agree": "16/16",
+  "greedy_exact_match": "15/16",
+  "first_divergence": [
+   null,
+   null,
+   null,
+   12,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
+ },
+ "eager: rows_vs_hf_rows": {
+  "logprob_max_abs_diff": 0.60232,
+  "logprob_mean_abs_diff": 0.10304,
+  "per_item_max": [
+   0.6023,
+   0.4468,
+   0.5616,
+   0.2913,
+   0.2449,
+   0.2102,
+   0.2218,
+   0.362,
+   0.4653,
+   0.2113,
+   0.2321,
+   0.3635,
+   0.2499,
+   0.1957,
+   0.3904,
+   0.2436
+  ],
+  "top1_agree": "16/16",
+  "greedy_exact_match": "9/16",
+  "first_divergence": [
+   3,
+   null,
+   11,
+   7,
+   29,
+   43,
+   null,
+   10,
+   19,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
+ },
+ "stock compiled vs stock eager (same model, compile only)": {
+  "bit_exact_items": "0/16",
+  "max_abs_logprob_diff": 0.75766,
+  "greedy_exact_match": "11/16"
+ },
+ "res compiled vs res eager (same model, compile only)": {
+  "bit_exact_items": "0/16",
+  "max_abs_logprob_diff": 0.46913,
+  "greedy_exact_match": "14/16"
+ },
+ "delta_effect_hf": {
+  "logprob_max_abs_shift_per_item": [
+   8.259,
+   4.065,
+   4.952,
+   5.286,
+   3.319,
+   5.63,
+   3.97,
+   5.297,
+   3.663,
+   2.989,
+   4.541,
+   5.097,
+   5.028,
+   5.151,
+   6.733,
+   5.36
+  ],
+  "greedy_same_with_and_without_deltas": "0/16"
+ }
+}
