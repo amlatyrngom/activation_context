@@ -170,3 +170,9 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   `tqa_m1_train_v2`), 0 overlap with dmext/dmhard; three runs together: median ≈9.0k tokens, max 92.4k. The 27B
   (`unsloth/Qwen3.8-27B-NVFP4`) shares the 9B's vocabulary, so KL from the 27B is possible. Teacher test started (agent, 1 EC2
   spot GPU): 9B full trajectories vs 27B full trajectories vs 9B results-only, 200 training problems >= 8.5, 3 repeats.
+- 2026-11-16 vLLM Hidden Residuals merged to main (bf266d5; `activation/vllm_residuals/`, README + tables in
+  `vllm_res/`). Vs HF hooks on T_res_rq9fr_kI_KL, 16 dev1000 items: first token 16/16, greedy identical 13/16 compiled
+  (15/16 eager); stock rows-only vLLM vs HF was 10/16. Prefix cache hits/misses correctly. Throughput at 32 × 4,000-row
+  requests: prefill 20,880 vs 22,781 prompt tok/s rows-only. Cost to watch for compaction evals: each 4,000-row request is
+  304 MB (9× rows-only) and is resent every agent turn, so 40 agents per GPU may need more host RAM or fewer agents; an
+  engine-side cache of packed rows would remove it. Nodes need `uv sync` to install the plugin entry point.
