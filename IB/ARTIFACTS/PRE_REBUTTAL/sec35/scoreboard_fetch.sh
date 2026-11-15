@@ -7,7 +7,7 @@ cd /home/ubuntu/activation_context
 O=IB/TMP/PRE_REBUTTAL/scoreboard/outs; mkdir -p $O
 SR=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/sec35/runs
 source IB/ARTIFACTS/PRE_REBUTTAL/sec35/jobs/cluster_lib.sh; cluster orcd
-for d in rq_eval20i rq_eval_kI_ac rq_eval_kI_text rq_eval_s2 rq_eval_fin rq_eval_fin20i rq_eval_e4 rq_eval_e4x/T_res_rq9e4fr_20I_KL_u05600 rq_eval_e4x/T_res_rq9e4_20I_KL_u05600 rq_eval_test_ac rq_eval_test_ac_20i rq_eval_test_text_base rq_eval_test_text_base_20i rq_eval_test_text_lora rq_eval_test_text_lora_20i; do
+for d in rq_eval20i rq_eval_kI_ac rq_eval_kI_text rq_eval_s2 rq_eval_fin rq_eval_fin20i rq_eval_e4 rq_eval_e4x/T_res_rq9e4fr_20I_KL_u05600 rq_eval_e4x/T_res_rq9e4_20I_KL_u05600 rq_eval_test_ac rq_eval_test_ac_20i rq_eval_test_text_base rq_eval_test_text_base_20i rq_eval_test_text_lora rq_eval_test_text_lora_20i rq_eval_test_refs; do
   n=orcd_${d//\//_}; mkdir -p $O/$n; xfer -a --include='*.jsonl' --include='*.summary.json' --exclude='*' $H:$W/$d/out/ $O/$n/ 2>/dev/null || true
 done
 for r in T_res_rq9e4_e2 T_res_rq9e4_20I_KL; do   # ORCD-trained runs' in-run evals

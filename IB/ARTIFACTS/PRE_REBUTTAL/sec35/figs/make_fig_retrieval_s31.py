@@ -5,8 +5,9 @@ only; untuned text as the comparison; NO text + LoRA line yet).
     Accuracies: HotpotQA dev1000, greedy, cap 1024, one scorer, read from scoreboard.json (written by ../scoreboard.py).
     x positions: the paper's mean input tokens (eval500; text 2,396 / 11,996 / 24,351, ideal 2,402 / 11,996 / 24,350; AC 331 / 1,306 / 2,559)
     -- the dev1000 means are not yet computed (same corpus and BM25, so expected within a few percent).
-    Gold-reference and no-context lines and the Select -> text baseline are left out: they were measured on eval500 with the old sampled
-    scorer and have no dev1000 read yet.
+    Gold reference (untuned 9B, two gold passages only) and no context (question alone): horizontal lines from ../refs.json
+    (test_table.py; reads by jobs/rq_ref_orcd.sh, 2026-11-15), same split and scorer; drawn only when present. The Select -> text
+    baseline stays out (eval500, old sampled scorer, no new read).
 (b) TTFT at k = 200 (paper's systems measurement, unchanged: IB/TMP/PAPER_SYSTEMS setup B), Text and AC only; accuracy annotations are
     the new BM25 k = 200 numbers.
 Run: uv run --no-project --python 3.13 --with matplotlib python make_fig_retrieval_s31.py [test]   (default dev1000 draft)
@@ -18,6 +19,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from matplotlib.lines import Line2D
 
 HERE = Path(__file__).resolve().parent
 PW = HERE.parents[2] / "PAPER_WRITING"
@@ -33,6 +35,8 @@ if SPLIT == "test":
 else:
     SB = json.loads((HERE.parent / "scoreboard.json").read_text())["systems"]; AC_RUN, TEXT_RUN = "T_res_rq9fr_kI_KL", "text_base"
 K = [20, 100, 200]
+_rp = HERE.parent / "refs.json"
+REF = json.loads(_rp.read_text()).get("test1000" if SPLIT == "test" else "dev1000", {}) if _rp.exists() else {}
 TOK = dict(text_bm25=[2.396, 11.996, 24.351], text_ideal=[2.402, 11.996, 24.350], ac=[0.331, 1.306, 2.559])
 
 
@@ -42,7 +46,12 @@ def accs(run, kind):
 
 
 def panel_acc(ax):
-    R.clean(ax); ax.set_xscale("log"); ax.set_xlim(0.2, 120); ax.set_ylim(40, 75)
+    lo = min(40, 5 * int((REF["none"] - 6) // 5)) if "none" in REF else 40
+    R.clean(ax); ax.set_xscale("log"); ax.set_xlim(0.2, 120); ax.set_ylim(lo, 75)
+    if "gold" in REF:
+        R.ref(ax, REF["gold"], R.LS_GOLD, "Gold Reference")
+    if "none" in REF:
+        R.ref(ax, REF["none"], R.LS_DOT, "No Context", x=0.22, ha="left")
     tb, ti, ab, ai = accs(TEXT_RUN, "bm25"), accs(TEXT_RUN, "ideal"), accs(AC_RUN, "bm25"), accs(AC_RUN, "ideal")
     ax.plot(TOK["text_bm25"], tb, marker="s", color=R.G_MID, ms=3.4, zorder=3)
     ax.plot(TOK["ac"], ab, marker="o", color=R.OURS, ms=4.0, mec="white", mew=0.6, zorder=4, path_effects=R.HALO)
@@ -50,13 +59,14 @@ def panel_acc(ax):
     ax.plot(TOK["ac"], ai, marker="o", color=R.OURS, ms=4.0, ls=DASH, mfc="white", mec=R.OURS, mew=1.0, zorder=4)
     F.labels(ax, TOK["text_bm25"], tb, K, "#666666", {0: (-9, 2)})
     F.labels(ax, TOK["ac"], ab, K, R.OURS, {})
-    F.labels(ax, TOK["text_ideal"], ti, K, "#666666", {0: (2, 5)})
+    F.labels(ax, TOK["text_ideal"], ti, K, "#666666", {0: (2, 5)} if "gold" not in REF else {0: (-11, -1)})
     F.labels(ax, TOK["ac"], ai, K, R.OURS, {})
-    kw = dict(fontsize=6.3, va="center")
-    ax.text(0.215, ai[0] + 3.0, "AC, ideal recall", color=R.OURS, **kw)
-    ax.text(0.215, ab[0] + 4.0, "AC, BM25", color=R.OURS, fontweight="bold", **kw)
-    ax.text(TOK["text_ideal"][2] * 1.35, ti[2], "Text, ideal recall", color="#666666", ha="left", **kw)
-    ax.text(TOK["text_bm25"][2] * 1.35, tb[2], "Text, BM25", color="#666666", ha="left", **kw)
+    # as the paper's Fig. 3: one name per system + a BM25 / ideal-recall legend (the gold line leaves no room for per-line labels)
+    ax.text(0.215, ab[0] - 8.0, "AC (ours)", color=R.OURS, fontsize=R.LAB, fontweight="bold", va="center")
+    ax.text(TOK["text_bm25"][2] * 1.35, tb[2], "Text", color="#666666", fontsize=R.LAB, ha="left", va="center")
+    h = [Line2D([], [], color="#555555", lw=1.2, label="BM25"),
+         Line2D([], [], color="#555555", lw=1.2, ls=DASH, marker="o", ms=3, mfc="white", label="Ideal recall (golds in top-k)")]
+    ax.legend(handles=h, loc="lower right", bbox_to_anchor=(1.0, 0.16), fontsize=6.3, handlelength=2.4, borderaxespad=0.2)
     ax.set_xticks([0.3, 1, 3, 10, 30]); ax.set_xticklabels(["0.3k", "1k", "3k", "10k", "30k"]); ax.minorticks_off()
     ax.set_xlabel("Mean Input Tokens (log); labels = top-k"); ax.set_ylabel("Accuracy (%)"); ax.set_title("(a) Accuracy vs. input")
 

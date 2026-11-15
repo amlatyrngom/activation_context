@@ -90,6 +90,30 @@ out += ["\n## Main row − untuned text, same setting\n", "| 20I | 100I | 200I |
         "\n## Main row at k=100 / 200 − text at plain k=20\n", "| AC k | vs untuned k=20 | vs text + LoRA k=20 |", "|---|---|---|"]
 for kk in ("bm25_k100", "bm25_k200"):
     out.append(f"| {kk[6:]} | {cell(V['ac'][kk], V['text_base']['bm25_k20'])} | {cell(V['ac'][kk], V['text_lora']['bm25_k20'])} |")
+# reference lines (2026-11-15, jobs/rq_ref_orcd.sh): untuned 9B with the two gold passages only (the KL teacher's view) and with the question
+# alone; hotpot_tasks_v2 rows, same scorer. refs.json also carries dev1000 for the dev draft of the figure.
+QD = {r["id"]: r for r in rows(DATA / "hotpot_tasks_v2/dev1000.jsonl")}
+REFS, RV = {}, {}
+for split, q in (("test1000", Q20), ("dev1000", QD)):
+    for view in ("gold", "none"):
+        p = OUTS / "orcd_rq_eval_test_refs" / f"text_base_{view}.{split}.jsonl"
+        if not Path(str(p)[:-len(".jsonl")] + ".summary.json").exists():
+            continue
+        v = {r["id"]: score(r.get("pred"), q[r["id"]])["acc"] for r in rows(p) if r["id"] in q}
+        assert len(v) == 1000, f"{p}: {len(v)} rows"
+        want = json.loads(Path(str(p)[:-len(".jsonl")] + ".summary.json").read_text()).get("acc")
+        if want is not None and abs(acc(v) - want) > 0.05:
+            checks.append(f"{p.name}: rescored {acc(v):.1f} vs summary {want}")
+        REFS.setdefault(split, {})[view] = round(acc(v), 2); RV[(split, view)] = v
+if ("test1000", "gold") in RV:
+    g = RV[("test1000", "gold")]
+    out += ["\n## Reference lines (untuned 9B, test1000)\n",
+            f"Gold reference (two gold passages only): **{acc(g):.1f}**; no context (question alone): "
+            + (f"**{acc(RV[('test1000', 'none')]):.1f}**" if ("test1000", "none") in RV else "–") + "\n",
+            "| | 20I | 100I | 200I |", "|---|---|---|---|"]
+    for label, stem, _ in SYSTEMS[:2]:
+        out.append(f"| {label} − gold reference | " + " | ".join(cell(V[stem][s], g) for s in ("20I", "100I", "200I")) + " |")
+(HERE / "refs.json").write_text(json.dumps(REFS, indent=1) + "\n")
 out.append("\n" + ("**Rescore mismatches:** " + "; ".join(checks) if checks else "All outputs re-scored to their summary accuracy (±0.05)."))
 (HERE / "TEST.md").write_text("\n".join(out) + "\n")
 data = {"systems": {stem: {"label": label, **{s: {"acc": round(acc(V[stem][s]), 2), "n": 1000} for s in SETTINGS if V[stem][s] is not None}}

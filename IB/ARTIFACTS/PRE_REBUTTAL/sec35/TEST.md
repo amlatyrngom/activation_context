@@ -21,4 +21,13 @@ Paired on the same 1,000 test questions: delta [95% bootstrap CI], exact McNemar
 | 100 | **+9.3** [+6.8, +11.9] p<0.001 | +1.7 [-0.9, +4.4] p=0.264 |
 | 200 | **+11.8** [+9.3, +14.5] p<0.001 | **+4.2** [+1.5, +7.2] p=0.008 |
 
+## Reference lines (untuned 9B, test1000)
+
+Gold reference (two gold passages only): **71.7**; no context (question alone): **24.0**
+
+| | 20I | 100I | 200I |
+|---|---|---|---|
+| Text, untuned − gold reference | **-3.8** [-5.4, -2.3] p<0.001 | **-5.3** [-7.4, -3.1] p<0.001 | **-5.5** [-7.7, -3.4] p<0.001 |
+| AC KL stage 2, frozen reader (MAIN) − gold reference | **-2.8** [-4.7, -1.0] p=0.005 | **-4.6** [-6.6, -2.6] p<0.001 | **-5.2** [-7.3, -3.1] p<0.001 |
+
 All outputs re-scored to their summary accuracy (±0.05).

@@ -127,3 +127,9 @@
   k200 60.5/57.6/65.7. Main − untuned significant only on plain BM25 k=100 (+3.6, p=0.002) and k=200 (+2.9, p=0.021); the injected-gold
   settings tie on test (+1.0/+0.7/+0.3), so the dev 100I/200I gains (+3.1/+2.5) did not hold up. AC k=200 beats text + LoRA at k=20 (+4.2, p=0.008).
   Frozen 4B KL (20I, no stage 2) dev reads done (record only; 4B is out of §3.1).
+
+- 2026-11-15 (user: put the gold reference back): jobs/rq_ref_orcd.sh + jobs/ref_view_eval.py (text_lora_eval_hf.py unchanged, view swapped:
+  gold = READ over the two gold passages, the KL teacher's prompt; none = rq_common.NO_PASSAGES), untuned 9B, greedy, cap 1024, same scorer.
+  test1000: gold reference 71.7, no context 24.0 (165 of 1000 hit the 1024 cap). Main − gold: 20I −2.8 (p=0.005), 100I −4.6, 200I −5.2;
+  untuned text − gold: −3.8 / −5.3 / −5.5 (all p<0.001). Figure: both lines added (refs.json), labels switched to the paper's style
+  (one name per system + BM25 / ideal-recall legend) because the gold line ran through the per-line labels. dev1000 refs still reading.
