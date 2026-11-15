@@ -121,3 +121,9 @@
   rq_eval_job.sh now takes RQ_TEXT_BATCH (default 8); rq_test_orcd.sh takes it as 2nd arg. Resubmitted text + LoRA at batch 2 (job 29133206);
   untuned text is resubmitted at batch 2 once job 29121104 ends (its 200I already failed; resume skips finished questions/outputs).
   Batch size only changes padding under greedy decoding.
+
+- 2026-11-15: HELD-OUT test1000 complete (TEST.md, test.json, figs/fig_retrieval_s31_test.{png,pdf}). Main row (frozen KL stage 2) /
+  untuned text / text + LoRA: 20I 68.9/67.9/78.5, 100I 67.1/66.4/77.6, 200I 66.5/66.2/76.8, plain k20 49.9/48.7/56.3, k100 58.0/54.4/63.6,
+  k200 60.5/57.6/65.7. Main − untuned significant only on plain BM25 k=100 (+3.6, p=0.002) and k=200 (+2.9, p=0.021); the injected-gold
+  settings tie on test (+1.0/+0.7/+0.3), so the dev 100I/200I gains (+3.1/+2.5) did not hold up. AC k=200 beats text + LoRA at k=20 (+4.2, p=0.008).
+  Frozen 4B KL (20I, no stage 2) dev reads done (record only; 4B is out of §3.1).
