@@ -1,0 +1,84 @@
+{
+ "engine": "res",
+ "kwargs": {
+  "model": "Qwen/Qwen3.5-9B",
+  "dtype": "bfloat16",
+  "enable_prompt_embeds": true,
+  "kv_cache_dtype": "auto",
+  "max_model_len": 16384,
+  "gpu_memory_utilization": 0.85,
+  "limit_mm_per_prompt": {
+   "image": 0,
+   "video": 0
+  },
+  "max_num_seqs": 128,
+  "enable_prefix_caching": true,
+  "seed": 0,
+  "max_logprobs": 20,
+  "hf_overrides": {
+   "architectures": [
+    "Qwen3_5ResForConditionalGeneration"
+   ],
+   "text_config": {
+    "projection_size": 36864,
+    "ac_residual_layers": [
+     3,
+     7,
+     11,
+     15,
+     19,
+     23,
+     27,
+     31
+    ]
+   }
+  }
+ },
+ "load_seconds": 92.3,
+ "arch": [
+  "Qwen3_5ResForConditionalGeneration"
+ ],
+ "inputs_embeds_size": 36864,
+ "block_size": 528,
+ "mamba_cache_mode": "align",
+ "max_num_batched_tokens": 16384,
+ "cudagraph_mode": "FULL_AND_PIECEWISE",
+ "cache": {
+  "prompt_tokens": 2857,
+  "rows": 2731,
+  "first_row_position": 66,
+  "changed_from_position": 2114,
+  "cold": 0,
+  "repeat": 2640,
+  "deltas_changed_all": 0,
+  "deltas_changed_last_quarter": 0,
+  "repeat_original_again": 2640
+ },
+ "throughput": {
+  "requests": 32,
+  "prompt_tokens": 4126,
+  "rows": 4000,
+  "payload_width": 36864,
+  "payload_bytes_per_request": 304201728,
+  "cpu_sha256_seconds_per_request": 0.1598,
+  "cpu_msgpack_encode_seconds": 0.0001,
+  "cpu_frame_copy_seconds": 0.1442,
+  "cpu_msgpack_decode_seconds": 0.0002,
+  "prefill_only": {
+   "seconds": 6.32,
+   "generated_tokens": 32,
+   "cached_tokens_max": 0,
+   "requests_per_second": 5.06,
+   "prompt_tokens_per_second": 20880,
+   "generated_tokens_per_second": 5.1
+  },
+  "end_to_end_256": {
+   "seconds": 11.31,
+   "generated_tokens": 8192,
+   "cached_tokens_max": 0,
+   "requests_per_second": 2.829,
+   "prompt_tokens_per_second": 11674,
+   "generated_tokens_per_second": 724.3
+  }
+ }
+}

@@ -264,7 +264,11 @@ class Agent:
         ac_model = self.ac_model
         assert ac_model is not None, "activation_context parts need agent_config.ac_model_name"
         futures = [ac_model.encode_async(part["messages"], part.get("compression_target"), tools=part.get("tools")) for part in parts]
-        rows = [future.result().detach().to(dtype=self.row_dtype).cpu().contiguous() for future in futures]
+        results = [future.result() for future in futures]
+        if ac_model.is_deep:            # Hidden Residuals: every row carries its per-layer deltas to the engine, [row, delta_L1, ...]
+            from activation.vllm_residuals import pack_rows
+            results = [pack_rows(output.input_embeds, output.layer_inputs) for output in results]
+        rows = [result.detach().to(dtype=self.row_dtype).cpu().contiguous() for result in results]
         self.run_results.num_ac_parts += len(rows)
         self.run_results.num_ac_rows += sum(int(r.shape[0]) for r in rows)
         return rows
@@ -431,7 +435,7 @@ class Agent:
         """The next engine request: the prefix, and with parts the full-length tensor (zero rows at token positions) plus its mask."""
         if not self.spans:
             return list(self.prefix), None, None
-        embeds = torch.zeros(len(self.prefix), self.loaded_model.model_config.model_description.d_model, dtype=self.row_dtype)
+        embeds = torch.zeros(len(self.prefix), self.rows[0].shape[1], dtype=self.row_dtype)   # d_model, or wider with packed deltas
         mask = [True] * len(self.prefix)
         for (start, end), rows in zip(self.spans, self.rows):
             embeds[start:end] = rows
