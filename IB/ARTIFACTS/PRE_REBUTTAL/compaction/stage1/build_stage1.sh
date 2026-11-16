@@ -6,13 +6,15 @@
 #     bash build_stage1.sh s1kl_c162024_v1 "16 20 24"   the hill-climbing variant: the same runs also cut at 16k and 24k
 #
 # Pools: every $POOLS/<cache id>/rollouts.jsonl (default IB/TMP/PRE_REBUTTAL/compaction_stage1/pools/: the six seed-0 training
-# pools pc_pool9_h6_trA/_trB/_trC1/_trC4, pc_pool9_h8_D1/_D2). New seeds of the same tasks (new cache ids) are added by putting
+# pools pc_pool9_h6_trA/_trB/_trC1/_trC4, pc_pool9_h8_D1/_D2, and since 2026-11-16 the evaluation-side pc_pool9_h6_eval = evaluation
+# order 600-1009, none of the 322; evaluation order 0-599 = pc_pool9_eval_v3 adds no run outside the 322 under the cut rule). New seeds of the same tasks (new cache ids) are added by putting
 # their rollouts.jsonl there and re-running with a new NAME: one line per (task, pool seed, cut), so nothing collides.
 # Cut rule (each cut c): run of at least c tokens and under 50,000 (head included), not ended by the trajectory cap / error /
 # task_unavailable, cut at the first non-assistant step boundary at or past c, something to predict after it; unsolved runs kept.
 # Packet: loss "kl" (top-k KL to the starting reader reading head + full prefix, on the run's own continuation tokens), sizes r
 # drawn per item from {1/5, 1/10} (rows = 20,000 x r: 4,000 / 2,000, as the benchmark's ac_4000 / ac_2000), training side only,
-# the 322 eval-200 / dev-75 / frozen-100 tasks excluded again, no training-side held panel (the held-out check is dev-75:
+# both split sides (2026-11-16, ROOT_CANON: items never repeat across splits, repositories are shared; the first packets
+# s1kl_c20_v1 / s1kl_c162024_v1 were training side only), the 322 eval-200 / dev-75 / frozen-100 tasks excluded, no training-side held panel (the held-out check is dev-75:
 # build_dev_panel.py), recipe fields encoder 5e-5, reader 0, warm-up 50, batch 8, one pass. Starting pair: R_res_rq9fr.
 # Outputs: $T/material/<NAME>_c<c>.jsonl (+ .summary.json), $T/packets/<NAME>/ (items.pkl is what sec45_train --kind packet reads);
 # both mirrored to $S3/. A NAME whose packet failed reuses its finished material files. CMP_WORKERS: CPU workers of the packet build
@@ -40,7 +42,7 @@ for c in $CUTS; do
   MATERIAL+=($M)
 done
 CUDA_VISIBLE_DEVICES= PYTHONPATH=$REPO CONTINUATION_BENCH_DIR=$REPO/IB/TMP/PAPER_CORPUS_QA/kit/bench $PY $HERE/prepare_agent_continuation.py \
-  --material "${MATERIAL[@]}" --output $T/packets/$NAME --loss kl --sides training --exclude-tasks "${EXCLUDE[@]}" \
+  --material "${MATERIAL[@]}" --output $T/packets/$NAME --loss kl --sides training evaluation --exclude-tasks "${EXCLUDE[@]}" \
   --initial-ac $I/ac --initial-reader $I/reader --held-repos 0 --r-values 0.2 0.1 \
   --lr-ac 5e-5 --lr-reader 0 --train warmup_updates=50 --workers ${CMP_WORKERS:-6} > $T/logs/${NAME}_prepare.log 2>&1
 $PY -c "import json,sys; d=json.load(open(sys.argv[1])); print('  packet:', d['training']['items'], 'items,', d['training_runs'], 'runs,', d['training_tasks'], 'tasks,', d['updates_per_pass'], 'updates per pass (batch 8), r', d['training_r_counts'], 'dropped', d['dropped'], 'excluded', d['excluded'])" $T/packets/$NAME/continuation_build.json
