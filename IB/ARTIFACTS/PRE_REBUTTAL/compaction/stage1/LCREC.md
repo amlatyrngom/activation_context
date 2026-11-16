@@ -58,41 +58,71 @@ The recipe is now: warm-up pair `R_res_rq9fr` → **long-context reconstruction 
 
 ### Reconstruction run `R_cmp_lcrec` (ORCD job 29263023)
 
-Held reconstruction panel (`sync/R_cmp_lcrec.held.jsonl`, NLL per target token):
+241 updates, valid, stop reason complete; 97.4 s per update effective (89.7 median), peak 57.1 GB, 6.6 h wall
+(`sync/R_cmp_lcrec.stats.json`). The final reader adapter has the start's sha256 (`830ba665…`).
 
-| Update | 1/10 | 1/5 |
-|---|---|---|
-| 0 (`R_res_rq9fr`) | 0.5614 | 0.5952 |
-| 51 | 0.0309 | 0.0104 |
+Held reconstruction panel (`sync/R_cmp_lcrec.held.jsonl`, NLL per target token; 100 items, 1,002,040 tokens per size):
 
-dev-75 proxy of the reconstruction checkpoints (`proxy/<step>.json`):
+| Update | 1/10 | 1/5 | Token accuracy |
+|---|---|---|---|
+| 0 (`R_res_rq9fr`) | 0.5614 | 0.5952 | 0.8717 |
+| 51 | 0.0309 | 0.0104 | 0.9935 |
+| 101 | 0.0232 | 0.0059 | 0.9955 |
+| 151 | 0.0200 | 0.0045 | 0.9962 |
+| 201 | 0.0171 | 0.0035 | 0.9968 |
+| 241 (end) | 0.0152 | 0.0031 | 0.9971 |
+
+dev-75 proxy of the reconstruction checkpoints alone (`proxy/<step>.json`, teacher stored):
 
 | Checkpoint | NLL 1/10 | NLL 1/5 | Gap closed 1/10 | Gap closed 1/5 |
 |---|---|---|---|---|
 | `R_res_rq9fr` (start) | 0.7135 | 0.7447 | −0.493 | −0.717 |
 | step_00100 (side job 29278946) | 0.7418 | 0.7397 | −0.696 | −0.681 |
+| step_00200 | 0.8009 | 0.7855 | −1.121 | −1.010 |
+| final (u241) | 0.7920 | 0.7794 | −1.057 | −0.967 |
 
-Reconstruction alone does not move the continuation proxy: the reader is asked to continue the task, not to reproduce.
+Reconstruction alone makes the continuation proxy worse: the rows now ask the frozen reader to reproduce text, while the
+proxy asks it to continue the task. Stage 1 is what turns them into a continuation context.
 
 ### Stage 1 from the reconstruction checkpoint vs from `R_res_rq9fr`
 
-Same packet `s1kl_both_c20_v1` (1,467 items, 183 updates) and recipe; in-run dev-75 panel (`sync/<RUN>.held.jsonl`).
-`S1_lcrec100_kl_both_c20` (job 29280019) starts from `R_cmp_lcrec` step_00100 (staged as `cmp1/init/R_cmp_lcrec_u100`).
+Same packet `s1kl_both_c20_v1` (1,467 items, 183 updates), same recipe (KL, reader frozen, encoder 5e-5, warm-up 50, cosine,
+batch 8); in-run dev-75 panel (`sync/<RUN>.held.jsonl`); the last row is also each run's own final proxy (`proxy/final.json`,
+same numbers). `S1_lcrec100_kl_both_c20` (job 29280019) starts from `R_cmp_lcrec` step_00100 (staged as
+`cmp1/init/R_cmp_lcrec_u100`); it was started before the reconstruction run ended, because reconstruction had converged by u51.
 
-| Update | Baseline `S1_res_kl_both_c20` NLL 1/10 / 1/5 | gap | From recon u100 NLL 1/10 / 1/5 | gap |
+| Update | Baseline `S1_res_kl_both_c20` NLL 1/10 / 1/5 | gap closed | From recon u100 NLL 1/10 / 1/5 | gap closed |
 |---|---|---|---|---|
 | 0 | 0.7135 / 0.7447 | −0.493 / −0.717 | 0.7417 / 0.7396 | −0.696 / −0.681 |
-| 41 | 0.6294 / 0.6301 | 0.111 / 0.106 | **0.5785 / 0.5654** | **0.477 / 0.571** |
-| 81 | 0.6271 / 0.6274 | 0.128 / 0.125 | pending | |
-| 121 | 0.6085 / 0.6073 | 0.261 / 0.270 | pending | |
-| 161 | 0.5765 / 0.5638 | 0.491 / 0.582 | pending | |
-| 183 (end) | 0.5739 / 0.5603 | 0.510 / 0.608 | pending | |
+| 41 | 0.6294 / 0.6301 | 0.111 / 0.106 | 0.5785 / 0.5654 | 0.477 / 0.571 |
+| 81 | 0.6271 / 0.6274 | 0.128 / 0.125 | 0.5696 / 0.5553 | 0.541 / 0.643 |
+| 121 | 0.6085 / 0.6073 | 0.261 / 0.270 | 0.5638 / 0.5495 | 0.582 / 0.685 |
+| 161 | 0.5765 / 0.5638 | 0.491 / 0.582 | 0.5616 / 0.5472 | 0.598 / 0.702 |
+| **183 (end)** | **0.5739 / 0.5603** | **0.510 / 0.608** | **0.5606 / 0.5460** | **0.606 / 0.710** |
 
-References (OLD_H8A_DEV75.md): the old H8a encoder read by the untuned frozen 9B, 0.5917 / 0.5758 (gap 0.382 / 0.496).
+KL to the full-prefix teacher at the end: 0.0627 / 0.0505 (baseline) vs 0.0501 / 0.0375 (from recon). Both runs valid and
+complete; the recon-started run took 65.8 s per update median, 103.8 effective (panels included), peak 57.9 GB.
 
-## Reading so far
+References (OLD_H8A_DEV75.md): the old H8a encoder read by the untuned frozen 9B, NLL 0.5917 / 0.5758 (gap 0.382 / 0.496);
+H8a with its own trained reader LoRA, 0.886 / 0.962.
 
-- The reconstruction phase is cheap and learns fast (held reconstruction NLL 0.56 → 0.01–0.03 within 51 updates).
-- Started from it, stage 1 reaches at update 41 about what the baseline reaches only at its end (u161–183), and already beats
-  the old H8a encoder under the same frozen reader.
-- The baseline also left its plateau late (u121–161), so the comparison that matters is the end of the recon-started run.
+## Reading
+
+- The long-context reconstruction phase lifts stage 1 at every matched update: +0.37 / +0.47 gap closed at u41, +0.41 / +0.52
+  at u81, and +0.10 / +0.10 at the end (0.606 / 0.710 vs 0.510 / 0.608). The recon-started run passes the baseline's final at
+  u41–81 and keeps improving slowly after.
+- The baseline left its plateau only late (between u121 and u161); started from the reconstruction phase, stage 1 has no
+  such plateau.
+- With the frozen untuned reader, the new encoder now beats the old H8a encoder (0.606 / 0.710 vs 0.382 / 0.496).
+- Reconstruction itself converges fast (held NLL 0.56 → 0.03 / 0.01 by u51), so the phase could be shorter; the clean recipe
+  uses the full one-pass final (`cmp1/init/R_cmp_lcrec_final`), whose stage-1 behaviour is not measured here.
+- One seed, one packet, the dev-75 teacher-forced proxy only (no agent runs yet).
+
+## Where things are
+
+- Material: `IB/TMP/PRE_REBUTTAL/compaction_stage1/packets/lcrec_v1/` = S3 `compaction/stage1/packets/lcrec_v1/` = ORCD
+  `cmp1/data/packets/lcrec_v1/` (items.pkl sha256 `b45e35d0…`, held_panel.pkl `b590a815…`).
+- Runs (ckpt final, held/stats/run json, proxies, logs; no optimizer or trainer folders): S3
+  `compaction/stage1/runs/R_cmp_lcrec/` (also its step_00100, the start of `S1_lcrec100_kl_both_c20`) and
+  `compaction/stage1/runs/S1_lcrec100_kl_both_c20/`; local mirrors under `IB/TMP/PRE_REBUTTAL/compaction_stage1/runs/`.
+- Start pairs on ORCD: `cmp1/init/R_cmp_lcrec_u100`, `cmp1/init/R_cmp_lcrec_final` (hard links of the run's checkpoints + DONE).
