@@ -1,11 +1,12 @@
 #!/bin/bash
-# Compaction agent evaluation on dev-75 (pre-rebuttal C4) on one SkyPilot spot node (1x RTX PRO 6000), run as a sky job from the
-# repo mirror (~/sky_workdir). Same command as the paper's 50k runs (kit/run9d_unit.sh, cmp_node.sh: --budget 50000 --trajectory-cap
+# Compaction agent evaluation on dev-75 (pre-rebuttal C4) on one SkyPilot spot node (1x RTX PRO 6000), run as a sky job through
+# launch.sh (which stages this folder on S3: IB/ is not in the ~/sky_workdir mirror). Same command as the paper's 50k runs (kit/run9d_unit.sh, cmp_node.sh: --budget 50000 --trajectory-cap
 # 90000 --max-model-len 100000 --max-duration 6000), through run_resume_res.py (Hidden Residuals pairs served by the vLLM residual
 # path; text arms unchanged). Dev-75 only: the eval-200 (test) prefixes are never fetched.
 #   dev75_node.sh run   TAG SEED VARIANTS AGENTS [PAIR_RUN|-] [run_resume.py args ...]
 #        VARIANTS comma-separated (full,none,summary_write,summary,ac_4000,ac_2000); PAIR_RUN = a stage-1 run under
 #        S3 compaction/stage1/runs/<PAIR_RUN>/sync/ckpt/final/ (needed by ac_* variants), '-' for none. Text summary arms are uncapped.
+#        RUN_TIMEOUT=<seconds> (env, via launch.sh) stops the run after that long (load measurements; 0 = no limit).
 #   dev75_node.sh check PAIR_RUN ROWS COUNT       first_turn_check.py (HF vs vLLM, trimmed vs full-length request) on the first COUNT prefixes
 # Resumable across spot reclaims: each ROLLOUTS/<TAG>_<variant> cache is restored from S3 when the node has none, mirrored to S3 every
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
@@ -14,12 +15,12 @@ set -uo pipefail
 MODE=$1; shift
 S3C=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/compaction
 S3=$S3C/agent_eval_dev75
-A=/root/activation_artifacts; P=$A/pc; E=$A/agent_eval; PY=/opt/activation/.venv/bin/python; HERE=/root/sky_workdir/IB/ARTIFACTS/PRE_REBUTTAL/compaction/agent_eval
+A=/root/activation_artifacts; P=$A/pc; E=$A/agent_eval; PY=/opt/activation/.venv/bin/python; HERE=$A/agent_eval/code   # fetched from S3 by launch.sh (IB/ is not in the sky mirror)
 mkdir -p $P/kit $P/prefixes_dev9_75 $E/logs $E/stage $E/checks $E/pairs $A/SYNC/ROLLOUTS $A/SYNC/PAPER_COMPACTION $P/hf
 (cd /root/sky_workdir && UV_PROJECT_ENVIRONMENT=/opt/activation/.venv /usr/local/bin/uv sync --frozen -q)   # also installs the vllm_residuals plugin entry point
 [ -x /root/s3venv/bin/python ] || { /usr/local/bin/uv venv -q /root/s3venv && /usr/local/bin/uv pip install -q --python /root/s3venv/bin/python boto3; }
 S3PY=/root/s3venv/bin/python
-X() { $S3PY /root/sky_workdir/IB/ARTIFACTS/PRE_REBUTTAL/sec35/kit/s3x.py "$@"; }
+X() { $S3PY $HERE/s3x.py "$@"; }
 LOG=$E/logs/node.log
 say() { echo "$(date -u +%FT%TZ) $*" | tee -a $LOG; }
 X getdir $S3C/pc_inputs/kit/ $P/kit/ > /dev/null
@@ -87,7 +88,7 @@ done
 ( while sleep 600; do mirror "${IDS[@]}"; done ) & LOOP=$!
 export RESUME_MONITOR_FILE=$E/logs/${TAG}.monitor.jsonl
 say "run $TAG seed $SEED variants $VARIANTS agents $AGENTS pair $RUN extra '$*' (cached: $(for c in "${IDS[@]}"; do echo -n "$c=$(rows $A/SYNC/ROLLOUTS/$c/rollouts.jsonl) "; done))"
-$PY $HERE/run_resume_res.py --split $P/split.json --prefixes $P/prefixes_dev9_75 --variants $VARIANTS --uncapped-summary \
+timeout --signal=INT --kill-after=120 ${RUN_TIMEOUT:-0} $PY $HERE/run_resume_res.py --split $P/split.json --prefixes $P/prefixes_dev9_75 --variants $VARIANTS --uncapped-summary \
   --budget 50000 --trajectory-cap 90000 --max-model-len 100000 --max-duration 6000 --seed $SEED --tag $TAG --agents-per-gpu $AGENTS \
   "${PAIR_ARGS[@]}" "$@" >> $E/logs/${TAG}.log 2>&1
 CODE=$?
