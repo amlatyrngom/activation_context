@@ -1,16 +1,23 @@
 #!/bin/bash
-# New seeds of the 9B training-side pools (seed 0 = pc_pool9_h6_trA/_trB/_trC1/_trC4 + pc_pool9_h8_D1/_D2) on one SkyPilot
+# New seeds of the 9B pools (training side, seed 0 = pc_pool9_h6_trA/_trB/_trC1/_trC4 + pc_pool9_h8_D1/_D2; evaluation side
+# order 600-1009, seed 0 = pc_pool9_h6_eval) on one SkyPilot
 # spot node (1x RTX PRO 6000), run as a sky job. Same command as the seed-0 pools (kit/pool9h6_node.sh -> kit/pool_node.sh ->
 # kit/run_pool.py --model-id Qwen/Qwen3.5-9B --max-model-len 72000 --split split_train_shuffled.json, 40 agents per GPU),
 # only --seed and the cache id differ, and the KV cache is bf16 (run_pool_seed.py). Resumable across spot reclaims: each
 # cache is restored from S3 when the node has none, mirrored to S3 every 10 min (a snapshot cut at the last full line),
 # and marked DONE on S3 when it holds every task of the shard.
-#   pool_seed_node.sh <h0|h1> <seed> [seed ...]      h0 = training order 0-1337, h1 = 1338-2675
-#   cache ids: pc_pool9_tr_s<seed>_<h0|h1>   ->  S3 .../compaction/pool_seeds/ROLLOUTS/<cache id>/rollouts.jsonl
+#   pool_seed_node.sh <h0|h1|ev> <seed> [seed ...]   h0 = training order 0-1337, h1 = 1338-2675,
+#        ev = evaluation order 600-1009 of split.json (seed 0 = pc_pool9_h6_eval; holds none of the 322 tasks of kit/exclude_h7.json)
+#   cache ids: pc_pool9_tr_s<seed>_<h0|h1>, pc_pool9_ev_s<seed>  ->  S3 .../compaction/pool_seeds/ROLLOUTS/<cache id>/rollouts.jsonl
 set -uo pipefail
 SHARD=$1; shift
-case $SHARD in h0) START=0;; h1) START=1338;; *) echo "shard must be h0 or h1" >&2; exit 2;; esac
-COUNT=1338
+case $SHARD in
+  h0) SIDE=training; START=0; COUNT=1338; SPLIT=split_train_shuffled.json;;
+  h1) SIDE=training; START=1338; COUNT=1338; SPLIT=split_train_shuffled.json;;
+  ev) SIDE=evaluation; START=600; COUNT=410; SPLIT=split.json;;
+  *) echo "shard must be h0, h1 or ev" >&2; exit 2;;
+esac
+cache_id() { if [ $SHARD = ev ]; then echo pc_pool9_ev_s$1; else echo pc_pool9_tr_s$1_$SHARD; fi; }
 S3=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/compaction/pool_seeds
 A=/root/activation_artifacts; P=$A/pool_seeds; PY=/opt/activation/.venv/bin/python
 mkdir -p $P/logs $P/inputs $P/stage $A/SYNC/ROLLOUTS $A/hf
@@ -22,6 +29,18 @@ X() { $S3PY $P/s3x.py "$@"; }
 X getdir $S3/inputs/ $P/inputs/
 LOG=$P/logs/node_$SHARD.log
 say() { echo "$(date -u +%FT%TZ) $SHARD: $*" | tee -a $LOG; }
+# the shard's tasks (run_pool.py's selection) must hold no task of kit/exclude_h7.json (eval-200, dev-75, frozen-100)
+$S3PY - $P/inputs/$SPLIT $SIDE $START $COUNT $P/inputs/exclude_h7.json <<'PYEOF' | tee -a $LOG || { say "exclusion check FAILED: stopping"; exit 3; }
+import json, sys
+split, side, start, count, exclude = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
+tasks = [t for t in json.load(open(split))["tasks"] if t["side"] == side]
+if side == "evaluation":
+    tasks.sort(key=lambda t: t["evaluation_order"])
+ids = {t["task_id"] for t in tasks[start:start + count]}
+hit = ids & set(json.load(open(exclude))["task_ids"])
+assert len(ids) == count and not hit, f"{len(ids)} tasks, {len(hit)} excluded tasks among them: {sorted(hit)[:5]}"
+print(f"exclusion check: {len(ids)} {side} tasks, none in {exclude}")
+PYEOF
 
 export HF_HOME=$A/hf PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false TZ=UTC VLLM_WORKER_MULTIPROC_METHOD=spawn
 export ACTIVATION_SYNC_ROOT=$A/SYNC PYTHONPATH=/root/sky_workdir:$P/inputs POOL_KV_CACHE_DTYPE=auto
@@ -50,7 +69,7 @@ mirror() {                                              # snapshot -> S3 (never 
 }
 
 for SEED in "$@"; do
-  C=pc_pool9_tr_s${SEED}_$SHARD; F=$A/SYNC/ROLLOUTS/$C/rollouts.jsonl
+  C=$(cache_id $SEED); F=$A/SYNC/ROLLOUTS/$C/rollouts.jsonl
   if $S3PY $P/s3x.py get $S3/ROLLOUTS/$C/DONE $P/stage/$C.DONE > /dev/null 2>&1; then say "$C already DONE on S3"; continue; fi
   mkdir -p $A/SYNC/ROLLOUTS/$C
   if [ ! -s $F ]; then X get $S3/ROLLOUTS/$C/rollouts.jsonl $F > /dev/null 2>&1 && say "$C restored from S3: $(rows $F) rows"; fi
@@ -58,7 +77,7 @@ for SEED in "$@"; do
   ( while sleep 600; do mirror $C; done ) & LOOP=$!
   for attempt in 1 2 3; do
     say "$C attempt $attempt: tasks $START+$COUNT seed $SEED, $(rows $F) cached"
-    $PY $P/inputs/run_pool_seed.py --split $P/inputs/split_train_shuffled.json --side training --start $START --count $COUNT \
+    $PY $P/inputs/run_pool_seed.py --split $P/inputs/$SPLIT --side $SIDE --start $START --count $COUNT \
       --caching-id $C --model-id Qwen/Qwen3.5-9B --seed $SEED --max-model-len 72000 --agents-per-gpu 40 >> $P/logs/$C.log 2>&1
     say "$C attempt $attempt exit $?, $(rows $F) rows"
     [ "$(rows $F)" -ge $COUNT ] && break
