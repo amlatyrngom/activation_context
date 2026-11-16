@@ -8,6 +8,11 @@
 #   ORCD:  cd /home/ngom/orcd/scratch/activation/cmp1 && sbatch --export=NIL --partition=mit_preemptable --requeue \
 #            --gres=gpu:rtx_pro_6000:1 jobs/cmp_stage1_job.sh RUN PACKET [STEPS]
 #   SMOKE=1 (sbatch --export=NIL,SMOKE=1 ...): 20 updates, a 4-item in-run panel every 10 updates, no recovery slots.
+# Options (2026-11-16, defaults = the stage-1 recipe above; pass them with sbatch --export=NIL,NAME=VALUE,...):
+#   CMP_INIT=<folder under init/>   the starting pair (default R_res_rq9fr_final). Another start skips the u00000 proxy (the start
+#                                   pair's own run holds it; the in-run panel's update-0 report is in sync/<RUN>.held.jsonl).
+#   CMP_LOSS=sft CMP_HELD=<pickle> CMP_KEEP_STEPS=all   the long-context reconstruction phase (build_lcrec.py packets: SFT, the
+#                                   packet's held_panel.pkl as the in-run panel, every CMP_CKPT_EVERY-update pair kept and proxied).
 # Steps (each skipped when its output exists, so a requeued / resubmitted job continues; training resumes from its recovery slot):
 #   1. proxy of the starting pair on dev-75 (cmp_proxy_eval.py --references: AC 1/5, 1/10, untuned no-context, untuned full prefix);
 #      its teacher targets are kept in $W/data/teacher_dev75.pt for every later checkpoint (same frozen reader)
@@ -24,13 +29,14 @@ REPORT=${CMP_REPORT_EVERY:-40}; CKPT=${CMP_CKPT_EVERY:-40}
 if [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/cmp1; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf; export HOME=${HOME:-/home/ngom}
 else W=$HOME/cmp1; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi
 W=${CMP_WORK:-$W}; PY=${CMP_PY:-$PY}
-C=$W/code/$BUNDLE; P=$W/data/packets/$PACKET; PANEL=$W/data/panel_dev75; I=$W/init/R_res_rq9fr_final; D=$W/runs/$RUN
+INIT=${CMP_INIT:-R_res_rq9fr_final}; LOSS=${CMP_LOSS:-kl}; KEEP=${CMP_KEEP_STEPS:-final}
+C=$W/code/$BUNDLE; P=$W/data/packets/$PACKET; PANEL=$W/data/panel_dev75; I=$W/init/$INIT; D=$W/runs/$RUN; HELD=${CMP_HELD:-$PANEL/panel_ac.pkl}
 mkdir -p $D/logs $D/proxy $W/triton_cache
 exec > >(tee -a $D/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [$RUN] $*"; }
-for f in $C/MANIFEST.json $P/items.pkl $PANEL/panel_ac.pkl $PANEL/panel_none.pkl $I/ac/ac_modules.pt $I/reader/adapter_model.safetensors $I/DONE; do
+for f in $C/MANIFEST.json $P/items.pkl $HELD $PANEL/panel_ac.pkl $PANEL/panel_none.pkl $I/ac/ac_modules.pt $I/reader/adapter_model.safetensors $I/DONE; do
   [ -f $f ] || { say "missing input $f"; exit 2; }; done
-say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' packet $P smoke $SMOKE"
+say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' packet $P smoke $SMOKE init $INIT loss $LOSS held $HELD keep $KEEP"
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
 export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0
 export QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0
@@ -38,8 +44,8 @@ export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 CUBLAS_WORKSPACE_CONFIG=:4096:8
 unset HF_TOKEN HUGGING_FACE_HUB_TOKEN
 N=$($PY -c "import json,sys; print(json.load(open(sys.argv[1]))['training_examples'])" $P/prepared.json)
 [ "$STEPS" = 0 ] && STEPS=$((N / EPU))                       # one pass: every whole batch of 8 (the last N mod 8 items do not train)
-TRAIN_ARGS=(--held-items $PANEL/panel_ac.pkl --report-every $REPORT --ckpt-every $CKPT --keep-steps final)
-[ "$SMOKE" = 1 ] && { STEPS=20; TRAIN_ARGS=(--held-items $PANEL/panel_ac.pkl --held-panel 4 --report-every 10 --ckpt-every 1000 --keep-steps final); }
+TRAIN_ARGS=(--held-items $HELD --report-every $REPORT --ckpt-every $CKPT --keep-steps $KEEP)
+[ "$SMOKE" = 1 ] && { STEPS=20; TRAIN_ARGS=(--held-items $HELD --held-panel 4 --report-every 10 --ckpt-every 1000 --keep-steps final); }
 say "packet: $N items -> $STEPS updates x $EPU"
 PROXY=($PY $C/compaction/cmp_proxy_eval.py --panel $PANEL --teacher-targets $W/data/teacher_dev75.pt)
 proxy() {   # proxy NAME AC READER [extra]: one checkpoint on dev-75; deterministic kernels, once without them if those fail
@@ -53,11 +59,12 @@ proxy() {   # proxy NAME AC READER [extra]: one checkpoint on dev-75; determinis
 }
 FAILED=0
 REF=$W/data/proxy_start_pair.json                             # the starting pair's proxy (with dev75/none), shared by every run
-if [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1
+if [ "$INIT" != R_res_rq9fr_final ]; then say "proxy u00000: skipped (start pair $INIT: see its own run)"
+elif [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1
 else cp -n $REF $D/proxy/u00000.json; say "proxy u00000: from $REF"; fi
 if [ ! -f $D/sync/ckpt/final/meta.json ]; then
   say "training: $STEPS updates"
-  ACTIVATION_SYNC_ROOT=$D/sync $PY $C/kit/sec45_train.py --kind packet --mode res --data $P --pair $I/ac $I/reader --loss kl --name $RUN \
+  ACTIVATION_SYNC_ROOT=$D/sync $PY $C/kit/sec45_train.py --kind packet --mode res --data $P --pair $I/ac $I/reader --loss $LOSS --name $RUN \
     --steps $STEPS --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --warmup $WARMUP --schedule cosine --seed $SEED --micro-batch $MICRO \
     --resume-if-possible "${TRAIN_ARGS[@]}" > $D/logs/train_${SLURM_JOB_ID:-local}.log 2>&1 || FAILED=1
   say "training exit $FAILED: $(tail -n 1 $D/logs/train_${SLURM_JOB_ID:-local}.log | cut -c1-600)"
