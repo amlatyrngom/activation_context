@@ -1,0 +1,6 @@
+2026-11-16T01:34:55Z [h8a] start on node4004 job 29254743 GPU 'NVIDIA RTX PRO 6000 Blackwell Server Edition'
+2026-11-16T01:34:55Z [h8a] deep
+2026-11-16T01:47:20Z [h8a] deep: {"nll_full": 0.47801362207902515, "reference_nll_full": 0.5056653842523889, "nll_none": 0.6448604042627107, "gap_closed_vs_reference": {"dev75/r10": 0.7131025213115324, "dev75/r5": 0.743581240580678}, "eval_seconds": 731.5, "peak_gb": 33.0, "dev75/r10": {"kl_token": 0.0778, "nll_token": 0.5456}, "dev75/r5": {"kl_token": 0.0735, "nll_token": 0.5414}, "dev75/none": {"kl_token": 0.1328, "nll_token": 0.6449}}
+2026-11-16T01:47:20Z [h8a] rowsonly
+2026-11-16T01:55:07Z [h8a] rowsonly: {"nll_full": 0.47801362207902515, "reference_nll_full": 0.5056653842523889, "nll_none": 0.6448604042627107, "gap_closed_vs_reference": {"dev75/r10": 0.885747431189214, "dev75/r5": 0.9618719113570738}, "eval_seconds": 438.8, "peak_gb": 30.1, "dev75/r10": {"kl_token": 0.0571, "nll_token": 0.5216}, "dev75/r5": {"kl_token": 0.047, "nll_token": 0.511}, "dev75/none": {"kl_token": 0.1328, "nll_token": 0.6449}}
+2026-11-16T01:55:07Z [h8a] end (failed=0)
