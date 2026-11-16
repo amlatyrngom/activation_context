@@ -181,3 +181,4 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   −0.717 (1/5), i.e. worse than no context; after 20 smoke updates +0.078 / +0.076. Smoke: 100 s/update incl. teacher passes,
   57 GB peak. Launched on ORCD: `S1_res_kl_c20` (main: 20k cut, 1,261 items, 157 updates; job 29242839) and
   `S1_res_kl_c162024` (variant: 16k+20k+24k cuts, 3,796 items, 474 updates; job 29242840, time limit raised to 24 h).
+- 2026-11-16 correction (user): items never repeat across splits, repositories are shared (ROOT_CANON). Stage-1 packets so far were training-side only (repository-level), and "part evaluation-side" was a wrong reason to drop the old material. Next packet: both sides minus the 322 tasks (+206 runs at seed 0), plus the new seeds; eval-side tasks also get new seeds. Old-model dev-75 NLL is the quick reference.

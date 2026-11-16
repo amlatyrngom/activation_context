@@ -225,7 +225,7 @@ Compute KL/NLL for three views:
 - untuned full prefix.
 
 `pc_dev9_s{0,1}_full` give two more teacher-policy continuations per dev prefix if a lower-variance estimate is wanted.
-Dev-75 is evaluation-side and shares repositories with eval-200 (63/75), so it measures transfer to unseen repositories.
+Dev-75 is evaluation-side and shares repositories with eval-200 (63/75), so it measures transfer to unseen repositories. **Correction (2026-11-16):** that is only because the first packets trained on the training side only; the rule (ROOT_CANON) is item-level, so evaluation-side tasks outside the 322 train too, and dev-75 then measures same-repository specialization.
 For a second check that does not touch the evaluation side, the packet builder's `--held-repos` panel (a few
 training-side repositories held out) works. Eval-200 stays untouched; its original continuations (all 200) exist if a
 final likelihood readout is ever wanted.

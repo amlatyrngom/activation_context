@@ -107,3 +107,5 @@ rollouts.jsonl into `IB/TMP/PRE_REBUTTAL/compaction_stage1/pools/<cache id>/` an
 (`cmp_proxy_eval.py`): NLL full 0.5057, none 0.6449; start pair R_res_rq9fr gap closed −0.49 (1/10) / −0.72 (1/5); ORCD smoke (20
 updates) +0.078 / +0.076. 69 s/update median, 100 s effective (teacher blocks included), peak 57.1 GB. Launch (ORCD):
 `cd /home/ngom/orcd/scratch/activation/cmp1 && sbatch --export=NIL --partition=mit_preemptable --requeue --gres=gpu:rtx_pro_6000:1 jobs/cmp_stage1_job.sh S1_res_kl_c20 s1kl_c20_v1`.
+
+**2026-11-16 split rule restated by the user (ROOT_CANON): items never repeat across train/dev/test; repositories should be shared.** The first stage-1 packets used `--sides training` (repository-level: no eval-side repository trains), so they break it. Next packet adds the evaluation-side tasks minus the 322 excluded (seed 0: 206 qualifying runs from `pc_pool9_h6_eval`, 91 repositories, 37 Kotlin; no eval_v3 run qualifies outside the 322) and the new seeds. The two running jobs finish as the cut comparison only.
