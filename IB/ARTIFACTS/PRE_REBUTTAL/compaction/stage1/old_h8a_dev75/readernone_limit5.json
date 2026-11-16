@@ -1,0 +1,50 @@
+{
+ "label": "h8a_readernone_limit5",
+ "pair": [
+  "/home/ngom/orcd/scratch/activation/cmp1_h8a/h8a_final/ac",
+  "/home/ngom/orcd/scratch/activation/cmp1_h8a/h8a_final/reader"
+ ],
+ "reader_adapter_sha256": "3ab1f420c5ea3e3ea1c978c362a7ba06d17411e31874031719e38216975b5df9",
+ "panel": "/home/ngom/orcd/scratch/activation/cmp1/data/panel_dev75",
+ "items": 15,
+ "deltas_off": true,
+ "reference_nll_full": null,
+ "gap_closed_vs_reference": {},
+ "prefixes": 5,
+ "groups": {
+  "dev75/none": {
+   "items": 5,
+   "tokens": 20946,
+   "kl_token": 0.2299862873457997,
+   "nll_token": 0.7072944189821446,
+   "teacher_nll_token": 0.46402729399408
+  },
+  "dev75/r10": {
+   "items": 5,
+   "tokens": 20946,
+   "kl_token": 0.07817728467513116,
+   "nll_token": 0.5253106750692257,
+   "teacher_nll_token": 0.46402729399408
+  },
+  "dev75/r5": {
+   "items": 5,
+   "tokens": 20946,
+   "kl_token": 0.06156689476377991,
+   "nll_token": 0.508157395206722,
+   "teacher_nll_token": 0.46402729399408
+  }
+ },
+ "nll_full": 0.46402729399408,
+ "nll_none": 0.7072944189821446,
+ "gap_closed": {
+  "dev75/r10": 0.748081944577787,
+  "dev75/r5": 0.818594061097211
+ },
+ "teacher": "stored",
+ "deterministic": true,
+ "item_mean_kl": 0.17562580580512682,
+ "eval_seconds": 39.2,
+ "wall_seconds": 49.9,
+ "peak_gb": 27.8,
+ "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+}

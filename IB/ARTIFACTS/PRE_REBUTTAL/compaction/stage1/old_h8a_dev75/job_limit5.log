@@ -4,3 +4,9 @@
 2026-11-16T01:33:01Z [h8a_limit5] rowsonly_limit5
 2026-11-16T01:33:48Z [h8a_limit5] rowsonly_limit5: {"nll_full": 0.46402729399408, "reference_nll_full": 0.5056653842523889, "nll_none": 0.6448604042627107, "gap_closed_vs_reference": {"dev75/r10": 0.8588649880191117, "dev75/r5": 0.9820969819599275}, "eval_seconds": 33.9, "peak_gb": 27.8, "dev75/r10": {"kl_token": 0.0782, "nll_token": 0.5253}, "dev75/r5": {"kl_token": 0.0616, "nll_token": 0.5082}, "dev75/none": {"kl_token": 0.1328, "nll_token": 0.6449}}
 2026-11-16T01:33:48Z [h8a_limit5] end (failed=0)
+2026-11-16T02:02:06Z [h8a_limit5] start on node4004 job 29257333 GPU 'NVIDIA RTX PRO 6000 Blackwell Server Edition'
+2026-11-16T02:02:06Z [h8a_limit5] readernone_limit5 (reader /home/ngom/orcd/scratch/activation/cmp1_h8a/h8a_final/reader)
+2026-11-16T02:02:59Z [h8a_limit5] readernone_limit5: {"nll_full": 0.46402729399408, "reference_nll_full": null, "nll_none": 0.7072944189821446, "gap_closed_vs_reference": {}, "eval_seconds": 39.2, "peak_gb": 27.8, "dev75/none": {"kl_token": 0.23, "nll_token": 0.7073}, "dev75/r10": {"kl_token": 0.0782, "nll_token": 0.5253}, "dev75/r5": {"kl_token": 0.0616, "nll_token": 0.5082}}
+2026-11-16T02:02:59Z [h8a_limit5] zeroreader_limit5 (reader /home/ngom/orcd/scratch/activation/cmp1/init/R_res_rq9fr_final/reader)
+2026-11-16T02:03:46Z [h8a_limit5] zeroreader_limit5: {"nll_full": 0.4918658598300391, "reference_nll_full": 0.5056653842523889, "nll_none": 0.6448604042627107, "gap_closed_vs_reference": {"dev75/r10": 0.1987058658729625, "dev75/r5": 0.35368249904987165}, "eval_seconds": 34.2, "peak_gb": 27.8, "dev75/r10": {"kl_token": 0.1175, "nll_token": 0.6172}, "dev75/r5": {"kl_token": 0.0973, "nll_token": 0.5956}, "dev75/none": {"kl_token": 0.1328, "nll_token": 0.6449}}
+2026-11-16T02:03:46Z [h8a_limit5] end (failed=0)

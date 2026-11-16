@@ -41,10 +41,38 @@ Not comparable, listed for information only:
 - KL to that teacher: rows only 0.0571 (r10) / 0.0470 (r5); deep 0.0778 / 0.0735. These are relative to H8a's adapted reader, not to the
   untuned 9B that the new runs are scored against.
 
+## Reader vs encoder split (rows only, jobs 29257333 limit 5, then 29258032)
+
+- **(a) `readernone`**: H8a's adapted reader on the `none` arm (head + the none-arm note, no rows). This is what the LoRA gives without
+  any compacted context. Its r5/r10 reproduce `rowsonly` exactly.
+- **(b) `zeroreader`**: H8a's encoder (rows only) with R_res_rq9fr's all-zero reader adapter, i.e. the untuned frozen 9B, as the new
+  stage-1 runs. The two adapters were checked first: same 256 tensors, shapes, r128, alpha 256 and target modules. The scorer used a
+  copy of `cmp1/data/teacher_dev75.pt` (adapter hash matched, `teacher: stored`), and its teacher NLL is 0.5057, the untuned 9B.
+  So its **KL is comparable** with the new runs.
+
+| Model | NLL 1/10 | NLL 1/5 | Gap 1/10 | Gap 1/5 | KL 1/10 | KL 1/5 |
+|---|---|---|---|---|---|---|
+| (a) H8a reader, no rows (`none` arm) | 0.6418 (no rows) | | 0.022 | | not comp. | |
+| (b) **H8a encoder rows only + untuned frozen 9B** | **0.5917** | **0.5758** | **0.382** | **0.496** | **0.0833** | **0.0689** |
+| H8a encoder + H8a reader, rows only (above) | 0.5216 | 0.5110 | 0.886 | 0.962 | not comp. | |
+| New `S1_res_kl_c20`, update 81 (`.held.jsonl`) | 0.6289 | 0.6291 | 0.115 | 0.113 | 0.1120 | 0.1121 |
+| New `S1_res_kl_c162024`, update 81 | 0.6291 | 0.6297 | 0.113 | 0.109 | 0.1120 | 0.1120 |
+| Untuned 9B, no rows (reference) | 0.6449 | | 0 | | 0.1328 | |
+
+Reading of the split (NLL, 1/10 and 1/5):
+- The reader LoRA alone is worth almost nothing: 0.6449 → 0.6418.
+- H8a's encoder into the untuned frozen 9B closes 0.38 / 0.50 of the gap, against about 0.11 for the new runs at update 81.
+- The adapted reader adds the rest, reaching 0.89 / 0.96.
+Against `S1_res_kl_c20` at update 81, H8a's lead splits as follows:
+- At 1/10 the lead is 0.6289 − 0.5216 = 0.107. The encoder accounts for 0.037 (about 35 %) and the adapter reading the rows for
+  0.070 (about 65 %).
+- At 1/5 the lead is 0.6291 − 0.5110 = 0.118. The encoder accounts for 0.053 (about 45 %) and the adapter for 0.065 (about 55 %).
+The adapter matters only together with rows: on its own it does almost nothing.
+
 ## Caveats on comparability
 
 - **NLL is comparable**: same panel, items, target tokens (the ORIGINAL untuned-9B continuations) and NLL definition.
-- **H8a has a trained reader LoRA**, and the new stage-1 runs keep the reader frozen. Part of H8a's lower NLL is the reader adapter
+- **H8a has a trained reader LoRA**, and the new stage-1 runs keep the reader frozen (row (b) of the split removes it). Part of H8a's lower NLL is the reader adapter
   itself. Its own full-prefix teacher is at 0.4780, so on this panel even the adapted reader with the full prefix beats the untuned
   9B. This is why gap closed can approach 1. It is not an apples-to-apples encoder comparison.
 - **H8a's training targets were close to this panel**: the untuned 9B's own continuations (RFT, shortest correct of 3 samples).
