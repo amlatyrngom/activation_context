@@ -1,0 +1,359 @@
+{
+ "tasks": 200,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "k_tasks": {
+  "0": 36,
+  "1": 18,
+  "2": 35,
+  "3": 111
+ },
+ "solver_references": {
+  "single": {
+   "all": 0.7016666666666667,
+   "by_k": {
+    "0": 0.0,
+    "1": 0.3333333333333333,
+    "2": 0.6666666666666666,
+    "3": 1.0
+   },
+   "mixed_k12": 0.5534591194968553
+  },
+  "majority": {
+   "all": 0.7433333333333333,
+   "by_k": {
+    "0": 0.0,
+    "1": 0.14814814814814814,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "mixed_k12": 0.710691823899371
+  },
+  "any": {
+   "all": 0.82,
+   "by_k": {
+    "0": 0.0,
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0
+   },
+   "mixed_k12": 1.0
+  }
+ },
+ "arms": {
+  "9b_results": {
+   "rows": 600,
+   "missing": 0,
+   "lenient": 0.7766666666666666,
+   "strict": 0.7766666666666666,
+   "lenient_per_seed": {
+    "0": 0.77,
+    "1": 0.765,
+    "2": 0.795
+   },
+   "lenient_by_k": {
+    "0": 0.1111111111111111,
+    "1": 0.6851851851851852,
+    "2": 0.8761904761904762,
+    "3": 0.975975975975976
+   },
+   "lenient_mixed_k12": 0.8113207547169812,
+   "gap_closed": 0.6338028169014083,
+   "finish": {
+    "stop": 587,
+    "length": 13
+   },
+   "length_stops": 13,
+   "parsed_lenient": {
+    "final_answer_line": 588,
+    "answer_is": 12
+   },
+   "generated_tokens": {
+    "mean": 23095.27666666667,
+    "median": 19560,
+    "p90": 43391,
+    "max": 64000
+   },
+   "prompt_tokens_max": 748,
+   "prompt_plus_generated_max": 64381,
+   "vs_majority": {
+    "wins": 44,
+    "losses": 25,
+    "p": 0.0295
+   }
+  },
+  "9b_full": {
+   "rows": 600,
+   "missing": 0,
+   "lenient": 0.775,
+   "strict": 0.775,
+   "lenient_per_seed": {
+    "0": 0.77,
+    "1": 0.77,
+    "2": 0.785
+   },
+   "lenient_by_k": {
+    "0": 0.09259259259259259,
+    "1": 0.5740740740740741,
+    "2": 0.8666666666666667,
+    "3": 1.0
+   },
+   "lenient_mixed_k12": 0.7672955974842768,
+   "gap_closed": 0.6197183098591554,
+   "finish": {
+    "stop": 599,
+    "length": 1
+   },
+   "length_stops": 1,
+   "parsed_lenient": {
+    "final_answer_line": 598,
+    "answer_is": 1,
+    "boxed": 1
+   },
+   "generated_tokens": {
+    "mean": 4398.753333333333,
+    "median": 3542,
+    "p90": 8464,
+    "max": 64000
+   },
+   "prompt_tokens_max": 92776,
+   "prompt_plus_generated_max": 127400,
+   "vs_majority": {
+    "wins": 36,
+    "losses": 18,
+    "p": 0.0198
+   },
+   "vs_9b_results": {
+    "diff": -0.0016666666666666653,
+    "ci95": [
+     -0.029999999999999995,
+     0.025
+    ],
+    "wins": 20,
+    "losses": 21,
+    "p": 1.0,
+    "mixed_k12_diff": -0.0440251572327044,
+    "mixed_k12_ci95": [
+     -0.10691823899371068,
+     0.01886792452830189
+    ],
+    "by_k": {
+     "0": {
+      "wins": 4,
+      "losses": 6
+     },
+     "1": {
+      "wins": 2,
+      "losses": 8
+     },
+     "2": {
+      "wins": 6,
+      "losses": 7
+     },
+     "3": {
+      "wins": 8,
+      "losses": 0
+     }
+    }
+   }
+  },
+  "27b_full": {
+   "rows": 600,
+   "missing": 0,
+   "lenient": 0.7883333333333333,
+   "strict": 0.7883333333333333,
+   "lenient_per_seed": {
+    "0": 0.8,
+    "1": 0.785,
+    "2": 0.78
+   },
+   "lenient_by_k": {
+    "0": 0.17592592592592593,
+    "1": 0.6481481481481481,
+    "2": 0.8571428571428571,
+    "3": 0.987987987987988
+   },
+   "lenient_mixed_k12": 0.7861635220125787,
+   "gap_closed": 0.7323943661971833,
+   "finish": {
+    "stop": 600
+   },
+   "length_stops": 0,
+   "parsed_lenient": {
+    "final_answer_line": 594,
+    "unparsed": 1,
+    "answer_is": 5
+   },
+   "generated_tokens": {
+    "mean": 4656.608333333334,
+    "median": 2106,
+    "p90": 12361,
+    "max": 46603
+   },
+   "prompt_tokens_max": 92776,
+   "prompt_plus_generated_max": 110003,
+   "vs_majority": {
+    "wins": 50,
+    "losses": 24,
+    "p": 0.0034
+   },
+   "vs_9b_results": {
+    "diff": 0.011666666666666667,
+    "ci95": [
+     -0.018333333333333333,
+     0.04166666666666666
+    ],
+    "wins": 30,
+    "losses": 23,
+    "p": 0.4101,
+    "mixed_k12_diff": -0.025157232704402517,
+    "mixed_k12_ci95": [
+     -0.11320754716981132,
+     0.06289308176100629
+    ],
+    "by_k": {
+     "0": {
+      "wins": 7,
+      "losses": 0
+     },
+     "1": {
+      "wins": 6,
+      "losses": 8
+     },
+     "2": {
+      "wins": 10,
+      "losses": 12
+     },
+     "3": {
+      "wins": 7,
+      "losses": 3
+     }
+    }
+   }
+  },
+  "27b_results": {
+   "rows": 600,
+   "missing": 0,
+   "lenient": 0.78,
+   "strict": 0.7766666666666666,
+   "lenient_per_seed": {
+    "0": 0.77,
+    "1": 0.785,
+    "2": 0.785
+   },
+   "lenient_by_k": {
+    "0": 0.19444444444444445,
+    "1": 0.6296296296296297,
+    "2": 0.8761904761904762,
+    "3": 0.963963963963964
+   },
+   "lenient_mixed_k12": 0.7924528301886793,
+   "gap_closed": 0.661971830985916,
+   "finish": {
+    "stop": 596,
+    "length": 4
+   },
+   "length_stops": 4,
+   "parsed_lenient": {
+    "final_answer_line": 582,
+    "answer_is": 16,
+    "unparsed": 2
+   },
+   "generated_tokens": {
+    "mean": 6822.995,
+    "median": 2995,
+    "p90": 18421,
+    "max": 64000
+   },
+   "prompt_tokens_max": 748,
+   "prompt_plus_generated_max": 64286,
+   "vs_majority": {
+    "wins": 52,
+    "losses": 31,
+    "p": 0.0275
+   },
+   "vs_9b_results": {
+    "diff": 0.0033333333333333322,
+    "ci95": [
+     -0.023333333333333338,
+     0.03166666666666666
+    ],
+    "wins": 30,
+    "losses": 28,
+    "p": 0.8957,
+    "mixed_k12_diff": -0.01886792452830189,
+    "mixed_k12_ci95": [
+     -0.09433962264150944,
+     0.05660377358490566
+    ],
+    "by_k": {
+     "0": {
+      "wins": 9,
+      "losses": 0
+     },
+     "1": {
+      "wins": 7,
+      "losses": 10
+     },
+     "2": {
+      "wins": 6,
+      "losses": 6
+     },
+     "3": {
+      "wins": 8,
+      "losses": 12
+     }
+    }
+   }
+  }
+ },
+ "timing": {
+  "9b_full": [
+   {
+    "segment_seconds": 2934.2,
+    "requests": 600,
+    "done_before": 0,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "vllm": "0.28.0",
+    "engine_load_seconds": 313.3,
+    "ended_utc": "2026-11-15T23:16:02Z"
+   }
+  ],
+  "9b_results": [
+   {
+    "segment_seconds": 10851.4,
+    "requests": 600,
+    "done_before": 0,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "vllm": "0.28.0",
+    "engine_load_seconds": 313.3,
+    "ended_utc": "2026-11-16T02:16:54Z"
+   }
+  ],
+  "27b_full": [
+   {
+    "segment_seconds": 3878.8,
+    "requests": 600,
+    "done_before": 0,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "vllm": "0.28.0",
+    "engine_load_seconds": 447.8,
+    "ended_utc": "2026-11-16T03:40:18Z"
+   }
+  ],
+  "27b_results": [
+   {
+    "segment_seconds": 3181.7,
+    "requests": 600,
+    "done_before": 0,
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "vllm": "0.28.0",
+    "engine_load_seconds": 447.8,
+    "ended_utc": "2026-11-16T04:33:19Z"
+   }
+  ]
+ }
+}
