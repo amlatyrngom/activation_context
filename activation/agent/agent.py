@@ -432,10 +432,16 @@ class Agent:
 
     # ----------------------------------------------------------------------------- requests
     def prepare_request(self) -> tuple[list[int], torch.Tensor | None, list[bool] | None]:
-        """The next engine request: the prefix, and with parts the full-length tensor (zero rows at token positions) plus its mask."""
+        """
+        The next engine request: the prefix, and with parts the tensor (zero rows at token positions) plus its full-length mask.
+        The tensor is full length, except for a deep model (packed deltas): it stops after the last AC row, since the engine
+        embeds every later position from its token id (vllm_residuals.allow_short_prompt_embeds) and a full-length packed tensor
+        grows by (1 + k)·d values with every token of the run.
+        """
         if not self.spans:
             return list(self.prefix), None, None
-        embeds = torch.zeros(len(self.prefix), self.rows[0].shape[1], dtype=self.row_dtype)   # d_model, or wider with packed deltas
+        length = max(end for _, end in self.spans) if self.ac_model is not None and self.ac_model.is_deep else len(self.prefix)
+        embeds = torch.zeros(length, self.rows[0].shape[1], dtype=self.row_dtype)   # d_model, or wider with packed deltas
         mask = [True] * len(self.prefix)
         for (start, end), rows in zip(self.spans, self.rows):
             embeds[start:end] = rows

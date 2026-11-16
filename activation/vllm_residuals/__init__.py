@@ -25,6 +25,35 @@ def register() -> None:
     from vllm.model_executor.models.config import MODELS_CONFIG_MAP, Qwen3_5ForConditionalGenerationConfig
     ModelRegistry.register_model(ARCHITECTURE, f"{__name__}.qwen3_5:Qwen3_5ResForConditionalGeneration")
     MODELS_CONFIG_MAP.setdefault(ARCHITECTURE, Qwen3_5ForConditionalGenerationConfig)   # mamba state dtype from the checkpoint, as upstream
+    allow_short_prompt_embeds()
+
+
+def allow_short_prompt_embeds() -> None:
+    """
+    Let a mixed prompt's embedding tensor stop before the prompt's end; every position past it must be a token id (mask True).
+    vLLM 0.28 only refuses this in `vllm.utils.length_from_prompt_token_ids_or_embeds` (a length-equality check); its consumers
+    already handle a shorter tensor: the runner copies rows only where the tensor has them and embeds every token-id position
+    itself (`is_token_ids`), and the prefix-cache hash of a block past the end hashes an empty slice (the same on every turn).
+    Why: with packed deltas every position is (1 + k)·d wide, so an agent resending its whole prompt each turn would ship
+    gigabytes per request late in a long run; `Agent.prepare_request` cuts a deep model's tensor after its last AC row.
+    """
+    import sys
+
+    import vllm.utils
+    original = vllm.utils.length_from_prompt_token_ids_or_embeds
+    if getattr(original, "allows_short_embeds", False):
+        return
+
+    def length_from_prompt_token_ids_or_embeds(prompt_token_ids, prompt_embeds) -> int:
+        if prompt_token_ids is not None and prompt_embeds is not None and len(prompt_embeds) < len(prompt_token_ids):
+            return len(prompt_token_ids)
+        return original(prompt_token_ids, prompt_embeds)
+
+    length_from_prompt_token_ids_or_embeds.allows_short_embeds = True
+    vllm.utils.length_from_prompt_token_ids_or_embeds = length_from_prompt_token_ids_or_embeds
+    for name, module in list(sys.modules.items()):                     # modules that imported the function by name before this ran
+        if name.startswith("vllm") and getattr(module, "length_from_prompt_token_ids_or_embeds", None) is original:
+            module.length_from_prompt_token_ids_or_embeds = length_from_prompt_token_ids_or_embeds
 
 
 def engine_overrides(hidden_size: int, layers) -> dict:

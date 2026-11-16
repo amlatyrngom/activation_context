@@ -107,8 +107,9 @@ class _Replica:
             prompt = vllm.TokensPrompt(prompt_token_ids=list(prompt_token_ids))
         else:
             # Mixed prompt: the engine embeds every position whose mask is True itself and reads the shipped row
-            # elsewhere. The tensor must be full length (vLLM 0.28 rejects a length mismatch); zero rows sit at
-            # token positions. Needs `enable_prompt_embeds` on the engine (LoadedModel.engine_to_device).
+            # elsewhere. The tensor must be full length (vLLM 0.28 rejects a length mismatch; with the residual plugin
+            # loaded it may stop early, see vllm_residuals.allow_short_prompt_embeds); zero rows sit at token positions.
+            # Needs `enable_prompt_embeds` on the engine (LoadedModel.engine_to_device).
             prompt = EmbedsPrompt(prompt_embeds=prompt_embeds, prompt_token_ids=list(prompt_token_ids),
                                   prompt_is_token_ids=list(prompt_is_token_ids))
         return asyncio.run_coroutine_threadsafe(self._collect(prompt, sampling_params, request_id, lora_request), self.loop)
