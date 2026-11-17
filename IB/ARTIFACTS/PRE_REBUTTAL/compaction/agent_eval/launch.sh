@@ -12,5 +12,5 @@ aws s3 cp --quiet $ROOT/IB/ARTIFACTS/PRE_REBUTTAL/sec35/kit/s3x.py s3://general-
 BOOT="[ -x /root/s3venv/bin/python ] || { /usr/local/bin/uv venv -q /root/s3venv && /usr/local/bin/uv pip install -q --python /root/s3venv/bin/python boto3; }; \
 mkdir -p /root/activation_artifacts/agent_eval/code && /root/s3venv/bin/python -c \"import boto3; c = boto3.client('s3'); \
 [c.download_file('general-bucket-aln', '$K/' + f, '/root/activation_artifacts/agent_eval/code/' + f) for f in ('dev75_node.sh', 'run_resume_res.py', 'first_turn_check.py', 'garble_check.py', 'probe_think.py', 'teacher_view_compare.py', 's3x.py')]\" \
-&& RUN_TIMEOUT=${RUN_TIMEOUT:-0} PROBE_LIMIT=${PROBE_LIMIT:-} bash /root/activation_artifacts/agent_eval/code/dev75_node.sh $*"
+&& RUN_TIMEOUT=${RUN_TIMEOUT:-0} PROBE_LIMIT=${PROBE_LIMIT:-} DEVSET=${DEVSET:-prefixes_dev9_75} DEVN=${DEVN:-75} bash /root/activation_artifacts/agent_eval/code/dev75_node.sh $*"
 cd $ROOT && exec .venv/bin/python -m activation.cloud.sky exec $NODE -- bash -c "$BOOT"

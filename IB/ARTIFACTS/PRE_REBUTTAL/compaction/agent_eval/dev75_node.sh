@@ -15,12 +15,16 @@
 # Resumable across spot reclaims: each ROLLOUTS/<TAG>_<variant> cache is restored from S3 when the node has none, mirrored to S3 every
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
 # S3: pre_rebuttal_20261109/compaction/agent_eval_dev75/{ROLLOUTS,PAPER_COMPACTION,logs,checks}/
+# DEVSET=<prefix set under S3 pc_inputs/> DEVN=<its size> (env, via launch.sh; default prefixes_dev9_75 / 75). 2026-11-17: dev-206
+# (prefixes_dev9_206, ../dev_expand/) is the second dev set; never an eval-200 set.
 set -uo pipefail
 MODE=$1; shift
+DEVSET=${DEVSET:-prefixes_dev9_75}; DEVN=${DEVN:-75}
+case $DEVSET in prefixes_dev9_75|prefixes_dev9_206) ;; *) echo "DEVSET must be a dev set" >&2; exit 2;; esac
 S3C=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/compaction
 S3=$S3C/agent_eval_dev75
 A=/root/activation_artifacts; P=$A/pc; E=$A/agent_eval; PY=/opt/activation/.venv/bin/python; HERE=$A/agent_eval/code   # fetched from S3 by launch.sh (IB/ is not in the sky mirror)
-mkdir -p $P/kit $P/prefixes_dev9_75 $E/logs $E/stage $E/checks $E/pairs $A/SYNC/ROLLOUTS $A/SYNC/PAPER_COMPACTION $P/hf
+mkdir -p $P/kit $P/$DEVSET $E/logs $E/stage $E/checks $E/pairs $A/SYNC/ROLLOUTS $A/SYNC/PAPER_COMPACTION $P/hf
 (cd /root/sky_workdir && UV_PROJECT_ENVIRONMENT=/opt/activation/.venv /usr/local/bin/uv sync --frozen -q)   # also installs the vllm_residuals plugin entry point
 [ -x /root/s3venv/bin/python ] || { /usr/local/bin/uv venv -q /root/s3venv && /usr/local/bin/uv pip install -q --python /root/s3venv/bin/python boto3; }
 S3PY=/root/s3venv/bin/python
@@ -29,8 +33,8 @@ LOG=$E/logs/node.log
 say() { echo "$(date -u +%FT%TZ) $*" | tee -a $LOG; }
 X getdir $S3C/pc_inputs/kit/ $P/kit/ > /dev/null
 X get $S3C/pc_inputs/split.json $P/split.json > /dev/null
-X getdir $S3C/pc_inputs/prefixes_dev9_75/ $P/prefixes_dev9_75/ > /dev/null
-[ "$(ls $P/prefixes_dev9_75/prefixes | wc -l)" = 75 ] || { say "dev-75 prefixes incomplete"; exit 2; }
+X getdir $S3C/pc_inputs/$DEVSET/ $P/$DEVSET/ > /dev/null
+[ "$(ls $P/$DEVSET/prefixes | wc -l)" = $DEVN ] || { say "$DEVSET prefixes incomplete"; exit 2; }
 if [ ! -d $A/SYNC/REPO_CACHE ]; then X get $S3C/repo_cache.tar.gz /root/rc.tgz > /dev/null && tar -xzf /root/rc.tgz -C $A/SYNC && rm /root/rc.tgz; fi
 $PY -c "import importlib.metadata as m; assert any(e.name == 'ac_residuals' for e in m.entry_points(group='vllm.general_plugins')), 'vllm_residuals plugin not installed'" \
   || { say "vllm_residuals entry point missing"; exit 2; }
@@ -165,7 +169,7 @@ done
 ( while sleep 600; do mirror "${IDS[@]}"; done ) & LOOP=$!
 export RESUME_MONITOR_FILE=$E/logs/${TAG}.monitor.jsonl
 say "run $TAG seed $SEED variants $VARIANTS agents $AGENTS pair $RUN extra '$*' (cached: $(for c in "${IDS[@]}"; do echo -n "$c=$(rows $A/SYNC/ROLLOUTS/$c/rollouts.jsonl) "; done))"
-timeout --signal=INT --kill-after=120 ${RUN_TIMEOUT:-0} $PY $HERE/run_resume_res.py --split $P/split.json --prefixes $P/prefixes_dev9_75 --variants $VARIANTS --uncapped-summary \
+timeout --signal=INT --kill-after=120 ${RUN_TIMEOUT:-0} $PY $HERE/run_resume_res.py --split $P/split.json --prefixes $P/$DEVSET --variants $VARIANTS --uncapped-summary \
   --budget 50000 --trajectory-cap 90000 --max-model-len 100000 --max-duration 6000 --seed $SEED --tag $TAG --agents-per-gpu $AGENTS \
   "${PAIR_ARGS[@]}" "$@" >> $E/logs/${TAG}.log 2>&1
 CODE=$?
