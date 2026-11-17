@@ -16,7 +16,7 @@
 #   CMP_PANEL=<folder under data/> CMP_TEACHER=<file under data/> CMP_REF=<file under data/>   the dev-75 panel, its teacher targets and
 #                                   the reference proxy json (defaults panel_dev75, teacher_dev75.pt, proxy_start_pair.json; 2026-11-17: the
 #                                   corrected teacher view = panel_dev75_tv, teacher_dev75_tv.pt and proxy_ref_tv's json).
-#   CMP_FINAL_PROXY=0               no proxy of ckpt/final (timing smokes)
+#   CMP_FINAL_PROXY=0 CMP_START_PROXY=0   no proxy of ckpt/final / of the start pair (timing smokes)
 #   CSAIL (2026-11-17): W=/data/scratch-fast/ngom/cmp_csail, the fresh venv/HF cache of csail/csail_setup_job.sh, per-run JIT caches;
 #     cd $W && sbatch --export=NIL,CMP_INIT=...,CMP_BUNDLE=... --account=quanta --partition=quanta-h200 --qos=quanta-main --gpus=1 --requeue \
 #       --time=... jobs/cmp_stage1_job.sh RUN PACKET   (submit through csail/csail_stage.sh sbatch: it runs the pre-job check first)
@@ -69,7 +69,8 @@ proxy() {   # proxy NAME AC READER [extra]: one checkpoint on dev-75; determinis
 }
 FAILED=0
 REF=$W/data/${CMP_REF:-proxy_start_pair.json}                 # the starting pair's proxy (with dev75/none), shared by every run
-if [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1   # 2026-11-17: any start pair (new panel)
+if [ "${CMP_START_PROXY:-1}" = 0 ]; then say "proxy u00000: skipped (CMP_START_PROXY=0)"
+elif [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1   # 2026-11-17: any start pair (new panel)
 elif [ "$INIT" != R_res_rq9fr_final ]; then say "proxy u00000: skipped (start pair $INIT: see its own run)"
 else cp -n $REF $D/proxy/u00000.json; say "proxy u00000: from $REF"; fi
 if [ ! -f $D/sync/ckpt/final/meta.json ]; then
