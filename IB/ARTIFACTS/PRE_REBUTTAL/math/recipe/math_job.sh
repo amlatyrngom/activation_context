@@ -22,6 +22,9 @@
 #          MATH_PY = the per-job aarch64 venv of math_gh200_job.sh), per-job JIT caches.
 set -uo pipefail
 export PATH=${PATH:-/usr/local/bin:/usr/bin:/bin}
+# CSAIL: `sbatch --export=NIL,VAR=...` gets the job held ("user env retrieval failed") or cancelled by root (2026-11-17 test 3099870),
+# so settings come as leading MATH_*=value arguments (submit with plain --export=NIL); ORCD accepts both forms.
+while [ $# -gt 0 ] && [[ $1 =~ ^MATH_[A-Z_]+=[A-Za-z0-9_./,:-]*$ ]]; do export "$1"; shift; done
 MODE=${1:?mode}; shift
 BUNDLE=${MATH_BUNDLE:?MATH_BUNDLE}
 if [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/math1; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf; export HOME=${HOME:-/home/ngom}; CSAIL=0
@@ -51,6 +54,13 @@ PROXY=($PY $C/math/math_proxy_eval.py --panel $PANEL --teacher-targets $TEACHER)
 case $MODE in
 gen)
   ARM=${1:?ARM}; COND=${2:?CONDITION}; PROMPTS=${3:?PROMPTS}; SEEDS=${4:-0,1,2}; SHARD=${5:-0/1}; O=$W/gen/$ARM; mkdir -p $O
+  if [ -n "${SLURM_JOB_ID:-}" ]; then                          # several queued copies of one shard on this cluster: the first to start claims it
+    CLAIM=$O/shard_${SHARD/\//of}.claim
+    if ! mkdir $CLAIM 2>/dev/null; then other=$(cat $CLAIM/job 2>/dev/null)
+      if [ -n "$other" ] && [ "$other" != "$SLURM_JOB_ID" ] && squeue -j $other -h -o %T 2>/dev/null | grep -qx RUNNING; then
+        echo "gen/$ARM shard $SHARD is claimed by running job $other: this copy ($SLURM_JOB_ID) exits"; exit 0; fi; fi
+    echo $SLURM_JOB_ID > $CLAIM/job
+  fi
   exec > >(tee -a $O/job_${SHARD/\//of}.log) 2>&1
   say $ARM "start on $(hostname) job $JOB GPU '$GPU' prompts $PROMPTS condition $COND seeds $SEEDS shard $SHARD"
   (cd $W/data && sha256sum -c $PROMPTS.sha256) || { say $ARM "prompts checksum failed"; exit 2; }
@@ -61,7 +71,7 @@ gen)
 train)
   RUN=${1:?RUN}; PACKET=${2:?PACKET}; INIT=${3:?INIT}; LOSS=${4:?LOSS}
   D=$W/runs/$RUN; P=$W/data/packets/$PACKET; I=$W/init/$INIT; mkdir -p $D/logs $D/proxy
-  if [ $CSAIL = 1 ] && [ -n "${SLURM_JOB_ID:-}" ]; then        # several queued copies of one run (H200 / GH200 / ORCD): the first to start claims it
+  if [ -n "${SLURM_JOB_ID:-}" ]; then                          # several queued copies of one run on this cluster (H200 / GH200): the first to start claims it
     CLAIM=$W/runs/$RUN.claim
     if ! mkdir $CLAIM 2>/dev/null; then other=$(cat $CLAIM/job 2>/dev/null)
       if [ -n "$other" ] && [ "$other" != "$SLURM_JOB_ID" ] && squeue -j $other -h -o %T 2>/dev/null | grep -qx RUNNING; then

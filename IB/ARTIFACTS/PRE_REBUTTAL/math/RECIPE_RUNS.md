@@ -62,3 +62,13 @@ was read from the file named next to it.
   sft, reader LR 0, panel every 50, recovery slot every 100); teacher samples `mgen_tr0..3` 29464426 / 29464428 / 29464429 /
   29464436 (train, 4 shards × seeds 0–2), `mgen_dev` 29464437 (dev seed 0, the proxy targets); dev text baselines
   `meval_base_full` 29464438, `meval_base_results` 29464439 (math_eval.py, seeds 0–2). Relay to S3: `math_relay.sh orcd` (every 20 min).
+- 22:04Z ORCD started `M_lcrec` and `mgen_tr0..2` (per-user cap 4 GPUs: tr3, dev and the baselines wait). Coordinator: queue the
+  long-pole jobs on CSAIL quanta-main as second copies, first to start wins (`math_arbiter.sh`; in-job claim of the run folder /
+  gen shard per cluster; separate file systems and S3 prefixes per cluster). CSAIL lesson: `sbatch --export=NIL,VAR=...` jobs are
+  held ("user env retrieval failed requeued held") or cancelled by root (test 3099870); plain `--export=NIL` works, so the job
+  scripts take `MATH_*=value` as leading arguments. Held copies 3099708 / 3099732 / 3099854 cancelled by id; tr0..2 CSAIL copies
+  cancelled (ORCD copies running).
+- 22:38Z the GH200 copy of `M_lcrec` (3099930, quanta-gh200-2, fresh aarch64 venv) started training; ORCD's copy (started 22:04Z)
+  was at 101 / 560 at the same s/update, so ORCD won and 3099930 was cancelled at 6 / 560.
+- `M_lcrec` panel (`runs/M_lcrec/logs/train_29464051.log`, held nll per token r10 / r5): u0 0.2401 / 0.3170, u51 0.0222 / 0.0069,
+  u101 0.0212 / 0.0058 (token accuracy 0.9391 → 0.9954).
