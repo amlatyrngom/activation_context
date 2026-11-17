@@ -6,7 +6,7 @@ s1kl_tv_c162024_s012_v1) minus the excluded tasks, every item at ONE r. Checks, 
   - item ids: the per-ratio packet's ids = the base's ids minus the excluded tasks' (missing / extra ids listed)
   - per common item, every field compared with the base item; the differing paths are counted by name. Allowed: the size fields
     (info r / ratio / rows_wanted / rows / clamped and whatever the example scan derives from rows, e.g. reader_tokens) and the AC part's
-    compression ratio inside ac_messages. Anything else differing (targets, teacher view, history ids, continuation) is a finding.
+    compression target inside ac_messages (content[].compression_target). Anything else differing (targets, teacher view, history ids, continuation) is a finding.
 
     python audit_ratio_packet.py --packet PER_RATIO --base BASE --r 0.2 --exclude EXCLUDE.json [--out OUT.json]
 """
@@ -60,7 +60,7 @@ def main():
         diff(x, y, "", found)
         for f in found:
             paths[re.sub(r"\.(\w+)", r".\1", f)] += 1
-    allowed = lambda f: (f.startswith(".info.") and f.split(".")[2].split("[")[0] in SIZE_INFO) or (f.startswith(".ac_messages") and "ratio" in f.lower())
+    allowed = lambda f: (f.startswith(".info.") and f.split(".")[2].split("[")[0] in SIZE_INFO) or (f.startswith(".ac_messages") and f.rsplit(".", 1)[-1] in ("compression_target", "compression_ratio", "ac_compaction_ratio"))
     out = {"packet": str(a.packet), "base": str(a.base), "r": a.r, "exclude": str(a.exclude), "excluded_task_ids": len(blocked),
            "items": len(items), "tasks": len({i.info["task_id"] for i in items}), "runs": len({i.info["run_key"] for i in items}),
            "overlap_tasks_with_exclude": len({i.info["task_id"] for i in items} & blocked),

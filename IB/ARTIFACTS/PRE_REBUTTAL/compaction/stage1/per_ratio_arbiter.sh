@@ -21,14 +21,14 @@ while true; do
   for RUN in $(awk '{print $1}' $JOBS 2>/dev/null | sort -u); do
     grep -q "^$RUN " $WIN && continue
     winner=
-    while read -r r cl id; do [ "$r" = "$RUN" ] || continue
+    while read -r r cl id <&3; do [ "$r" = "$RUN" ] || continue      # fd 3: ssh in state() would eat stdin
       s=$(state $cl $id); say "$RUN $cl $id $s"
       [ "$s" = RUNNING ] && [ -z "$winner" ] && winner="$cl $id"
-    done < $JOBS
+    done 3< $JOBS
     [ -z "$winner" ] && continue
     echo "$RUN $winner $(date -u +%FT%TZ)" >> $WIN; say "$RUN: winner $winner"
-    while read -r r cl id; do [ "$r" = "$RUN" ] && [ "$cl $id" != "$winner" ] && [ -z "${DOWN[$cl]:-}" ] && cancel $cl $id; done < $JOBS
-    nohup bash $HERE/cluster_relay.sh ${winner%% *} $RUN >> $T/logs/relay_$RUN.log 2>&1 &
+    while read -r r cl id <&3; do [ "$r" = "$RUN" ] && [ "$cl $id" != "$winner" ] && [ -z "${DOWN[$cl]:-}" ] && cancel $cl $id < /dev/null; done 3< $JOBS
+    nohup bash $HERE/cluster_relay.sh ${winner%% *} $RUN >> $T/logs/relay_$RUN.log 2>&1 < /dev/null &
     say "$RUN: relay started (pid $!)"
   done
   [ "$(awk '{print $1}' $JOBS 2>/dev/null | sort -u | wc -l)" -gt 0 ] && [ "$(awk '{print $1}' $JOBS | sort -u | wc -l)" = "$(wc -l < $WIN)" ] && { say "every run has a winner: done"; exit 0; }
