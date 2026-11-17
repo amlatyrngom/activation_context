@@ -16,11 +16,12 @@
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
 # S3: pre_rebuttal_20261109/compaction/agent_eval_dev75/{ROLLOUTS,PAPER_COMPACTION,logs,checks}/
 # DEVSET=<prefix set under S3 pc_inputs/> DEVN=<its size> (env, via launch.sh; default prefixes_dev9_75 / 75). 2026-11-17: dev-206
-# (prefixes_dev9_206, ../dev_expand/) is the second dev set; never an eval-200 set.
+# (prefixes_dev9_206, ../dev_expand/) is the second dev set; prefixes_s2gen_c20_s{0,1,2} are the stage-2 generation prefixes
+# (training prefixes minus the 528, ../stage2/README.md); never an eval-200 set.
 set -uo pipefail
 MODE=$1; shift
 DEVSET=${DEVSET:-prefixes_dev9_75}; DEVN=${DEVN:-75}
-case $DEVSET in prefixes_dev9_75|prefixes_dev9_206) ;; *) echo "DEVSET must be a dev set" >&2; exit 2;; esac
+case $DEVSET in prefixes_dev9_75|prefixes_dev9_206|prefixes_s2gen_c20_s[012]) ;; *) echo "DEVSET must be a dev set or a stage-2 generation set" >&2; exit 2;; esac   # never eval-200
 S3C=s3://general-bucket-aln/activation-context-data/pre_rebuttal_20261109/compaction
 S3=$S3C/agent_eval_dev75
 A=/root/activation_artifacts; P=$A/pc; E=$A/agent_eval; PY=/opt/activation/.venv/bin/python; HERE=$A/agent_eval/code   # fetched from S3 by launch.sh (IB/ is not in the sky mirror)

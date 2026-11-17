@@ -6,7 +6,7 @@
 # Tags: <TAGPREFIX>_s<seed>; dev-75 tags keep the cdv1* prefix of the existing baselines (cdv1base_s*), dev-206 tags start d206.
 cd /home/ubuntu/activation_context
 NODE=$1; DEVSET=$2; PFX=$3; VARIANTS=$4; AGENTS=$5; RUN=$6; shift 6
-case $DEVSET in prefixes_dev9_75) N=75;; prefixes_dev9_206) N=206;; *) echo "not a dev set" >&2; exit 2;; esac
+case $DEVSET in prefixes_dev9_75) N=75;; prefixes_dev9_206) N=206;; prefixes_s2gen_c20_s0) N=1261;; prefixes_s2gen_c20_s1) N=1360;; prefixes_s2gen_c20_s2) N=1364;; *) echo "not a dev or stage-2 generation set" >&2; exit 2;; esac
 L=IB/TMP/PRE_REBUTTAL/cmp_agent_eval; mkdir -p $L
 for s in "$@"; do
   echo "$(date -u +%FT%TZ) $NODE $PFX seed $s start ($VARIANTS, $DEVSET)" >> $L/dev_chain.log
