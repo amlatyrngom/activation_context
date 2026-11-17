@@ -24,9 +24,10 @@ case $CL in
     S=$HERE/csail/csail_stage.sh; W=/data/scratch-fast/ngom/cmp_csail
     bash $S put $T/packets/$PACKET data/packets/$PACKET
     bash $S jobs
-    if [ $CL = csail ]; then ARGS=(--partition=quanta-h200 --cpus-per-task=8 --mem=96G --output=$W/logs/${RUN}_h200_%j.out jobs/cmp_stage1_job.sh)
-    else ARGS=(--partition=quanta-gh200 --cpus-per-task=16 --mem=200G --output=$W/logs/${RUN}_gh200_%j.out jobs/csail_gh200_job.sh); fi
-    out=$(bash $S sbatch $BUNDLE --export=$EXPORT --account=quanta --qos=quanta-main --gpus=1 --requeue --time=4-00:00:00 --job-name=$RUN "${ARGS[@]}" $RUN $PACKET)
+    # plain --export=NIL on CSAIL (NIL,VAR=... gets jobs held): csail_per_ratio_job.sh sets the CMP_* options itself (the same as EXPORT)
+    if [ $CL = csail ]; then ARGS=(--partition=quanta-h200 --cpus-per-task=8 --mem=96G --output=$W/logs/${RUN}_h200_%j.out jobs/csail_per_ratio_job.sh)
+    else ARGS=(--partition=quanta-gh200 --cpus-per-task=16 --mem=200G --output=$W/logs/${RUN}_gh200_%j.out jobs/csail_per_ratio_job.sh); fi
+    out=$(bash $S sbatch $BUNDLE --export=NIL --account=quanta --qos=quanta-main --gpus=1 --requeue --time=4-00:00:00 --job-name=$RUN "${ARGS[@]}" $RUN $PACKET)
     echo "$out"; id=$(grep -oE "Submitted batch job [0-9]+" <<<"$out" | awk '{print $4}')
     [ -n "$id" ] && echo "$RUN csail $id" >> $T/per_ratio_jobs.txt && echo "job $id ($CL)";;
   orcd)

@@ -20,7 +20,7 @@ source $HERE/../../../sec35/jobs/cluster_lib.sh
 cluster csail
 W=/data/scratch-fast/ngom/cmp_csail
 CODE_LOCAL=$REPO/IB/TMP/PRE_REBUTTAL/compaction_stage1/code
-JOBS_LOCAL=($HERE/csail_setup_job.sh $HERE/csail_smoke_job.sh $HERE/csail_probe_job.sh $HERE/csail_gh200_job.sh $HERE/../cmp_stage1_job.sh $HERE/../../agent_eval/probe_think.py)
+JOBS_LOCAL=($HERE/csail_setup_job.sh $HERE/csail_smoke_job.sh $HERE/csail_probe_job.sh $HERE/csail_gh200_job.sh $HERE/csail_per_ratio_job.sh $HERE/../cmp_stage1_job.sh $HERE/../../agent_eval/probe_think.py)
 check_remote() {   # check_remote LOCAL_FILE REMOTE_PATH: sha256 equal or fail
   local want got; want=$(sha256sum "$1" | cut -d' ' -f1); got=$(remote 120 "sha256sum $2 | cut -d' ' -f1")
   [ "$want" = "$got" ] || { echo "MISMATCH $2: remote $got, local $want" >&2; return 1; }; echo "ok $2 ($want)"; }
