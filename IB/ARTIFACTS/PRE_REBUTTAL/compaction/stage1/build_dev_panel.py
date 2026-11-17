@@ -44,7 +44,9 @@ def main() -> int:
     p.add_argument("--initial-reader", required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--nominal-prefix-tokens", type=int, default=20_000)
+    p.add_argument("--escaped-teacher-prefix", action="store_true", help="the old teacher view (prepare_agent_continuation.ESCAPED_TEACHER_PREFIX)")
     a = p.parse_args()
+    P.ESCAPED_TEACHER_PREFIX = a.escaped_teacher_prefix
     if (a.out / "panel.json").exists():
         raise FileExistsError(f"{a.out}/panel.json exists: use a new folder")
     index = json.loads(a.index.read_text())["prefixes"]
@@ -89,7 +91,7 @@ def main() -> int:
         with open(a.out / name, "wb") as f:
             pickle.dump({"items": items}, f)
     sha = {name: hashlib.sha256((a.out / name).read_bytes()).hexdigest() for name in ("panel_ac.pkl", "panel_none.pkl")}
-    summary = {"index": str(a.index), "material": str(a.material), "prefixes": len(index), "initial_pair": [a.initial_ac, a.initial_reader],
+    summary = {"teacher_view": "escaped" if a.escaped_teacher_prefix else "recorded", "index": str(a.index), "material": str(a.material), "prefixes": len(index), "initial_pair": [a.initial_ac, a.initial_reader],
                "groups": {g: sum(i.info["panel_group"] == g for i in ac_items + none_items) for g in ("dev75/r5", "dev75/r10", "dev75/none")},
                "rows": {g: sorted({i.info["rows"] for i in ac_items if i.info["panel_group"] == g}) for g in ("dev75/r5", "dev75/r10")},
                "target_tokens": sum(i.info["target_tokens"] for i in none_items), "teacher_tokens_mean": round(sum(i.info["teacher_tokens"] for i in none_items) / len(none_items)),

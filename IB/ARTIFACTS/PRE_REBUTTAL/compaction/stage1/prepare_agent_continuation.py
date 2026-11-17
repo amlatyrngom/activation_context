@@ -159,8 +159,18 @@ def draw_r(seed: int, task_id: str, number: int, count: int, low: float, high: f
     return low * (high / low) ** position if how == "log_uniform" else low + (high - low) * position
 
 
+ESCAPED_TEACHER_PREFIX = False      # --escaped-teacher-prefix: the packets before 2026-11-17 (teacher view rendered with escaped earlier reasoning)
+
+
 def build_item(record: dict, view: list[dict], side_tokens: int, r: float, item_id: str, group: str, ac, ac_name: str, nominal_prefix_tokens: int | None = None) -> ActivationContextTrainingItem:
-    """One (prefix, size) item: the student view Agent.compact("") would build, the raw teacher view, the recorded targets."""
+    """
+    One (prefix, size) item: the student view Agent.compact("") would build, the raw teacher view, the recorded targets.
+    The teacher view's prefix turns are their recorded tokens (info["in_context_history_ids"] = the material's
+    prefix_assistant_token_ids): the teacher reads the prompt the agent read, with real "</think>" delimiters, the prompt of the
+    agent eval's `full` arm. Before 2026-11-17 (ESCAPED_TEACHER_PREFIX) the trainer rendered them by the chat template with the
+    reasoning escaped to "[Reasoning]" / "[/Reasoning]" text, and the teacher copied "[/" at the first continuation turn
+    (compaction/TEACHER_VIEW_FIX.md).
+    """
     rows_wanted = rows_wanted_for(nominal_prefix_tokens or record["prefix_tokens"], r)   # the benchmark states sizes against the nominal 20,000-token prefix (1,000 / 2,000 / 4,000 rows)
     target = compression_target_for(rows_wanted, side_tokens)
     rows = ac.num_view_rows(side_tokens, target)
@@ -185,7 +195,21 @@ def build_item(record: dict, view: list[dict], side_tokens: int, r: float, item_
               "task_id": record["task_id"], "run_key": record.get("run_key") or record["task_id"], "seed": record.get("seed"), "repo": record["repo"], "language": record.get("language"), "benchmark": record.get("benchmark"),
               "side": record.get("side"), "solved": record.get("solved"), "finish_reason": record.get("finish_reason"),
               "r": r, "ratio": target, "rows_wanted": rows_wanted, "rows": rows, "clamped": rows_wanted > ac.config.max_view_rows,
-              "side_tokens": side_tokens, "prefix_tokens": record["prefix_tokens"], "head_tokens": record["tokens"]["head"], "assistant_turns": len(record["target_token_ids"])})
+              "side_tokens": side_tokens, "prefix_tokens": record["prefix_tokens"], "head_tokens": record["tokens"]["head"], "assistant_turns": len(record["target_token_ids"]),
+              **teacher_history(record)})
+
+
+def teacher_history(record: dict) -> dict:
+    """info["in_context_history_ids"]: the recorded tokens of the prefix assistant turns (none with ESCAPED_TEACHER_PREFIX)."""
+    if ESCAPED_TEACHER_PREFIX:
+        return {}
+    ids = record.get("prefix_assistant_token_ids")
+    if ids is None:
+        raise ValueError(f"{record.get('run_key') or record['task_id']}: material without prefix_assistant_token_ids (export it again with "
+                         "export_pool_material.py from 2026-11-17, or build with --escaped-teacher-prefix for the old teacher view)")
+    if len(ids) != sum(message.get("role") == "assistant" for message in record["prefix_messages"]):
+        raise ValueError(f"{record.get('run_key') or record['task_id']}: prefix_assistant_token_ids do not match the prefix's assistant turns")
+    return {"in_context_history_ids": [list(turn) for turn in ids]}
 
 
 def failure_reason(error: str) -> str:
@@ -232,7 +256,11 @@ def main() -> int:
     p.add_argument("--checkpoint-every", type=int, default=200)
     p.add_argument("--reporting-interval", type=float, default=.125, help="panel spacing, a fraction of each pass")
     p.add_argument("--workers", type=int, default=0, help="fork workers (0: every CPU of the allocation; 1: one process)")
+    p.add_argument("--escaped-teacher-prefix", action="store_true", help="the teacher view of the packets before 2026-11-17 (earlier reasoning "
+                   "rendered as escaped [Reasoning] text); default: the recorded prefix tokens (needs material with prefix_assistant_token_ids)")
     a = p.parse_args()
+    global ESCAPED_TEACHER_PREFIX
+    ESCAPED_TEACHER_PREFIX = a.escaped_teacher_prefix
     if len(set(a.loss)) != len(a.loss):
         p.error("--loss names a recipe twice")
     if a.epochs is not None and a.updates is not None:
@@ -431,6 +459,7 @@ def main() -> int:
         config = config_of(loss, steps, epochs)
         arm = {"task": "agent continuation after a compacted prefix", "loss": loss, "lr_ac": config.learning_rate_ac, "lr_reader": config.learning_rate_target_lora,
                "r_range": [low, high], "r_draw": a.r_draw, "r_values": a.r_values, "ratios_per_prefix": a.ratios_per_prefix, "held_sizes": [r for _, r in HELD_SIZES],
+               "teacher_view": "escaped" if a.escaped_teacher_prefix else "recorded",
                **({"match_weight": a.match_weight} if loss == "sft_match" else {}), **({"train_overrides": overrides} if overrides else {})}
         recipe = {"seed": a.seed, "epochs": epochs, "phase": "Agent continuation after a compacted prefix (%s): %s" % (loss, json.dumps(arm, sort_keys=True)),
                   "arm": arm, "counts": {"wanted": {group: len(train_runs) * a.ratios_per_prefix}}, "actual_train": {group: len(train_items)},

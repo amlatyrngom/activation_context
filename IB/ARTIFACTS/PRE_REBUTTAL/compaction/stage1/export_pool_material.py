@@ -25,6 +25,10 @@ evaluation's 50,000 rule) and one line per (task, pool seed, cut): `run_key` = "
 same task from another seed's cache (a new caching id) or cut at another --lower is a separate line. Each --rollouts file
 is one pool cache; a run seen twice under the same key (a rewritten cache line, or a cache listed twice) keeps its last line.
 
+2026-11-17: each line also holds `prefix_assistant_token_ids`, the recorded sampled tokens of every prefix assistant turn (in order):
+the packet builder gives them to the teacher view (info["in_context_history_ids"]) so the full-context teacher reads the prompt the
+agent read, with real "</think>" delimiters (TEACHER_VIEW_FIX.md).
+
 Left out (each counted): error / task_unavailable / trajectory_cap runs; compactions, subagents, injected input, an adapter
 or an AC model; unsolved runs (--solved-only, the default); runs under --min-total tokens; nothing to predict after the cut;
 fewer than --min-target-tokens target tokens; --exclude-tasks tasks (the packet build excludes them again).
@@ -73,7 +77,7 @@ def material_of(row: dict, tokenizer, args) -> tuple[dict | None, str]:
     if cut is None or not any(step["role"] == "assistant" for step in steps[cut:]):
         return None, "nothing to predict after the cut"
 
-    prefix, continuation, targets, context_tokens = [], [], [], 0
+    prefix, continuation, targets, context_tokens, prefix_assistant_ids = [], [], [], 0, []
     for position, step in enumerate(steps):
         messages = step.get("messages") or []
         assistants = [message for message in messages if message.get("role") == "assistant"]
@@ -83,6 +87,8 @@ def material_of(row: dict, tokenizer, args) -> tuple[dict | None, str]:
             return None, "an assistant message inside a tool or user step"
         if position < cut:
             prefix.extend(messages)
+            if step["role"] == "assistant":
+                prefix_assistant_ids.append(list(step["token_ids"]))
             continue
         if step["role"] == "assistant":
             targets.append(list(step["token_ids"]))
@@ -111,6 +117,7 @@ def material_of(row: dict, tokenizer, args) -> tuple[dict | None, str]:
         "language": metadata.get("language"), "side": metadata.get("side"), "official_test": metadata.get("official_test"),
         "solved": solved, "score": row.get("score"), "finish_reason": row.get("finish_reason"), "answer": row.get("answer"),
         "head_messages": head, "prefix_messages": prefix, "continuation_messages": continuation, "target_token_ids": targets,
+        "prefix_assistant_token_ids": prefix_assistant_ids,
         "tools": tools, "tools_source": "prompt_tokens",
         "chat_template_kwargs": kwargs, "chat_template_kwargs_recorded": recorded_kwargs,
         "prefix_tokens": prompt_tokens - head_tokens,

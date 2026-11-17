@@ -10,6 +10,8 @@
 #   dev75_node.sh check PAIR_RUN ROWS COUNT       first_turn_check.py (HF vs vLLM, trimmed vs full-length request) on the first COUNT prefixes
 #   dev75_node.sh garble PAIR_RUN ROWS CACHE_ID COUNT   garble_check.py (HF teacher-forced vs vLLM log-probs of broken first turns)
 #   dev75_node.sh probe LABEL=S3_CKPT_DIR ...      probe_think.py on the stage-1 dev-75 panel ("</think>" vs "[/" at the reader's thinking ends)
+#   dev75_node.sh tvcompare TAG PAIR_S3_CKPT NAME=S3_ITEMS_PKL ...   teacher_view_compare.py: old vs recorded KL-teacher view (TEACHER_VIEW_FIX.md)
+#   dev75_node.sh proxyref TAG PAIR_S3_CKPT PANEL_S3_DIR   the stage-1 proxy's teacher targets + references on a panel (S3 stage1/proxy_ref_TAG/)
 # Resumable across spot reclaims: each ROLLOUTS/<TAG>_<variant> cache is restored from S3 when the node has none, mirrored to S3 every
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
 # S3: pre_rebuttal_20261109/compaction/agent_eval_dev75/{ROLLOUTS,PAPER_COMPACTION,logs,checks}/
@@ -115,7 +117,41 @@ if [ $MODE = probe ]; then   # probe LABEL=S3_CKPT_DIR ...: probe_think.py per p
   mirror; exit 0
 fi
 
-[ $MODE = run ] || { echo "mode must be run, check, garble or probe" >&2; exit 2; }
+if [ $MODE = tvcompare ]; then   # tvcompare TAG PAIR_S3_CKPT NAME=S3_ITEMS_PKL ...: teacher_view_compare.py (old vs recorded teacher view) with the repository's activation package
+  TAG=$1; K=$2; shift 2
+  C=$E/bundle/cmp_stage1_code_v1; [ -f $C/MANIFEST.json ] || { say "no bundle (run a probe first)"; exit 2; }
+  D=$E/pairs/tv_$(basename $(dirname $(dirname $(dirname $K))))
+  if [ ! -f $D/DONE ]; then X getdir $K/ac/ $D/ac/ > /dev/null; rm -f $D/ac/teacher_targets.pt; X getdir $K/reader/ $D/reader/ > /dev/null
+    [ -f $D/ac/ac_modules.pt ] && date -u +%FT%TZ > $D/DONE || { say "pair incomplete from $K"; exit 2; }; fi
+  ARGS=()
+  for spec in "$@"; do N=${spec%%=*}; U=${spec#*=}; L=$E/tv/$N.pkl; mkdir -p $E/tv; [ -f $L ] || X get $U $L > /dev/null; ARGS+=(--packet $N=$L); done
+  OUT=$E/checks/tvcompare_$TAG.json
+  say "tvcompare $TAG pair $K packets $*"
+  (export PYTHONPATH=/root/sky_workdir:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0 \
+       QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0 \
+       HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1
+   cd $C && $PY $HERE/teacher_view_compare.py --pair $D/ac $D/reader --out $OUT "${ARGS[@]}" ${PROBE_LIMIT:+--limit $PROBE_LIMIT}) > $E/logs/tvcompare_$TAG.log 2>&1
+  say "tvcompare $TAG exit $?"; [ -f $OUT ] && X put $OUT $S3/probe/$(basename $OUT) > /dev/null; mirror; exit 0
+fi
+
+if [ $MODE = proxyref ]; then   # proxyref TAG PAIR_S3_CKPT PANEL_S3_DIR: cmp_proxy_eval.py --references on a panel (new teacher targets + NLL_none / NLL_full), repository activation package
+  TAG=$1; K=$2; PANEL_URL=$3
+  C=$E/bundle/cmp_stage1_code_v1; [ -f $C/MANIFEST.json ] || { say "no bundle (run a probe first)"; exit 2; }
+  D=$E/pairs/tv_$(basename $(dirname $(dirname $(dirname $K))))
+  if [ ! -f $D/DONE ]; then X getdir $K/ac/ $D/ac/ > /dev/null; rm -f $D/ac/teacher_targets.pt; X getdir $K/reader/ $D/reader/ > /dev/null
+    [ -f $D/ac/ac_modules.pt ] && date -u +%FT%TZ > $D/DONE || { say "pair incomplete from $K"; exit 2; }; fi
+  PD=$E/panel_$TAG; [ -f $PD/panel_ac.pkl ] || X getdir $PANEL_URL/ $PD/ > /dev/null
+  O=$E/proxyref_$TAG; mkdir -p $O
+  say "proxyref $TAG pair $K panel $PANEL_URL"
+  (export PYTHONPATH=/root/sky_workdir:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0 \
+       QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0 \
+       HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1 CUBLAS_WORKSPACE_CONFIG=:4096:8
+   cd $C && $PY $C/compaction/cmp_proxy_eval.py --pair $D/ac $D/reader --panel $PD --teacher-targets $O/teacher_dev75_$TAG.pt --references \
+     --label start_pair_$TAG --out $O/proxy_start_pair_$TAG.json) > $E/logs/proxyref_$TAG.log 2>&1
+  say "proxyref $TAG exit $?"; X putdir $O $S3C/stage1/proxy_ref_$TAG/ > /dev/null; mirror; exit 0
+fi
+
+[ $MODE = run ] || { echo "mode must be run, check, garble, probe, tvcompare or proxyref" >&2; exit 2; }
 TAG=$1; SEED=$2; VARIANTS=$3; AGENTS=$4; RUN=${5:--}; shift 5
 IDS=(); for v in ${VARIANTS//,/ }; do IDS+=(${TAG}_$v); done
 PAIR_ARGS=()

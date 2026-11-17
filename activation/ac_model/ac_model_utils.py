@@ -191,8 +191,17 @@ def cached_vocabulary_size(tokenizer) -> int:
 
 def prepare_training_history(tokenizer, messages: list[dict], start: int, assistant_ids: list[list[int]],
                              part_lengths: list[int], *, tools: list[dict] | None = None,
-                             chat_template_kwargs: dict | None = None) -> tuple[list[int], list[tuple[int, int]], list[int]]:
-    """Incremental runtime-shaped tokens, AC spans and predicting positions for one history."""
+                             chat_template_kwargs: dict | None = None,
+                             history_ids: list[list[int]] | None = None) -> tuple[list[int], list[tuple[int, int]], list[int]]:
+    """
+    Incremental runtime-shaped tokens, AC spans and predicting positions for one history.
+    Without `history_ids` the messages before the first target are one template rendering, earlier assistant reasoning written
+    as text (its delimiters escaped to [Reasoning] / [/Reasoning]) so the template cannot strip it. `history_ids` gives the
+    recorded tokens of every assistant message before `start` (one sequence each, in order): the history is then built the way
+    the agent built it at run time (the messages before the first assistant turn by the template, each earlier assistant turn
+    as its recorded tokens, the messages between turns as the template's continuation wrapper), so a full-context view reads
+    the prompt the agent read, with real reasoning delimiters.
+    """
     from ..agent.agent_utils import ModelDialect
     if not isinstance(start, int) or not 0 <= start < len(messages):
         raise ValueError("Training history start lies outside its messages")
@@ -200,9 +209,11 @@ def prepare_training_history(tokenizer, messages: list[dict], start: int, assist
     if len(selected) != len(assistant_ids) or not selected:
         raise ValueError("Every retained assistant message needs exactly one target-token sequence")
     vocabulary_size = cached_vocabulary_size(tokenizer)
-    for ids in assistant_ids:
+    for ids in assistant_ids + list(history_ids or []):
         if not ids or any(type(token) is not int or not 0 <= token < vocabulary_size for token in ids):
             raise ValueError("Assistant targets must be nonempty valid tokenizer IDs")
+    if history_ids is not None and len(history_ids) != sum(message.get("role") == "assistant" for message in messages[:start]):
+        raise ValueError("history_ids needs one token sequence per assistant message before the start")
     if any(direct_parts([message]) for message in messages if message.get("role") == "assistant"):
         raise ValueError("Assistant outputs cannot contain AC input parts")
     dialect = ModelDialect.for_tokenizer(tokenizer)
@@ -223,6 +234,8 @@ def prepare_training_history(tokenizer, messages: list[dict], start: int, assist
             raise ValueError("AC part lengths do not match the message history")
         return values
     first = next(index for index in range(start, len(messages)) if messages[index].get("role") == "assistant")
+    if history_ids:                                     # rebuild the earlier turns from their recorded tokens, from the first assistant turn on
+        first = next(index for index in range(len(messages)) if messages[index].get("role") == "assistant")
     if first == 0:
         raise ValueError("An assistant target needs preceding prompt context")
     prefix = [_training_template_message(tokenizer, message, reasoning_as_text=True) for message in messages[:first]]
@@ -231,13 +244,17 @@ def prepare_training_history(tokenizer, messages: list[dict], start: int, assist
         raise ValueError("An assistant target needs a nonempty token prefix")
     positions = []
     selected_ids = iter(assistant_ids)
+    earlier_ids = iter(history_ids or [])
     index = first
     while index < len(messages):
         message = messages[index]
         if message.get("role") != "assistant":
             raise ValueError("Expected an assistant output after a generation prompt")
-        output = list(next(selected_ids))
-        positions.extend(range(len(ids) - 1, len(ids) + len(output) - 1))
+        if index < start:                               # an earlier turn (history_ids): context, not a target
+            output = list(next(earlier_ids))
+        else:
+            output = list(next(selected_ids))
+            positions.extend(range(len(ids) - 1, len(ids) + len(output) - 1))
         ids.extend(output)
         end = index + 1
         while end < len(messages) and messages[end].get("role") != "assistant":

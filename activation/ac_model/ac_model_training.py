@@ -478,8 +478,11 @@ class ActivationContextTrainer:
             if item.in_context_messages is None:
                 raise ValueError(f"{item.item_id}: KL needs an in-context teacher history")
             validate_paired_histories(item.in_context_messages, item.in_context_start, item.ac_messages, item.ac_start)
+            # info["in_context_history_ids"] (recorded tokens of the teacher view's earlier assistant turns, set by the packet builder):
+            # the teacher reads the prompt the agent read at run time instead of a rendering with escaped earlier reasoning.
             teacher_ids, _, teacher_positions = prepare_training_history(tokenizer, item.in_context_messages,
-                                item.in_context_start, item.assistant_token_ids, [], tools=item.tools, chat_template_kwargs=chat_kwargs)
+                                item.in_context_start, item.assistant_token_ids, [], tools=item.tools, chat_template_kwargs=chat_kwargs,
+                                history_ids=item.info.get("in_context_history_ids"))
         for view, ids in (("teacher", teacher_ids), ("student", student_ids)):
             if len(ids) > self.config.max_example_tokens:
                 raise ValueError(f"{item.item_id}: {view} history has {len(ids)} tokens, exceeding max_example_tokens={self.config.max_example_tokens}; regenerate or raise the guard")
