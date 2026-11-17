@@ -13,6 +13,13 @@
 #                                   pair's own run holds it; the in-run panel's update-0 report is in sync/<RUN>.held.jsonl).
 #   CMP_LOSS=sft CMP_HELD=<pickle> CMP_KEEP_STEPS=all   the long-context reconstruction phase (build_lcrec.py packets: SFT, the
 #                                   packet's held_panel.pkl as the in-run panel, every CMP_CKPT_EVERY-update pair kept and proxied).
+#   CMP_PANEL=<folder under data/> CMP_TEACHER=<file under data/> CMP_REF=<file under data/>   the dev-75 panel, its teacher targets and
+#                                   the reference proxy json (defaults panel_dev75, teacher_dev75.pt, proxy_start_pair.json; 2026-11-17: the
+#                                   corrected teacher view = panel_dev75_tv, teacher_dev75_tv.pt and proxy_ref_tv's json).
+#   CMP_FINAL_PROXY=0               no proxy of ckpt/final (timing smokes)
+#   CSAIL (2026-11-17): W=/data/scratch-fast/ngom/cmp_csail, the fresh venv/HF cache of csail/csail_setup_job.sh, per-run JIT caches;
+#     cd $W && sbatch --export=NIL,CMP_INIT=...,CMP_BUNDLE=... --account=quanta --partition=quanta-h200 --qos=quanta-main --gpus=1 --requeue \
+#       --time=... jobs/cmp_stage1_job.sh RUN PACKET   (submit through csail/csail_stage.sh sbatch: it runs the pre-job check first)
 # Steps (each skipped when its output exists, so a requeued / resubmitted job continues; training resumes from its recovery slot):
 #   1. proxy of the starting pair on dev-75 (cmp_proxy_eval.py --references: AC 1/5, 1/10, untuned no-context, untuned full prefix);
 #      its teacher targets are kept in $W/data/teacher_dev75.pt for every later checkpoint (same frozen reader)
@@ -26,11 +33,13 @@ RUN=${1:?RUN}; PACKET=${2:?PACKET}; STEPS=${3:-0}
 BUNDLE=${CMP_BUNDLE:-cmp_stage1_code_v1}; SMOKE=${SMOKE:-0}
 ENC_LR=5e-5; READER_LR=0; EPU=8; WARMUP=50; SEED=0; MICRO=1
 REPORT=${CMP_REPORT_EVERY:-40}; CKPT=${CMP_CKPT_EVERY:-40}
+CSAIL=0
 if [ -d /home/ngom/orcd/scratch/activation ]; then W=/home/ngom/orcd/scratch/activation/cmp1; PY=/home/ngom/orcd/scratch/activation/rq_v1/code/.venv/bin/python; HF=/home/ngom/orcd/scratch/activation/hf; export HOME=${HOME:-/home/ngom}
+elif [ -d /data/scratch-fast/ngom ]; then CSAIL=1; W=/data/scratch-fast/ngom/cmp_csail; PY=$W/venv/bin/python; HF=$W/hf; export HOME=$W/home   # 2026-11-17: fresh env (csail/csail_setup_job.sh)
 else W=$HOME/cmp1; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.cache/huggingface}; fi
 W=${CMP_WORK:-$W}; PY=${CMP_PY:-$PY}
 INIT=${CMP_INIT:-R_res_rq9fr_final}; LOSS=${CMP_LOSS:-kl}; KEEP=${CMP_KEEP_STEPS:-final}
-C=$W/code/$BUNDLE; P=$W/data/packets/$PACKET; PANEL=$W/data/panel_dev75; I=$W/init/$INIT; D=$W/runs/$RUN; HELD=${CMP_HELD:-$PANEL/panel_ac.pkl}
+C=$W/code/$BUNDLE; P=$W/data/packets/$PACKET; PANEL=$W/data/${CMP_PANEL:-panel_dev75}; I=$W/init/$INIT; D=$W/runs/$RUN; HELD=${CMP_HELD:-$PANEL/panel_ac.pkl}
 mkdir -p $D/logs $D/proxy $W/triton_cache
 exec > >(tee -a $D/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [$RUN] $*"; }
@@ -38,6 +47,7 @@ for f in $C/MANIFEST.json $P/items.pkl $HELD $PANEL/panel_ac.pkl $PANEL/panel_no
   [ -f $f ] || { say "missing input $f"; exit 2; }; done
 say "start on $(hostname) job ${SLURM_JOB_ID:-none} GPU '$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)' packet $P smoke $SMOKE init $INIT loss $LOSS held $HELD keep $KEEP"
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True TRITON_CACHE_DIR=$W/triton_cache
+[ $CSAIL = 1 ] && { mkdir -p $D/cache/triton $D/cache/inductor; export TRITON_CACHE_DIR=$D/cache/triton TORCHINDUCTOR_CACHE_DIR=$D/cache/inductor PYTHONDONTWRITEBYTECODE=1 XDG_CACHE_HOME=$W/home/.cache; }   # per-run JIT caches; no bytecode written into the checked venv/bundle
 export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0
 export QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 CUBLAS_WORKSPACE_CONFIG=:4096:8
@@ -47,7 +57,7 @@ N=$($PY -c "import json,sys; print(json.load(open(sys.argv[1]))['training_exampl
 TRAIN_ARGS=(--held-items $HELD --report-every $REPORT --ckpt-every $CKPT --keep-steps $KEEP)
 [ "$SMOKE" = 1 ] && { STEPS=20; TRAIN_ARGS=(--held-items $HELD --held-panel 4 --report-every 10 --ckpt-every 1000 --keep-steps final); }
 say "packet: $N items -> $STEPS updates x $EPU"
-PROXY=($PY $C/compaction/cmp_proxy_eval.py --panel $PANEL --teacher-targets $W/data/teacher_dev75.pt)
+PROXY=($PY $C/compaction/cmp_proxy_eval.py --panel $PANEL --teacher-targets $W/data/${CMP_TEACHER:-teacher_dev75.pt})
 proxy() {   # proxy NAME AC READER [extra]: one checkpoint on dev-75; deterministic kernels, once without them if those fail
   local name=$1 ac=$2 reader=$3; shift 3
   [ -f $D/proxy/$name.json ] && { say "proxy $name: already done"; return 0; }
@@ -58,9 +68,9 @@ proxy() {   # proxy NAME AC READER [extra]: one checkpoint on dev-75; determinis
   say "proxy $name: $($PY -c "import json,sys; d=json.load(open(sys.argv[1])); print(json.dumps({k: d[k] for k in ('nll_full', 'nll_none', 'gap_closed', 'eval_seconds', 'peak_gb')} | {g: {m: round(v[m], 4) for m in ('kl_token', 'nll_token')} for g, v in d['groups'].items()}))" $D/proxy/$name.json)"
 }
 FAILED=0
-REF=$W/data/proxy_start_pair.json                             # the starting pair's proxy (with dev75/none), shared by every run
-if [ "$INIT" != R_res_rq9fr_final ]; then say "proxy u00000: skipped (start pair $INIT: see its own run)"
-elif [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1
+REF=$W/data/${CMP_REF:-proxy_start_pair.json}                 # the starting pair's proxy (with dev75/none), shared by every run
+if [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1   # 2026-11-17: any start pair (new panel)
+elif [ "$INIT" != R_res_rq9fr_final ]; then say "proxy u00000: skipped (start pair $INIT: see its own run)"
 else cp -n $REF $D/proxy/u00000.json; say "proxy u00000: from $REF"; fi
 if [ ! -f $D/sync/ckpt/final/meta.json ]; then
   say "training: $STEPS updates"
@@ -69,7 +79,7 @@ if [ ! -f $D/sync/ckpt/final/meta.json ]; then
     --resume-if-possible "${TRAIN_ARGS[@]}" > $D/logs/train_${SLURM_JOB_ID:-local}.log 2>&1 || FAILED=1
   say "training exit $FAILED: $(tail -n 1 $D/logs/train_${SLURM_JOB_ID:-local}.log | cut -c1-600)"
 fi
-[ -f $D/sync/ckpt/final/meta.json ] && { proxy final $D/sync/ckpt/final/ac $D/sync/ckpt/final/reader --references-from $REF || FAILED=1; }
+[ -f $D/sync/ckpt/final/meta.json ] && [ "${CMP_FINAL_PROXY:-1}" = 1 ] && { proxy final $D/sync/ckpt/final/ac $D/sync/ckpt/final/reader --references-from $REF || FAILED=1; }
 for Q in $D/sync/ckpt/step_*/; do [ -d "$Q/ac" ] && { proxy $(basename $Q) $Q/ac $Q/reader --references-from $REF || FAILED=1; }; done
 [ -f $D/sync/$RUN.stats.json ] && say "timing: $($PY -c "import json,sys; t=json.load(open(sys.argv[1]))['timing']; print(json.dumps({k: t.get(k) for k in ('updates', 'effective_seconds_per_update', 'seconds_per_update_median', 'seconds_per_update_mean', 'first_updates_seconds', 'peak_gb', 'baseline_panel_seconds', 'reporting_seconds', 'wall_seconds', 'device')}))" $D/sync/$RUN.stats.json)"
 say "end (failed=$FAILED)"; exit $FAILED
