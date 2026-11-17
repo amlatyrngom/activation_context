@@ -36,8 +36,9 @@ P=$W/data/packets/$PACKET
 for m in Qwen/Qwen3.5-9B Qwen/Qwen3.5-2B; do
   for t in 1 2 3; do timeout 1800 env -u HF_TOKEN $PY -c "from huggingface_hub import snapshot_download as s; s('$m', token=False)" > /dev/null && break; done; done
 D=$W/runs/$RUN; mkdir -p $D
+export S3X_ALLOW_OPTIMIZER=1                                   # 2026-11-17: before the restore too (s3x skips optimizer.pt otherwise: resume refused)
 X getdir $S3C/runs/$RUN/ $D/ > /dev/null 2>&1 || true
-say "inputs ready on $(hostname) ($(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)); restored $(find $D -type f | wc -l) run files from S3"
+say "inputs ready on $(hostname) ($(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)); restored $(find $D -type f | wc -l) run files ($(find $D -name optimizer.pt | wc -l) optimizer.pt) from S3"
 export S3X_ALLOW_OPTIMIZER=1
 up() {
   X putdir $D $S3C/runs/$RUN/ --exclude triton_cache > /dev/null 2>&1
