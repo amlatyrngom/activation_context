@@ -16,6 +16,9 @@ its seed): the retrain's phase A = the 16k, 20k and 24k packets (build_retrain_p
 Without --tokens the packets are only merged (items unchanged): the retrain's run M (2026-11-17, coordinator: no truncated phase A,
 truncation saved only ~1.3x) = s1kl_tv_c{16,20,24}_s012_v1 merged into s1kl_tv_c162024_s012_v1.
 
+--exclude-tasks FILE.json ({"task_ids": [...]}): drop every item of those tasks (task level, any seed / cut) after the merge; the per-ratio
+runs (2026-11-17) = M's items at one r minus dev206 (compaction/dev_expand/exclude_h7_dev206.json = the 322 + dev206).
+
 Outputs: OUT/items.pkl, OUT/prepared.json (the first packet's, with items sha256 / bytes / training_examples updated), OUT/recipe.json
 (the first packet's, plus "continuation_token_limit" and "merged_from"), OUT/truncate.json (counts). prepared_examples.pkl is not copied (sec45_train reads items.pkl only).
 """
@@ -59,6 +62,7 @@ def truncate(item, limit: int):
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--packet", type=Path, nargs="+", required=True); p.add_argument("--tokens", type=int, default=None, help="T; omitted: merge only, no truncation"); p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--exclude-tasks", type=Path, default=None, help='JSON {"task_ids": [...]}: drop every item of these tasks')
     a = p.parse_args()
     if a.out.exists():
         raise SystemExit(f"{a.out} exists (packet names are never reused)")
@@ -72,6 +76,14 @@ def main():
         sources.append({"packet": str(packet), "items": len(data["train"]), "items_sha256": hashlib.sha256((packet / "items.pkl").read_bytes()).hexdigest()})
     if len({item.item_id for item in pool}) != len(pool):
         raise SystemExit("duplicate item ids across the packets")
+    exclusion = None
+    if a.exclude_tasks:
+        blocked = set(json.loads(a.exclude_tasks.read_text())["task_ids"])
+        before = len(pool)
+        dropped_tasks = {item.info["task_id"] for item in pool if item.info["task_id"] in blocked}
+        pool = [item for item in pool if item.info["task_id"] not in blocked]
+        exclusion = {"file": str(a.exclude_tasks), "sha256": hashlib.sha256(a.exclude_tasks.read_bytes()).hexdigest(), "task_ids": len(blocked),
+                     "items_before": before, "items_dropped": before - len(pool), "tasks_dropped": len(dropped_tasks)}
     items, full, kept, cut = [], 0, 0, 0
     for item in pool:
         new, total, k = truncate(item, a.tokens) if a.tokens else (item, *[sum(len(ids) for ids in item.assistant_token_ids)] * 2)
@@ -81,14 +93,15 @@ def main():
     (a.out / "items.pkl").write_bytes(blob)
     prepared = json.loads((a.packet[0] / "prepared.json").read_text())
     prepared.update(items_sha256=hashlib.sha256(blob).hexdigest(), items_bytes=len(blob), prepared_examples_sha256=None, training_examples=len(items),
-                    truncated_from=[str(x) for x in a.packet], continuation_token_limit=a.tokens)
+                    truncated_from=[str(x) for x in a.packet], continuation_token_limit=a.tokens, excluded_after_merge=exclusion)
     (a.out / "prepared.json").write_text(json.dumps(prepared, indent=2))
     recipe = json.loads((a.packet[0] / "recipe.json").read_text())
     recipe["continuation_token_limit"] = a.tokens
     recipe["merged_from"] = sources
+    recipe["excluded_after_merge"] = exclusion
     (a.out / "recipe.json").write_text(json.dumps(recipe, indent=2))
     summary = {"sources": sources,
-               "continuation_token_limit": a.tokens, "items": len(items), "items_cut": cut, "target_tokens_full": full, "target_tokens_kept": kept,
+               "continuation_token_limit": a.tokens, "exclusion": exclusion, "items": len(items), "items_cut": cut, "target_tokens_full": full, "target_tokens_kept": kept,
                "kept_fraction": round(kept / max(1, full), 4), "items_sha256": prepared["items_sha256"]}
     (a.out / "truncate.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary))
