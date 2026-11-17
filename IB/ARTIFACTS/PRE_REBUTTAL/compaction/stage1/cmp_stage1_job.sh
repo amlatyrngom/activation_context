@@ -40,6 +40,15 @@ else W=$HOME/cmp1; PY=$HOME/sky_workdir/.venv/bin/python; HF=${HF_HOME:-$HOME/.c
 W=${CMP_WORK:-$W}; PY=${CMP_PY:-$PY}
 INIT=${CMP_INIT:-R_res_rq9fr_final}; LOSS=${CMP_LOSS:-kl}; KEEP=${CMP_KEEP_STEPS:-final}
 C=$W/code/$BUNDLE; P=$W/data/packets/$PACKET; PANEL=$W/data/${CMP_PANEL:-panel_dev75}; I=$W/init/$INIT; D=$W/runs/$RUN; HELD=${CMP_HELD:-$PANEL/panel_ac.pkl}
+if [ $CSAIL = 1 ] && [ -n "${SLURM_JOB_ID:-}" ]; then      # 2026-11-17: several queued copies of one run (H200 / GH200): the first to start claims runs/RUN
+  CLAIM=$W/runs/$RUN.claim; mkdir -p $W/runs
+  if ! mkdir $CLAIM 2>/dev/null; then
+    other=$(cat $CLAIM/job 2>/dev/null)
+    if [ -n "$other" ] && [ "$other" != "$SLURM_JOB_ID" ] && squeue -j $other -h -o %T 2>/dev/null | grep -qx RUNNING; then
+      echo "$(date -u +%FT%TZ) [$RUN] runs/$RUN is claimed by running job $other: this copy (job $SLURM_JOB_ID) exits"; exit 0; fi
+  fi
+  echo $SLURM_JOB_ID > $CLAIM/job
+fi
 mkdir -p $D/logs $D/proxy $W/triton_cache
 exec > >(tee -a $D/logs/job.log) 2>&1
 say() { echo "$(date -u +%FT%TZ) [$RUN] $*"; }
