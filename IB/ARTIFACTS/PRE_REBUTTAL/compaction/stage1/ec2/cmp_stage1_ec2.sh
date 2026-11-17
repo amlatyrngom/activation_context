@@ -47,7 +47,7 @@ up() {
 }
 ( while sleep 900; do up; done ) & LOOP=$!
 if [ -n "${CMP_TVCOMPARE:-}" ] && [ ! -f $D/proxy/tvcompare.json ]; then   # CMP_TVCOMPARE=N: old vs recorded teacher view on the packet's first N runs
-  mkdir -p $D/proxy; say "teacher_view_compare on the first $CMP_TVCOMPARE runs of $PACKET"
+  mkdir -p $D/proxy $D/logs; say "teacher_view_compare on the first $CMP_TVCOMPARE runs of $PACKET"
   (export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0 \
      QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0 \
      HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1
