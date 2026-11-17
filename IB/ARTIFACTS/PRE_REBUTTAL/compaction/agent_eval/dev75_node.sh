@@ -8,6 +8,7 @@
 #        S3 compaction/stage1/runs/<PAIR_RUN>/sync/ckpt/final/ (needed by ac_* variants), '-' for none. Text summary arms are uncapped.
 #        RUN_TIMEOUT=<seconds> (env, via launch.sh) stops the run after that long (load measurements; 0 = no limit).
 #   dev75_node.sh check PAIR_RUN ROWS COUNT       first_turn_check.py (HF vs vLLM, trimmed vs full-length request) on the first COUNT prefixes
+#   dev75_node.sh garble PAIR_RUN ROWS CACHE_ID COUNT   garble_check.py (HF teacher-forced vs vLLM log-probs of broken first turns)
 # Resumable across spot reclaims: each ROLLOUTS/<TAG>_<variant> cache is restored from S3 when the node has none, mirrored to S3 every
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
 # S3: pre_rebuttal_20261109/compaction/agent_eval_dev75/{ROLLOUTS,PAPER_COMPACTION,logs,checks}/
@@ -74,7 +75,18 @@ if [ $MODE = check ]; then
   say "check exit $?"; [ -f $OUT ] && X put $OUT $S3/checks/$(basename $OUT) > /dev/null; mirror; exit 0
 fi
 
-[ $MODE = run ] || { echo "mode must be run or check" >&2; exit 2; }
+if [ $MODE = garble ]; then   # garble PAIR_RUN ROWS CACHE_ID COUNT: garble_check.py on the first COUNT broken first turns of ROLLOUTS/CACHE_ID
+  RUN=$1; ROWS=$2; CACHE=$3; COUNT=$4; pair $RUN
+  F=$A/SYNC/ROLLOUTS/$CACHE/rollouts.jsonl; mkdir -p $(dirname $F)
+  [ -s $F ] || X get $S3/ROLLOUTS/$CACHE/rollouts.jsonl $F > /dev/null
+  OUT=$E/checks/garble_${CACHE}.json
+  say "garble $RUN rows $ROWS cache $CACHE count $COUNT"
+  $PY $HERE/garble_check.py --split $P/split.json --prefixes $P/prefixes_dev9_75 --ac-checkpoint $E/pairs/$RUN/ac \
+    --reader-checkpoint $E/pairs/$RUN/reader --rollouts $F --rows $ROWS --count $COUNT --out $OUT > $E/logs/garble_${CACHE}.log 2>&1
+  say "garble exit $?"; [ -f $OUT ] && X put $OUT $S3/checks/$(basename $OUT) > /dev/null; mirror; exit 0
+fi
+
+[ $MODE = run ] || { echo "mode must be run, check or garble" >&2; exit 2; }
 TAG=$1; SEED=$2; VARIANTS=$3; AGENTS=$4; RUN=${5:--}; shift 5
 IDS=(); for v in ${VARIANTS//,/ }; do IDS+=(${TAG}_$v); done
 PAIR_ARGS=()
@@ -92,7 +104,7 @@ timeout --signal=INT --kill-after=120 ${RUN_TIMEOUT:-0} $PY $HERE/run_resume_res
   --budget 50000 --trajectory-cap 90000 --max-model-len 100000 --max-duration 6000 --seed $SEED --tag $TAG --agents-per-gpu $AGENTS \
   "${PAIR_ARGS[@]}" "$@" >> $E/logs/${TAG}.log 2>&1
 CODE=$?
-kill $LOOP 2>/dev/null; mirror "${IDS[@]}"
+pkill -P $LOOP 2>/dev/null; kill $LOOP 2>/dev/null; mirror "${IDS[@]}"   # the loop's sleep too (it held the sky job open up to 10 min)
 for c in "${IDS[@]}"; do
   if [ $CODE = 0 ] && [ -f $A/SYNC/PAPER_COMPACTION/$c/summary.json ]; then
     date -u +%FT%TZ > $E/stage/$c.DONE && X put $E/stage/$c.DONE $S3/ROLLOUTS/$c/DONE > /dev/null && say "$c DONE: $(cat $A/SYNC/PAPER_COMPACTION/$c/summary.json | tr -d '\n ' | cut -c1-300)"

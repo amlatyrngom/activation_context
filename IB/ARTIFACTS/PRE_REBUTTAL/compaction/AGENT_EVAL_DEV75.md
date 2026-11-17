@@ -76,4 +76,111 @@ would have averaged 1.20–1.23 GB per request with a maximum of 4.05 GB, about 
 **Choice: 32 agents per GPU on g7e.4xlarge** (the paper's AC setting); 48 is no faster end to end and shows more tool-error
 and no-tool-call finishes (the canon's sandbox limit is about 40 agents). At 32, a g7e.2xlarge (64 GB) would be tight.
 
-(Sections 4–5 are filled in as the runs finish.)
+## 4. Dev-75 results: `S1_lcrec100_kl_both_c20` final, seeds 2, 3, 4 (2026-11-16 22:15Z – 11-17 00:20Z)
+
+Runs: tags `cdv1lcrec100_s{2,3,4}` (ac_4000, ac_2000; node cdv1, 32 agents) and `cdv1base_s{2,3,4}` (full, none,
+summary_write, summary; seed 2 on cdv2, seeds 3–4 on cdv3, 40 agents). cdv2 was spot-reclaimed during seed 3 before its
+first mirror, so seed 3 was rerun from scratch on cdv3 under the same tag (nothing had been saved). All 18 caches have 75 rows
+and a DONE marker on S3 `compaction/agent_eval_dev75/ROLLOUTS/`; summaries in `.../PAPER_COMPACTION/`; tables below are
+`report.py` output, also in S3 `.../agent_eval_dev75/report/` (local `IB/TMP/PRE_REBUTTAL/cmp_agent_eval/report/`).
+
+**Seeds.** 2, 3, 4 for every arm, all run fresh with today's code: the October dev-75 baselines are seeds 0/1, came from older
+code, and have no `none` and no uncapped summary at any seed, so pairing the new AC arms with them would mix code versions.
+The October seed 0/1 caches are kept as a cross-check (end of this section).
+
+Per arm (225 runs = 75 prefixes × 3 seeds; solved = score ≥ 1; continuation tokens = sampled + tool tokens after the prefix,
+capped at the 50,000 budget, the whole budget when no answer was submitted):
+
+| arm | seeds | runs | solved % | answered % | mean continuation tokens | errors | finish reasons |
+|---|---|---|---|---|---|---|---|
+| full | 2,3,4 | 225 | 75.56 | 93.8 | 15795 | 0 | {"submitted": 211, "max_tool_errors": 11, "continuation_budget": 3} |
+| none | 2,3,4 | 225 | 58.67 | 74.7 | 32676 | 0 | {"submitted": 168, "max_tool_errors": 30, "continuation_budget": 27} |
+| summary (uncapped) | 2,3,4 | 225 | 70.22 | 88.4 | 18304 | 0 | {"submitted": 199, "max_tool_errors": 16, "continuation_budget": 10} |
+| ac_4000 | 2,3,4 | 225 | 67.56 | 87.1 | 17677 | 0 | {"no_tool_call": 10, "submitted": 196, "max_tool_errors": 15, "continuation_budget": 4} |
+| ac_2000 | 2,3,4 | 225 | 59.56 | 80.0 | 21030 | 0 | {"no_tool_call": 23, "submitted": 180, "max_tool_errors": 13, "continuation_budget": 9} |
+
+Solved % per seed (2 / 3 / 4): full 77.33 / 78.67 / 70.67; none 57.33 / 58.67 / 60.00; summary 73.33 / 73.33 / 64.00;
+ac_4000 62.67 / 65.33 / 74.67; ac_2000 58.67 / 62.67 / 57.33. The summary-writing turn (summary_write, not counted in the
+summary arm's continuation tokens) averaged 460.6 / 599.3 / 527.6 tokens.
+
+Paired comparisons (pairs = (prefix, seed); Δ = A − B; 95 % bootstrap over prefixes, 10,000 draws; McNemar exact on the
+discordant pairs, treating the 3 seeds of a prefix as independent pairs):
+
+| A − B | pairs | prefixes | solved A % | solved B % | Δ solved (pts) [95 % CI] | A✓B✗ / A✗B✓ | McNemar p | Δ tokens [95 % CI] |
+|---|---|---|---|---|---|---|---|---|
+| ac_4000 − full | 225 | 75 | 67.56 | 75.56 | -8.00 [-12.44, -3.56] | 11 / 29 | 0.006 | +1882 [+47, +3697] |
+| ac_4000 − none | 225 | 75 | 67.56 | 58.67 | +8.89 [+1.78, +16.44] | 43 / 23 | 0.019 | -14998 [-17980, -12056] |
+| ac_4000 − summary | 225 | 75 | 67.56 | 70.22 | -2.67 [-7.56, +2.22] | 15 / 21 | 0.405 | -627 [-2652, +1353] |
+| ac_2000 − full | 225 | 75 | 59.56 | 75.56 | -16.00 [-22.67, -9.78] | 11 / 47 | 0.000 | +5234 [+3112, +7425] |
+| ac_2000 − none | 225 | 75 | 59.56 | 58.67 | +0.89 [-7.56, +9.33] | 38 / 36 | 0.908 | -11646 [-14630, -8642] |
+| ac_2000 − summary | 225 | 75 | 59.56 | 70.22 | -10.67 [-16.44, -4.44] | 12 / 36 | 0.001 | +2725 [-9, +5404] |
+| ac_4000 − ac_2000 | 225 | 75 | 67.56 | 59.56 | +8.00 [+2.22, +13.78] | 39 / 21 | 0.027 | -3352 [-5953, -889] |
+| summary − none | 225 | 75 | 70.22 | 58.67 | +11.56 [+3.11, +20.00] | 45 / 19 | 0.002 | -14371 [-17259, -11560] |
+| full − summary | 225 | 75 | 75.56 | 70.22 | +5.33 [+0.44, +10.67] | 22 / 10 | 0.050 | -2509 [-4423, -718] |
+
+Reading: ac_4000 sits between none and full: above none (+8.89 pts, p = 0.019), below full (−8.00 pts, p = 0.006), and not
+distinguishable from the uncapped summary (−2.67 pts, CI [−7.56, +2.22]) at about the same continuation tokens. ac_2000 is at
+the no-context level (+0.89 pts vs none) and clearly below summary and full. Seed spread is large (ac_4000 62.67–74.67 %,
+full 70.67–78.67 %), so single-seed comparisons on dev-75 are not reliable.
+
+**October cross-check (seeds 0, 1, rows-only pairs, `report.py` on `IB/TMP/PAPER_COMPACTION/node_sync/dev9_results/`):**
+
+| arm | seeds | runs | solved % | answered % | mean continuation tokens |
+|---|---|---|---|---|---|
+| full (Oct) | 0,1 | 150 | 74.67 | 94.0 | 15515 |
+| summary capped at 500 words (Oct) | 0,1 | 150 | 73.33 | 90.7 | 16984 |
+| H5 rows-only ac_4000 (Oct) | 0,1 | 150 | 74.67 | 94.7 | 15830 |
+| H5 rows-only ac_2000 (Oct) | 0,1 | 150 | 74.00 | 92.7 | 16860 |
+
+H5 − full (Oct): ac_4000 +0.00 pts [−7.33, +7.33], ac_2000 −0.67 pts [−7.33, +6.00]. Today's full arm (75.56 %) matches
+October's (74.67 %), so the harness has not drifted; the new res pair is below what the old rows-only H5 pair reached on the
+same prefixes.
+
+## 5. Tool-call format failures in the AC arms (model, not engine)
+
+The res-pair AC arms end runs with `no_tool_call` (10 and 23 of 225) and show a specific broken call that no text arm and no
+October AC arm shows: after a line of prose the reader writes `[/shell]` / `[/path]` and then the rest of a call
+(`<parameter=...>…</function></tool_call>`) without the opening `<tool_call>\n<function=…>`, so the parser finds no call.
+Counted over every assistant turn (`IB/TMP/PRE_REBUTTAL/cmp_agent_eval/report/format_failures.md`):
+
+| cache | assistant turns | turns without a parsed call | of which `\n[…]` garble | runs with ≥ 1 garble (solved) | first turn garbled |
+|---|---|---|---|---|---|
+| full / none / summary, seeds 2–4 (9 caches) | 1,819–3,497 each | 0–1 each | 0 | 0 | 0 |
+| ac_4000 s2 / s3 / s4 | 1901 / 2038 / 1918 | 28 / 48 / 29 | 25 / 40 / 26 | 11 (5) / 16 (7) / 16 (10) | 8 / 13 / 14 |
+| ac_2000 s2 / s3 / s4 | 2228 / 2056 / 1762 | 49 / 28 / 61 | 40 / 25 / 52 | 19 (9) / 12 (4) / 20 (8) | 13 / 8 / 10 |
+| H5 rows-only ac_4000 / ac_2000, Oct s0, s1 | 2070–2413 each | 0–1 each | 0 | 0 | 0 |
+
+So 43 of 225 ac_4000 runs and 51 of 225 ac_2000 runs hit the garble at least once (22 and 21 of those were still solved).
+
+**Engine or model?** `garble_check.py` (`dev75_node.sh garble`, a node job like `check`; S3 `.../agent_eval_dev75/checks/garble_cdv1lcrec100_s2_ac_{2000,4000}.json`)
+rebuilt the first prompt of 6 (ac_2000) + 4 (ac_4000) garbled first turns from seed 2 (the rebuilt token ids equal the recorded
+ones in all 10), teacher-forced the turn vLLM sampled through the HF reader with the intervention hooks, and compared per-token
+log-probs with the ones vLLM recorded:
+
+- whole turn: mean |Δ log-prob| 0.012–0.039 per token, max 0.11–0.37 (turn totals e.g. −172.18 vLLM vs −172.38 HF);
+- at the garble token `[/`: vLLM −0.142 … −2.139, HF −0.143 … −1.927; HF's top choices there are `[/` and `</think>`
+  (`[/` is HF's top-1 in 7 of 10, `</think>` in the other 3), and HF gives `<tool_call>` only −4.34 … −6.95.
+
+The HF reference with the same rows and deltas produces the broken call with the same probability, so it is the pair's
+behavior (the frozen reader reading these deltas), not the vLLM residual path. The high `</think>` mass at the same point
+suggests the reader believes it is still inside a thinking block when it starts the call.
+
+## 6. Differences from the paper's settings
+
+- Same: dev-75 prefixes, untuned Qwen3.5-9B reader for text arms, budget 50,000, trajectory cap 90,000, max model length
+  100,000, max duration 6,000 s, fp8 KV cache (the recommended setting), kit `run_resume.py` harness.
+- AC pair: a Hidden Residuals `res` pair (rows + per-layer deltas at layers 3, 7, …, 31) served through the vLLM residual path,
+  reader adapter all zeros so the AC arm reads with the untuned 9B; the paper's AC arm used a rows-only pair through the kit's
+  `--rows-only` path.
+- Summary arm is uncapped (`--uncapped-summary`); the paper's / October's was capped at 500 words.
+- Seeds 2, 3, 4 (paper / October: 0, 1).
+- Hardware: spot g7e.4xlarge (1 × RTX PRO 6000); 32 agents / GPU for AC arms, 40 for text arms.
+- As in the paper-era runs, the harness occasionally adds a later tool-output AC part in AC arms.
+- Dev-75 has been used for model selection; these are dev numbers, not test numbers. Eval-200 was not run.
+
+## 7. Not done
+
+- The larger run `S1_lcrec_kl_both_c20_s012` final was not staged under `compaction/stage1/runs/S1_lcrec_kl_both_c20_s012/`
+  when these runs finished (checked 2026-11-17 ~00:20Z), so its AC arms were not run; `compaction/agent_eval/ac_chain.sh <node>
+  S1_lcrec_kl_both_c20_s012 <new short tag>` runs them (needs one spot node).
+- Both GPU nodes (cdv1, cdv3) were torn down at ~00:20Z.
