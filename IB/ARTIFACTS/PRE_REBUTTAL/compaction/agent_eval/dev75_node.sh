@@ -9,6 +9,7 @@
 #        RUN_TIMEOUT=<seconds> (env, via launch.sh) stops the run after that long (load measurements; 0 = no limit).
 #   dev75_node.sh check PAIR_RUN ROWS COUNT       first_turn_check.py (HF vs vLLM, trimmed vs full-length request) on the first COUNT prefixes
 #   dev75_node.sh garble PAIR_RUN ROWS CACHE_ID COUNT   garble_check.py (HF teacher-forced vs vLLM log-probs of broken first turns)
+#   dev75_node.sh probe LABEL=S3_CKPT_DIR ...      probe_think.py on the stage-1 dev-75 panel ("</think>" vs "[/" at the reader's thinking ends)
 # Resumable across spot reclaims: each ROLLOUTS/<TAG>_<variant> cache is restored from S3 when the node has none, mirrored to S3 every
 # 10 min (snapshot cut at the last full line) and marked DONE on S3 when its variant finished.
 # S3: pre_rebuttal_20261109/compaction/agent_eval_dev75/{ROLLOUTS,PAPER_COMPACTION,logs,checks}/
@@ -86,7 +87,35 @@ if [ $MODE = garble ]; then   # garble PAIR_RUN ROWS CACHE_ID COUNT: garble_chec
   say "garble exit $?"; [ -f $OUT ] && X put $OUT $S3/checks/$(basename $OUT) > /dev/null; mirror; exit 0
 fi
 
-[ $MODE = run ] || { echo "mode must be run, check or garble" >&2; exit 2; }
+if [ $MODE = probe ]; then   # probe LABEL=S3_CKPT_DIR ...: probe_think.py per pair in the stage-1 code bundle's environment (as cmp_ckpt_proxy_job.sh); the first pair also scores the full / none views
+  C=$E/bundle/cmp_stage1_code_v1
+  if [ ! -f $C/MANIFEST.json ]; then
+    X get $S3C/stage1/code/cmp_stage1_code_v1.tar.gz $E/bundle.tgz > /dev/null && X get $S3C/stage1/code/cmp_stage1_code_v1.tar.gz.sha256 $E/bundle.tgz.sha256 > /dev/null
+    [ "$(sha256sum $E/bundle.tgz | cut -c1-64)" = "$(cut -c1-64 $E/bundle.tgz.sha256)" ] || { say "bundle sha256 mismatch"; exit 2; }
+    mkdir -p $C && tar -xzf $E/bundle.tgz -C $C
+  fi
+  [ -f $E/panel/panel_ac.pkl ] || X getdir $S3C/stage1/panel_dev75/ $E/panel/ > /dev/null
+  REF=--references
+  for spec in "$@"; do
+    L=${spec%%=*}; K=${spec#*=}; D=$E/pairs/probe_$L
+    if [ ! -f $D/DONE ]; then
+      X getdir $K/ac/ $D/ac/ > /dev/null; rm -f $D/ac/teacher_targets.pt; X getdir $K/reader/ $D/reader/ > /dev/null
+      [ -f $D/ac/ac_modules.pt ] && [ -f $D/reader/adapter_model.safetensors ] && date -u +%FT%TZ > $D/DONE || { say "pair $L incomplete from $K"; continue; }
+    fi
+    OUT=$E/checks/probe_$L.json
+    say "probe $L from $K $REF"
+    (export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0 \
+       QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0 \
+       HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1
+     cd $C && $PY $HERE/probe_think.py --pair $D/ac $D/reader --label $L --panel $E/panel --out $OUT $REF ${PROBE_LIMIT:+--limit $PROBE_LIMIT}) > $E/logs/probe_$L.log 2>&1
+    say "probe $L exit $?"
+    for f in $OUT ${OUT%.json}.positions.jsonl; do [ -f $f ] && X put $f $S3/probe/$(basename $f) > /dev/null; done
+    REF=
+  done
+  mirror; exit 0
+fi
+
+[ $MODE = run ] || { echo "mode must be run, check, garble or probe" >&2; exit 2; }
 TAG=$1; SEED=$2; VARIANTS=$3; AGENTS=$4; RUN=${5:--}; shift 5
 IDS=(); for v in ${VARIANTS//,/ }; do IDS+=(${TAG}_$v); done
 PAIR_ARGS=()

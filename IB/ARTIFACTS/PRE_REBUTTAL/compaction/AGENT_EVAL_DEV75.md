@@ -184,3 +184,53 @@ suggests the reader believes it is still inside a thinking block when it starts 
   when these runs finished (checked 2026-11-17 ~00:20Z), so its AC arms were not run; `compaction/agent_eval/ac_chain.sh <node>
   S1_lcrec_kl_both_c20_s012 <new short tag>` runs them (needs one spot node).
 - Both GPU nodes (cdv1, cdv3) were torn down at ~00:20Z.
+
+## 8. Where the `[/` comes from: teacher-forced probe (2026-11-17, coordinator follow-up)
+
+Hypothesis given: the encoder's view escapes reasoning delimiters to `[Reasoning]` / `[/Reasoning]`
+(`ac_model_utils._training_template_message`, `reasoning_as_text`), and the long-context reconstruction stage (target = that
+rendering) taught the pair to make the reader write `[/`.
+
+**(a) Is `[/Reasoning]` in the encoder input?** Yes (host CPU check; `render_with_part_sentinels` with the Qwen3.5-2B tokenizer).
+Every assistant message of the 75 dev-75 prefix files carries its reasoning inline, ending in `</think>` (1954 / 1954; no
+`<think>`, no reasoning field). The served AC part renders one `[/Reasoning]` per assistant message (first 10 prefixes: 258 / 258).
+The same holds for the stage-1 KL items (`s1kl_both_c20_v1`, first 200: 5334 / 5334) and the lcrec items (`lcrec_v1`, first 200:
+4986 / 4986). The lcrec reader targets hold `[/Reasoning]` 4986 times and `</think>` never. The KL targets (original
+continuations) hold `</think>` 4373 times and `[/Reasoning]` never.
+
+**(b) Teacher-forced log-probs.** `agent_eval/probe_think.py` (run by `dev75_node.sh probe` in the stage-1 code bundle's
+environment, node cdv4) scores the stage-1 dev-75 proxy panel with the trainer's own eval forward. That panel is the 75 original
+continuations: r5 = 4,000 rows, r10 = 2,000 rows, plus the pair-independent `none` view and the teacher's in-context view (`full`).
+At the 1478 positions whose gold is `</think>` and the 1478 whose gold is `<tool_call>`, it records the reader's log-probs
+(S3 `.../agent_eval_dev75/probe/`, tables in `IB/TMP/PRE_REBUTTAL/cmp_agent_eval/report/probe_*`):
+
+| pair | view | mean lp `</think>` | mean lp `[/` | % `[/` > `</think>` | % `[/` top-1 | mean lp `<tool_call>` | mean lp `[/` (call) | % `[/` > `<tool_call>` |
+|---|---|---|---|---|---|---|---|---|
+| frozen 9B | full (teacher's in-context view) | -0.085 | -7.83 | 2.8 | 2.8 | -0.110 | -23.80 | 0.0 |
+| frozen 9B | none | -0.036 | -18.90 | 0.0 | 0.0 | -0.030 | -24.15 | 0.0 |
+| R_res_rq9fr (start) | r5 / r10 | -0.069 / -0.054 | -18.01 / -18.30 | 0.0 / 0.0 | 0.0 / 0.0 | -0.045 / -0.039 | -23.73 / -23.98 | 0 / 0 |
+| S1_res_kl_both_c20 (KL, no lcrec) | r5 / r10 | -0.091 / -0.079 | -5.23 / -5.83 | 2.8 / 2.2 | 2.7 / 2.2 | -0.100 / -0.094 | -20.40 / -21.17 | 0 / 0 |
+| R_cmp_lcrec (recon only) | r5 / r10 | -0.038 / -0.036 | -18.36 / -18.52 | 0.0 / 0.0 | 0.0 / 0.0 | -0.031 / -0.025 | -23.59 / -23.83 | 0 / 0 |
+| S1_lcrec100_kl_both_c20 (lcrec, then KL) | r5 / r10 | -0.084 / -0.088 | -5.11 / -5.52 | 1.8 / 2.8 | 1.6 / 2.7 | -0.105 / -0.102 | -19.63 / -20.27 | 0 / 0 |
+
+By position of the `</think>` in the continuation (mean lp `[/`, % above `</think>`):
+
+| pair, view | 1st (n = 75) | 2nd–5th (279) | 6th–20th (738) | 21st+ (386) |
+|---|---|---|---|---|
+| full (teacher) | -1.43, 44.0 % | -5.13, 2.9 % | -7.76, 0.1 % | -11.16, 0.0 % |
+| R_res_rq9fr r5 | -13.31, 0 % | -17.61, 0 % | -18.27, 0 % | -18.73, 0 % |
+| R_cmp_lcrec r5 | -14.00, 0 % | -17.74, 0 % | -18.70, 0 % | -19.00, 0 % |
+| S1_res_kl_both_c20 r5 / r10 | -0.90, 54.7 % / -1.02, 44.0 % | -3.74, 0.4 % / -4.17, 0.0 % | -5.32 / -5.96, 0 % | -6.98 / -7.71, 0 % |
+| S1_lcrec100_kl_both_c20 r5 / r10 | -1.04, 30.7 % / -1.00, 45.3 % | -3.74, 1.1 % / -3.95, 2.5 % | -5.32 / -5.74, 0 % | -6.50 / -7.11, 0 % |
+
+**Reading.**
+- The hypothesis is not supported as stated. The recon-only pair puts no more mass on `[/` than the start pair or `none`.
+- Both KL stage-1 pairs do, with or without lcrec. The mass is largest at the first continuation turn, matching the agent arms'
+  first-turn garbles.
+- It matches the KL teacher. `prepare_training_history` renders every message before the first target with
+  `reasoning_as_text=True`, so the teacher's own in-context view of head + prefix shows each turn closed by `[/Reasoning]`. The
+  frozen 9B copies that at the first continuation turn (`[/` above `</think>` in 44 % of prefixes), and KL distils it into the
+  pair.
+- The agent eval's `full` arm is not this view: at serving it reads the recorded ids with a real `</think>` and had 0 garbles.
+- `[/` never outranks `<tool_call>` at call positions; the break is at the end of thinking, one token earlier.
+- Not checked: the stored teacher targets themselves (CSAIL/ORCD-made `.pt` files, not loaded) and the larger run.
