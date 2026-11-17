@@ -10,10 +10,14 @@ same loss on a shorter span: the first T tokens the run wrote after the cut. Ite
 info gains continuation_token_limit = T and target_tokens_full; target_tokens / assistant_turns are the kept ones
 (reader_tokens stays the untruncated teacher length).
 
-    python truncate_packet.py --packet PACKETS/<name> --tokens 4096 --out PACKETS/<name>_t4k
+    python truncate_packet.py --packet PACKETS/<name> [PACKETS/<name2> ...] --tokens 4096 --out PACKETS/<new name>
+Several --packet folders are merged first (their training items concatenated, in the order given; the trainer shuffles them with
+its seed): the retrain's phase A = the 16k, 20k and 24k packets (build_retrain_packets.sh), each item one (run, cut).
+Without --tokens the packets are only merged (items unchanged): the retrain's run M (2026-11-17, coordinator: no truncated phase A,
+truncation saved only ~1.3x) = s1kl_tv_c{16,20,24}_s012_v1 merged into s1kl_tv_c162024_s012_v1.
 
-Outputs: OUT/items.pkl, OUT/prepared.json (items sha256 / bytes updated, the rest copied), OUT/recipe.json (copied, plus
-"continuation_token_limit"), OUT/truncate.json (counts). prepared_examples.pkl is not copied (sec45_train reads items.pkl only).
+Outputs: OUT/items.pkl, OUT/prepared.json (the first packet's, with items sha256 / bytes / training_examples updated), OUT/recipe.json
+(the first packet's, plus "continuation_token_limit" and "merged_from"), OUT/truncate.json (counts). prepared_examples.pkl is not copied (sec45_train reads items.pkl only).
 """
 import argparse
 import copy
@@ -54,29 +58,36 @@ def truncate(item, limit: int):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--packet", type=Path, required=True); p.add_argument("--tokens", type=int, required=True); p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--packet", type=Path, nargs="+", required=True); p.add_argument("--tokens", type=int, default=None, help="T; omitted: merge only, no truncation"); p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
     if a.out.exists():
         raise SystemExit(f"{a.out} exists (packet names are never reused)")
-    with open(a.packet / "items.pkl", "rb") as f:
-        data = pickle.load(f)
-    if data.get("held"):
-        raise SystemExit("the packet has held items (stage-1 packets have none): not handled")
+    pool, sources = [], []
+    for packet in a.packet:
+        with open(packet / "items.pkl", "rb") as f:
+            data = pickle.load(f)
+        if data.get("held"):
+            raise SystemExit(f"{packet} has held items (stage-1 packets have none): not handled")
+        pool += data["train"]
+        sources.append({"packet": str(packet), "items": len(data["train"]), "items_sha256": hashlib.sha256((packet / "items.pkl").read_bytes()).hexdigest()})
+    if len({item.item_id for item in pool}) != len(pool):
+        raise SystemExit("duplicate item ids across the packets")
     items, full, kept, cut = [], 0, 0, 0
-    for item in data["train"]:
-        new, total, k = truncate(item, a.tokens)
+    for item in pool:
+        new, total, k = truncate(item, a.tokens) if a.tokens else (item, *[sum(len(ids) for ids in item.assistant_token_ids)] * 2)
         items.append(new); full += total; kept += k; cut += new is not item
     a.out.mkdir(parents=True)
-    blob = pickle.dumps({"train": items, "held": data.get("held", [])}, protocol=pickle.HIGHEST_PROTOCOL)
+    blob = pickle.dumps({"train": items, "held": []}, protocol=pickle.HIGHEST_PROTOCOL)
     (a.out / "items.pkl").write_bytes(blob)
-    prepared = json.loads((a.packet / "prepared.json").read_text())
-    prepared.update(items_sha256=hashlib.sha256(blob).hexdigest(), items_bytes=len(blob), prepared_examples_sha256=None,
-                    truncated_from=str(a.packet), continuation_token_limit=a.tokens)
+    prepared = json.loads((a.packet[0] / "prepared.json").read_text())
+    prepared.update(items_sha256=hashlib.sha256(blob).hexdigest(), items_bytes=len(blob), prepared_examples_sha256=None, training_examples=len(items),
+                    truncated_from=[str(x) for x in a.packet], continuation_token_limit=a.tokens)
     (a.out / "prepared.json").write_text(json.dumps(prepared, indent=2))
-    recipe = json.loads((a.packet / "recipe.json").read_text())
+    recipe = json.loads((a.packet[0] / "recipe.json").read_text())
     recipe["continuation_token_limit"] = a.tokens
+    recipe["merged_from"] = sources
     (a.out / "recipe.json").write_text(json.dumps(recipe, indent=2))
-    summary = {"source": str(a.packet), "source_items_sha256": hashlib.sha256((a.packet / "items.pkl").read_bytes()).hexdigest(),
+    summary = {"sources": sources,
                "continuation_token_limit": a.tokens, "items": len(items), "items_cut": cut, "target_tokens_full": full, "target_tokens_kept": kept,
                "kept_fraction": round(kept / max(1, full), 4), "items_sha256": prepared["items_sha256"]}
     (a.out / "truncate.json").write_text(json.dumps(summary, indent=2))

@@ -5,6 +5,8 @@
 # its meta.json), panel_dev75_tv/, proxy_ref_tv/ (when it exists), packets/<PACKET>/. Reader/encoder weights from the HF hub.
 # Spot reclaims: runs/<RUN>/ is restored from S3 before the job (recovery slot with optimizer.pt included), mirrored to S3 every 15 min
 # and at the end (S3X_ALLOW_OPTIMIZER=1), so a relaunch on a new node resumes (sec45_train --resume-if-possible).
+# CMP_TVCOMPARE=N (2026-11-17): before training, agent_eval/teacher_view_compare.py on the packet's first N runs (old escaped vs recorded
+# teacher view, read by the frozen reader: first-turn "[/" mass), -> runs/<RUN>/proxy/tvcompare.json.
 # The corrected dev-75 references, when this run computes them (CMP_REF missing on S3), go to S3 proxy_ref_tv/.
 set -uo pipefail
 RUN=${1:?RUN}; PACKET=${2:?PACKET}
@@ -44,6 +46,14 @@ up() {
     X putdir $W/proxy_ref_tv $S3C/proxy_ref_tv/ > /dev/null 2>&1; fi
 }
 ( while sleep 900; do up; done ) & LOOP=$!
+if [ -n "${CMP_TVCOMPARE:-}" ] && [ ! -f $D/proxy/tvcompare.json ]; then   # CMP_TVCOMPARE=N: old vs recorded teacher view on the packet's first N runs
+  mkdir -p $D/proxy; say "teacher_view_compare on the first $CMP_TVCOMPARE runs of $PACKET"
+  (export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0 \
+     QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0 \
+     HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONUNBUFFERED=1
+   cd $C && $PY $J/teacher_view_compare.py --pair $I/ac $I/reader --packet $PACKET=$P/items.pkl --out $D/proxy/tvcompare.json --limit $CMP_TVCOMPARE) \
+    > $D/logs/tvcompare.log 2>&1; say "teacher_view_compare exit $?"; up
+fi
 bash $J/cmp_stage1_job.sh $RUN $PACKET; RC=$?
 kill $LOOP 2>/dev/null; up
 say "exit $RC; run folder on $S3C/runs/$RUN/"
