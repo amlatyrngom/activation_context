@@ -31,6 +31,19 @@ Since 2026-11-09 agents work directly on the EC2 host `i-0918b8f73e9a0fe03` (t3.
   `--account=quanta --partition=quanta-h200 --qos=quanta-main` anyway; Slurm requeues them. Only jobs of our own group (`quanta-main`,
   same priority) cannot be preempted; never scancel other users' jobs. `quanta-gh200` admits `quanta-main` only. Our own shared-tier
   jobs (`csail-shared-h200`) are preemptible in the same way (keep resumable checkpoints).
+- **User preference — CSAIL is a standing GPU source, rechecked for the whole run (user, 2026-11-17; repeated about ten times in a
+  month).** One look at CSAIL is never "CSAIL is unavailable".
+  - In every GPU plan, list CSAIL per node: `squeue -w quanta-h200-1` and `squeue -w quanta-gh200-[1-4]` with
+    `-O JobID,UserName,QOS,tres-alloc`. GPUs held by `shared-if-available`/`lab-free` jobs are ours to take; only our group's
+    `quanta-main` jobs are not.
+  - Under any long green light (hours to days), keep rechecking CSAIL while the work runs, e.g. at every watcher wake-up and at
+    least every ~2 h, and move or add work there as GPUs free, to raise parallelism. A free GPU later in the run counts as much as
+    one at the start.
+  - Resumable training jobs may also wait in the `quanta-main` queue, so Slurm starts them when a GPU frees; cancel them by id if the
+    work finishes elsewhere first.
+  - GH200 (aarch64) is solved, not a blocker: `sec35/jobs/job_template.sh` switches to an aarch64 venv (`gh200_v1`) on GH200, and
+    past GH200 runs worked well. A new job builds its fresh aarch64 venv from `uv.lock` the same way (CSAIL incident rule).
+  - Put this rule in the brief of every agent that plans or watches GPUs.
 - **User preference — Free our cluster scratch when needed (2026-11-09).** CSAIL `/data/scratch-fast` is often 100 % full; our
   `/data/scratch-fast/ngom` held 856 GB on 2026-11-09. Delete old run data whenever space is needed, after checking it is on S3
   (relay through this host: clusters have no S3 credentials) or was already superseded.
