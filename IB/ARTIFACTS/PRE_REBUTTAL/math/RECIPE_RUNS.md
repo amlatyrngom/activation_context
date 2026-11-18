@@ -122,3 +122,10 @@ was read from the file named next to it.
   selected → **2,229 items, 1,251 problems, 278 updates**, target tokens median **2,800** (p90 5,496, max 22,783). Staged on ORCD and
   CSAIL; S3 `math/recipe/packets/`. Each ratio's stage 2 starts from its own stage-1 final.
 - 07:32Z `M_s1_r5` was preempted on ORCD and resumed (requeue) from its update-50 recovery slot (`sync/M_s1_r5.resumes.jsonl`).
+- 08:4xZ `M_s1_r5` (29502601) cancelled after two preemptions that both resumed from its u50 slot. Each resume first recomputes an
+  unlogged ~18 min baseline panel, then the u71 panel, so ~67 min between preemptions never reached the u100 slot. It was restarted
+  fresh as **`M_s1_r5b`** (ORCD 29519172 + CSAIL copies): identical except a recovery slot every 25 updates. Checked against
+  `sec45_train.py` (coordinator's question): a resume refuses any argument change except `--seconds` / `--resume-if-possible`, so the
+  slot interval cannot change on a resume. There is no launch flag to skip the resume baseline panel (`resume_baseline`, always
+  computed and not logged). `--held-panel N` exists but is fixed at the first attempt like every other argument. Both would be code
+  changes, so neither was made. Every new run (stage 2, the evals) uses a slot every 25 updates from its first attempt.
