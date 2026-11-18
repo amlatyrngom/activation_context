@@ -13,8 +13,8 @@ L=IB/TMP/PRE_REBUTTAL/cmp_agent_eval; LOG=$L/eval_scheduler_$NODE.log
 say() { echo "$(date -u +%FT%TZ) $*" >> $LOG; }
 SKY="uv tool run --no-config --python 3.13 --with pip --from skypilot[aws]==0.13.0 sky"
 # training runs: LABEL RUN ARMS ; points every 200 updates + final
-RUNS=("M S1_tv_kl_both_c162024_s012 ac_4000,ac_2000" "R10 S1_tv_kl_r10_c162024_s012 ac_2000" "R5 S1_tv_kl_r5_c162024_s012 ac_4000")
-POINTS_M="1120"; POINTS_PR="200 400 600 800 1000 1200"
+# runs and points come from eval_runs.txt (re-read before every job): "LABEL RUN ARMS POINT..." per line, "#" comments
+RUNS_FILE=$AE/eval_runs.txt
 done_all() { local tag=$1 v; for v in ${2//,/ }; do aws s3 ls $S3E/${tag}_$v/DONE > /dev/null 2>&1 || return 1; done; }
 slot_ok() { aws s3 ls $S3R/$1/sync/AC_MODELS/rag_poc/epoch_001_step_$(printf %05d $2)/ac_modules.pt > /dev/null 2>&1 && \
             aws s3 ls $S3R/$1/sync/LORAS/rag_reader/epoch_001_step_$(printf %05d $2)/adapter_model.safetensors > /dev/null 2>&1; }
@@ -23,11 +23,11 @@ node_idle() { local q; q=$(timeout 300 $SKY queue $NODE 2>/dev/null) || return 0
   ! echo "$q" | grep -qE " (RUNNING|PENDING|SETTING_UP|STARTING) "; }
 next_job() {   # prints "DEVSET TAG VARIANTS AGENTS PAIR SEED" or nothing
   local cand=() r label run arms u name tag s
-  for r in "${RUNS[@]}"; do read -r label run arms <<< "$r"
-    local pts=$POINTS_PR; [ $label = M ] && pts=$POINTS_M
+  while read -r label run arms pts; do
+    [ -z "$label" ] && continue; [ "${label:0:1}" = "#" ] && continue
     for u in $pts; do cand+=("$u $label $run $arms u$u"); done
     final_ok $run && cand+=("99999 $label $run $arms fin")
-  done
+  done < $RUNS_FILE
   while read -r u label run arms pt; do
     [ -z "$u" ] && continue
     if [ $pt = fin ]; then name=$run; else name=EVALSNAP_${label,,}_$pt; [ $label = M ] && name=EVALSNAP_M_$pt; fi

@@ -1,0 +1,5 @@
+# LABEL RUN ARMS POINTS (updates; every final is added when it lands). Tags: cdv1ev<LABEL>u<U>_s<seed> / cdv1ev<LABEL>fin_s<seed>
+M S1_tv_kl_both_c162024_s012 ac_4000,ac_2000 1120
+R10 S1_tv_kl_r10_c162024_s012 ac_2000 200 400 600 800 1000 1200
+R5 S1_tv_kl_r5_c162024_s012 ac_4000 200 400 600 800 1000 1200
+# S2M S2_ce_Mfin_r10_c20_s012 ac_2000 200 400      (add when the run starts, ~07Z 11-19)
