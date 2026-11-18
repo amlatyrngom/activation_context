@@ -224,6 +224,10 @@ def main() -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--r", type=float, default=None, help="stage1/stage2: the packet's one ratio (0.1 or 0.2)")
     p.add_argument("--gen", type=Path, help="synth_gen.py output folder (stage1/stage2: train; panel: dev)")
+    p.add_argument("--gen-extra", type=Path, default=None,
+                   help="stage2 hard8 (2026-11-18): a second synth_gen folder with more teacher samples (seeds 3-7) of the training problems at "
+                        ">= --extra-min-difficulty; they join the selection of those problems only (the others keep their 3 samples)")
+    p.add_argument("--extra-min-difficulty", type=float, default=8.5)
     p.add_argument("--arm", default=None, help="the synth_gen arm to read (default: every arm in --gen)")
     p.add_argument("--within", type=float, default=1.3, help="stage2: keep correct samples up to this multiple of the shortest")
     p.add_argument("--held", type=int, default=50, help="lcrec: dev runs in the reconstruction panel")
@@ -261,6 +265,18 @@ def main() -> int:
         assert a.r in (0.1, 0.2) and a.gen, "--r 0.1|0.2 and --gen"
         train = load_problems("train")
         samples = [s for s in load_gen(a.gen, a.arm) if s["task_id"] in train]
+        assert all(s["seed"] in (0, 1, 2) for s in samples), "--gen holds the three base samples (seeds 0-2)"
+        if a.gen_extra:
+            assert a.phase == "stage2", "--gen-extra is a stage-2 option"
+            extra = [s for s in load_gen(a.gen_extra) if s["task_id"] in train]
+            assert all(s["seed"] >= 3 for s in extra), "--gen-extra holds seeds >= 3 only"
+            assert all(float(train[s["task_id"]]["difficulty"]) >= a.extra_min_difficulty for s in extra), "an extra sample below the difficulty floor"
+            hard = {t for t in train if float(train[t]["difficulty"]) >= a.extra_min_difficulty}
+            per = Counter(s["task_id"] for s in extra)
+            report["extra"] = {"folder": str(a.gen_extra), "samples": len(extra), "problems": len(per), "hard_problems": len(hard),
+                               "hard_problems_without_extra": len(hard - set(per)), "samples_per_problem": dict(Counter(per.values())),
+                               "finish": dict(Counter(s["finish"] for s in extra))}
+            samples += extra
         prompts = {r["task_id"]: r["prompt_token_ids"] for r in map(json.loads, open(DATA / "prompts_train.jsonl")) if r["condition"] == "full"}
         by_task: dict = {}
         for s in samples:
@@ -280,6 +296,15 @@ def main() -> int:
                     keep = [s for s in good if s["generated_tokens"] <= a.within * good[0]["generated_tokens"]]
                     chosen += keep
                     kept_by_k[str(len(keep))] += 1
+            if a.gen_extra:                                       # problems with >= 1 correct sample: out of the 3 base samples vs out of all, by band
+                bands = {}
+                for task_id in tasks:
+                    band = "d8.5" if float(train[task_id]["difficulty"]) == 8.5 else ("ge9" if float(train[task_id]["difficulty"]) >= 9 else "lt8.5")
+                    ok3 = any(correct(s) for s in by_task[task_id] if s["seed"] <= 2)
+                    okall = any(correct(s) for s in by_task[task_id])
+                    b = bands.setdefault(band, {"problems": 0, "correct_of_3": 0, "correct_of_all": 0, "samples": 0})
+                    b["problems"] += 1; b["correct_of_3"] += ok3; b["correct_of_all"] += okall; b["samples"] += len(by_task[task_id])
+                report["bands"] = bands
             report["selection"] = {"rule": f"per problem: the shortest correct sample (lenient parse, math-verify) and every other correct one within {a.within}x its generated tokens",
                                    "correct_samples": n_correct, "problems_with_a_correct_sample": sum(kept_by_k.values()), "problems_by_kept_count": dict(kept_by_k)}
         label = "r10" if a.r == 0.1 else "r5"

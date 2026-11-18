@@ -219,3 +219,15 @@ was read from the file named next to it.
   Stage 2 − results 0.00 pts (CI −2.50 to +2.67; 15 / 15). Stage 2 − full −0.50 pts (CI −2.33 to +1.50; 11 / 14, p 0.69).
   Stage 2 − stage 1 −1.17 pts (CI −3.00 to +0.67; 9 / 16, p 0.23). Stage 2 shortens the syntheses (median 2,742 vs 3,274 tokens)
   without a significant accuracy change. Its dev proxy improved (0.915 vs 0.816), but dev accuracy did not.
+- 21:30Z **goal update** (coordinator, from the user): raise the solve rate on hard problems without a reader LoRA. MVP: AC clearly
+  above results-only at ≥9. Two parallel lines:
+  - **dev_hard** (`make_dev_hard.py`): `tqa_math_dev_hard_v1`, 180 fresh DeepMath problems (d8.5 80, d9 96, d9.5 4; seed 20261118;
+    sample sha256 224ba6de…). 0 shared ids and question texts with train / dev / dmext / dmhard / the teacher test (asserted). Also
+    excluded: every DeepMath sample.json, at3, `excluded_tasks_m1`, and 1,456 hard ids scanned in PAPER_TRAJ_QA and the math folders.
+    No unused hard problem had solver runs (all 1,063 train ≥8.5 problems are in train), so the 3 × 9B solver runs are being
+    generated (`kit/run_tqa_solve_v2.py`, the dmhard setup). They need the Podman sandbox: none on ORCD (probe 29570145), so they run
+    on the coordinator's Sky node dvA as sky job 19 (`devhard_launch.sh` / `devhard_solve_node.sh`; S3 mirror every 5 min, resumable).
+  - **stage 2 hard8**: 5 more teacher samples (seeds 3–7, same 9B / prompt / sampler / caps) for the 1,063 training problems at ≥8.5
+    (`data/tasks_train_ge85.json`: d8.5 791, d9 261, d9.5 10, d10 1). ORCD `mgen_h8_0..3` 29573151 / 29573157 / 29573162 /
+    29573164 (bundle `math_code_v6`, nice 1000, two at a time: the r5 chain goes first). Packet `m_s2_hard8_v1` per ratio
+    (`build_packets.py stage2 --gen-extra`): ≥8.5 problems select over all 8 samples, the others keep their 3.
