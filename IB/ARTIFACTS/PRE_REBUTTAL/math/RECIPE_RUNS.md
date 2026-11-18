@@ -113,3 +113,12 @@ was read from the file named next to it.
 | M_s1_r10 | 0 | 0.7137 | 0.2780 | 0.7919 | −0.876 |
 | M_s1_r10 | 71 | 0.4384 | 0.0424 | 0.8492 | 0.717 |
 | M_s1_r5 | 0 | 0.7465 | 0.3068 | 0.7867 | −1.066 |
+- Stage-2 packets (`packets/m_s2_r{10,5}_v1/build.json`; built on CPU from the same 4,500 teacher samples, before stage 1 ends) match
+  the coordinator's stage-2 spec: plain CE on the selected teacher continuations, reader frozen, the stage-1 trainer settings, one pass;
+  per training problem only correct samples (finish stop, lenient parse, math-verify = the teacher-test scorer), the shortest plus every
+  other within 1.3× its generated tokens; problems without a correct sample dropped; only the 1,500 training problems are read (dev and
+  test excluded by the asserted split disjointness). One addition: the trainer's 72,000-token guard drops 26 selected items (14 problems).
+  Counts (same for r10 and r5): 3,661 correct samples; 1,265 problems with a correct sample (kept 1 / 2 / 3: 535 / 470 / 260) → 2,255
+  selected → **2,229 items, 1,251 problems, 278 updates**, target tokens median **2,800** (p90 5,496, max 22,783). Staged on ORCD and
+  CSAIL; S3 `math/recipe/packets/`. Each ratio's stage 2 starts from its own stage-1 final.
+- 07:32Z `M_s1_r5` was preempted on ORCD and resumed (requeue) from its update-50 recovery slot (`sync/M_s1_r5.resumes.jsonl`).
