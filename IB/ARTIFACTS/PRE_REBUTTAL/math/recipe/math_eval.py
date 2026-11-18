@@ -46,6 +46,11 @@ def main() -> int:
     p.add_argument("--gpu-memory-utilization", type=float, default=0.9,
                    help="engine share before the harness lowers it by its AC side reservation (0.1); 0.9 for the text baselines, an AC arm on a 96 GB RTX PRO 6000 needs less (2026-11-18: 0.8 effective OOMed in the AC encode)")
     p.add_argument("--label", default="")
+    p.add_argument("--encode-batch-tokens", type=int, default=0,
+                   help="the AC model's encode_batch_max_tokens (side tokens per padded encode batch); 0 keeps its default (65,536)")
+    p.add_argument("--empty-cache-every", type=int, default=0, help="torch.cuda.empty_cache() after every N finished requests (0: never)")
+    p.add_argument("--mem-census", action="store_true",
+                   help="leak diagnosis: after every finished request, a gc census of the live CUDA tensors (count, GiB, top shapes) in mem.jsonl")
     a = p.parse_args()
     kit = os.environ.get("SEC45_KIT")
     if kit:
@@ -74,7 +79,8 @@ def main() -> int:
     replica = loaded.vllm_model.replicas[0].engine
     meta = {"label": a.label, "pair": a.pair, "host": socket.gethostname(), "sampling": SAMPLING, "max_tokens": a.max_tokens, "max_model_len": a.max_model_len,
             "engine_architecture": list(replica.model_config.architectures), "inputs_embeds_size": replica.model_config.get_inputs_embeds_size(),
-            "hf_overrides": engine.get("hf_overrides"), "gpu_memory_utilization": engine.get("gpu_memory_utilization"), "enable_lora": engine.get("enable_lora"), "engine_load_seconds": round(time.time() - clock, 1)}
+            "hf_overrides": engine.get("hf_overrides"), "gpu_memory_utilization": engine.get("gpu_memory_utilization"), "enable_lora": engine.get("enable_lora"), "engine_load_seconds": round(time.time() - clock, 1),
+            "concurrency": a.concurrency, "encode_batch_tokens": a.encode_batch_tokens, "empty_cache_every": a.empty_cache_every, "mem_census": a.mem_census}
     try:
         import torch
         meta["gpu"] = torch.cuda.get_device_name(0)
@@ -100,12 +106,50 @@ def main() -> int:
         return config
 
     lock = threading.Lock()
+    mem_path = a.out / "mem.jsonl"
+    state = {"finished": 0, "ac_set": False}
+
+    def memory(ac_model) -> dict:
+        """This (encoder) process's CUDA memory after a finished request: allocated / reserved / peak since the last record (GiB);
+        with --mem-census the live CUDA tensors (gc), deduplicated by storage."""
+        import torch
+        gib = 2 ** 30
+        out = {"alloc_gib": round(torch.cuda.memory_allocated() / gib, 3), "reserved_gib": round(torch.cuda.memory_reserved() / gib, 3),
+               "peak_gib": round(torch.cuda.max_memory_allocated() / gib, 3)}
+        torch.cuda.reset_peak_memory_stats()
+        if ac_model is not None:
+            out["row_cache_gib"] = round(ac_model.cache.total_bytes / gib, 3)
+            out["row_cache_entries"] = len(ac_model.cache.entries)
+            if ac_model.queue is not None:
+                out["queue_batches"], out["queue_requests"] = ac_model.queue.batches, ac_model.queue.requests
+        if a.mem_census:
+            import gc
+            from collections import Counter
+            seen, shapes, total = set(), Counter(), 0
+            for obj in gc.get_objects():
+                try:
+                    if not (torch.is_tensor(obj) and obj.is_cuda):
+                        continue
+                    storage = obj.untyped_storage()
+                    if storage.data_ptr() in seen:
+                        continue
+                    seen.add(storage.data_ptr())
+                    total += storage.nbytes()
+                    shapes[f"{tuple(obj.shape)} {str(obj.dtype).removeprefix('torch.')}"] += storage.nbytes()
+                except Exception:  # noqa: BLE001 - objects that fail is_tensor / storage access
+                    continue
+            out["census"] = {"tensors": len(seen), "gib": round(total / gib, 3),
+                             "top": [[shape, round(size / gib, 3)] for shape, size in shapes.most_common(8)]}
+        return out
 
     def one(problem: dict, arm: str, seed: int, handle) -> str:
         started = time.time()
         room = a.max_model_len - (len(problem["prompts"]["full"]["ids"]) if arm == "full" else 0) - 8
         max_tokens = min(a.max_tokens, room) if arm == "full" else a.max_tokens
         agent = Agent(h, config_for(problem, arm, seed, max_tokens), seed=seed)
+        if a.encode_batch_tokens and agent.ac_model is not None and not state["ac_set"]:
+            agent.ac_model.config.encode_batch_max_tokens = a.encode_batch_tokens
+            state["ac_set"] = True
         agent.step_mode = True
         agent.begin()
         if arm in ("results", "full") and agent.prefix != problem["prompts"][arm]["ids"]:
@@ -117,9 +161,19 @@ def main() -> int:
                "parts": len(agent.spans), "max_tokens": max_tokens, "generated_tokens": output.output_token_count, "finish": str(output.finish_reason),
                "text": output.text, "token_ids": list(output.token_ids), "cached_prompt_tokens": output.cached_prompt_token_count,
                "seconds": round(time.time() - started, 1)}
+        ac_model = agent.ac_model
+        del agent, output
         with lock:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
             handle.flush()
+            state["finished"] += 1
+            if a.empty_cache_every and state["finished"] % a.empty_cache_every == 0:
+                import torch
+                torch.cuda.empty_cache()
+            mem = {"n": state["finished"], "id": row["id"], "rows": rows, "t": round(time.time(), 1), **memory(ac_model if arm in RATIOS else None)}
+            with open(mem_path, "a") as f:
+                f.write(json.dumps(mem) + "\n")
+            print(f"math_eval - mem {json.dumps(mem)}", flush=True)
         return row["id"]
 
     try:

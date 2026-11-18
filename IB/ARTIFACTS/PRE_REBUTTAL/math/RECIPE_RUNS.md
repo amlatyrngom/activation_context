@@ -169,3 +169,23 @@ was read from the file named next to it.
   (afterok r5c); evals (v4, util 0.75, concurrency 32 for r10 / 24 for r5): `meval_s1_r10` 29555711 (+ CSAIL H200 copy 3117645),
   `meval_s1_r5` 29555721, `meval_s2_r10` 29555727, `meval_s2_r5` 29555736. Earlier eval tries: 29550751 OOMed after 29 rows at
   concurrency 96: the AC rows and deltas of in-flight requests sit on the GPU, hence the concurrency cap.
+- 17:58Z `meval_s1_r10` 29555711 OOMed again in the AC encode after 4 more rows (33 in the file; the encoder process held 28.8 GiB
+  allocated, the engine 62.29 GiB). 18:28Z all evals were resubmitted on v4 with `MATH_GPU_UTIL=0.55` (0.45 effective) and concurrency 16
+  (r10) / 12 (r5): `meval_s1_r10` 29559462 (CSAIL H200 copy 3118211 cancelled by the arbiter, ORCD started first), `meval_s1_r5`
+  29559463, `meval_s2_r10` 29559464, `meval_s2_r5` 29559465 (afterok as before). By 19:00Z 29559462 had 337/600 rows and no OOM.
+- 18:40Z **leak check** (the coordinator suspected a leak in the encoder process). `math_eval.py` (bundle `math_code_v5`) logs this
+  process's CUDA memory after every finished request to `<out>/mem.jsonl`: allocated, reserved and the peak since the last record.
+  `--mem-census` adds a gc census of the live CUDA tensors. New knobs: `--encode-batch-tokens` (the AC model's
+  `encode_batch_max_tokens`, default 65,536) and `--empty-cache-every`. Two ORCD runs on `M_s1_r10` final, 10 dev problems x 3 seeds,
+  max_tokens 1,024, util 0.55, concurrency 16 (`eval/memtest_r10*`, not part of any result):
+  - default (29559833): allocated after request 1 5.697 GiB, after request 30 5.890 GiB. In between it rose to 9.4 GiB at most and
+    fell back. The census shows the extra was the fp32 rows and deltas of the last encode batch (e.g. (2459, 4096) float32 x 9),
+    which the encode-queue thread references until its next batch. Peak 22.17 GiB (one encode batch); reserved grew to 24.72 GiB
+    and stayed there (caching allocator).
+  - encode budget 32,000 + empty_cache after every request (29559834): allocated 5.697 → 5.721 GiB; at most 14.7 GiB in between;
+    peak 18.13 GiB; reserved 15.64 GiB at most, back to 5.93 GiB.
+  - Verdict: **no per-request growth** (+0.19 GiB over 30 requests in the default run, ≈6 MiB per request; +0.02 GiB with the fix).
+    Memory returns to the baseline once the encodes are done. The OOMs came from per-encode-batch peaks: a padded multi-input batch
+    up to 65,536 side tokens, plus the previous batch's GPU outputs still held, plus allocator caching. At 0.65 effective
+    utilization this exceeded the ~25 GB the encoder had; at 0.45 effective it fits. The running and queued evals keep v4 at 0.55,
+    so every AC arm uses the same settings.

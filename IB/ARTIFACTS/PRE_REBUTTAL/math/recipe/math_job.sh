@@ -126,7 +126,8 @@ eval)
     || { export PYTHONPATH=$PYTHONPATH:$C/ep; say $NAME "vLLM plugin entry point from the bundle (ep/)"; }
   say $NAME "start on $(hostname) job $JOB GPU '$GPU' pair $PAIR arms $ARMS inputs $INPUTS seeds $SEEDS"
   MAX_JOBS=3 $PY $C/math/math_eval.py --inputs $W/data/$INPUTS --pair $PAIR/ac $PAIR/reader --arms $ARMS --seeds $SEEDS --out $O --label $NAME \
-    ${MATH_EVAL_LIMIT:+--limit $MATH_EVAL_LIMIT} ${MATH_EVAL_CONC:+--concurrency $MATH_EVAL_CONC} ${MATH_GPU_UTIL:+--gpu-memory-utilization $MATH_GPU_UTIL}
+    ${MATH_EVAL_LIMIT:+--limit $MATH_EVAL_LIMIT} ${MATH_EVAL_CONC:+--concurrency $MATH_EVAL_CONC} ${MATH_GPU_UTIL:+--gpu-memory-utilization $MATH_GPU_UTIL} \
+    ${MATH_MAX_TOKENS:+--max-tokens $MATH_MAX_TOKENS} ${MATH_ENC_TOKENS:+--encode-batch-tokens $MATH_ENC_TOKENS} ${MATH_EMPTY_CACHE:+--empty-cache-every $MATH_EMPTY_CACHE} ${MATH_MEM_CENSUS:+--mem-census}
   RC=$?; say $NAME "exit $RC; $(for f in $O/gen_*.jsonl; do echo -n "$(basename $f) $(wc -l < $f) "; done)"; exit $RC;;
 *) echo "unknown mode $MODE"; exit 2;;
 esac
