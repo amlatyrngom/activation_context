@@ -35,8 +35,10 @@ mkdir -p $W/logs $W/runs $W/gen
 say() { echo "$(date -u +%FT%TZ) [math $MODE ${1:-}] ${*:2}"; }
 [ -f $C/MANIFEST.json ] || { echo "bundle $C missing"; exit 2; }
 export HF_HOME=$HF PYTHONUNBUFFERED=1 TZ=UTC TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
-mkdir -p $W/cache/$JOB/triton $W/cache/$JOB/inductor $W/cache/$JOB/vllm $W/cache/$JOB/xdg
-export TRITON_CACHE_DIR=$W/cache/$JOB/triton TORCHINDUCTOR_CACHE_DIR=$W/cache/$JOB/inductor VLLM_CACHE_ROOT=$W/cache/$JOB/vllm XDG_CACHE_HOME=$W/cache/$JOB/xdg
+# per-job JIT caches: on ORCD node-local /tmp (2026-11-18: the shared scratch quota filled; caches piled up per job), removed at exit
+if [ $CSAIL = 0 ] && [ -d /home/ngom/orcd/scratch/activation ] && [ -d /tmp ] && [ -w /tmp ]; then JC=/tmp/ngom_math_$JOB; trap 'rm -rf $JC' EXIT; else JC=$W/cache/$JOB; fi
+mkdir -p $JC/triton $JC/inductor $JC/vllm $JC/xdg
+export TRITON_CACHE_DIR=$JC/triton TORCHINDUCTOR_CACHE_DIR=$JC/inductor VLLM_CACHE_ROOT=$JC/vllm XDG_CACHE_HOME=$JC/xdg
 [ $CSAIL = 1 ] && export PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH=$C:$C/kit:$C/rq_kit:$C/bench:$C/math CQA_BENCH=$C/bench SEC45_RQ_KIT=$C/rq_kit SEC45_KIT=$C/kit RQ_THINKING=0
 export QA4B_READER=Qwen/Qwen3.5-9B QA4B_SIDE=Qwen/Qwen3.5-2B QA4B_RANK=128 SEC45_ENCODER=Qwen/Qwen3.5-2B SEC45_RES_LAYERS=all SEC45_LINEAR_SKIP=1 QA4B_KV=0

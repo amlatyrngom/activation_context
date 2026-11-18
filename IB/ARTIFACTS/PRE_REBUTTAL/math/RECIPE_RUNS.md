@@ -159,3 +159,13 @@ was read from the file named next to it.
   `meval_s1_r5` 29550752, `meval_s2_r10` 29550754, `meval_s2_r5` 29550755 (afterok as before); v3 29547301–03 cancelled.
 - Panels: `M_s1_r5c` u351 (64) NLL 0.4035, KL 0.0227, gap closed 0.862. `M_s2_r10` (stage 2, sft; 64-subset panel scored on the
   teacher's seed-0 dev syntheses) u0 NLL 0.4123 (gap 0.818), u70 0.4015 (gap 0.875).
+- 17:21–17:23Z **ORCD scratch quota full** (per-user ≈1.0 TB, invisible to df; ROOT_CANON "Quotas you cannot see"): `M_s1_r5c` died
+  writing its u400 slot, `M_s2_r10` its u140 slot, `meval_s1_r10` 29552238 at vLLM's compile-cache write; the afterok dependents
+  were dropped. Cleanup (rm of my own items): every per-job JIT cache under `math1/cache/`, the abandoned `runs/M_s1_r5`,
+  `runs/M_s1_r5b` (slots on S3 via the relay). Usage job 29554981 (`orcd_usage_job.sh`, CPU sbatch): scratch total **796 GB**
+  (activation 731, hf 41, venvs 9) → ≈200 GB headroom; published slots intact: `M_s1_r5c` u380 and `M_s2_r10` u120 (record =
+  directory, every .pt / .safetensors loads). From now on the jobs keep their JIT/compile caches on node-local `/tmp` (removed at
+  exit), training included. Resumed with identical arguments: `M_s1_r5c` 29555707, `M_s2_r10` 29555708; `M_s2_r5` 29555709
+  (afterok r5c); evals (v4, util 0.75, concurrency 32 for r10 / 24 for r5): `meval_s1_r10` 29555711 (+ CSAIL H200 copy 3117645),
+  `meval_s1_r5` 29555721, `meval_s2_r10` 29555727, `meval_s2_r5` 29555736. Earlier eval tries: 29550751 OOMed after 29 rows at
+  concurrency 96: the AC rows and deltas of in-flight requests sit on the GPU, hence the concurrency cap.
