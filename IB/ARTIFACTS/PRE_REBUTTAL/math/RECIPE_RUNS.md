@@ -244,3 +244,8 @@ was read from the file named next to it.
   29574844 (afterok `M_s2_r5`). AC arms at util 0.55, concurrency 16 (r10) / 12 (r5). Teacher-test path (`synth_gen.py`, plain
   vLLM): `mgenh_tg27` 29574830 (unsloth/Qwen3.8-27B-NVFP4, full) and `mgenh_tg9` 29574828 (9B, full), so 27B − 9B is paired
   within one code path.
+- 22:38Z **dev eval, stage 1 r5** (`meval_s1_r5` 29559463, 600/600, all "stop"; `scores/dev_s1_r5.json`, `dev_s1_r5_vs_full.json`):
+  **82.67%** (83.0 / 82.5 / 82.5), gen tokens median 3,112 / mean 3,527, prompt max 12,581. r5 − results +0.83 pts (CI −1.17 to
+  +3.00; 14 / 9, p 0.40). r5 − full +0.33 pts (CI −1.50 to +2.33; 13 / 11, p 0.84). vs majority 24 / 14 (p 0.14). Gap closed (single →
+  any) 0.558. Like r10 stage 1 (83.00), it matches the full-runs teacher on dev.
+- ~22:50Z `M_s2_r5` (29555709) was preempted at about u56 and requeued (PENDING, Resources); it resumes from its latest slot.
