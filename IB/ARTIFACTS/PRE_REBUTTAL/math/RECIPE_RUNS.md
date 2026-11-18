@@ -72,3 +72,34 @@ was read from the file named next to it.
   was at 101 / 560 at the same s/update, so ORCD won and 3099930 was cancelled at 6 / 560.
 - `M_lcrec` panel (`runs/M_lcrec/logs/train_29464051.log`, held nll per token r10 / r5): u0 0.2401 / 0.3170, u51 0.0222 / 0.0069,
   u101 0.0212 / 0.0058 (token accuracy 0.9391 → 0.9954).
+- 23:10Z–00:28Z teacher samples done (`gen_in/teacher_train/`, 4 × 1,125 = 4,500, all finish stop; `gen_in/teacher_dev/`, 200, seed 0).
+  Dev proxy panel `m_dev_panel_v1` (`panel.json`): 196 problems × {r10, r5, none} (4 dropped: teacher view over 72k tokens).
+- 00:46Z proxy reference (`proxyref_in/proxy_ref_mdev.json`, `R_res_rq9fr_final`, 588 items): NLL per token full 0.3895, results-only
+  0.5623, AC r10 0.5912, AC r5 0.6283 → gap closed r10 −0.167, r5 −0.382 (the FineWeb start is worse than results-only).
+- 00:37Z stage-1 packets (`packets/m_s1_r{10,5}_v1/build.json`): 4,431 items of 4,500 each (69 dropped: student history over 72,000
+  tokens), 1,478 problems, target tokens median 3,332 / p90 6,889 / max 27,032, **553 updates**; r5: 389 parts clamped at 4,096 rows.
+  (Session note: the host-side watcher did not wake this agent; ~4.5 h idle until 05:02Z.)
+- 02:05Z `M_lcrec` done (ORCD 29464051; 560 updates, 25.57 s effective per update, peak 63.3 GB). Held panel (100 dev runs) nll per token:
+
+| update | r10 | r5 | all | token accuracy |
+|---|---|---|---|---|
+| 0 | 0.2401 | 0.3170 | 0.2785 | 0.9391 |
+| 101 | 0.0212 | 0.0058 | 0.0135 | 0.9954 |
+| 301 | 0.0129 | 0.0023 | 0.0076 | 0.9974 |
+| 560 | 0.0074 | 0.0010 | 0.0042 | 0.9986 |
+
+  Final = `init/R_math_lcrec_final` (host copy sha256-checked against ORCD; S3 `math/recipe/init/`), staged on ORCD and CSAIL.
+- Dev text baselines (`scores/dev_baselines.json`, math_eval.py, 200 problems × seeds 0–2, the untuned 9B):
+
+| arm | solved % | per seed | generated tokens median / mean | length stops |
+|---|---|---|---|---|
+| results-only | 81.83 | 81.5 / 82.0 / 82.0 | 13,983 / 16,112 | 3 |
+| full runs | 82.33 | 83.0 / 81.5 / 82.5 | 3,021 / 3,480 | 0 |
+| single solver | 77.83 | | | |
+| majority of 3 | 81.00 | | | |
+| any of 3 | 86.50 | | | |
+
+  full − results +0.50 (95 % CI −1.83 to +2.67, sign test p 0.69).
+- 05:1xZ stage 1 submitted from `R_math_lcrec_final` (KL, reader frozen, encoder 5e-5, warm-up 50, cosine, batch 8, one pass = 553
+  updates; dev panel every 70 updates, recovery slot every 50): ORCD `M_s1_r10` 29502600, `M_s1_r5` 29502601; CSAIL quanta-main
+  H200 + GH200 copies (arbiter: first to start wins). `mproxy_lcrec` 29502603 = the gap closed of `M_lcrec` final.
