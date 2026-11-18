@@ -234,3 +234,36 @@ By position of the `</think>` in the continuation (mean lp `[/`, % above `</thin
 - The agent eval's `full` arm is not this view: at serving it reads the recorded ids with a real `</think>` and had 0 garbles.
 - `[/` never outranks `<tool_call>` at call positions; the break is at the end of thinking, one token earlier.
 - Not checked: the stored teacher targets themselves (CSAIL/ORCD-made `.pt` files, not loaded) and the larger run.
+
+## 9. Run F (corrected teacher view) on dev-75 (2026-11-18)
+
+`S1_tv_kl_both_c20_s012` final (stage 1 with the recorded-token teacher view, 558 updates from `R_cmp_lcrec_final`), AC arms
+ac_4000 / ac_2000, seeds 2–4, 24 agents on s1sm1 (g7e.2xlarge), tags `cdv1tvF_s{2,3,4}`; same settings as §6 otherwise. Text arms
+are the existing `cdv1base_s{2,3,4}`. `report.py` output: `IB/TMP/PRE_REBUTTAL/cmp_agent_eval/reportF/report_F.json`
+(continuation tokens with report.py's budget rule: an unanswered run counts as the whole budget).
+
+| arm | solved % | answered % | mean continuation tokens | finish reasons |
+|---|---|---|---|---|
+| full | 75.56 | 93.8 | 15,795 | submitted 211, max_tool_errors 11, budget 3 |
+| summary (uncapped) | 70.22 | 88.4 | 18,304 | submitted 199, max_tool_errors 16, budget 10 |
+| **F ac_4000** | **70.67** | 90.2 | 17,205 | submitted 203, max_tool_errors 19, budget 3 |
+| **F ac_2000** | **71.56** | 87.1 | 19,009 | submitted 196, max_tool_errors 28, budget 1 |
+| none | 58.67 | 74.7 | 32,676 | submitted 168, max_tool_errors 30, budget 27 |
+| old-teacher ac_4000 (S1_lcrec100) | 67.56 | 87.1 | 17,677 | no_tool_call 10, … |
+| old-teacher ac_2000 (S1_lcrec100) | 59.56 | 80.0 | 21,030 | no_tool_call 23, … |
+
+| A − B | Δ solved (pts) [95 % CI] | McNemar p | Δ tokens [95 % CI] |
+|---|---|---|---|
+| F ac_4000 − full | −4.89 [−9.78, +0.00] | 0.108 | +1,410 [−67, +2,884] |
+| F ac_2000 − full | −4.00 [−8.44, +0.44] | 0.108 | +3,214 [+1,647, +4,796] |
+| F ac_4000 − summary | +0.44 [−4.44, +5.33] | 1.000 | −1,099 [−3,059, +833] |
+| F ac_2000 − summary | +1.33 [−3.11, +6.22] | 0.711 | +705 [−1,321, +2,725] |
+| F ac_4000 − none | +12.00 [+4.44, +19.56] | 0.001 | −15,471 |
+| F ac_2000 − none | +12.89 [+4.89, +20.89] | 0.001 | −13,667 |
+| F ac_4000 − old ac_4000 | +3.11 [−1.33, +7.56] | 0.349 | −472 |
+| F ac_2000 − old ac_2000 | +12.00 [+5.33, +18.67] | 0.001 | −2,021 |
+
+Tool-call format failures (`agent_eval/garble_count.py`): seeds 2–3 of F have 0 garbled turns and 1 turn without a parsed call in
+8,352 assistant turns (old teacher, seed 2 alone: 28 / 49 such turns). The garble is gone; the remaining gap to full is 4–5 points
+(not significant at n = 225 per arm) with 1.4–3.2k more continuation tokens than full; AC ties the uncapped summary.
+Note: F trained on dev-206 tasks, so dev-206 is not used for F.
