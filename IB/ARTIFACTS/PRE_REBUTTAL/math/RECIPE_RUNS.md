@@ -203,3 +203,6 @@ was read from the file named next to it.
   p 0.58). AC r10 vs majority 28 / 16 (p 0.096). Gap closed (single → any) 0.596 (full 0.519, results 0.462). The AC arm matches the
   full-runs teacher at about a tenth of its prompt and keeps the teacher's short syntheses (median 3,274 vs results-only 13,983 tokens).
   None of the differences is significant. The frozen arm does not fail, so no reader-LoRA hedge.
+- ~20:00Z **`M_s2_r10` done** (ORCD 29555708, 278/278 updates; the resumed segment ran 158 updates in 7,055 s). Final dev proxy
+  (`runs/M_s2_r10/proxy/final.json`, all 196): NLL per token 0.4041, KL 0.0486, **gap closed 0.915** (stage 1 `M_s1_r10` 0.816;
+  results-only 0.5623, full 0.3895). Its dev eval `meval_s2_r10` 29559464 started on afterok (321/600 rows at 20:35Z).
