@@ -150,3 +150,12 @@ was read from the file named next to it.
   the engine's memory share only (KV-cache room); decoding, caps, parser and code path are unchanged from the text baselines (which ran
   at 0.8 effective). All four dev evals resubmitted on v3: `meval_s1_r10` 29547300, `meval_s1_r5` 29547301 (afterok r5c),
   `meval_s2_r10` 29547302 (afterok 29531284), `meval_s2_r5` 29547303 (afterok 29531295); the old 29531292/29531298/29531302 cancelled.
+- 16:10Z the v3 retry of `meval_s1_r10` (29547300) aborted ("malloc(): unsorted double linked list corrupted"). The log shows 7
+  concurrent "side_base - Moving model to cuda": the 96 request threads all triggered the harness's lazy first load of the 2B encoder at
+  once. That race was also the real cause of the first OOM (18.4 GB = several encoder copies). Fix (`math_eval.py`, bundle
+  `math_code_v4`): an AC arm runs its first request alone, then the thread pool. Once loaded, `model_to_device` returns early, so later
+  requests do not reload. All dev evals resubmitted on v4 (`MATH_GPU_UTIL=0.75` kept): `meval_s1_r10` ORCD 29550751 (running 16:46Z) +
+  CSAIL H200 copy 3117360 (`init/M_s1_r10_final` relayed ORCD → host → CSAIL, sha256-checked; arbiter: ORCD started first),
+  `meval_s1_r5` 29550752, `meval_s2_r10` 29550754, `meval_s2_r5` 29550755 (afterok as before); v3 29547301–03 cancelled.
+- Panels: `M_s1_r5c` u351 (64) NLL 0.4035, KL 0.0227, gap closed 0.862. `M_s2_r10` (stage 2, sft; 64-subset panel scored on the
+  teacher's seed-0 dev syntheses) u0 NLL 0.4123 (gap 0.818), u70 0.4015 (gap 0.875).

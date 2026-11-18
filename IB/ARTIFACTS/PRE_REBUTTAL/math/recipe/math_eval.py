@@ -138,7 +138,11 @@ def main() -> int:
             print(f"math_eval - {arm}: {len(todo)} to run, {len(done)} done before", flush=True)
             started, finished = time.time(), 0
             with open(path, "a") as handle, ThreadPoolExecutor(a.concurrency) as pool:
-                futures = [pool.submit(one, pr, arm, s, handle) for pr, s in todo]
+                rest = todo
+                if todo and arm in RATIOS:   # the first AC request alone: the harness loads the side (encoder) model lazily, and concurrent
+                    one(todo[0][0], arm, todo[0][1], handle)     # first loads raced (2026-11-18: several copies -> OOM, then heap corruption)
+                    rest, finished = todo[1:], 1
+                futures = [pool.submit(one, pr, arm, s, handle) for pr, s in rest]
                 for future in as_completed(futures):
                     future.result()
                     finished += 1
