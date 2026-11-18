@@ -231,3 +231,16 @@ was read from the file named next to it.
     (`data/tasks_train_ge85.json`: d8.5 791, d9 261, d9.5 10, d10 1). ORCD `mgen_h8_0..3` 29573151 / 29573157 / 29573162 /
     29573164 (bundle `math_code_v6`, nice 1000, two at a time: the r5 chain goes first). Packet `m_s2_hard8_v1` per ratio
     (`build_packets.py stage2 --gen-extra`): ≥8.5 problems select over all 8 samples, the others keep their 3.
+- ~21:30Z **`M_s1_r5c` done** (553/553; the resumed segment ran 173 updates in 12,820 s). Final dev proxy (all 196): NLL per token
+  0.4117, KL 0.0193, **gap closed 0.871** (r10 stage 1: 0.816). On afterok: `M_s2_r5` 29555709 and `meval_s1_r5` 29559463 started
+  ~21:55Z.
+- 21:36Z **dev_hard solver runs done** on dvA (sky job 19: 540/540 rows in ~35 min; S3 `math/dev_hard/ROLLOUTS/`). Downloaded into
+  `dev_hard/dl_solver/` and built with `build_dev_hard_data.py`: `data/{problems,prompts,eval_inputs}_devhard.jsonl`
+  (`devhard_summary.json`). The 0-overlap asserts were re-run on the solver rows. 180 problems, k = 0/1/2/3: 28 / 20 / 28 / 104; single
+  solver 71.85%, any-of-3 84.44%. d8.5 (80): single 74.58%, any 85.00%. ≥9 (100): single 69.67%, any 84.00%. Full prompt median 8,786
+  tokens, max 89,821.
+- 22:00Z dev_hard evals on ORCD (bundle v6, nice 100; seeds 0–2): math_eval `mevh_results` 29574772 and `mevh_full` 29574776
+  (R_res_rq9fr pair, as the dev baselines), `mevh_s1_r10` 29574777, `mevh_s2_r10` 29574780, `mevh_s1_r5` 29574856, `mevh_s2_r5`
+  29574844 (afterok `M_s2_r5`). AC arms at util 0.55, concurrency 16 (r10) / 12 (r5). Teacher-test path (`synth_gen.py`, plain
+  vLLM): `mgenh_tg27` 29574830 (unsloth/Qwen3.8-27B-NVFP4, full) and `mgenh_tg9` 29574828 (9B, full), so 27B − 9B is paired
+  within one code path.
