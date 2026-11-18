@@ -103,3 +103,13 @@ was read from the file named next to it.
 - 05:1xZ stage 1 submitted from `R_math_lcrec_final` (KL, reader frozen, encoder 5e-5, warm-up 50, cosine, batch 8, one pass = 553
   updates; dev panel every 70 updates, recovery slot every 50): ORCD `M_s1_r10` 29502600, `M_s1_r5` 29502601; CSAIL quanta-main
   H200 + GH200 copies (arbiter: first to start wins). `mproxy_lcrec` 29502603 = the gap closed of `M_lcrec` final.
+- Stage 1 started 05:20Z (`M_s1_r10`, ORCD 29502600) and 05:27Z (`M_s1_r5`, ORCD 29502601); CSAIL copies cancelled by the arbiter.
+  `M_lcrec` final dev proxy (`runs/M_lcrec/proxy/final.json`, math_proxy_eval): NLL per token r10 0.7136 / r5 0.7465, gap closed
+  **−0.876 / −1.066** (FineWeb start: −0.167 / −0.382): reconstruction on the runs alone hurt the synthesis proxy; the stage-1 u0
+  panels give the same numbers. Stage-1 panels (dev 196, NLL per token; gap closed = (0.5623 − NLL) / (0.5623 − 0.3895)):
+
+| run | update | AC NLL | KL | token accuracy | gap closed |
+|---|---|---|---|---|---|
+| M_s1_r10 | 0 | 0.7137 | 0.2780 | 0.7919 | −0.876 |
+| M_s1_r10 | 71 | 0.4384 | 0.0424 | 0.8492 | 0.717 |
+| M_s1_r5 | 0 | 0.7465 | 0.3068 | 0.7867 | −1.066 |
