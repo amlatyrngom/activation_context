@@ -42,10 +42,14 @@ def main() -> int:
     parser.add_argument("--problems", type=Path, default=PROBLEMS)
     parser.add_argument("--seeds", default="0,1,2")
     parser.add_argument("--boot", type=int, default=10_000)
+    parser.add_argument("--difficulty", default="", help="only the problems at these difficulties (comma separated, e.g. 9,9.5,10; dev_hard bands)")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     seeds = [int(s) for s in args.seeds.split(",")]
     meta = {r["task_id"]: r for r in map(json.loads, open(args.problems))}
+    if args.difficulty:
+        keep = {float(d) for d in args.difficulty.split(",")}
+        meta = {t: r for t, r in meta.items() if float(r["difficulty"]) in keep}
     tasks = sorted(meta)
     # solver references
     refs: dict = {}
@@ -62,7 +66,7 @@ def main() -> int:
     by_k = defaultdict(list)
     for t in tasks:
         by_k[refs[t]["k"]].append(t)
-    out: dict = {"tasks": len(tasks), "seeds": seeds, "k_tasks": {str(k): len(v) for k, v in sorted(by_k.items())},
+    out: dict = {"tasks": len(tasks), "seeds": seeds, "difficulty": args.difficulty or "all", "k_tasks": {str(k): len(v) for k, v in sorted(by_k.items())},
                  "solver_references": {name: {"all": sum(refs[t][name] for t in tasks) / len(tasks),
                                               "by_k": {str(k): sum(refs[t][name] for t in v) / len(v) for k, v in sorted(by_k.items())},
                                               "mixed_k12": sum(refs[t][name] for k in (1, 2) for t in by_k[k]) / (len(by_k[1]) + len(by_k[2]))}

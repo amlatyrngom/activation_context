@@ -37,6 +37,7 @@ def main() -> int:
     parser.add_argument("--tasks-file", type=Path, default=None, help="JSON list of task ids to run (default: all)")
     parser.add_argument("--max-tokens", type=int, default=64_000)
     parser.add_argument("--max-model-len", type=int, default=160_000)
+    parser.add_argument("--model", default=MODEL, help="the generator (default the 9B teacher; dev_hard 2026-11-18: unsloth/Qwen3.8-27B-NVFP4, the teacher test's 27B)")
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.9)
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
@@ -65,11 +66,11 @@ def main() -> int:
     import vllm
     from vllm import LLM, SamplingParams
     clock = time.time()
-    llm = LLM(model=MODEL, max_model_len=args.max_model_len, kv_cache_dtype="auto", gpu_memory_utilization=args.gpu_memory_utilization,
+    llm = LLM(model=args.model, max_model_len=args.max_model_len, kv_cache_dtype="auto", gpu_memory_utilization=args.gpu_memory_utilization,
               limit_mm_per_prompt={"image": 0, "video": 0}, seed=0)
     load_seconds = time.time() - clock
     engine = llm.llm_engine
-    meta = {"model": MODEL, "vllm": vllm.__version__, "host": socket.gethostname(), "sampling": SAMPLING, "max_tokens": args.max_tokens,
+    meta = {"model": args.model, "vllm": vllm.__version__, "host": socket.gethostname(), "sampling": SAMPLING, "max_tokens": args.max_tokens,
             "max_model_len": args.max_model_len, "kv_cache_dtype": "auto", "seeds": seeds, "engine_load_seconds": round(load_seconds, 1)}
     try:
         import torch
@@ -91,7 +92,7 @@ def main() -> int:
                     continue
                 row, seed, max_tokens = by_id.pop(output.request_id)
                 completion = output.outputs[0]
-                handle.write(json.dumps({"id": output.request_id, "arm": args.arm, "condition": args.condition, "model": MODEL, "task_id": row["task_id"],
+                handle.write(json.dumps({"id": output.request_id, "arm": args.arm, "condition": args.condition, "model": args.model, "task_id": row["task_id"],
                                          "seed": seed, "k": row["k"], "dataset_task": row["dataset_task"], "solver_results": row["solver_results"],
                                          "prompt_tokens": len(row["prompt_token_ids"]), "chat_text_sha256": row["chat_text_sha256"], "max_tokens": max_tokens,
                                          "generated_tokens": len(completion.token_ids), "finish": str(completion.finish_reason),

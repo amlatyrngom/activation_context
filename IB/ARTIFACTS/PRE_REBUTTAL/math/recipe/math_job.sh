@@ -66,9 +66,9 @@ gen)
   exec > >(tee -a $O/job_${SHARD/\//of}.log) 2>&1
   say $ARM "start on $(hostname) job $JOB GPU '$GPU' prompts $PROMPTS condition $COND seeds $SEEDS shard $SHARD"
   (cd $W/data && sha256sum -c $PROMPTS.sha256) || { say $ARM "prompts checksum failed"; exit 2; }
-  # the 27B NVFP4 note of teacher_test/node_job.sh does not apply (9B bf16); compile parallelism capped anyway
-  MAX_JOBS=3 $PY $C/math/synth_gen.py --prompts $W/data/$PROMPTS --out $O --arm $ARM --condition $COND --seeds $SEEDS --shard $SHARD \
-    ${MATH_TASKS:+--tasks-file $W/data/$MATH_TASKS} ${MATH_GPU_UTIL:+--gpu-memory-utilization $MATH_GPU_UTIL}
+  # compile parallelism capped (teacher_test/node_job.sh: the 27B NVFP4 JIT-compiles kernels; 9+ parallel cicc filled the host)
+  MAX_JOBS=3 FLASHINFER_NVCC_THREADS=1 $PY $C/math/synth_gen.py --prompts $W/data/$PROMPTS --out $O --arm $ARM --condition $COND --seeds $SEEDS --shard $SHARD \
+    ${MATH_TASKS:+--tasks-file $W/data/$MATH_TASKS} ${MATH_GPU_UTIL:+--gpu-memory-utilization $MATH_GPU_UTIL} ${MATH_MODEL:+--model $MATH_MODEL}
   RC=$?; say $ARM "exit $RC; $(cat $O/gen_$ARM.${SHARD/\//of}.jsonl 2>/dev/null | wc -l) rows"; exit $RC;;
 train)
   RUN=${1:?RUN}; PACKET=${2:?PACKET}; INIT=${3:?INIT}; LOSS=${4:?LOSS}
