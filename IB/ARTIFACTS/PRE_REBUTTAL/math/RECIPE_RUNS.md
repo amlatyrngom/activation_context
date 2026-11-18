@@ -134,3 +134,9 @@ was read from the file named next to it.
   in-training panel = `m_dev_panel64_v1` (64 of the 196 dev panel problems, `random.Random("20261117:panel64")`; ≈ 6 min). Launch
   inputs only, no code change. Its final proxy uses all 196 (`m_dev_panel_v1`), like r10.
 - `M_s1_r10` panels: u141 NLL 0.4297 / KL 0.0352 / gap closed 0.767; u211 0.4272 / 0.0323 / 0.782.
+- 11:4xZ chain queued on ORCD with `--dependency=afterok` (each stage-1 job ends with its final proxy on all 196 dev problems):
+  `M_s1_r10` 29502600 → dev eval `meval_s1_r10` 29531213 (ac_r10, seeds 0–2) + stage 2 `M_s2_r10` 29531284 (sft, 278 updates, slot every
+  20, in-training panel m_dev_panel64_v1) → `meval_s2_r10`; `M_s1_r5c` 29522328 → `meval_s1_r5` 29531292 + `M_s2_r5` 29531295 →
+  `meval_s2_r5`. Stage 2 reads `init/M_s1_r{10,5c}_final` = links to the stage-1 run's `ckpt/final` (only read after afterok).
+  Panels: r10 u281 gap closed 0.797, u351 0.801 (196); r5c u71 0.782 (64-problem subset vs its own references
+  `scores/panel64_reference.json`: results-only 0.5659, full 0.3776).
