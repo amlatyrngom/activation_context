@@ -129,3 +129,8 @@ was read from the file named next to it.
   slot interval cannot change on a resume. There is no launch flag to skip the resume baseline panel (`resume_baseline`, always
   computed and not logged). `--held-panel N` exists but is fixed at the first attempt like every other argument. Both would be code
   changes, so neither was made. Every new run (stage 2, the evals) uses a slot every 25 updates from its first attempt.
+- 09:35Z `M_s1_r5b` (29519172) was preempted ~50 min after its start, before its first slot (u0 panel ≈ 18 min + 25 updates), so it
+  restarted at 0; cancelled. **`M_s1_r5c`** (ORCD 29522328 + CSAIL H200/GH200 copies): the same training, recovery slot every 20,
+  in-training panel = `m_dev_panel64_v1` (64 of the 196 dev panel problems, `random.Random("20261117:panel64")`; ≈ 6 min). Launch
+  inputs only, no code change. Its final proxy uses all 196 (`m_dev_panel_v1`), like r10.
+- `M_s1_r10` panels: u141 NLL 0.4297 / KL 0.0352 / gap closed 0.767; u211 0.4272 / 0.0323 / 0.782.
