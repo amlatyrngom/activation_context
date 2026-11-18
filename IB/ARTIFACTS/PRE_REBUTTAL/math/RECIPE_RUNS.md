@@ -206,3 +206,16 @@ was read from the file named next to it.
 - ~20:00Z **`M_s2_r10` done** (ORCD 29555708, 278/278 updates; the resumed segment ran 158 updates in 7,055 s). Final dev proxy
   (`runs/M_s2_r10/proxy/final.json`, all 196): NLL per token 0.4041, KL 0.0486, **gap closed 0.915** (stage 1 `M_s1_r10` 0.816;
   results-only 0.5623, full 0.3895). Its dev eval `meval_s2_r10` 29559464 started on afterok (321/600 rows at 20:35Z).
+- 20:49Z **dev eval, stage 2 r10** (`meval_s2_r10` 29559464, v4, util 0.55, concurrency 16; 600/600 rows, all "stop").
+  `scores/dev_r10.json`, `dev_r10_vs_full.json` and `dev_r10_s2_vs_s1.json`:
+
+  | arm | lenient acc | gen tokens median / mean |
+  |---|---|---|
+  | 9B results-only | 81.83% | 13,983 / 16,112 |
+  | 9B full runs | 82.33% | 3,021 / 3,480 |
+  | AC r10 stage 1 | 83.00% | 3,274 / 3,629 |
+  | **AC r10 stage 2** (`M_s2_r10`) | **81.83%** (80.5 / 82.0 / 83.0) | 2,742 / 3,048 |
+
+  Stage 2 − results 0.00 pts (CI −2.50 to +2.67; 15 / 15). Stage 2 − full −0.50 pts (CI −2.33 to +1.50; 11 / 14, p 0.69).
+  Stage 2 − stage 1 −1.17 pts (CI −3.00 to +0.67; 9 / 16, p 0.23). Stage 2 shortens the syntheses (median 2,742 vs 3,274 tokens)
+  without a significant accuracy change. Its dev proxy improved (0.915 vs 0.816), but dev accuracy did not.
