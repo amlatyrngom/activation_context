@@ -150,6 +150,8 @@ def main() -> int:
         correct = sorted([(name, line) for name, line in valid if line["solved"]], key=lambda nl: (length(nl[1]), nl[0]))
         counts[f"prefixes with {len(correct)} correct"] += 1
         if not correct:
+            if any(line is not None and line["solved"] for _, line, _, _ in entries):
+                counts["prefixes whose every correct sample is invalid (the 50k total cap / ending)"] += 1
             continue
         best = length(correct[0][1])
         chosen = [correct[0]] + [nl for nl in correct[1:] if length(nl[1]) <= a.near_factor * best]
@@ -158,7 +160,10 @@ def main() -> int:
         for rank, (name, line) in enumerate(chosen):
             out = dict(line)
             out["run_key"] = f"{key}#{name}"
+            original = originals[key]
             out["stage2"] = {"sample": name, "length": length(line), "shortest_length": best, "rank": rank, "prefix_id": key,
+                             "original_length": length(original), "original_written": original["tokens"]["continuation_written"],
+                             "original_solved": original["solved"],
                              "samples_valid": len(valid), "samples_correct": len(correct), "near_factor": a.near_factor}
             kept.append(out)
     a.out.parent.mkdir(parents=True, exist_ok=True)
@@ -174,6 +179,10 @@ def main() -> int:
         "target_tokens": {"total": sum(targets), "median": statistics.median(targets) if targets else None,
                           "mean": round(statistics.mean(targets), 1) if targets else None},
         "length_median": statistics.median([length(line) for line in kept]) if kept else None,
+        "shortening": {   # each kept line against the original recorded continuation of its prefix (solved or not)
+            "share_length_under_half_original": round(sum(line["stage2"]["length"] < 0.5 * line["stage2"]["original_length"] for line in kept) / max(1, len(kept)), 4),
+            "share_written_under_half_original": round(sum(line["tokens"]["continuation_written"] < 0.5 * line["stage2"]["original_written"] for line in kept) / max(1, len(kept)), 4),
+            "median_length_over_original": statistics.median([line["stage2"]["length"] / max(1, line["stage2"]["original_length"]) for line in kept]) if kept else None},
         "counts": dict(sorted(counts.items())), "left_out_samples": dict(sorted(why.items())),
         "near_factor": a.near_factor, "upper": a.upper, "stage1_material": str(a.stage1_material),
     }

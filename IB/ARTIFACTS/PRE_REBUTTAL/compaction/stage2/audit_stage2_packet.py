@@ -103,6 +103,14 @@ def main():
            "target_tokens": sum(sum(len(t) for t in i.assistant_token_ids) for i in items),
            "recipe": {"loss": arm.get("loss"), "lr_ac": arm.get("lr_ac"), "lr_reader": arm.get("lr_reader"), "train_overrides": arm.get("train_overrides"), "ok": recipe_ok},
            "boundary_samples": boundary}
+    s2 = [lines[i.info["run_key"]].get("stage2") for i in items if i.info["run_key"] in lines]
+    if s2 and all(x and "original_written" in x for x in s2):   # how much shortening the targets teach: each item vs its prefix's original continuation
+        written = {i.info["run_key"]: sum(len(t) for t in i.assistant_token_ids) for i in items}
+        out["shortening"] = {
+            "items": len(s2),
+            "share_target_under_half_original": round(sum(written[k] < 0.5 * lines[k]["stage2"]["original_written"] for k in written) / len(written), 4),
+            "share_length_under_half_original": round(sum(x["length"] < 0.5 * x["original_length"] for x in s2) / len(s2), 4),
+            "share_items_original_sample": round(sum(x["sample"] == "orig" for x in s2) / len(s2), 4)}
     out["ok"] = (out["overlap_tasks_with_exclude"] == 0 and set(out["r_counts"]) == {str(a.r)} and not findings and not out["unexpected_paths"]
                  and out["with_history_ids"] == len(items) and recipe_ok)
     print(json.dumps({k: v for k, v in out.items() if k != "boundary_samples"}, indent=1))
