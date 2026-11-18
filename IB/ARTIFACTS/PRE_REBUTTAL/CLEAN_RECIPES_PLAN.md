@@ -226,3 +226,7 @@ to input rows at all. GPUs: ORCD and EC2 spot as for §3.1, one job per GPU, che
   r5-only u400 (27 %; ac_4000), seeds 2-4 (tags cdv1evM1120 / cdv1evR10u400 / cdv1evR5u400), compared with cdv1base full / none /
   summary and Run F (cdv1tvF). The running s2g_s1_r_s22 job was cancelled (sky cancel dvA 3) and resumes from its S3 mirror after them.
   Next intermediate points for the per-ratio runs: ~50 % (u760) and ~75 % (u1120), then the finals.
+- 2026-11-18T15:45Z (coordinator, user: "more frequent feedback, at least a trend"): `agent_eval/eval_scheduler.sh dvA` replaces the
+  fixed dvA queue. Priority 1 = end-to-end dev-75 evals (seeds 2-4) of the per-ratio runs every 200 updates (u200 backfilled, u400 ...
+  u1200 ≈ 13 % steps) + M u1120 + every final as it lands; priority 2 = the last generation set (s2g_s1_r_s22); priority 3 = the dev-206
+  baselines. It waits for an empty sky queue on the node before each job (no two jobs on the GPU), one job per eval_keeper call.
