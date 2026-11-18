@@ -43,6 +43,8 @@ def main() -> int:
     p.add_argument("--max-model-len", type=int, default=160_000)
     p.add_argument("--concurrency", type=int, default=96, help="requests in flight (threads)")
     p.add_argument("--limit", type=int, default=0)
+    p.add_argument("--gpu-memory-utilization", type=float, default=0.9,
+                   help="engine share before the harness lowers it by its AC side reservation (0.1); 0.9 for the text baselines, an AC arm on a 96 GB RTX PRO 6000 needs less (2026-11-18: 0.8 effective OOMed in the AC encode)")
     p.add_argument("--label", default="")
     a = p.parse_args()
     kit = os.environ.get("SEC45_KIT")
@@ -65,14 +67,14 @@ def main() -> int:
     h = harness(a.pair[0], a.pair[1], summary_layout=S.LAYOUT)
     loaded = h.loaded_models[NAME]
     loaded.model_config.engine_kwargs = {"max_model_len": a.max_model_len, "limit_mm_per_prompt": {"image": 0, "video": 0}, "kv_cache_dtype": "auto",
-                                         "gpu_memory_utilization": 0.9}
+                                         "gpu_memory_utilization": a.gpu_memory_utilization}
     clock = time.time()
     loaded.ensure_engine_loaded()
     engine = loaded.model_config.engine_kwargs
     replica = loaded.vllm_model.replicas[0].engine
     meta = {"label": a.label, "pair": a.pair, "host": socket.gethostname(), "sampling": SAMPLING, "max_tokens": a.max_tokens, "max_model_len": a.max_model_len,
             "engine_architecture": list(replica.model_config.architectures), "inputs_embeds_size": replica.model_config.get_inputs_embeds_size(),
-            "hf_overrides": engine.get("hf_overrides"), "enable_lora": engine.get("enable_lora"), "engine_load_seconds": round(time.time() - clock, 1)}
+            "hf_overrides": engine.get("hf_overrides"), "gpu_memory_utilization": engine.get("gpu_memory_utilization"), "enable_lora": engine.get("enable_lora"), "engine_load_seconds": round(time.time() - clock, 1)}
     try:
         import torch
         meta["gpu"] = torch.cuda.get_device_name(0)

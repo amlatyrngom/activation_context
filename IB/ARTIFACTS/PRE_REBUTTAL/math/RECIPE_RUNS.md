@@ -140,3 +140,13 @@ was read from the file named next to it.
   `meval_s2_r5`. Stage 2 reads `init/M_s1_r{10,5c}_final` = links to the stage-1 run's `ckpt/final` (only read after afterok).
   Panels: r10 u281 gap closed 0.797, u351 0.801 (196); r5c u71 0.782 (64-problem subset vs its own references
   `scores/panel64_reference.json`: results-only 0.5659, full 0.3776).
+- 15:27Z **`M_s1_r10` done** (ORCD 29502600; 553 updates, 64.1 s effective / 42.5 s median per update, peak 60.4 GB; no preemption).
+  Final dev proxy (`runs/M_s1_r10/proxy/final.json`, all 196): NLL per token 0.4213, KL 0.0275, **gap closed 0.816** (FineWeb start
+  −0.167, `M_lcrec` −0.876). Panels (196): u71 0.717, u141 0.767, u211 0.782, u281 0.797, u351 0.801, u421 0.810, u491 0.815,
+  u553 0.816. `M_s1_r5c` (64 subset): u141 0.824, u211 0.846, u281 0.853.
+- 15:39Z `M_s2_r10` started (ORCD 29531284, afterok). The dev eval `meval_s1_r10` (29531213) failed: CUDA OOM in the AC encode. The
+  harness lowers the engine share by 0.1 for the AC side model (0.9 → 0.8 = 76 GB of 95), and the 2B encoder needed more than the
+  remaining ~18 GB. Fix: `math_eval.py --gpu-memory-utilization` (bundle `math_code_v3`, `MATH_GPU_UTIL=0.75` → 0.65 effective). That is
+  the engine's memory share only (KV-cache room); decoding, caps, parser and code path are unchanged from the text baselines (which ran
+  at 0.8 effective). All four dev evals resubmitted on v3: `meval_s1_r10` 29547300, `meval_s1_r5` 29547301 (afterok r5c),
+  `meval_s2_r10` 29547302 (afterok 29531284), `meval_s2_r5` 29547303 (afterok 29531295); the old 29531292/29531298/29531302 cancelled.
