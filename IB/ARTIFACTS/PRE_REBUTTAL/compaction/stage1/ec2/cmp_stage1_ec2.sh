@@ -27,6 +27,12 @@ fi
 I=$W/init/R_cmp_lcrec_final
 [ -f $I/DONE ] || { X getdir $S3C/runs/R_cmp_lcrec/sync/ckpt/final/ $I/ > /dev/null && grep -q '"update": 241, "planned_updates": 241' $I/meta.json && cp $I/meta.json $I/DONE; } \
   || { say "start pair R_cmp_lcrec_final incomplete"; exit 2; }
+if [ "${CMP_INIT:-R_cmp_lcrec_final}" != R_cmp_lcrec_final ]; then   # 2026-11-18 (stage 2): CMP_INIT=<RUN>_final = runs/<RUN>/sync/ckpt/final, complete
+  I2=$W/init/$CMP_INIT; R0=${CMP_INIT%_final}
+  [ -f $I2/DONE ] || { [ "$R0" != "$CMP_INIT" ] && X getdir $S3C/runs/$R0/sync/ckpt/final/ $I2/ > /dev/null && \
+    $PY -c "import json,sys; m=json.load(open(sys.argv[1])); sys.exit(0 if m['update'] == m['planned_updates'] and m['name'] == sys.argv[2] else 1)" $I2/meta.json $R0 && cp $I2/meta.json $I2/DONE; } \
+    || { say "start pair $CMP_INIT incomplete (S3 runs/$R0/sync/ckpt/final)"; exit 2; }
+fi
 [ -f $W/data/panel_dev75_tv/panel_ac.pkl ] || X getdir $S3C/panel_dev75_tv/ $W/data/panel_dev75_tv/ > /dev/null
 X getdir $S3C/proxy_ref_tv/ $W/data/ > /dev/null 2>&1 || true          # proxy_ref_tv.json, teacher_dev75_tv.pt/.json when they exist
 P=$W/data/packets/$PACKET
