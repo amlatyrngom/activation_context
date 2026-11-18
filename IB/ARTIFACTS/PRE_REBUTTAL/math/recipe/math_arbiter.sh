@@ -11,7 +11,7 @@
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 source $HERE/../../sec35/jobs/cluster_lib.sh
-T=$REPO/IB/TMP/PRE_REBUTTAL/math_recipe; JOBS=$T/arbiter_jobs.txt; WIN=$T/arbiter_winners.txt; touch $JOBS $WIN; EVERY=${ARB_EVERY:-300}
+T=$REPO/IB/TMP/PRE_REBUTTAL/math_recipe; JOBS=$T/arbiter_jobs.txt; WIN=$T/arbiter_winners.txt; touch $JOBS $WIN $T/arbiter_cancelled.txt; EVERY=${ARB_EVERY:-300}
 declare -A DOWN; RELAY_CSAIL=
 say() { echo "$(date -u +%FT%TZ) [math arbiter] $*"; }
 host_of() { ( cluster $1 >/dev/null; echo $H ); }
@@ -23,7 +23,11 @@ state() {   # state CLUSTER JOBID -> PENDING / RUNNING / ... / GONE / DOWN
 cancel() { ( cluster $1 >/dev/null; remote 60 "squeue -u ngom -h -j $2 -o %i | grep -qx $2 && scancel $2" ) && say "cancelled $1 job $2"; }
 while true; do
   for KEY in $(awk '{print $1}' $JOBS | sort -u); do
-    grep -q "^$KEY " $WIN && continue
+    if grep -q "^$KEY " $WIN; then                      # a copy added after the decision: cancel it too (once)
+      w=$(grep "^$KEY " $WIN | head -1 | awk '{print $2" "$3}')
+      while read -r k cl id; do [ "$k" = "$KEY" ] && [ "$cl $id" != "$w" ] && [ -z "${DOWN[$cl]:-}" ] && ! grep -qx "$cl $id" $T/arbiter_cancelled.txt \
+        && { cancel $cl $id </dev/null; echo "$cl $id" >> $T/arbiter_cancelled.txt; }; done < $JOBS
+      continue; fi
     winner=
     while read -r k cl id; do [ "$k" = "$KEY" ] || continue
       s=$(state $cl $id </dev/null); say "$KEY $cl $id $s"
