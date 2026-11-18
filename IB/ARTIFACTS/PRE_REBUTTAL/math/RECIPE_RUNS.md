@@ -189,3 +189,17 @@ was read from the file named next to it.
     up to 65,536 side tokens, plus the previous batch's GPU outputs still held, plus allocator caching. At 0.65 effective
     utilization this exceeded the ~25 GB the encoder had; at 0.45 effective it fits. The running and queued evals keep v4 at 0.55,
     so every AC arm uses the same settings.
+- 19:19Z **dev eval, stage 1 r10** (`meval_s1_r10` 29559462, v4, util 0.55, concurrency 16; 600/600 rows, every finish "stop").
+  Scored with `score_math.py` (math-verify, lenient; `scores/dev_s1_r10.json`, and `scores/dev_s1_r10_vs_full.json` with reference full):
+
+  | arm (200 dev problems x 3 seeds) | lenient acc | gen tokens median / mean | prompt tokens max |
+  |---|---|---|---|
+  | 9B results-only | 81.83% | 13,983 / 16,112 | 496 |
+  | 9B full runs (teacher view) | 82.33% | 3,021 / 3,480 | 76,799 |
+  | **AC r10, stage 1 (`M_s1_r10`)** | **83.00%** (seeds 83.0 / 83.5 / 82.5) | 3,274 / 3,629 | 7,919 |
+  | single solver / majority / any-of-3 | 77.83 / 81.00 / 86.50% | | |
+
+  AC r10 − results +1.17 pts (95% CI −1.00 to +3.33; 18 wins / 11 losses, p 0.26). AC r10 − full +0.67 pts (CI −1.17 to +2.67; 17 / 13,
+  p 0.58). AC r10 vs majority 28 / 16 (p 0.096). Gap closed (single → any) 0.596 (full 0.519, results 0.462). The AC arm matches the
+  full-runs teacher at about a tenth of its prompt and keeps the teacher's short syntheses (median 3,274 vs results-only 13,983 tokens).
+  None of the differences is significant. The frozen arm does not fail, so no reader-LoRA hedge.
