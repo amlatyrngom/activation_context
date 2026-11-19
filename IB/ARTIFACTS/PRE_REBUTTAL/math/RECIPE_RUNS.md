@@ -297,7 +297,8 @@ was read from the file named next to it.
   tokens and loses about 1 pt at ≥9 (n.s.).
 - 11:24Z / 11:29Z **`M_s2h_r10` and `M_s2hr_r10` done** (398/398 each, about 4 h 50 min; peak 57.1 GB). u398 held panel (64): NLL per
   token 0.3948 / 0.3942 (u0 0.4123). Final dev proxy (all 196): **gap closed 0.915 (shortest rule) / 0.918 (random at ≥9)**, KL
-  0.0511 / 0.0511; 3-sample stage 2 `M_s2_r10`: 0.915, KL 0.0522. Evals running / queued: dev `meval_s2h_r10` 29620426,
+  per token 0.0477 / 0.0477 (item-mean 0.0511 / 0.0511); 3-sample stage 2 `M_s2_r10`: 0.915, KL per token 0.0486 (item-mean 0.0522)
+  [corrected 2026-11-19, see the KL note below]. Evals running / queued: dev `meval_s2h_r10` 29620426,
   `meval_s2hr_r10` 29620428; dev_hard `mevh_s2h_r10` 29620427, `mevh_s2hr_r10` 29620433. r5 (from `M_s1_r5c_final`, nice 200 so the
   r10 evals start first): `M_s2h_r5` 29633624, `M_s2hr_r5` 29633627; evals afterok: dev 29633628 / 29633639, dev_hard 29633637 /
   29633640 (util 0.55, conc 12). A first r5 submission (29633582–29633609) passed `--nice` after the job script; cancelled by id.
@@ -353,5 +354,11 @@ was read from the file named next to it.
   move: full − results +3.00 → +2.81 (p 0.16 → 0.22), hard8 − results +1.67 → +1.05, r5 s1 − results +2.33 → +1.75; still nothing
   significant.
 - 17:38Z / 17:50Z **`M_s2h_r5` and `M_s2hr_r5` done** (398/398 each, wall 19,802 / 19,904 s, peak 62.5 GB). u398 held panel (64): NLL per
-  token 0.3832 / 0.3830. Final dev proxy (196, `runs/*/proxy/final.json`): **gap closed 0.975 / 0.975**, item-mean KL 0.0432 / 0.0440;
-  3-sample `M_s2_r5` (same file): 0.972, KL 0.0437. Evals started on afterok: dev 29633628 / 29633639, dev_hard 29633637 / 29633640.
+  token 0.3832 / 0.3830. Final dev proxy (196, `runs/*/proxy/final.json`): **gap closed 0.975 / 0.975**, KL per token 0.0401 / 0.0408
+  (item-mean 0.0432 / 0.0440); 3-sample `M_s2_r5` (same file): 0.972, KL per token 0.0408 (item-mean 0.0437) [corrected, KL note below]. Evals started on afterok: dev 29633628 / 29633639, dev_hard 29633637 / 29633640.
+- **KL note (correction, 2026-11-19)**: `runs/<run>/proxy/final.json` holds two KL values: `groups["mdev/<r>"].kl_token` (token-weighted
+  KL per token, the field every earlier entry reports as "KL") and `item_mean_kl` (the mean over the 196 items' own KLs). The two
+  hard8 entries above first gave `item_mean_kl` as "KL" next to earlier per-token values (M_s2_r5: 0.0408 per token vs 0.0437 item-mean,
+  same file, both right). Corrected to per token, item-mean in parentheses. All final proxies (kl_token / item_mean_kl): M_s1_r10 0.0275 /
+  0.0294, M_s1_r5c 0.0193 / 0.0208, M_s2_r10 0.0486 / 0.0522, M_s2_r5 0.0408 / 0.0437, M_s2h_r10 0.0477 / 0.0511, M_s2hr_r10 0.0477 /
+  0.0511, M_s2h_r5 0.0401 / 0.0432, M_s2hr_r5 0.0408 / 0.0440. Gap closed and NLL per token were not affected.
