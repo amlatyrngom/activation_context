@@ -341,3 +341,14 @@ was read from the file named next to it.
   ≥ 8.5 "never solved" set is dominated by yes/no questions with object golds (label / format mismatch). dev_hard: 9 of 180 problems
   have a non-binary gold with ≥ 2 of 3 solver answers yes/no (8 of the 28 k = 0 problems). 5 items add < 1 update to hard8: training
   not recommended (sent to the coordinator with options). Packet `m_s2_hard8rat_r10_v1` built on CPU in case.
+- Coordinator: rationalization not trained (option i); `m_s2_hard8rat_r10_v1` stays built, unused (3,191 items incl. the 5
+  rationalized, 398 updates; SHA256SUMS, S3). Benchmark scoring unchanged (the label question goes to the user).
+- ~15:00Z **dev_hard sensitivity: label-mismatch problems excluded** (existing outputs only; `scores/labelmismatch.json`: excluded =
+  gold not in {Yes, No, True, False} and ≥ 2 of 3 solver answers in that set → 9 of 180 dev_hard problems (d8.5 4, d9 5; 8 with
+  k = 0); the same rule finds **13 of 200 dev problems** (all k = 0; d6 3, d6.5 1, d7 1, d7.5 2, d8 5, d9 1)). Tables:
+  `scores/devhard_report_v5.md` (standard, every arm, refs results / full / tg9_full / ac_r10_s1) and
+  `scores/devhard_report_v5_sensitivity_labelmismatch_excluded.md` (score files `devhard_lmx_*`). ≥ 9, standard (100) → sensitivity
+  (95): results 72.33 → 76.14, 9B full 75.33 → 78.95, tg9 full 75.67 → 79.30, 27B 76.33 → 80.35, AC r10 s1 73.67 → 76.49, r10 s2
+  72.67 → 75.79, r10 hard8 74.00 → 77.19, r10 hard8 random 74.00 → 76.84, r5 s1 74.67 → 77.89, r5 s2 73.33 → 76.84. The gaps barely
+  move: full − results +3.00 → +2.81 (p 0.16 → 0.22), hard8 − results +1.67 → +1.05, r5 s1 − results +2.33 → +1.75; still nothing
+  significant.

@@ -5,6 +5,8 @@ results (9B results-only), full (9B full runs, math_eval path) and tg9_full (9B 
 Writes scores/devhard_<band>_vs_<ref>.json and prints one markdown table per band (accuracy, generated tokens, paired diffs + 95 % CI).
 
     .venv/bin/python -I devhard_report.py ARM=PATH [ARM=PATH ...]
+Optional env: DEVHARD_REFS (comma list of reference arms), DEVHARD_PROBLEMS (another problems file, e.g. a sensitivity subset),
+DEVHARD_TAG (suffix of the score file names, so a subset never overwrites the standard files).
 """
 import os
 import json
@@ -25,8 +27,8 @@ def main() -> int:
     for band, diff in BANDS.items():
         scored = {}
         for ref in refs:
-            out = M / f"scores/devhard_{band}_vs_{ref}.json"
-            cmd = [sys.executable, "-I", str(HERE / "score_math.py"), "--problems", str(M / "data/problems_devhard.jsonl"), "--reference", ref, "--out", str(out)]
+            out = M / f"scores/devhard{os.environ.get('DEVHARD_TAG', '')}_{band}_vs_{ref}.json"
+            cmd = [sys.executable, "-I", str(HERE / "score_math.py"), "--problems", os.environ.get("DEVHARD_PROBLEMS", str(M / "data/problems_devhard.jsonl")), "--reference", ref, "--out", str(out)]
             cmd += [x for name, path in arms.items() for x in ("--arm", f"{name}={path}")]
             if diff:
                 cmd += ["--difficulty", diff]
