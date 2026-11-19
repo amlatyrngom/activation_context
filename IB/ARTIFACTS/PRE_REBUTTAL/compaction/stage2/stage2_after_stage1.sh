@@ -8,6 +8,7 @@
 #               (CMP_INIT=<S1 RUN>_final: cmp_stage1_ec2.sh fetches and checks it), loss sft, dev-75 corrected panel every 80 updates,
 #               recovery slot every 25, bundle v2, the stage-1 settings otherwise (encoder 5e-5, reader 0, warm-up 50, cosine, batch 8, one pass).
 # The probe (probe_ec2.sh, PROBE_REFERENCES=1) runs first on the same node; its failure is logged, not fatal (stage 2 starts anyway).
+# S2_SKIP_PROBE=1 skips it (2026-11-19: Mfin on its own node while cmpM probes M); a missing NODE is still created at that point.
 set -uo pipefail
 L=${1:?r5|r10}; NODE=${2:?NODE}; PACKET=${3:?PACKET}
 HERE=$(cd "$(dirname "$0")" && pwd); ROOT=$(cd $HERE/../../../../.. && pwd); E=$HERE/../stage1/ec2
@@ -20,7 +21,7 @@ aws s3 ls $S3C/packets/$PACKET/items.pkl > /dev/null || { say "packet $PACKET no
 until aws s3 ls $S3C/runs/$S1/proxy/final.json > /dev/null 2>&1; do sleep 300; done
 say "$S1 finished (final proxy on S3)"
 cd $ROOT
-if ! aws s3 ls $S3C/runs/$S1/probe/probe_final.json > /dev/null 2>&1; then
+if [ -z "${S2_SKIP_PROBE:-}" ] && ! aws s3 ls $S3C/runs/$S1/probe/probe_final.json > /dev/null 2>&1; then   # S2_SKIP_PROBE=1: another node probes S1
   .venv/bin/python -m activation.cloud.sky status $NODE 2>&1 | grep -q "^$NODE .* UP " || \
     { say "node $NODE not up: creating it"; .venv/bin/python -m activation.cloud.sky setup --name $NODE --gpu rtx6000pro --spot || say "setup failed"; }
   say "probe of $S1 on $NODE"
