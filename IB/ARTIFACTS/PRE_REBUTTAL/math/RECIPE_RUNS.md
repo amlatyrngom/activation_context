@@ -295,3 +295,9 @@ was read from the file named next to it.
   median 1,976), d8.5 79.17%, **≥9 73.33%** (gen median 1,512). ≥9 paired: − results +1.00 (CI −2.33, +4.67; 15/12, p 0.70), − full
   −2.00 (−6.33, +2.00; 11/17, p 0.34). r5 stage 1 at ≥9: 74.67. As for r10, stage 2 (3-sample selection) roughly halves the generated
   tokens and loses about 1 pt at ≥9 (n.s.).
+- 11:24Z / 11:29Z **`M_s2h_r10` and `M_s2hr_r10` done** (398/398 each, about 4 h 50 min; peak 57.1 GB). u398 held panel (64): NLL per
+  token 0.3948 / 0.3942 (u0 0.4123). Final dev proxy (all 196): **gap closed 0.915 (shortest rule) / 0.918 (random at ≥9)**, KL
+  0.0511 / 0.0511; 3-sample stage 2 `M_s2_r10`: 0.915, KL 0.0522. Evals running / queued: dev `meval_s2h_r10` 29620426,
+  `meval_s2hr_r10` 29620428; dev_hard `mevh_s2h_r10` 29620427, `mevh_s2hr_r10` 29620433. r5 (from `M_s1_r5c_final`, nice 200 so the
+  r10 evals start first): `M_s2h_r5` 29633624, `M_s2hr_r5` 29633627; evals afterok: dev 29633628 / 29633639, dev_hard 29633637 /
+  29633640 (util 0.55, conc 12). A first r5 submission (29633582–29633609) passed `--nice` after the job script; cancelled by id.
