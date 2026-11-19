@@ -6,6 +6,7 @@ Writes scores/devhard_<band>_vs_<ref>.json and prints one markdown table per ban
 
     .venv/bin/python -I devhard_report.py ARM=PATH [ARM=PATH ...]
 """
+import os
 import json
 import subprocess
 import sys
@@ -20,7 +21,7 @@ BANDS = {"all": "", "d8.5": "8.5", "ge9": "9,9.5,10"}
 def main() -> int:
     arms = dict(spec.split("=", 1) for spec in sys.argv[1:])
     arms = {k: v for k, v in arms.items() if Path(v).exists()}
-    refs = [r for r in ("results", "full", "tg9_full") if r in arms]
+    refs = [r for r in os.environ.get("DEVHARD_REFS", "results,full,tg9_full").split(",") if r in arms]
     for band, diff in BANDS.items():
         scored = {}
         for ref in refs:

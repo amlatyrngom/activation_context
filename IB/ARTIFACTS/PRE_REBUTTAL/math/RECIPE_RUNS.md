@@ -301,3 +301,21 @@ was read from the file named next to it.
   `meval_s2hr_r10` 29620428; dev_hard `mevh_s2h_r10` 29620427, `mevh_s2hr_r10` 29620433. r5 (from `M_s1_r5c_final`, nice 200 so the
   r10 evals start first): `M_s2h_r5` 29633624, `M_s2hr_r5` 29633627; evals afterok: dev 29633628 / 29633639, dev_hard 29633637 /
   29633640 (util 0.55, conc 12). A first r5 submission (29633582–29633609) passed `--nice` after the job script; cancelled by id.
+- ~14:00Z **hard8 r10 evals** (dev: `scores/dev_r10_s2h_vs_s1.json`, `dev_r10_s2hr_vs_s2h.json`; dev_hard: `scores/devhard_report_v4_r10_hard8.md`,
+  `devhard_report.py` with `DEVHARD_REFS=results,full,ac_r10_s1`, which rewrites `scores/devhard_<band>_vs_{results,full}.json` with
+  these arms; the v3 tables stay in `devhard_report_v3.md`). Accuracy % (gen median); diffs vs r10 stage 1 (95 % CI; W/L, p):
+
+  | arm | dev (200) | dev_hard all (180) | d8.5 (80) | ≥9 (100) | ≥9 − s1 |
+  |---|---|---|---|---|---|
+  | results-only | 81.83 (13,983) | 76.11 | 80.83 | 72.33 (19,824) | −1.33 (−5.67, +2.67) |
+  | 9B full | 82.33 (3,021) | 77.78 | 80.83 | 75.33 (3,349) | +1.67 (−2.00, +5.67) |
+  | AC r10 s1 | 83.00 (3,274) | 76.85 | 80.83 | 73.67 (2,947) | — |
+  | AC r10 s2 (3 samples) | 81.83 (2,742) | 76.11 | 80.42 | 72.67 (1,461) | −1.00 (−4.67, +2.33) |
+  | AC r10 s2 hard8 shortest | 82.17 (2,644) | 76.67 | 80.00 | 74.00 (1,461) | +0.33 (−4.33, +4.67; 16/15) |
+  | AC r10 s2 hard8 random ≥9 | 81.83 (2,699) | 77.41 | 81.67 | 74.00 (1,629) | +0.33 (−3.00, +3.67; 12/11) |
+
+  dev − s1: shortest −0.83 (−2.50, +0.83; 8/13, p 0.38), random −1.17 (−2.83, +0.33; 6/13, p 0.17); random − shortest on dev −0.33
+  (−1.67, +1.00; p 0.81). ≥9 − results-only: +1.67 for both (shortest −3.33, +6.67; random −2.67, +6.00; p 0.49 / 0.46). hard8 recovers
+  the ~1 pt that the 3-sample stage 2 lost at ≥9 (72.67 → 74.00, back to stage-1 level) while keeping its shorter syntheses (gen median
+  1,461 / 1,629 vs s1 2,947), but neither variant beats stage 1 or the full-runs teacher; random vs shortest makes no measurable
+  difference. MVP (AC clearly above results-only at ≥9) still not met.
