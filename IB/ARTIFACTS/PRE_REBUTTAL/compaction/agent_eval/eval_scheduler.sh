@@ -45,6 +45,14 @@ next_job() {   # prints "DEVSET TAG VARIANTS AGENTS PAIR SEED" or nothing
   done_all s2g_s1_r_s22 full || { echo "prefixes_s2gen_c20_s1 s2g_s1_r_s22 full 40 - 22"; return; }
   for s in 2 3 4; do done_all d206base_s$s full,none,summary_write,summary || { echo "prefixes_dev9_206 d206base_s$s full,none,summary_write,summary 40 - $s"; return; }; done
 }
+# 2026-11-19: each finished eval leaves 11-21 GB of saved_tensors on the node (S3 keeps only rollouts.jsonl + DONE); dvA's 485 GB disk
+# filled after 26 evals and evals failed (exit 100). After every job, drop saved_tensors of the evals whose DONE + rollouts.jsonl are on S3.
+clean_node() { local d n=0
+  for d in $(timeout 120 ssh -o ConnectTimeout=20 $NODE 'ls /root/activation_artifacts/SYNC/ROLLOUTS' 2>/dev/null); do
+    aws s3 ls $S3E/$d/DONE > /dev/null 2>&1 && aws s3 ls $S3E/$d/rollouts.jsonl > /dev/null 2>&1 || continue
+    timeout 300 ssh -o ConnectTimeout=20 $NODE "rm -rf /root/activation_artifacts/SYNC/ROLLOUTS/$d/saved_tensors" 2>/dev/null && n=$((n+1))
+  done
+  say "clean_node: checked $n S3-done rollout dirs; $(timeout 60 ssh -o ConnectTimeout=20 $NODE 'df -h / | tail -1' 2>/dev/null)"; }
 say "scheduler start on $NODE"
 while true; do
   until node_idle; do sleep 120; done
@@ -52,4 +60,5 @@ while true; do
   if [ -z "$job" ]; then sleep 900; continue; fi
   say "next: $job"
   bash $AE/eval_keeper.sh $NODE "$job"
+  clean_node
 done
