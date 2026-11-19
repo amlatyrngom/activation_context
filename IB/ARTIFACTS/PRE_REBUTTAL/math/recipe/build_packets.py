@@ -228,6 +228,9 @@ def main() -> int:
                    help="stage2 hard8 (2026-11-18): a second synth_gen folder with more teacher samples (seeds 3-7) of the training problems at "
                         ">= --extra-min-difficulty; they join the selection of those problems only (the others keep their 3 samples)")
     p.add_argument("--extra-min-difficulty", type=float, default=8.5)
+    p.add_argument("--gen-rat", type=Path, default=None,
+                   help="stage2 rationalization (2026-11-19): build_rat.py filter's kept folder (gen_rat_kept.jsonl, seeds >= 100); its samples are added "
+                        "to the selection as they are (already correct, leak-filtered and shortest-rule selected per problem); same student / teacher views")
     p.add_argument("--random-min-difficulty", type=float, default=None,
                    help="stage2 variant (2026-11-19): on problems at >= this difficulty keep as many correct samples as the shortest rule keeps "
                         "there (its within --within set), drawn without replacement from ALL correct samples (seeded by task id): same data size, "
@@ -326,12 +329,21 @@ def main() -> int:
             report["selection"] = {"rule": f"per problem: the shortest correct sample (lenient parse, math-verify) and every other correct one within {a.within}x its generated tokens"
                                            + (f"; at difficulty >= {a.random_min_difficulty}: one correct sample drawn at random (seeded)" if a.random_min_difficulty is not None else ""),
                                    "correct_samples": n_correct, "problems_with_a_correct_sample": sum(kept_by_k.values()), "problems_by_kept_count": dict(kept_by_k)}
+        if a.gen_rat:
+            assert a.phase == "stage2", "--gen-rat is a stage-2 option"
+            rat = [json.loads(line) for line in open(a.gen_rat / "gen_rat_kept.jsonl")]
+            assert all(s["task_id"] in train and s["seed"] >= 100 and s["condition"] == "rat" for s in rat)
+            assert len({s["id"] for s in rat}) == len(rat)
+            report["rat"] = {"folder": str(a.gen_rat), "items": len(rat), "problems": len({s["task_id"] for s in rat}),
+                             "filter_sha256": hashlib.sha256((a.gen_rat / "filter.json").read_bytes()).hexdigest(),
+                             "kept_sha256": hashlib.sha256((a.gen_rat / "gen_rat_kept.jsonl").read_bytes()).hexdigest(),
+                             "problems_with_ordinary_items": len({s["task_id"] for s in rat} & {s["task_id"] for s in chosen})}
+            chosen += rat
         label = "r10" if a.r == 0.1 else "r5"
         for s in chosen:
             items.append(synth_item(train[s["task_id"]], s, a.r, f"m{a.phase[-1]}:{s['task_id']}#s{s['seed']}", f"m{a.phase}/{label}", ac_name, tok))
-        for item in items[:24]:                                   # the teacher view = the generation prompt + the sample (spot check of 24)
-            flat, _ = synth_views(train[item.info["task_id"]], ac_name, a.r)
-            check_teacher_prompt(h, study, item, prompts[item.info["task_id"]])
+        for item in [i for i in items if i.info["sample_seed"] < 100][:24]:   # the teacher view = the generation prompt + the sample (spot check of 24;
+            check_teacher_prompt(h, study, item, prompts[item.info["task_id"]])  # rationalized targets come from another prompt: not checked)
         for item in items:
             flat, content = synth_views(train[item.info["task_id"]], ac_name, a.r)
             if item.in_context_messages[0]["content"] != flat:

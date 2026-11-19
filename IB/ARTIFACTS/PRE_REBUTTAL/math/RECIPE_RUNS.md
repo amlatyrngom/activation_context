@@ -301,7 +301,7 @@ was read from the file named next to it.
   `meval_s2hr_r10` 29620428; dev_hard `mevh_s2h_r10` 29620427, `mevh_s2hr_r10` 29620433. r5 (from `M_s1_r5c_final`, nice 200 so the
   r10 evals start first): `M_s2h_r5` 29633624, `M_s2hr_r5` 29633627; evals afterok: dev 29633628 / 29633639, dev_hard 29633637 /
   29633640 (util 0.55, conc 12). A first r5 submission (29633582–29633609) passed `--nice` after the job script; cancelled by id.
-- ~14:00Z **hard8 r10 evals** (dev: `scores/dev_r10_s2h_vs_s1.json`, `dev_r10_s2hr_vs_s2h.json`; dev_hard: `scores/devhard_report_v4_r10_hard8.md`,
+- 12:35Z **hard8 r10 evals** (dev: `scores/dev_r10_s2h_vs_s1.json`, `dev_r10_s2hr_vs_s2h.json`; dev_hard: `scores/devhard_report_v4_r10_hard8.md`,
   `devhard_report.py` with `DEVHARD_REFS=results,full,ac_r10_s1`, which rewrites `scores/devhard_<band>_vs_{results,full}.json` with
   these arms; the v3 tables stay in `devhard_report_v3.md`). Accuracy % (gen median); diffs vs r10 stage 1 (95 % CI; W/L, p):
 
@@ -319,3 +319,15 @@ was read from the file named next to it.
   the ~1 pt that the 3-sample stage 2 lost at ≥9 (72.67 → 74.00, back to stage-1 level) while keeping its shorter syntheses (gen median
   1,461 / 1,629 vs s1 2,947), but neither variant beats stage 1 or the full-runs teacher; random vs shortest makes no measurable
   difference. MVP (AC clearly above results-only at ≥9) still not met.
+- Coordinator decisions (2026-11-19): the math recipe candidate is recon → stage 1 → stage 2 hard8 (shortest rule); random-at-≥9 is
+  dropped (no gain). r5 hard8 (both variants) finishes as queued.
+- 12:45Z **rationalization (STaR-style) step** (`recipe/build_rat.py`; `data/rat_select.json`). Problems: train, difficulty ≥ 8.5, ≤ 1
+  correct of the 8 ordinary teacher samples: **170** (d8.5 118, d9 52; 0 correct 156, 1 correct 14; solver k 0/1/2: 142/18/10); 79
+  have binary golds (Yes 45, True 26, No 8). Prompt: the full-runs prompt with one block before the final rule that states the gold
+  answer and asks for a self-contained derivation that never refers to it (`RAT_BLOCK`); prompt tokens median 12,347, max 77,981
+  (`data/prompts_rat_v1.jsonl`, sha256 e03eeb0e…, S3 `math/recipe/data/`). Generation `mgen_rat` 29637374 (ORCD, bundle v6, the
+  9B with the same sampler / caps, seeds 100–103: 680 samples). Kept = stopped, gold reached (teacher-test scorer), leak filter
+  passed (`LEAK`, case-insensitive regex on the whole reply, thinking included), then the shortest rule per problem; binary golds are
+  counted but left out of the packet (coordinator). Leak filter on the 8,504 ordinary teacher samples of all ≥ 8.5 train problems:
+  675 flagged (7.9 %; "expected answer" 423, "ground truth" 127), so it is conservative. The training items keep the ordinary
+  student / teacher views (no gold answer); `build_packets.py stage2 --gen-rat` adds them to the hard8 shortest selection.
