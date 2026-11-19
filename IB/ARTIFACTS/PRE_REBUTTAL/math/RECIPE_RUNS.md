@@ -271,3 +271,7 @@ was read from the file named next to it.
 - ~03:20Z **`M_s2_r5` done** (278/278; preempted once at about u56 and resumed). Final dev proxy (196): NLL per token 0.3943, KL 0.0408, **gap
   closed 0.972** (r5 stage 1: 0.871; r10 stage 2: 0.915). Its evals `meval_s2_r5` 29559465 (dev) and `mevh_s2_r5` 29574844
   (dev_hard) are now eligible. hard8 teacher samples: 3,942 / 5,315 (shards 0 and 1 done; 2 running; 3 preempted at 543, requeued).
+- 04:14Z **dev eval, stage 2 r5** (`meval_s2_r5` 29559465, 600/600, all "stop"; `scores/dev_r5.json`, `dev_r5_vs_full.json`,
+  `dev_r5_s2_vs_s1.json`): **81.67%** (81.0 / 82.5 / 81.5), gen median 2,667 / mean 2,918. s2 − results −0.17 (CI −2.33, +2.00; 11 / 12).
+  s2 − full −0.67 (−2.50, +1.00; 10 / 14, p 0.54). s2 − s1 −1.00 (−2.33, +0.33; 6 / 12, p 0.24). Same pattern as r10: stage 2
+  (3-sample selection) shortens the syntheses and costs about 1 pt (n.s.), although its dev proxy rose to 0.972.
