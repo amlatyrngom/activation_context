@@ -72,7 +72,7 @@ say "$(restore 2>&1 | tail -n 1)"
 say "inputs ready on $(hostname) ($(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)); restored $(find $D -type f | wc -l) run files ($(find $D -name optimizer.pt | wc -l) optimizer.pt) from S3"
 export S3X_ALLOW_OPTIMIZER=1
 up() {
-  X putdir $D $S3C/runs/$RUN/ --exclude triton_cache > /dev/null 2>&1
+  X putdir $D $S3C/runs/$RUN/ --exclude triton_cache final.json > /dev/null 2>&1   # proxy/final.json (= done) only at the end, after ckpt/final
   local R=$W/data/${CMP_REF:-proxy_start_pair.json}
   if [ "${CMP_REF:-}" = proxy_ref_tv.json ] && [ -f $R ]; then mkdir -p $W/proxy_ref_tv && cp -u $R $W/data/teacher_dev75_tv.pt $W/data/teacher_dev75_tv.json $W/proxy_ref_tv/ 2>/dev/null
     X putdir $W/proxy_ref_tv $S3C/proxy_ref_tv/ > /dev/null 2>&1; fi
@@ -88,5 +88,9 @@ if [ -n "${CMP_TVCOMPARE:-}" ] && [ ! -f $D/proxy/tvcompare.json ]; then   # CMP
 fi
 bash $J/cmp_stage1_job.sh $RUN $PACKET; RC=$?
 kill $LOOP 2>/dev/null; up
+# 2026-11-19: proxy/final.json marks the run done (ec2_keep, stage2_after_stage1, the gates): upload it last, after a second pass
+# confirms everything else (ckpt/final) is on S3 (M's final.json landed 30 s before its ckpt/final weights).
+[ -f $D/proxy/final.json ] && X putdir $D $S3C/runs/$RUN/ --exclude triton_cache final.json > /dev/null 2>&1 && \
+  X put $D/proxy/final.json $S3C/runs/$RUN/proxy/final.json > /dev/null 2>&1
 say "exit $RC; run folder on $S3C/runs/$RUN/"
 exit $RC
