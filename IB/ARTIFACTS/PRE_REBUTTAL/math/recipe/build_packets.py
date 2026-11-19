@@ -229,8 +229,9 @@ def main() -> int:
                         ">= --extra-min-difficulty; they join the selection of those problems only (the others keep their 3 samples)")
     p.add_argument("--extra-min-difficulty", type=float, default=8.5)
     p.add_argument("--random-min-difficulty", type=float, default=None,
-                   help="stage2 variant (2026-11-19): on problems at >= this difficulty keep ONE correct sample drawn uniformly at random "
-                        "(seeded by task id) instead of the shortest + within --within; the other problems keep the shortest rule")
+                   help="stage2 variant (2026-11-19): on problems at >= this difficulty keep as many correct samples as the shortest rule keeps "
+                        "there (its within --within set), drawn without replacement from ALL correct samples (seeded by task id): same data size, "
+                        "no length bias; the other problems keep the shortest rule")
     p.add_argument("--arm", default=None, help="the synth_gen arm to read (default: every arm in --gen)")
     p.add_argument("--within", type=float, default=1.3, help="stage2: keep correct samples up to this multiple of the shortest")
     p.add_argument("--held", type=int, default=50, help="lcrec: dev runs in the reconstruction panel")
@@ -296,9 +297,14 @@ def main() -> int:
                 good = sorted((s for s in by_task[task_id] if correct(s)), key=lambda s: (s["generated_tokens"], s["seed"]))
                 n_correct += len(good)
                 if good and a.random_min_difficulty is not None and float(train[task_id]["difficulty"]) >= a.random_min_difficulty:
-                    keep = [random.Random(f"{SEED}:random_correct:{task_id}").choice(good)]
+                    shortest_rule = [s for s in good if s["generated_tokens"] <= a.within * good[0]["generated_tokens"]]
+                    keep = random.Random(f"{SEED}:random_correct:{task_id}").sample(good, min(len(shortest_rule), len(good)))
                     chosen += keep
-                    kept_by_k["random1"] += 1
+                    kept_by_k[f"random{len(keep)}"] += 1
+                    audit = report.setdefault("random_audit", {"problems": 0, "items": 0, "target_tokens_random": [], "target_tokens_shortest_rule": []})
+                    audit["problems"] += 1; audit["items"] += len(keep)
+                    audit["target_tokens_random"] += [s["generated_tokens"] for s in keep]
+                    audit["target_tokens_shortest_rule"] += [s["generated_tokens"] for s in shortest_rule]
                 elif good:
                     keep = [s for s in good if s["generated_tokens"] <= a.within * good[0]["generated_tokens"]]
                     chosen += keep
@@ -313,6 +319,10 @@ def main() -> int:
                     b["problems"] += 1; b["correct_of_3"] += ok3; b["correct_of_all"] += okall; b["samples"] += len(by_task[task_id])
                 report["bands"] = bands
             report["selection_random_min_difficulty"] = a.random_min_difficulty
+            if "random_audit" in report:                          # the variant's problems: same item count, generated-token quantiles vs the shortest rule
+                audit = report["random_audit"]
+                audit["target_tokens_random"] = quantiles(audit["target_tokens_random"])
+                audit["target_tokens_shortest_rule"] = quantiles(audit["target_tokens_shortest_rule"])
             report["selection"] = {"rule": f"per problem: the shortest correct sample (lenient parse, math-verify) and every other correct one within {a.within}x its generated tokens"
                                            + (f"; at difficulty >= {a.random_min_difficulty}: one correct sample drawn at random (seeded)" if a.random_min_difficulty is not None else ""),
                                    "correct_samples": n_correct, "problems_with_a_correct_sample": sum(kept_by_k.values()), "problems_by_kept_count": dict(kept_by_k)}
