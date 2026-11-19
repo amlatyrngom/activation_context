@@ -331,3 +331,13 @@ was read from the file named next to it.
   counted but left out of the packet (coordinator). Leak filter on the 8,504 ordinary teacher samples of all ≥ 8.5 train problems:
   675 flagged (7.9 %; "expected answer" 423, "ground truth" 127), so it is conservative. The training items keep the ordinary
   student / teacher views (no gold answer); `build_packets.py stage2 --gen-rat` adds them to the hard8 shortest selection.
+- 14:02Z **rationalization samples** (`mgen_rat` 29637374, 680/680 in 1 h 12 min; `gen_in/rat_v1`, sha-checked, S3). `build_rat.py filter
+  --exclude-binary` (`gen_in/rat_v1_kept_nb/filter.json`): drops wrong answer 444, leak 199, no stop 1; passing 36 samples on 24
+  problems: binary 30 on 20 (23 after the shortest rule; out of the packet), **non-binary 6 on 4 → 5 kept items** (d8.5 2, d9 3;
+  generated median 1,914). Leak hits on correct samples: "known: " 167, "(given/known/…/expected) answer" 162, "self-contained" 109,
+  "ground truth" 86, others ≤ 54; the same filter flags 165 of the 1,360 ordinary samples of these problems. Even with the gold
+  stated, 279 of 364 non-binary samples miss it, 219 of them answering Yes/No/True/False: in 69 of the 91 non-binary-gold problems the
+  ordinary teacher samples answer yes/no in ≥ 5 of 8 (gold 'f(x) = x', 'e^{O(N)}', '0' for "determine whether Ext^1 = 0" …). The
+  ≥ 8.5 "never solved" set is dominated by yes/no questions with object golds (label / format mismatch). dev_hard: 9 of 180 problems
+  have a non-binary gold with ≥ 2 of 3 solver answers yes/no (8 of the 28 k = 0 problems). 5 items add < 1 update to hard8: training
+  not recommended (sent to the coordinator with options). Packet `m_s2_hard8rat_r10_v1` built on CPU in case.
