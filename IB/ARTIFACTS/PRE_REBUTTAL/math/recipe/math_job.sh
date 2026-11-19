@@ -67,6 +67,7 @@ gen)
   say $ARM "start on $(hostname) job $JOB GPU '$GPU' prompts $PROMPTS condition $COND seeds $SEEDS shard $SHARD"
   (cd $W/data && sha256sum -c $PROMPTS.sha256) || { say $ARM "prompts checksum failed"; exit 2; }
   # compile parallelism capped (teacher_test/node_job.sh: the 27B NVFP4 JIT-compiles kernels; 9+ parallel cicc filled the host)
+  export PATH=$(dirname $PY):$PATH                           # the venv's ninja for that JIT (2026-11-19: the 27B failed on "No such file: ninja")
   MAX_JOBS=3 FLASHINFER_NVCC_THREADS=1 $PY $C/math/synth_gen.py --prompts $W/data/$PROMPTS --out $O --arm $ARM --condition $COND --seeds $SEEDS --shard $SHARD \
     ${MATH_TASKS:+--tasks-file $W/data/$MATH_TASKS} ${MATH_GPU_UTIL:+--gpu-memory-utilization $MATH_GPU_UTIL} ${MATH_MODEL:+--model $MATH_MODEL}
   RC=$?; say $ARM "exit $RC; $(cat $O/gen_$ARM.${SHARD/\//of}.jsonl 2>/dev/null | wc -l) rows"; exit $RC;;
