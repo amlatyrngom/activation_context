@@ -379,3 +379,13 @@ was read from the file named next to it.
   (−0.83, +2.17; p 0.61). dev_hard ≥9, shortest − 9B full −4.00 (−7.33, −1.33; 6/18, p 0.02); random − shortest at ≥9 **+3.33 (+0.33, +6.33;
   16/6, p 0.053)** (`scores/devhard_ge9_r5_s2hr_vs_s2h.json`). At r5 the shortest rule loses ~3 pts at ≥9 against stage 1 (bootstrap CI excludes 0, sign
   test p 0.08), the random variant does not; at r10 both variants scored 74.00. The recipe choice (hard8 shortest) rests on r10 only.
+- 19:32Z **Decision (coordinator): the recipe's stage 2 is hard8 random-at-≥ 9** (`m_s2_hard8rnd9_r{10,5}_v1`: below 8.5 the shortest
+  correct of 3 + within 1.3×; d8.5 the same rule over 8; ≥ 9 k correct samples drawn at random from all 8, k = the within-1.3× set
+  size, seeded by task id). Recipe = recon → stage 1 → this stage 2 (`M_s2hr_r10`, `M_s2hr_r5`); stage 1 stays the accuracy
+  reference in every table. Evidence (dev_hard ≥ 9, vs own stage 1): random r10 74.00 vs 73.67 (+0.33, p 1.00), r5 74.67 vs 74.67
+  (+0.00, p 1.00); shortest r10 74.00 (+0.33), r5 71.33 (−3.33, CI −6.33 to −0.67, p 0.08); ≥ 9 generated median cut 2,947 → 1,629
+  (r10, −45 %), 3,129 → 2,227 (r5, −29 %). Summary: `recipe/RECIPE_SUMMARY.md`; tables from `recipe/recipe_summary_tables.py`
+  (`scores/recipe_summary_tables.md`; dev scores `scores/summary_dev_{std,lmx}_vs_*.json`, dev sensitivity subset
+  `scores/problems_dev_labelmismatch_excl.jsonl`, 187 problems). GPU-h (sacct, incl. preempted segments): teacher samples 4.71 + dev 0.37,
+  recon 4.03, stage 1 r10 10.23 / r5 11.34 (+3.58 abandoned r5 starts), hard8 samples 5.46, stage 2 r10 4.91 / r5 5.68; dropped arms:
+  hard8 shortest 4.86 / 5.66, rationalization generation 1.19. No new GPU work; test sets untouched.
