@@ -43,7 +43,32 @@ for m in Qwen/Qwen3.5-9B Qwen/Qwen3.5-2B; do
   for t in 1 2 3; do timeout 1800 env -u HF_TOKEN $PY -c "from huggingface_hub import snapshot_download as s; s('$m', token=False)" > /dev/null && break; done; done
 D=$W/runs/$RUN; mkdir -p $D
 export S3X_ALLOW_OPTIMIZER=1                                   # 2026-11-17: before the restore too (s3x skips optimizer.pt otherwise: resume refused)
-X getdir $S3C/runs/$RUN/ $D/ > /dev/null 2>&1 || true
+restore() {   # 2026-11-19: the run folder without the older recovery slots: only the slot partial_epoch.json points to (pointers are
+  # uploaded after their slot: complete) + everything outside the slot folders (ckpt/final, logs, panels); older slots stay on S3.
+  # Any doubt (no boto3, a state.json pointer, an error) -> the full getdir as before.
+  $S3PY - $J $S3C/runs/$RUN/ $D <<'PYEOF' || X getdir $S3C/runs/$RUN/ $D/
+import json, re, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1]); import s3x
+s3, config = s3x.client(); bucket, prefix = s3x.split(sys.argv[2].rstrip("/") + "/"); local = Path(sys.argv[3])
+rel = [it["Key"][len(prefix):] for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix) for it in page.get("Contents", [])]
+if any(Path(r).name == "state.json" for r in rel): sys.exit(1)
+keep = set()
+for r in rel:
+    if r.startswith("sync/AC_MODELS/") and Path(r).name == "partial_epoch.json":
+        p = json.loads(s3.get_object(Bucket=bucket, Key=prefix + r)["Body"].read())
+        keep |= {"sync/" + p[k].strip("/") + "/" for k in ("ac_checkpoint", "target_lora_checkpoint") if p.get(k)}
+slot = re.compile(r"^sync/(AC_MODELS|LORAS)/[^/]+/epoch_\d+_step_\d+/")
+fetched = left = 0
+for r in rel:
+    m = slot.match(r)
+    if m and m.group(0) not in keep: left += 1; continue
+    if Path(r).name in s3x.NEVER: continue
+    fetched += s3x.get(s3, config, f"s3://{bucket}/{prefix}{r}", local / r)
+print(f"s3x restore: {fetched} files fetched; latest slot {sorted(keep)}; {left} older-slot files left on S3")
+PYEOF
+}
+say "$(restore 2>&1 | tail -n 1)"
 say "inputs ready on $(hostname) ($(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)); restored $(find $D -type f | wc -l) run files ($(find $D -name optimizer.pt | wc -l) optimizer.pt) from S3"
 export S3X_ALLOW_OPTIMIZER=1
 up() {
