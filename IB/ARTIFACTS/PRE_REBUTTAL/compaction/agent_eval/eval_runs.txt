@@ -6,6 +6,5 @@ R5 S1_tv_kl_r5_c162024_s012 ac_4000 200 400 600 800 1000 1200
 S2M S2_ce_Mfin_r10_c20_s012 ac_2000 200 400
 S2R5 S2_ce_r5_c20_s012 ac_4000 200 400
 S2R10 S2_ce_r10_c20_s012 ac_2000 200 400
-# MD = diagnostic (2026-11-19): M final 1/5 fell on P75 (33.3 vs 54.4 at u1120); where did it drop? (no inline comments: the scheduler reads every word as a point)
-MD S1_tv_kl_both_c162024_s012 ac_4000 1400 nofin
+# (2026-11-19) MD diagnostic u1400 dropped: the M-final 1/5 'drop' was eval noise (6 runs pooled: 71.8 all / 41.2 P75). No inline comments: the scheduler reads every word as a point; 'nofin' skips a line's final.
 S2M5 S2_ce_Mfin_r5_c20_s012 ac_4000 200 400
