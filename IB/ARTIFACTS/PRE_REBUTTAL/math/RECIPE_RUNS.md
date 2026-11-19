@@ -268,3 +268,6 @@ was read from the file named next to it.
   +5.67; 22/20, p 0.88)**. vs results-only: all +2.96 (−0.56, +6.67; 37/21, p 0.048), ≥9 +4.00 (−0.33, +9.00; 23/11, p 0.06).
   Coordinator's bar for 27B RFT targets (27B − 9B full at ≥9: at least +3 with p < 0.1): **not met** (+0.67, p 0.88), so no 27B
   target generation. The 27B is not better than the 9B teacher on dev_hard ≥9; both beat results-only by 3–4 pts there.
+- ~03:20Z **`M_s2_r5` done** (278/278; preempted once at about u56 and resumed). Final dev proxy (196): NLL per token 0.3943, KL 0.0408, **gap
+  closed 0.972** (r5 stage 1: 0.871; r10 stage 2: 0.915). Its evals `meval_s2_r5` 29559465 (dev) and `mevh_s2_r5` 29574844
+  (dev_hard) are now eligible. hard8 teacher samples: 3,942 / 5,315 (shards 0 and 1 done; 2 running; 3 preempted at 543, requeued).
