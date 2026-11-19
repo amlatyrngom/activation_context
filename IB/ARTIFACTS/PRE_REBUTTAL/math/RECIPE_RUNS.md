@@ -249,3 +249,16 @@ was read from the file named next to it.
   +3.00; 14 / 9, p 0.40). r5 − full +0.33 pts (CI −1.50 to +2.33; 13 / 11, p 0.84). vs majority 24 / 14 (p 0.14). Gap closed (single →
   any) 0.558. Like r10 stage 1 (83.00), it matches the full-runs teacher on dev.
 - ~22:50Z `M_s2_r5` (29555709) was preempted at about u56 and requeued (PENDING, Resources); it resumes from its latest slot.
+- 01:30Z **dev_hard results (v1: every arm except 27B and r5 stage 2)**. `devhard_report.py`; per-band score files are `scores/devhard_{all,d8.5,ge9}_vs_{results,full,tg9_full}.json`; the tables are in `scores/devhard_report_v1.md`. Accuracy % (generated tokens median):
+
+  | arm | all (180) | d8.5 (80) | ≥9 (100) | gen median |
+  |---|---|---|---|---|
+  | single / majority / any-of-3 | 71.85 / 73.33 / 84.44 | 74.58 / 76.25 / 85.00 | 69.67 / 71.00 / 84.00 | |
+  | 9B results-only | 76.11 | 80.83 | 72.33 | 18,741 |
+  | 9B full runs (math_eval) | 77.78 | 80.83 | 75.33 | 3,384 |
+  | 9B full runs (teacher-test path) | 77.41 | 79.58 | 75.67 | 3,496 |
+  | AC r10 stage 1 | 76.85 | 80.83 | 73.67 | 3,184 |
+  | AC r10 stage 2 | 76.11 | 80.42 | 72.67 | 1,871 |
+  | AC r5 stage 1 | 77.59 | 81.25 | 74.67 | 3,209 |
+
+  ≥9, paired diffs (95% CI; W/L): full − results +3.00 (−1.33, +7.67; 21/12, p 0.16). AC r10 s1 − results +1.33 (−2.67, +5.67). AC r10 s2 − results +0.33. AC r5 s1 − results +2.33 (−1.33, +6.00; 17/10, p 0.25). AC r10 s1 − full −1.67 (−5.33, +2.00). AC r5 s1 − full −0.67 (−3.67, +2.00). No difference is significant. On dev_hard ≥9 the AC arms sit between results-only and full runs. Stage 2 (3-sample selection) shortens the syntheses (r10: median 1,871 vs 3,184) and loses about 1 pt at ≥9. The MVP (AC clearly above results-only at ≥9) is not met. 27B full (29589575, ninja fix) and AC r5 s2 are pending. The first two 27B tries failed: HF offline with the model not cached (fetched by 29587304, 22 GB), then ninja missing from PATH.
