@@ -352,3 +352,6 @@ was read from the file named next to it.
   72.67 → 75.79, r10 hard8 74.00 → 77.19, r10 hard8 random 74.00 → 76.84, r5 s1 74.67 → 77.89, r5 s2 73.33 → 76.84. The gaps barely
   move: full − results +3.00 → +2.81 (p 0.16 → 0.22), hard8 − results +1.67 → +1.05, r5 s1 − results +2.33 → +1.75; still nothing
   significant.
+- 17:38Z / 17:50Z **`M_s2h_r5` and `M_s2hr_r5` done** (398/398 each, wall 19,802 / 19,904 s, peak 62.5 GB). u398 held panel (64): NLL per
+  token 0.3832 / 0.3830. Final dev proxy (196, `runs/*/proxy/final.json`): **gap closed 0.975 / 0.975**, item-mean KL 0.0432 / 0.0440;
+  3-sample `M_s2_r5` (same file): 0.972, KL 0.0437. Evals started on afterok: dev 29633628 / 29633639, dev_hard 29633637 / 29633640.
