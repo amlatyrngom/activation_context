@@ -45,13 +45,14 @@ D=$W/runs/$RUN; mkdir -p $D
 export S3X_ALLOW_OPTIMIZER=1                                   # 2026-11-17: before the restore too (s3x skips optimizer.pt otherwise: resume refused)
 restore() {   # 2026-11-19: the run folder without the older recovery slots: only the slot partial_epoch.json points to (pointers are
   # uploaded after their slot: complete) + everything outside the slot folders (ckpt/final, logs, panels); older slots stay on S3.
-  # Any doubt (no boto3, a state.json pointer, an error) -> the full getdir as before.
+  # Any doubt (no boto3, a state.json pointer, an error) -> the full getdir as before. Fetched files get the S3 object's mtime.
   $S3PY - $J $S3C/runs/$RUN/ $D <<'PYEOF' || X getdir $S3C/runs/$RUN/ $D/
-import json, re, sys
+import json, os, re, sys
 from pathlib import Path
 sys.path.insert(0, sys.argv[1]); import s3x
 s3, config = s3x.client(); bucket, prefix = s3x.split(sys.argv[2].rstrip("/") + "/"); local = Path(sys.argv[3])
-rel = [it["Key"][len(prefix):] for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix) for it in page.get("Contents", [])]
+when = {it["Key"][len(prefix):]: it["LastModified"].timestamp() for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix) for it in page.get("Contents", [])}
+rel = list(when)
 if any(Path(r).name == "state.json" for r in rel): sys.exit(1)
 keep = set()
 for r in rel:
@@ -64,7 +65,8 @@ for r in rel:
     m = slot.match(r)
     if m and m.group(0) not in keep: left += 1; continue
     if Path(r).name in s3x.NEVER: continue
-    fetched += s3x.get(s3, config, f"s3://{bucket}/{prefix}{r}", local / r)
+    if s3x.get(s3, config, f"s3://{bucket}/{prefix}{r}", local / r):
+        fetched += 1; os.utime(local / r, (when[r], when[r]))   # mtime = the S3 copy's: the mirror does not send it back (M: ~200 GB re-sent)
 print(f"s3x restore: {fetched} files fetched; latest slot {sorted(keep)}; {left} older-slot files left on S3")
 PYEOF
 }
