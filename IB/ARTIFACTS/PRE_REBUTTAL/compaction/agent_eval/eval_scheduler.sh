@@ -42,6 +42,7 @@ next_job() {   # prints "DEVSET TAG VARIANTS AGENTS PAIR SEED" or nothing
       echo "prefixes_dev9_75 $tag $arms 40 $name $s"; return
     done
   done < <(printf '%s\n' "${cand[@]}" | sort -n)
+  [ "$1" = p1 ] && return   # p1: priority-1 (training-run evals) only
   done_all s2g_s1_r_s22 full || { echo "prefixes_s2gen_c20_s1 s2g_s1_r_s22 full 40 - 22"; return; }
   for s in 2 3 4; do done_all d206base_s$s full,none,summary_write,summary || { echo "prefixes_dev9_206 d206base_s$s full,none,summary_write,summary 40 - $s"; return; }; done
 }
@@ -59,6 +60,16 @@ while true; do
   job=$(next_job)
   if [ -z "$job" ]; then sleep 900; continue; fi
   say "next: $job"
-  bash $AE/eval_keeper.sh $NODE "$job"
+  case "$job" in
+    *" s2g_"*|*" d206base_"*)   # low priority: runs preemptibly; every 10 min, if a training-run eval is ready, cancel it (it resumes later from S3)
+      setsid bash $AE/eval_keeper.sh $NODE "$job" & kp=$!
+      while kill -0 $kp 2>/dev/null; do
+        sleep 600; kill -0 $kp 2>/dev/null || break
+        p=$(next_job p1)
+        if [ -n "$p" ]; then say "preempting low-priority job for: $p"; kill -- -$kp 2>/dev/null
+          timeout 300 $SKY cancel -y -a $NODE >> $LOG 2>&1; say "cancel returned $?"; sleep 60; break; fi
+      done; wait $kp 2>/dev/null;;
+    *) bash $AE/eval_keeper.sh $NODE "$job";;
+  esac
   clean_node
 done
