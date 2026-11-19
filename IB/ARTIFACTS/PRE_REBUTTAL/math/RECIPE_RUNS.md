@@ -262,3 +262,9 @@ was read from the file named next to it.
   | AC r5 stage 1 | 77.59 | 81.25 | 74.67 | 3,209 |
 
   ≥9, paired diffs (95% CI; W/L): full − results +3.00 (−1.33, +7.67; 21/12, p 0.16). AC r10 s1 − results +1.33 (−2.67, +5.67). AC r10 s2 − results +0.33. AC r5 s1 − results +2.33 (−1.33, +6.00; 17/10, p 0.25). AC r10 s1 − full −1.67 (−5.33, +2.00). AC r5 s1 − full −0.67 (−3.67, +2.00). No difference is significant. On dev_hard ≥9 the AC arms sit between results-only and full runs. Stage 2 (3-sample selection) shortens the syntheses (r10: median 1,871 vs 3,184) and loses about 1 pt at ≥9. The MVP (AC clearly above results-only at ≥9) is not met. 27B full (29589575, ninja fix) and AC r5 s2 are pending. The first two 27B tries failed: HF offline with the model not cached (fetched by 29587304, 22 GB), then ninja missing from PATH.
+- ~02:40Z **dev_hard 27B full** (`mgenh_tg27` 29589575, unsloth/Qwen3.8-27B-NVFP4, teacher-test path, 540/540, all "stop";
+  `scores/devhard_report_v2.md`): all 79.07% (gen median 2,413), d8.5 82.50%, **≥9 76.33%** (gen median 2,850). Paired vs 9B full
+  on the same path (tg9_full): all +1.67 (CI −2.22, +5.56; 37/28, p 0.32), d8.5 +2.92 (−2.50, +8.75; p 0.21), **≥9 +0.67 (−4.67,
+  +5.67; 22/20, p 0.88)**. vs results-only: all +2.96 (−0.56, +6.67; 37/21, p 0.048), ≥9 +4.00 (−0.33, +9.00; 23/11, p 0.06).
+  Coordinator's bar for 27B RFT targets (27B − 9B full at ≥9: at least +3 with p < 0.1): **not met** (+0.67, p 0.88), so no 27B
+  target generation. The 27B is not better than the 9B teacher on dev_hard ≥9; both beat results-only by 3–4 pts there.
