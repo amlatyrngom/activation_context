@@ -343,7 +343,7 @@ was read from the file named next to it.
   not recommended (sent to the coordinator with options). Packet `m_s2_hard8rat_r10_v1` built on CPU in case.
 - Coordinator: rationalization not trained (option i); `m_s2_hard8rat_r10_v1` stays built, unused (3,191 items incl. the 5
   rationalized, 398 updates; SHA256SUMS, S3). Benchmark scoring unchanged (the label question goes to the user).
-- ~15:00Z **dev_hard sensitivity: label-mismatch problems excluded** (existing outputs only; `scores/labelmismatch.json`: excluded =
+- 14:22Z **dev_hard sensitivity: label-mismatch problems excluded** (existing outputs only; `scores/labelmismatch.json`: excluded =
   gold not in {Yes, No, True, False} and ≥ 2 of 3 solver answers in that set → 9 of 180 dev_hard problems (d8.5 4, d9 5; 8 with
   k = 0); the same rule finds **13 of 200 dev problems** (all k = 0; d6 3, d6.5 1, d7 1, d7.5 2, d8 5, d9 1)). Tables:
   `scores/devhard_report_v5.md` (standard, every arm, refs results / full / tg9_full / ac_r10_s1) and
