@@ -82,12 +82,37 @@ if [ "${CMP_START_PROXY:-1}" = 0 ]; then say "proxy u00000: skipped (CMP_START_P
 elif [ ! -f $REF ]; then proxy u00000 $I/ac $I/reader --references && cp $D/proxy/u00000.json $REF || FAILED=1   # 2026-11-17: any start pair (new panel)
 elif [ "$INIT" != R_res_rq9fr_final ]; then say "proxy u00000: skipped (start pair $INIT: see its own run)"
 else cp -n $REF $D/proxy/u00000.json; say "proxy u00000: from $REF"; fi
+finalize_last() {   # 2026-11-19: the trainer saved the last pair (ckpt/step_<STEPS> with its meta: update == planned) and then died before
+  # sec45_train renamed it to ckpt/final (run M: Ray OOM monitor at the end-of-run "Moving model to cpu"). Finalize that pair as
+  # sec45_train would (rename, meta + stop_reason complete) instead of retraining the last update; sha256 of the weights in the meta.
+  local S=$D/sync/ckpt/step_$(printf %05d $STEPS) V=true
+  { [ ! -f $D/sync/ckpt/final/meta.json ] && [ -f $S/meta.json ] && [ -f $S/ac/ac_modules.pt ] && [ -f $S/reader/adapter_model.safetensors ]; } || return 0
+  grep -qs "sec45_train: INVALID" $D/logs/train_*.log && V=false
+  $PY - $S $RUN $STEPS $V <<'PYEOF' || { say "finalize: $S is not this run's complete last pair: not finalized"; return 0; }
+import hashlib, json, sys
+s, run, steps, valid = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4] == "true"
+m = json.load(open(s + "/meta.json"))
+if not (m.get("name") == run and m.get("update") == m.get("planned_updates") == steps): sys.exit(1)
+def h(p):
+    x = hashlib.sha256()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 24), b""): x.update(b)
+    return x.hexdigest()
+m = {k: m[k] for k in ("name", "kind", "mode", "update", "planned_updates")} | {"stop_reason": "complete", "valid": valid, "seconds": m.get("seconds"),
+     "finalized_from": f"ckpt/step_{steps:05d} (renamed by cmp_stage1_job.sh: the trainer died after saving it; no stats.json)",
+     "sha256": {f: h(f"{s}/{f}") for f in ("ac/ac_modules.pt", "reader/adapter_model.safetensors")}, "trainer_folders": m.get("trainer_folders")}
+open(s + "/meta.json.new", "w").write(json.dumps(m))
+PYEOF
+  mv $S/meta.json.new $S/meta.json && mv -T $S $D/sync/ckpt/final && say "finalize: $S -> ckpt/final (the trainer died after saving its last pair)"
+}
+finalize_last                                                  # a relaunch after such a death: no retraining
 if [ ! -f $D/sync/ckpt/final/meta.json ]; then
   say "training: $STEPS updates"
   ACTIVATION_SYNC_ROOT=$D/sync $PY $C/kit/sec45_train.py --kind packet --mode res --data $P --pair $I/ac $I/reader --loss $LOSS --name $RUN \
     --steps $STEPS --epu $EPU --encoder-lr $ENC_LR --reader-lr $READER_LR --warmup $WARMUP --schedule cosine --seed $SEED --micro-batch $MICRO \
     --resume-if-possible "${TRAIN_ARGS[@]}" > $D/logs/train_${SLURM_JOB_ID:-local}.log 2>&1 || FAILED=1
   say "training exit $FAILED: $(tail -n 1 $D/logs/train_${SLURM_JOB_ID:-local}.log | cut -c1-600)"
+  [ "$FAILED" != 0 ] && finalize_last                          # the trainer alone died (the job survived)
 fi
 [ -f $D/sync/ckpt/final/meta.json ] && [ "${CMP_FINAL_PROXY:-1}" = 1 ] && { proxy final $D/sync/ckpt/final/ac $D/sync/ckpt/final/reader --references-from $REF || FAILED=1; }
 for Q in $D/sync/ckpt/step_*/; do [ -d "$Q/ac" ] && { proxy $(basename $Q) $Q/ac $Q/reader --references-from $REF || FAILED=1; }; done
