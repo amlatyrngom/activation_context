@@ -25,8 +25,8 @@ next_job() {   # prints "DEVSET TAG VARIANTS AGENTS PAIR SEED" or nothing
   local cand=() r label run arms u name tag s
   while read -r label run arms pts; do
     [ -z "$label" ] && continue; [ "${label:0:1}" = "#" ] && continue
-    for u in $pts; do cand+=("$u $label $run $arms u$u"); done
-    final_ok $run && cand+=("0 $label $run $arms fin")   # finals first
+    for u in $pts; do [ $u = nofin ] || cand+=("$u $label $run $arms u$u"); done
+    [[ " $pts " == *" nofin "* ]] || { final_ok $run && cand+=("0 $label $run $arms fin"); }   # finals first; "nofin" in POINTS = no final eval
   done < $RUNS_FILE
   while read -r u label run arms pt; do
     [ -z "$u" ] && continue
