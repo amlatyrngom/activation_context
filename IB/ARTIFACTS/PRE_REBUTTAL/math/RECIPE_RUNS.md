@@ -275,3 +275,23 @@ was read from the file named next to it.
   `dev_r5_s2_vs_s1.json`): **81.67%** (81.0 / 82.5 / 81.5), gen median 2,667 / mean 2,918. s2 − results −0.17 (CI −2.33, +2.00; 11 / 12).
   s2 − full −0.67 (−2.50, +1.00; 10 / 14, p 0.54). s2 − s1 −1.00 (−2.33, +0.33; 6 / 12, p 0.24). Same pattern as r10: stage 2
   (3-sample selection) shortens the syntheses and costs about 1 pt (n.s.), although its dev proxy rose to 0.972.
+- ~06:10Z **hard8 packets** (all 5,315 seed 3–7 samples landed, sha-checked, S3 `math/recipe/gen_in/teacher_train_s37/`). Built on the host
+  with `build_packets.py stage2 --gen-extra` (`packets/<name>/build.json`; SHA256SUMS; S3 `math/recipe/packets/`; staged on ORCD
+  `data/packets/`):
+
+  | packet | items (requested) | problems | updates / pass | target median / mean |
+  |---|---|---|---|---|
+  | `m_s2_r10_v1` (3 samples, baseline) | 2,229 (2,255) | 1,251 | 278 | 2,800 / 3,168.0 |
+  | `m_s2_hard8_r10_v1` (shortest rule over 8 samples at ≥8.5) | 3,187 (3,220) | 1,275 | 398 | 2,633 / 3,008.1 |
+  | `m_s2_hard8rnd9_r10_v1` (size-matched random correct at ≥9) | 3,187 (3,220) | 1,275 | 398 | 2,786 / 3,226.7 |
+
+  The 33 dropped items have a student history over 72k tokens. Problems with ≥1 correct sample, 3 → 8 samples: ≥9 216 → 225 of 272;
+  d8.5 667 → 682 of 791; <8.5 382 of 437 (no extra samples). Random variant (`--random-min-difficulty 9`: k = size of the
+  within-1.3× set, drawn without replacement from all correct samples, seeded by task id), ≥9: 225 problems, 608 items, target median
+  3,915.5 / mean 4,272.8 vs the shortest rule's 2,656.5 / 3,123.8 on the same problems. `m_s2_hard8_r5_v1` (r 0.2): same 3,187 items
+  and target stats. Training (ORCD, bundle v6, init `M_s1_r10_final`, sft, slot every 20): `M_s2h_r10` 29616157 and `M_s2hr_r10`
+  29616158; the r5 runs follow after both.
+- ~06:30Z **dev_hard AC r5 stage 2** (`mevh_s2_r5` 29574844, 540/540; `scores/devhard_report_v3.md`, every arm): all 75.93% (gen
+  median 1,976), d8.5 79.17%, **≥9 73.33%** (gen median 1,512). ≥9 paired: − results +1.00 (CI −2.33, +4.67; 15/12, p 0.70), − full
+  −2.00 (−6.33, +2.00; 11/17, p 0.34). r5 stage 1 at ≥9: 74.67. As for r10, stage 2 (3-sample selection) roughly halves the generated
+  tokens and loses about 1 pt at ≥9 (n.s.).
