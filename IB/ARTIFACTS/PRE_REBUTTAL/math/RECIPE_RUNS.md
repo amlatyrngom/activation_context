@@ -362,3 +362,20 @@ was read from the file named next to it.
   same file, both right). Corrected to per token, item-mean in parentheses. All final proxies (kl_token / item_mean_kl): M_s1_r10 0.0275 /
   0.0294, M_s1_r5c 0.0193 / 0.0208, M_s2_r10 0.0486 / 0.0522, M_s2_r5 0.0408 / 0.0437, M_s2h_r10 0.0477 / 0.0511, M_s2hr_r10 0.0477 /
   0.0511, M_s2h_r5 0.0401 / 0.0432, M_s2hr_r5 0.0408 / 0.0440. Gap closed and NLL per token were not affected.
+- 19:26Z **hard8 r5 evals** (dev: `scores/dev_r5_s2h_vs_s1.json`, `dev_r5_s2hr_vs_s2h.json`; dev_hard: `scores/devhard_report_v6.md`
+  and `devhard_report_v6_sensitivity_labelmismatch_excluded.md`, refs results / full / ac_r10_s1 / ac_r5_s1; two relay copies lagged
+  and were pulled directly, all four gen files sha-equal to ORCD). Accuracy % (gen median); paired diffs (95 % CI; W/L, p):
+
+  | arm | dev (200) | dev_hard all | d8.5 | ≥9 (100) | ≥9 − r5 s1 | ≥9, mismatch excluded (95) | − r5 s1 (excl.) |
+  |---|---|---|---|---|---|---|---|
+  | results-only | 81.83 | 76.11 | 80.83 | 72.33 | −2.33 (−6.00, +1.33; 10/17, p 0.25) | 76.14 | −1.75 |
+  | 9B full | 82.33 | 77.78 | 80.83 | 75.33 | +0.67 (−2.00, +3.67) | 78.95 | +1.05 |
+  | AC r5 s1 | 82.67 (3,112) | 77.59 | 81.25 | 74.67 (3,129) | — | 77.89 | — |
+  | AC r5 s2 (3 samples) | 81.67 (2,667) | 75.93 | 79.17 | 73.33 (1,512) | −1.33 (−4.33, +1.67; 10/14, p 0.54) | 76.84 | −1.05 |
+  | AC r5 s2 hard8 shortest | 81.83 (2,685) | 75.37 | 80.42 | **71.33** (1,684) | **−3.33 (−6.33, −0.67; 8/18, p 0.08)** | 74.39 | −3.51 (−6.67, −0.70; p 0.08) |
+  | AC r5 s2 hard8 random ≥9 | 82.33 (2,683) | 77.04 | 80.00 | 74.67 (2,227) | +0.00 (−2.33, +2.33; 8/8, p 1.00) | 77.54 | −0.35 |
+
+  dev − r5 s1: shortest −0.83 (−2.50, +0.67; 7/12, p 0.36), random −0.33 (−1.83, +1.17; 7/9, p 0.80); random − shortest +0.50
+  (−0.83, +2.17; p 0.61). dev_hard ≥9, shortest − 9B full −4.00 (−7.33, −1.33; 6/18, p 0.02); random − shortest at ≥9 **+3.33 (+0.33, +6.33;
+  16/6, p 0.053)** (`scores/devhard_ge9_r5_s2hr_vs_s2h.json`). At r5 the shortest rule loses ~3 pts at ≥9 against stage 1 (bootstrap CI excludes 0, sign
+  test p 0.08), the random variant does not; at r10 both variants scored 74.00. The recipe choice (hard8 shortest) rests on r10 only.
