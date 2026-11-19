@@ -26,7 +26,7 @@ next_job() {   # prints "DEVSET TAG VARIANTS AGENTS PAIR SEED" or nothing
   while read -r label run arms pts; do
     [ -z "$label" ] && continue; [ "${label:0:1}" = "#" ] && continue
     for u in $pts; do cand+=("$u $label $run $arms u$u"); done
-    final_ok $run && cand+=("99999 $label $run $arms fin")
+    final_ok $run && cand+=("0 $label $run $arms fin")   # finals first
   done < $RUNS_FILE
   while read -r u label run arms pt; do
     [ -z "$u" ] && continue
